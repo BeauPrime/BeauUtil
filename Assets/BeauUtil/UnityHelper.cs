@@ -5,7 +5,10 @@
  * 
  * File:    UnityHelper.cs
  * Purpose: Unity-specific helper functions.
-*/
+ */
+
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -14,6 +17,8 @@ namespace BeauUtil
     /// </summary>
     static public class UnityHelper
     {
+        #region SafeDestroy
+
         /// <summary>
         /// Safely disposes of a Unity object and sets the reference to null.
         /// </summary>
@@ -36,7 +41,7 @@ namespace BeauUtil
         /// Safely disposes of the GameObject and sets
         /// the reference to null.
         /// </summary>
-        static public void SafeDestroyGO(ref UnityEngine.GameObject ioGameObject)
+        static public void SafeDestroyGO(ref GameObject ioGameObject)
         {
             // This is to avoid calling Unity's overridden equality operator
             if (object.ReferenceEquals(ioGameObject, null))
@@ -55,7 +60,7 @@ namespace BeauUtil
         /// Safely disposes of the parent GameObject of the transform and sets
         /// the reference to null.
         /// </summary>
-        static public void SafeDestroyGO(ref UnityEngine.Transform ioTransform)
+        static public void SafeDestroyGO(ref Transform ioTransform)
         {
             // This is to avoid calling Unity's overridden equality operator
             if (object.ReferenceEquals(ioTransform, null))
@@ -74,7 +79,7 @@ namespace BeauUtil
         /// Safely disposes of the parent GameObject of the component and sets
         /// the reference to null.
         /// </summary>
-        static public void SafeDestroyGO<T>(ref T ioComponent) where T : UnityEngine.Component
+        static public void SafeDestroyGO<T>(ref T ioComponent) where T : Component
         {
             // This is to avoid calling Unity's overridden equality operator
             if (object.ReferenceEquals(ioComponent, null))
@@ -88,5 +93,62 @@ namespace BeauUtil
 
             ioComponent = null;
         }
+
+        #endregion // SafeDestroy
+
+        #region GetComponentsInChildren
+
+        /// <summary>
+        /// Recursively retrieves components in children.
+        /// If a child has a component of this type, its children will not be searched.
+        /// </summary>
+        static public void GetImmediateComponentsInChildren<T>(this GameObject inGameObject, bool inbIncludeSelf, List<T> outComponents) where T : Component
+        {
+            GetImmediateComponentsInChildren<T>(inGameObject.transform, inbIncludeSelf, false, outComponents);
+        }
+
+        /// <summary>
+        /// Recursively retrieves components in children.
+        /// If a child has a component of this type, its children will not be searched.
+        /// </summary>
+        static public void GetImmediateComponentsInChildren<T>(this GameObject inGameObject, bool inbIncludeSelf, bool inbIncludeInactive, List<T> outComponents) where T : Component
+        {
+            GetImmediateComponentsInChildren<T>(inGameObject.transform, inbIncludeSelf, inbIncludeInactive, outComponents);
+        }
+
+        /// <summary>
+        /// Recursively retrieves components in children.
+        /// If a child has a component of this type, its children will not be searched.
+        /// </summary>
+        static public void GetImmediateComponentsInChildren<T>(this Transform inTransform, bool inbIncludeSelf, List<T> outComponents) where T : Component
+        {
+            GetImmediateComponentsInChildren<T>(inTransform, inbIncludeSelf, false, outComponents);
+        }
+
+        /// <summary>
+        /// Recursively retrieves components in children.
+        /// If a child has a component of this type, its children will not be searched.
+        /// </summary>
+        static public void GetImmediateComponentsInChildren<T>(this Transform inTransform, bool inbIncludeSelf, bool inbIncludeInactive, List<T> outComponents) where T : Component
+        {
+            if (!inbIncludeInactive && !inTransform.gameObject.activeInHierarchy)
+                return;
+
+            if (inbIncludeSelf)
+            {
+                int originalCount = outComponents.Count;
+                inTransform.GetComponents<T>(outComponents);
+                if (outComponents.Count > originalCount)
+                    return;
+            }
+
+            int childCount = inTransform.childCount;
+            for (int i = 0; i < childCount; ++i)
+            {
+                GetImmediateComponentsInChildren<T>(inTransform.GetChild(i), true, inbIncludeInactive, outComponents);
+            }
+        }
+
+        #endregion // GetComponentsInChildren
     }
 }

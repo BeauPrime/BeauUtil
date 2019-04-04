@@ -11,7 +11,8 @@ using UnityEngine;
 
 namespace BeauUtil
 {
-    public class NestedCanvasSortOrderFix : MonoBehaviour
+    [AddComponentMenu("BeauUtil/Patches/Nested Canvas Sorting Order Fix")]
+    public sealed class NestedCanvasSortOrderFix : MonoBehaviour
     {
         [SerializeField]
         private Canvas m_Canvas;

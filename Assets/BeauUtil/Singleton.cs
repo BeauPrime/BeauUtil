@@ -48,7 +48,9 @@ namespace BeauUtil
                     s_Instance = Prefab.Instantiate<SType>();
                     if (s_Instance == null)
                         throw new Exception("Unable to spawn singleton with type " + typeof(SType).Name);
-                    s_Instance.transform.SetParent(GetRoot());
+
+                    if (!s_Instance.IsLocalToScene)
+                        s_Instance.transform.SetParent(GetRoot());
                     s_Instance.gameObject.name = typeof(SType).Name + "::Instance";
                 }
             }
@@ -89,6 +91,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if this singleton is only local to the current scene.
+        /// </summary>
+        protected virtual bool IsLocalToScene
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// Returns if this object is the singleton instance.
         /// Useful for executing logic in Awake() or OnDestroy().
         /// </summary>
@@ -104,8 +114,9 @@ namespace BeauUtil
         {
             if (s_Instance == null)
             {
-                s_Instance = (SType)this;
-                transform.SetParent(GetRoot());
+                s_Instance = (SType) this;
+                if (!IsLocalToScene)
+                    transform.SetParent(GetRoot());
             }
             else if (!ReferenceEquals(s_Instance, this))
                 Destroy(this);

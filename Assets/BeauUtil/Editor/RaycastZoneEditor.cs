@@ -7,6 +7,7 @@
  * Purpose: Editor for RaycastZone.
  */
 
+using BeauUtil.UI;
 using UnityEditor;
 using UnityEngine;
 

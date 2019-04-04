@@ -40,7 +40,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [0, 100]
+        /// Range [-100, 100]
         /// </summary>
         static public string ToStringLookup(this int inValue)
         {

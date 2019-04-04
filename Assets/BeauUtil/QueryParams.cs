@@ -14,7 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 
 namespace BeauUtil
 {
@@ -118,26 +117,23 @@ namespace BeauUtil
             if (m_Parameters == null || m_Parameters.Count == 0)
                 return string.Empty;
 
-            using(PooledStringBuilder pooledBuilder = PooledStringBuilder.Create())
+            StringBuilder builder = new StringBuilder();
+
+            builder.Append('?');
+            for (int i = 0; i < m_Parameters.Count; ++i)
             {
-                StringBuilder builder = pooledBuilder.Builder;
+                Parameter parm = m_Parameters[i];
+                if (i > 0)
+                    builder.Append('&');
 
-                builder.Append('?');
-                for (int i = 0; i < m_Parameters.Count; ++i)
+                builder.Append(EscapeURL(parm.Key));
+                if (parm.Value != null)
                 {
-                    Parameter parm = m_Parameters[i];
-                    if (i > 0)
-                        builder.Append('&');
-
-                    builder.Append(EscapeURL(parm.Key));
-                    if (parm.Value != null)
-                    {
-                        builder.Append('=').Append(EscapeURL(parm.Value));
-                    }
+                    builder.Append('=').Append(EscapeURL(parm.Value));
                 }
-
-                return builder.ToString();
             }
+
+            return builder.ToString();
         }
 
         /// <summary>
@@ -224,7 +220,7 @@ namespace BeauUtil
             #if USE_WEBREQUEST
             return UnityEngine.Networking.UnityWebRequest.UnEscapeURL(inUrl);
             #else
-            return WWW.UnEscapeURL(inUrl);
+            return UnityEngine.WWW.UnEscapeURL(inUrl);
             #endif // USE_WEBREQUEST
         }
 
@@ -233,7 +229,7 @@ namespace BeauUtil
             #if USE_WEBREQUEST
             return UnityEngine.Networking.UnityWebRequest.EscapeURL(inUrl);
             #else
-            return WWW.EscapeURL(inUrl);
+            return UnityEngine.WWW.EscapeURL(inUrl);
             #endif // USE_WEBREQUEST
         }
 

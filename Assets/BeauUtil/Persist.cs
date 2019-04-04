@@ -18,10 +18,13 @@ namespace BeauUtil
     [AddComponentMenu("BeauUtil/Persist")]
     public sealed class Persist : MonoBehaviour
     {
-        static private HashSet<string> s_ExistingIDs = new HashSet<string>();
+        static private readonly HashSet<string> s_ExistingIDs = new HashSet<string>();
 
         [SerializeField, Tooltip("If set, further Persist GameObjects with this ID will be destroyed.")]
         private string m_UniqueID = string.Empty;
+
+        [SerializeField]
+        private bool m_WakeUpChildren = true;
 
         private bool m_Initialized = false;
 
@@ -38,8 +41,11 @@ namespace BeauUtil
                 s_ExistingIDs.Add(m_UniqueID);
             }
 
-            for (int i = transform.childCount - 1; i >= 0; --i)
-                transform.GetChild(i).gameObject.SetActive(true);
+            if (m_WakeUpChildren)
+            {
+                for (int i = transform.childCount - 1; i >= 0; --i)
+                    transform.GetChild(i).gameObject.SetActive(true);
+            }
 
             DontDestroyOnLoad(gameObject);
             m_Initialized = true;
@@ -67,7 +73,7 @@ namespace BeauUtil
 
                 if (GUILayout.Button("Generate GUID"))
                 {
-                    Persist p = (Persist)target;
+                    Persist p = (Persist) target;
                     p.m_UniqueID = System.Guid.NewGuid().ToString();
                     UnityEditor.EditorUtility.SetDirty(p);
                 }
