@@ -1,0 +1,10 @@
+{
+    "name": "BeauUtil.Editor",
+    "references": [
+        "BeauUtil"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
