@@ -47,6 +47,7 @@ namespace BeauUtil
                     transform.GetChild(i).gameObject.SetActive(true);
             }
 
+            gameObject.transform.SetParent(null, true);
             DontDestroyOnLoad(gameObject);
             m_Initialized = true;
         }

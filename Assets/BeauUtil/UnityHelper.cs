@@ -7,6 +7,7 @@
  * Purpose: Unity-specific helper functions.
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -120,6 +121,24 @@ namespace BeauUtil
         /// Recursively retrieves components in children.
         /// If a child has a component of this type, its children will not be searched.
         /// </summary>
+        static public void GetImmediateComponentsInChildren<T>(this Component inGameObject, bool inbIncludeSelf, List<T> outComponents) where T : Component
+        {
+            GetImmediateComponentsInChildren<T>(inGameObject.transform, inbIncludeSelf, false, outComponents);
+        }
+
+        /// <summary>
+        /// Recursively retrieves components in children.
+        /// If a child has a component of this type, its children will not be searched.
+        /// </summary>
+        static public void GetImmediateComponentsInChildren<T>(this Component inGameObject, bool inbIncludeSelf, bool inbIncludeInactive, List<T> outComponents) where T : Component
+        {
+            GetImmediateComponentsInChildren<T>(inGameObject.transform, inbIncludeSelf, inbIncludeInactive, outComponents);
+        }
+
+        /// <summary>
+        /// Recursively retrieves components in children.
+        /// If a child has a component of this type, its children will not be searched.
+        /// </summary>
         static public void GetImmediateComponentsInChildren<T>(this Transform inTransform, bool inbIncludeSelf, List<T> outComponents) where T : Component
         {
             GetImmediateComponentsInChildren<T>(inTransform, inbIncludeSelf, false, outComponents);
@@ -136,10 +155,16 @@ namespace BeauUtil
 
             if (inbIncludeSelf)
             {
-                int originalCount = outComponents.Count;
-                inTransform.GetComponents<T>(outComponents);
-                if (outComponents.Count > originalCount)
+                if (s_CachedComponentList == null)
+                    s_CachedComponentList = new List<Component>();
+                inTransform.GetComponents(typeof(T), s_CachedComponentList);
+                if (s_CachedComponentList.Count > 0)
+                {
+                    for (int i = 0; i < s_CachedComponentList.Count; ++i)
+                        outComponents.Add((T) s_CachedComponentList[i]);
+                    s_CachedComponentList.Clear();
                     return;
+                }
             }
 
             int childCount = inTransform.childCount;
@@ -148,6 +173,9 @@ namespace BeauUtil
                 GetImmediateComponentsInChildren<T>(inTransform.GetChild(i), true, inbIncludeInactive, outComponents);
             }
         }
+
+        [ThreadStatic]
+        static private List<Component> s_CachedComponentList;
 
         #endregion // GetComponentsInChildren
     }

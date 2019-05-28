@@ -67,6 +67,8 @@ namespace BeauUtil
 
         [NonSerialized] private ColorBlock m_ConcatenatedColorBlock = ColorBlock.Default;
 
+        [NonSerialized] private bool m_ValidateQueued = false;
+
         #region Properties
 
         public bool Visible
@@ -432,6 +434,7 @@ namespace BeauUtil
 
                 if (m_MaterialConfig.ShouldAppply())
                 {
+                    Initialize();
                     m_Renderer.GetPropertyBlock(s_SharedPropertyBlock);
                     m_MaterialConfig.Apply(s_SharedPropertyBlock, ref m_ConcatenatedColorBlock);
                     m_Renderer.SetPropertyBlock(s_SharedPropertyBlock);
@@ -458,7 +461,7 @@ namespace BeauUtil
 
         private void UpdateRaycast(bool inbParentRaycast)
         {
-            if (!m_IgnoreParentGroups)
+            if (m_IgnoreParentGroups)
                 m_ConcatenatedRaycast = m_BlocksRaycasts;
             else
                 m_ConcatenatedRaycast = inbParentRaycast && m_BlocksRaycasts;
@@ -497,6 +500,11 @@ namespace BeauUtil
 
         #region Unity Events
 
+        private void OnDidApplyAnimationProperties()
+        {
+            Refresh();
+        }
+
         #if UNITY_EDITOR
 
         private void Reset()
@@ -507,12 +515,16 @@ namespace BeauUtil
 
         private void OnValidate()
         {
-            UnityEditor.EditorApplication.update += this.DeferredOnValidate;
+            if (!m_ValidateQueued)
+            {
+                UnityEditor.EditorApplication.update += this.DeferredOnValidate;
+                m_ValidateQueued = true;
+            }
         }
 
         private void DeferredOnValidate()
         {
-            if (!this)
+            if (!this || !m_ValidateQueued)
                 return;
 
             Initialize();
@@ -520,6 +532,8 @@ namespace BeauUtil
 
             UpdateChildren();
             Refresh();
+
+            m_ValidateQueued = false;
         }
 
         #endif // UNITY_EDITOR
@@ -560,6 +574,7 @@ namespace BeauUtil
 
         #region Static
 
+        [NonSerialized]
         static private bool s_Initialized;
         static private MaterialPropertyBlock s_SharedPropertyBlock;
 

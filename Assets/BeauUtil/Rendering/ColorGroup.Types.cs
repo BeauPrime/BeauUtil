@@ -232,10 +232,10 @@ namespace BeauUtil
                 if (AdditionalProperties != null)
                     newProperties.AddRange(AdditionalProperties);
 
-                if (inMaterial.HasProperty("_EmissiveColor"))
+                if (inMaterial.HasProperty("_EmissionColor"))
                 {
                     if ((inMaterial.globalIlluminationFlags & MaterialGlobalIlluminationFlags.AnyEmissive) != 0)
-                        GenerateProperty(newProperties, Channel.Emissive, "_EmissiveColor");
+                        GenerateProperty(newProperties, Channel.Emissive, "_EmissionColor");
                 }
 
                 AdditionalProperties = newProperties.ToArray();
