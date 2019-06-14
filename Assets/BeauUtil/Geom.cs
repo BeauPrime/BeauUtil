@@ -193,9 +193,6 @@ namespace BeauUtil
         /// <summary>
         /// Returns the given vector, rotated by the given radians.
         /// </summary>
-        /// <param name="inVector"></param>
-        /// <param name="inRadians"></param>
-        /// <returns></returns>
         static public Vector2 Rotate(Vector2 inVector, float inRadians)
         {
             float sin = Mathf.Sin(inRadians);

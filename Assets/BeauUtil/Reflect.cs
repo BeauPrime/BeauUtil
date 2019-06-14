@@ -14,8 +14,6 @@ namespace BeauUtil
         /// <summary>
         /// Returns all derived types of the given type in all assemblies.
         /// </summary>
-        /// <param name="inType"></param>
-        /// <returns></returns>
         static public IEnumerable<Type> FindAllDerivedTypes(Type inType)
         {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -363,7 +361,7 @@ namespace BeauUtil
     /// </summary>
     public struct AttributeBinding<TAttribute, TInfo>
         where TAttribute : Attribute
-    where TInfo : MemberInfo
+        where TInfo : MemberInfo
     {
         public readonly TAttribute Attribute;
         public readonly TInfo Info;

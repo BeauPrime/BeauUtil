@@ -22,6 +22,21 @@ namespace BeauUtil
         public const int RESET_VALUE = -1;
 
         /// <summary>
+        /// Increments the given version number.
+        /// </summary>
+        static public void Increment(ref int ioSerial)
+        {
+            if (ioSerial == int.MaxValue)
+            {
+                ioSerial = 0;
+            }
+            else
+            {
+                ++ioSerial;
+            }
+        }
+
+        /// <summary>
         /// Resets the given version number.
         /// </summary>
         static public void Reset(ref int ioSerial)
