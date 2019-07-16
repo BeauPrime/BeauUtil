@@ -11,6 +11,9 @@ using UnityEngine;
 
 namespace BeauUtil
 {
+    /// <summary>
+    /// Marks an integer property as a GameObject layer index.
+    /// </summary>
     public sealed class LayerIndexAttribute : PropertyAttribute
     {
         #if UNITY_EDITOR
@@ -20,7 +23,9 @@ namespace BeauUtil
         {
             public override void OnGUI(Rect position, UnityEditor.SerializedProperty property, GUIContent label)
             {
+                label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
                 property.intValue = UnityEditor.EditorGUI.LayerField(position, label, property.intValue);
+                UnityEditor.EditorGUI.EndProperty();
             }
         }
 

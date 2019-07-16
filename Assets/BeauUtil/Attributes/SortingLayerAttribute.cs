@@ -12,6 +12,9 @@ using UnityEngine;
 
 namespace BeauUtil
 {
+    /// <summary>
+    /// Marks an integer property as a sorting layer id.
+    /// </summary>
     public sealed class SortingLayerAttribute : PropertyAttribute
     {
         #if UNITY_EDITOR
@@ -39,12 +42,16 @@ namespace BeauUtil
             {
                 InitializeLayerNames();
 
+                label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
+
                 int layerIdx = property.hasMultipleDifferentValues ? -1 : Array.IndexOf(s_LayerIds, property.intValue);
 
                 GUI.changed = false;
                 int nextLayerIdx = UnityEditor.EditorGUI.Popup(position, label, layerIdx, s_LayerContent);
                 if (GUI.changed)
                     property.intValue = nextLayerIdx >= 0 ? s_LayerIds[nextLayerIdx] : -1;
+
+                UnityEditor.EditorGUI.EndProperty();
             }
         }
 

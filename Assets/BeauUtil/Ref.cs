@@ -5,9 +5,10 @@
  * 
  * File:    Ref.cs
  * Purpose: Reference value wrapper and some reference utility functions.
-*/
+ */
 
 using System;
+using System.Collections.Generic;
 
 namespace BeauUtil
 {
@@ -48,33 +49,53 @@ namespace BeauUtil
         /// <summary>
         /// Safely disposes of an object and sets its reference to null.
         /// </summary>
-        static public void Dispose<T>(ref T inObjectToDispose) where T : class, IDisposable
+        static public bool Dispose<T>(ref T ioObjectToDispose) where T : class, IDisposable
         {
-            if (inObjectToDispose != null)
+            if (ioObjectToDispose != null)
             {
-                inObjectToDispose.Dispose();
-                inObjectToDispose = null;
+                ioObjectToDispose.Dispose();
+                ioObjectToDispose = null;
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
         /// Safetly disposes and switches a disposable object to another object.
         /// </summary>
-        static public void Replace<T>(ref T inObject, T inReplace) where T : class, IDisposable
+        static public bool ReplaceDisposable<T>(ref T ioObject, T inReplace) where T : class, IDisposable
         {
-            if (inObject != null && inObject != inReplace)
-                inObject.Dispose();
-            inObject = inReplace;
+            if (EqualityComparer<T>.Default.Equals(ioObject, inReplace))
+                return false;
+
+            if (ioObject != null)
+                ioObject.Dispose();
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces a reference to one object with a reference to another.
+        /// </summary>
+        static public bool Replace<T>(ref T ioObject, T inReplace)
+        {
+            if (EqualityComparer<T>.Default.Equals(ioObject, inReplace))
+                return false;
+
+            ioObject = inReplace;
+            return true;
         }
 
         /// <summary>
         /// Swaps two references.
         /// </summary>
-        static public void Swap<T>(ref T inA, ref T inB)
+        static public void Swap<T>(ref T ioA, ref T ioB)
         {
-            T temp = inA;
-            inA = inB;
-            inB = temp;
+            T temp = ioA;
+            ioA = ioB;
+            ioB = temp;
         }
     }
 }
