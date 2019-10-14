@@ -22,10 +22,21 @@ namespace BeauUtil
     /// </summary>
     static public class RNG
     {
-        static private Random s_CurrentRandom = new Random();
+        static RNG()
+        {
+            Default = new Random();
+            s_CurrentRandom = Default;
+        }
+
+        static private Random s_CurrentRandom;
 
         /// <summary>
-        /// Current Randomizer object.
+        /// Default Random source.
+        /// </summary>
+        static public readonly Random Default;
+
+        /// <summary>
+        /// Current Random source.
         /// </summary>
         static public Random Instance
         {
@@ -316,6 +327,34 @@ namespace BeauUtil
 
         #endregion // Vector3
 
+        #region Color
+
+        /// <summary>
+        /// Returns a random color.
+        /// </summary>
+        static public Color NextColor(this Random inRandom)
+        {
+            return new Color(NextFloat(inRandom), NextFloat(inRandom), NextFloat(inRandom), NextFloat(inRandom));
+        }
+
+        /// <summary>
+        /// Returns a random color between the given colors.
+        /// </summary>
+        static public Color NextColor(this Random inRandom, Color inStart, Color inEnd)
+        {
+            return new Color(inRandom.NextFloat(inStart.r, inEnd.r), inRandom.NextFloat(inStart.g, inEnd.g), inRandom.NextFloat(inStart.b, inEnd.b), inRandom.NextFloat(inStart.a, inEnd.a));
+        }
+
+        /// <summary>
+        /// Returns a random color on the given gradient.
+        /// </summary>
+        static public Color NextColor(this Random inRandom, Gradient inGradient)
+        {
+            return inGradient.Evaluate(inRandom.NextFloat());
+        }
+
+        #endregion // Color
+
         #region Collections
 
         /// <summary>
@@ -335,11 +374,21 @@ namespace BeauUtil
         /// <summary>
         /// Returns a random element from the given list.
         /// </summary>
-        static public T Choose<T>(this Random inRandom, IList<T> inChoices)
+        static public T Choose<T>(this Random inRandom, IReadOnlyList<T> inChoices)
         {
             if (inChoices.Count == 0)
                 throw new IndexOutOfRangeException();
             return inChoices[inRandom.Next(inChoices.Count)];
+        }
+
+        /// <summary>
+        /// Returns a random element from the given array.
+        /// </summary>
+        static public T Choose<T>(this Random inRandom, T[] inChoices)
+        {
+            if (inChoices.Length == 0)
+                throw new IndexOutOfRangeException();
+            return inChoices[inRandom.Next(inChoices.Length)];
         }
 
         /// <summary>

@@ -16,7 +16,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<Type> FindAllDerivedTypes(Type inType)
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindDerivedTypes(inType, AppDomain.CurrentDomain.GetAssemblies());
+        }
+
+        /// <summary>
+        /// Returns all derived types of the given type in the given assemblies.
+        /// </summary>
+        static public IEnumerable<Type> FindDerivedTypes(Type inType, IEnumerable<Assembly> inAssemblies)
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var derivedType in FindDerivedTypes(inType, assembly))
                     yield return derivedType;
@@ -28,7 +36,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<Type> FindDerivedTypes(Type inType, Assembly inAssembly)
         {
-            foreach (var type in inAssembly.GetTypes())
+            return FindDerivedTypes(inType, inAssembly.GetTypes());
+        }
+
+        /// <summary>
+        /// Returns all derived types of the given type in the given types.
+        /// </summary>
+        static public IEnumerable<Type> FindDerivedTypes(Type inType, IEnumerable<Type> inTypes)
+        {
+            foreach (var type in inTypes)
             {
                 if (inType.IsAssignableFrom(type))
                     yield return type;
@@ -55,6 +71,26 @@ namespace BeauUtil
             }
         }
 
+        /// <summary>
+        /// Returns if the given attribute is defined on the given member.
+        /// </summary>
+        static public bool IsDefined<TAttribute>(ICustomAttributeProvider inInfo, bool inbInherit = false) where TAttribute : Attribute
+        {
+            return inInfo.IsDefined(typeof(TAttribute), inbInherit);
+        }
+
+        /// <summary>
+        /// Returns the first attribute defined on the given member.
+        /// </summary>
+        static public TAttribute GetAttribute<TAttribute>(ICustomAttributeProvider inInfo, bool inbInherit = false) where TAttribute : Attribute
+        {
+            var customAttributes = inInfo.GetCustomAttributes(typeof(TAttribute), inbInherit);
+            if (customAttributes != null && customAttributes.Length > 0)
+                return (TAttribute) customAttributes[0];
+
+            return null;
+        }
+
         #endregion // Generic Attributes
 
         #region Find Types
@@ -64,7 +100,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, Type>> FindAllTypes<TAttribute>(bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindTypes<TAttribute>(AppDomain.CurrentDomain.GetAssemblies());
+        }
+
+        /// <summary>
+        /// Finds all types in the given assemblies with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, Type>> FindTypes<TAttribute>(IEnumerable<Assembly> inAssemblies, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var binding in FindTypes<TAttribute>(assembly, inbInherit))
                 {
@@ -78,9 +122,17 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, Type>> FindTypes<TAttribute>(Assembly inAssembly, bool inbInherit = false) where TAttribute : Attribute
         {
+            return FindTypes<TAttribute>(inAssembly.GetTypes(), inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all types in the given types with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, Type>> FindTypes<TAttribute>(IEnumerable<Type> inTypes, bool inbInherit = false) where TAttribute : Attribute
+        {
             Type attributeType = typeof(TAttribute);
 
-            foreach (var type in inAssembly.GetTypes())
+            foreach (var type in inTypes)
             {
                 if (type.IsDefined(attributeType, inbInherit))
                 {
@@ -101,7 +153,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindAllMethods<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindMethods<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all methods in the given assemblies with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindMethods<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var binding in FindMethods<TAttribute>(assembly, inFlags, inbInherit))
                 {
@@ -115,7 +175,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindMethods<TAttribute>(Assembly inAssembly, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var type in inAssembly.GetTypes())
+            return FindMethods<TAttribute>(inAssembly.GetTypes(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all methods in the given types with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindMethods<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var type in inTypes)
             {
                 foreach (var binding in FindMethods<TAttribute>(type, inFlags, inbInherit))
                 {
@@ -152,7 +220,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindAllFields<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindFields<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all fields in the given assemblies with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindFields<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var binding in FindFields<TAttribute>(assembly, inFlags, inbInherit))
                 {
@@ -166,7 +242,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindFields<TAttribute>(Assembly inAssembly, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var type in inAssembly.GetTypes())
+            return FindFields<TAttribute>(inAssembly.GetTypes(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all fields in the given types with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindFields<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var type in inTypes)
             {
                 foreach (var binding in FindFields<TAttribute>(type, inFlags, inbInherit))
                 {
@@ -203,7 +287,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindAllProperties<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindProperties<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all properties in the given assemblies with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindProperties<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var binding in FindProperties<TAttribute>(assembly, inFlags, inbInherit))
                 {
@@ -217,7 +309,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindProperties<TAttribute>(Assembly inAssembly, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var type in inAssembly.GetTypes())
+            return FindProperties<TAttribute>(inAssembly.GetTypes(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all properties in the given types with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindProperties<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var type in inTypes)
             {
                 foreach (var binding in FindProperties<TAttribute>(type, inFlags, inbInherit))
                 {
@@ -254,7 +354,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindAllEvents<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindEvents<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all events in the given assemblies with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindEvents<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var binding in FindEvents<TAttribute>(assembly, inFlags, inbInherit))
                 {
@@ -268,7 +376,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindEvents<TAttribute>(Assembly inAssembly, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var type in inAssembly.GetTypes())
+            return FindEvents<TAttribute>(inAssembly.GetTypes(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all events in the given assembly with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindEvents<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var type in inTypes)
             {
                 foreach (var binding in FindEvents<TAttribute>(type, inFlags, inbInherit))
                 {
@@ -305,7 +421,15 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MemberInfo>> FindAllMembers<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            return FindMembers<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all members in the given assemblies with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, MemberInfo>> FindMembers<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
+            foreach (var assembly in inAssemblies)
             {
                 foreach (var binding in FindMembers<TAttribute>(assembly, inFlags, inbInherit))
                 {
@@ -319,9 +443,17 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MemberInfo>> FindMembers<TAttribute>(Assembly inAssembly, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            return FindMembers<TAttribute>(inAssembly.GetTypes(), inFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Finds all members in the given assembly with the given attribute type defined.
+        /// </summary>
+        static public IEnumerable<AttributeBinding<TAttribute, MemberInfo>> FindMembers<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
+        {
             Type attributeType = typeof(TAttribute);
 
-            foreach (var type in inAssembly.GetTypes())
+            foreach (var type in inTypes)
             {
                 foreach (var customAttribute in type.GetCustomAttributes(attributeType, inbInherit))
                 {
