@@ -7,6 +7,7 @@
  * Purpose: Methods for rendering a customized list popup field in GUILayout.
  */
 
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ namespace BeauUtil.Editor
     /// </summary>
     static public class ListGUILayout
     {
+        #region NamedItemList
+
         static public T Popup<T>(T inCurrent, NamedItemList<T> inElementList, params GUILayoutOption[] inOptions)
         {
             int currentIdx = inElementList.IndexOf(inCurrent);
@@ -48,5 +51,45 @@ namespace BeauUtil.Editor
 
             return inElementList.Get(nextIdx, inCurrent);
         }
+
+        #endregion // NamedItemList
+
+        #region String Array
+
+        static public string Popup(string inCurrent, string[] inElementList, params GUILayoutOption[] inOptions)
+        {
+            int currentIdx = Array.IndexOf(inElementList, inCurrent);
+            int nextIdx = EditorGUILayout.Popup(currentIdx, inElementList, inOptions);
+
+            return nextIdx < 0 ? inCurrent : inElementList[nextIdx];
+        }
+
+        static public string Popup(string inCurrent, string[] inElementList, GUIStyle inStyle, params GUILayoutOption[] inOptions)
+        {
+            int currentIdx = Array.IndexOf(inElementList, inCurrent);
+            int nextIdx = EditorGUILayout.Popup(currentIdx, inElementList, inStyle, inOptions);
+
+            return nextIdx < 0 ? inCurrent : inElementList[nextIdx];
+        }
+
+        static public string Popup(GUIContent inLabel, string inCurrent, string[] inElementList, params GUILayoutOption[] inOptions)
+        {
+            int currentIdx = Array.IndexOf(inElementList, inCurrent);
+            int nextIdx = EditorGUILayout.Popup(inLabel, currentIdx, inElementList, inOptions);
+
+            return nextIdx < 0 ? inCurrent : inElementList[nextIdx];
+        }
+
+        static public string Popup(GUIContent inLabel, string inCurrent, string[] inElementList, GUIStyle inStyle, params GUILayoutOption[] inOptions)
+        {
+            EditorGUILayout.PrefixLabel(inLabel);
+
+            int currentIdx = Array.IndexOf(inElementList, inCurrent);
+            int nextIdx = EditorGUILayout.Popup(currentIdx, inElementList, inStyle, inOptions);
+
+            return nextIdx < 0 ? inCurrent : inElementList[nextIdx];
+        }
+
+        #endregion // String Array
     }
 }

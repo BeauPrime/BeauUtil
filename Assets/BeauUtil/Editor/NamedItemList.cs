@@ -24,9 +24,9 @@ namespace BeauUtil.Editor
 
         private sealed class Entry : IComparable<Entry>
         {
-            public T Value;
-            public string Name;
-            public int Order;
+            public readonly T Value;
+            public readonly string Name;
+            public readonly int Order;
 
             public Entry(T inValue, string inName, int inOrder)
             {
@@ -51,7 +51,7 @@ namespace BeauUtil.Editor
 
         private GUIContent[] m_GUIContent = null;
         private string[] m_StringContent = null;
-        private bool m_RequireRefresh;
+        private bool m_RequireRefresh = true;
 
         public GUIContent[] SortedContent()
         {
@@ -63,6 +63,13 @@ namespace BeauUtil.Editor
         {
             RefreshList();
             return m_StringContent;
+        }
+
+        public NamedItemList() { }
+
+        public NamedItemList(NamedItemList<T> inSource)
+        {
+            m_Entries.AddRange(inSource.m_Entries);
         }
 
         #region Modifications

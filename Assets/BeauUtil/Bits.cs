@@ -104,5 +104,43 @@ namespace BeauUtil
             else
                 Remove(ref ioBitArray, inBitIndex);
         }
+
+        /// <summary>
+        /// Returns the bit index of the given bit array, if it contains a single set bit.
+        /// </summary>
+        static public int IndexOf(int inBitArray)
+        {
+            if (inBitArray == 0)
+                return -1;
+            if ((inBitArray & (inBitArray - 1)) != 0)
+                return -1;
+
+            int shiftCount = 0;
+            while (inBitArray != 1)
+            {
+                inBitArray >>= 1;
+                ++shiftCount;
+            }
+            return shiftCount;
+        }
+
+        /// <summary>
+        /// Returns the bit index of the given bit array, if it contains a single set bit.
+        /// </summary>
+        static public int IndexOf(uint inBitArray)
+        {
+            if (inBitArray == 0)
+                return -1;
+            if ((inBitArray & (inBitArray - 1)) != 0)
+                return -1;
+
+            int shiftCount = 0;
+            while (inBitArray != 1)
+            {
+                inBitArray >>= 1;
+                ++shiftCount;
+            }
+            return shiftCount;
+        }
     }
 }

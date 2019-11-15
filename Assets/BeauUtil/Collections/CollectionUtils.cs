@@ -15,7 +15,7 @@ namespace BeauUtil
 {
     static public class CollectionUtils
     {
-        static public void ClampRange(int inTotalLength, int inRangeStart, ref int ioRangeLength)
+        static internal void ClampRange(int inTotalLength, int inRangeStart, ref int ioRangeLength)
         {
             int maxLength = (inTotalLength - inRangeStart);
             if (ioRangeLength < 0)

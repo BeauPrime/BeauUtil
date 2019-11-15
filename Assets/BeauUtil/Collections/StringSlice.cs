@@ -57,9 +57,9 @@ namespace BeauUtil
         /// <summary>
         /// Returns if this is an empty slice.
         /// </summary>
-        public bool IsNullOrEmpty()
+        public bool IsEmpty
         {
-            return Length == 0;
+            get { return Length == 0; }
         }
 
         #region Search
@@ -98,7 +98,8 @@ namespace BeauUtil
 
             CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
-            return m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount);
+            int srcIndex = m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         public int LastIndexOf(char inItem)
@@ -118,7 +119,8 @@ namespace BeauUtil
 
             CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
-            return m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount);
+            int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         #endregion // Char
@@ -194,7 +196,8 @@ namespace BeauUtil
 
             CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
-            return m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount, StringComparison.Ordinal);
+            int srcIndex = m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount, StringComparison.Ordinal);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         public int IndexOf(string inItem, int inStartIdx, int inCount, bool inbIgnoreCase)
@@ -204,7 +207,8 @@ namespace BeauUtil
 
             CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
-            return m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount, inbIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            int srcIndex = m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount, inbIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         public int LastIndexOf(string inItem)
@@ -234,7 +238,8 @@ namespace BeauUtil
 
             CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
-            return m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount, StringComparison.Ordinal);
+            int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount, StringComparison.Ordinal);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         public int LastIndexOf(string inItem, int inStartIdx, int inCount, bool inbIgnoreCase)
@@ -244,7 +249,8 @@ namespace BeauUtil
 
             CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
-            return m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount, inbIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount, inbIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         #endregion // String
@@ -522,9 +528,9 @@ namespace BeauUtil
             return Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, false);
         }
 
-        public bool Equals(StringSlice other, bool inbMatchCase)
+        public bool Equals(StringSlice other, bool inbIgnoreCase)
         {
-            return Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, inbMatchCase);
+            return Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, inbIgnoreCase);
         }
 
         public bool Equals(string other)
@@ -535,12 +541,12 @@ namespace BeauUtil
             return Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, false);
         }
 
-        public bool Equals(string other, bool inbMatchCase)
+        public bool Equals(string other, bool inbIgnoreCase)
         {
             if (string.IsNullOrEmpty(other))
                 return Length == 0;
 
-            return Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, inbMatchCase);
+            return Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, inbIgnoreCase);
         }
 
         #endregion // IEquatable

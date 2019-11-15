@@ -142,9 +142,29 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Unpacks the given color into its separate byte components.
+        /// </summary>
+        static public void Unpack(this Color32 inColor, out byte outR, out byte outG, out byte outB, out byte outA)
+        {
+            outR = inColor.r;
+            outG = inColor.g;
+            outB = inColor.b;
+            outA = inColor.a;
+        }
+
+        /// <summary>
         /// Changes the alpha of the given color and returns it.
         /// </summary>
         static public Color WithAlpha(this Color inColor, float inAlpha)
+        {
+            inColor.a = inAlpha;
+            return inColor;
+        }
+
+        /// <summary>
+        /// Changes the alpha of the given color and returns it.
+        /// </summary>
+        static public Color32 WithAlpha(this Color32 inColor, byte inAlpha)
         {
             inColor.a = inAlpha;
             return inColor;
@@ -156,6 +176,27 @@ namespace BeauUtil
         static public Color Invert(this Color inColor)
         {
             return new Color(1 - inColor.r, 1 - inColor.g, 1 - inColor.b, inColor.a);
+        }
+
+        /// <summary>
+        /// Returns the inverted color, preserving the alpha channel.
+        /// </summary>
+        static public Color32 Invert(this Color32 inColor)
+        {
+            return new Color32((byte)(255 - inColor.r), (byte)(255 - inColor.g), (byte)(255 - inColor.b), inColor.a);
+        }
+
+        /// <summary>
+        /// Returns if two Color32s are equal.
+        /// </summary>
+        static public bool Equals32(this Color32 inColor32, Color32 inOther)
+        {
+            unsafe
+            {
+                uint a = *((uint*) (&inColor32.r));
+                uint b = *((uint*) (&inOther.r));
+                return a == b;
+            }
         }
     }
 }

@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -29,13 +30,13 @@ namespace BeauUtil.Editor
             string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(typeof(T), inName), inSearchFolders);
             if (assetGuids == null)
                 return null;
-            T[] assets = new T[assetGuids.Length];
-            for (int i = 0; i < assets.Length; ++i)
+            HashSet<T> assets = new HashSet<T>();
+            for (int i = 0; i < assetGuids.Length; ++i)
             {
                 string path = AssetDatabase.GUIDToAssetPath(assetGuids[i]);
-                assets[i] = AssetDatabase.LoadAssetAtPath<T>(path);
+                Filter<T>(path, inName, typeof(T), assets);
             }
-            return assets;
+            return GetArray(assets);
         }
 
         /// <summary>
@@ -46,13 +47,13 @@ namespace BeauUtil.Editor
             string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(inType, inName), inSearchFolders);
             if (assetGuids == null)
                 return null;
-            UnityEngine.Object[] assets = new UnityEngine.Object[assetGuids.Length];
-            for (int i = 0; i < assets.Length; ++i)
+            HashSet<UnityEngine.Object> assets = new HashSet<UnityEngine.Object>();
+            for (int i = 0; i < assetGuids.Length; ++i)
             {
                 string path = AssetDatabase.GUIDToAssetPath(assetGuids[i]);
-                assets[i] = AssetDatabase.LoadAssetAtPath(path, inType);
+                Filter<UnityEngine.Object>(path, inName, inType, assets);
             }
-            return assets;
+            return GetArray(assets);
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace BeauUtil.Editor
             if (assetGuids == null || assetGuids.Length <= 0)
                 return null;
             string path = AssetDatabase.GUIDToAssetPath(assetGuids[0]);
-            return AssetDatabase.LoadAssetAtPath(path, inType);
+            return Filter<UnityEngine.Object>(path, inName, inType);
         }
 
         #endregion // Finding Assets
@@ -104,6 +105,58 @@ namespace BeauUtil.Editor
             if (fullname.StartsWith("UnityEngine."))
                 fullname = fullname.Substring(12);
             return "t:" + fullname;
+        }
+
+        static private void Filter<T>(string inPath, string inName, Type inType, HashSet<T> outResults) where T : UnityEngine.Object
+        {
+            if (inType == typeof(UnityEngine.Object))
+            {
+                inType = null;
+            }
+
+            string lowerSearch = inName?.ToLowerInvariant();
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
+            {
+                if (inType == null || inType.IsAssignableFrom(obj.GetType()))
+                {
+                    if (!string.IsNullOrEmpty(lowerSearch) && !obj.name.ToLowerInvariant().Contains(lowerSearch))
+                        continue;
+
+                    outResults.Add((T) obj);
+                }
+            }
+        }
+
+        static private T Filter<T>(string inPath, string inName, Type inType) where T : UnityEngine.Object
+        {
+            if (inType == typeof(UnityEngine.Object))
+            {
+                inType = null;
+            }
+
+            string lowerSearch = inName?.ToLowerInvariant();
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
+            {
+                if (inType == null || inType.IsAssignableFrom(obj.GetType()))
+                {
+                    if (!string.IsNullOrEmpty(lowerSearch) && !obj.name.ToLowerInvariant().Contains(lowerSearch))
+                        continue;
+
+                    return (T) obj;
+                }
+            }
+
+            return null;
+        }
+
+        static private T[] GetArray<T>(HashSet<T> inSet)
+        {
+            if (inSet == null)
+                return null;
+
+            T[] array = new T[inSet.Count];
+            inSet.CopyTo(array);
+            return array;
         }
 
         #endregion // Filters

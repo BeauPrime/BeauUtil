@@ -319,6 +319,32 @@ namespace BeauUtil
 
         #endregion // Unescape
 
+        #region Equals
+
+        /// <summary>
+        /// Determines if two strings are equal,
+        /// treating null and string.empty as equivalent.
+        /// </summary>
+        static public bool NullEquivalentEquals(string inStringA, string inStringB)
+        {
+            inStringA = inStringA ?? string.Empty;
+            inStringB = inStringB ?? string.Empty;
+            return inStringA.Equals(inStringB);
+        }
+
+        /// <summary>
+        /// Determines if two strings are equal,
+        /// treating null and string.empty as equivalent.
+        /// </summary>
+        static public bool NullEquivalentEquals(string inStringA, string inStringB, StringComparison inComparison)
+        {
+            inStringA = inStringA ?? string.Empty;
+            inStringB = inStringB ?? string.Empty;
+            return inStringA.Equals(inStringB, inComparison);
+        }
+
+        #endregion // Equals
+
         /// <summary>
         /// CSV utils.
         /// </summary>

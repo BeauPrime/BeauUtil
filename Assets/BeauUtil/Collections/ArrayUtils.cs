@@ -17,6 +17,38 @@ namespace BeauUtil
     static public class ArrayUtils
     {
         /// <summary>
+        /// Casts an array to an array of a more derived type.
+        /// </summary>
+        static public C[] CastDown<T, C>(T[] inArray) where C : T
+        {
+            if (inArray == null)
+                return null;
+
+            C[] copy = new C[inArray.Length];
+            for (int i = 0; i < inArray.Length; ++i)
+            {
+                copy[i] = (C) inArray[i];
+            }
+            return copy;
+        }
+
+        /// <summary>
+        /// Casts an array to an array of a base type.
+        /// </summary>
+        static public C[] CastUp<T, C>(T[] inArray) where T : C
+        {
+            if (inArray == null)
+                return null;
+
+            C[] copy = new C[inArray.Length];
+            for (int i = 0; i < inArray.Length; ++i)
+            {
+                copy[i] = (C) inArray[i];
+            }
+            return copy;
+        }
+
+        /// <summary>
         /// Adds an element to the end of an array.
         /// </summary>
         static public void Add<T>(ref T[] ioArray, T inItem)

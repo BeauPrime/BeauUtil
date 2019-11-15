@@ -77,6 +77,25 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Safetly releases and switches a reference-counted object to another object.
+        /// </summary>
+        static public bool ReplaceRefCounted<T>(ref T ioObject, T inReplace, int inRefCount = 1) where T : class, IRefCounted
+        {
+            if (EqualityComparer<T>.Default.Equals(ioObject, inReplace))
+                return false;
+
+            if (ioObject != null)
+                ioObject.ReleaseRef(inRefCount);
+
+            ioObject = inReplace;
+
+            if (ioObject != null)
+                ioObject.AcquireRef(inRefCount);
+
+            return true;
+        }
+
+        /// <summary>
         /// Replaces a reference to one object with a reference to another.
         /// </summary>
         static public bool Replace<T>(ref T ioObject, T inReplace)

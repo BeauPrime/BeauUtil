@@ -13,11 +13,14 @@ using System.Collections.Generic;
 
 namespace BeauUtil
 {
+    /// <summary>
+    /// Read-only slice of a list or array.
+    /// </summary>
     public struct ListSlice<T> : IEnumerable<T>, IReadOnlyList<T>, IEquatable<ListSlice<T>>
     {
         private readonly IReadOnlyList<T> m_Source;
+        private readonly int m_StartIndex;
 
-        public readonly int StartIndex;
         public readonly int Length;
 
         public ListSlice(T[] inArray) : this(inArray, 0, inArray.Length) { }
@@ -29,7 +32,7 @@ namespace BeauUtil
             if (inArray == null)
             {
                 m_Source = null;
-                StartIndex = 0;
+                m_StartIndex = 0;
                 Length = 0;
             }
             else
@@ -37,7 +40,7 @@ namespace BeauUtil
                 CollectionUtils.ClampRange(inArray.Length, inStartIdx, ref inLength);
 
                 m_Source = inArray;
-                StartIndex = inStartIdx;
+                m_StartIndex = inStartIdx;
                 Length = inLength;
             }
         }
@@ -51,7 +54,7 @@ namespace BeauUtil
             if (inList == null)
             {
                 m_Source = null;
-                StartIndex = 0;
+                m_StartIndex = 0;
                 Length = 0;
             }
             else
@@ -59,9 +62,22 @@ namespace BeauUtil
                 CollectionUtils.ClampRange(inList.Count, inStartIdx, ref inLength);
 
                 m_Source = inList;
-                StartIndex = inStartIdx;
+                m_StartIndex = inStartIdx;
                 Length = inLength;
             }
+        }
+
+        /// <summary>
+        /// An empty slice.
+        /// </summary>
+        static public readonly ListSlice<T> Empty = default(ListSlice<T>);
+
+        /// <summary>
+        /// Returns if this is an empty slice.
+        /// </summary>
+        public bool IsEmpty
+        {
+            get { return Length == 0; }
         }
 
         #region Search
@@ -91,7 +107,7 @@ namespace BeauUtil
             var comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < inCount; ++i)
             {
-                if (comparer.Equals(m_Source[StartIndex + inStartIdx + i], inItem))
+                if (comparer.Equals(m_Source[m_StartIndex + inStartIdx + i], inItem))
                     return i;
             }
 
@@ -118,7 +134,7 @@ namespace BeauUtil
             var comparer = EqualityComparer<T>.Default;
             for (int i = inCount - 1; i >= 0; --i)
             {
-                if (comparer.Equals(m_Source[StartIndex + inStartIdx + i], inItem))
+                if (comparer.Equals(m_Source[m_StartIndex + inStartIdx + i], inItem))
                     return i;
             }
 
@@ -145,7 +161,7 @@ namespace BeauUtil
 
             for (int i = 0; i < inCount; ++i)
             {
-                inArray[inArrayIdx + i] = m_Source[StartIndex + inStartIndex + i];
+                inArray[inArrayIdx + i] = m_Source[m_StartIndex + inStartIndex + i];
             }
         }
 
@@ -159,12 +175,26 @@ namespace BeauUtil
             T[] arr = new T[Length];
             for (int i = 0; i < Length; ++i)
             {
-                arr[i] = m_Source[StartIndex + i];
+                arr[i] = m_Source[m_StartIndex + i];
             }
             return arr;
         }
 
         #endregion // Export
+
+        #region Subslice
+
+        public ListSlice<T> Slice(int inStartIdx)
+        {
+            return Slice(inStartIdx, Length - inStartIdx);
+        }
+
+        public ListSlice<T> Slice(int inStartIdx, int inLength)
+        {
+            return new ListSlice<T>(m_Source, m_StartIndex + inStartIdx, inLength);
+        }
+
+        #endregion // Subslice
 
         #region IReadOnlyList
 
@@ -174,7 +204,7 @@ namespace BeauUtil
             {
                 if (index < 0 || index >= Length)
                     throw new IndexOutOfRangeException();
-                return m_Source[StartIndex + index];
+                return m_Source[m_StartIndex + index];
             }
         }
 
@@ -187,7 +217,7 @@ namespace BeauUtil
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = 0; i < Length; ++i)
-                yield return m_Source[StartIndex + i];
+                yield return m_Source[m_StartIndex + i];
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -202,7 +232,7 @@ namespace BeauUtil
         public bool Equals(ListSlice<T> other)
         {
             return m_Source == other.m_Source &&
-                StartIndex == other.StartIndex &&
+                m_StartIndex == other.m_StartIndex &&
                 Length == other.Length;
         }
 
@@ -213,12 +243,21 @@ namespace BeauUtil
         public override bool Equals(object obj)
         {
             if (obj is ListSlice<T>)
+            {
                 return Equals((ListSlice<T>) obj);
+            }
+            if (obj is T[])
+            {
+                var arr = (T[]) obj;
+                return m_Source == arr &&
+                    m_StartIndex == 0 &&
+                    Length == arr.Length;
+            }
             if (obj is IReadOnlyList<T>)
             {
                 var list = (IReadOnlyList<T>) obj;
                 return m_Source == list &&
-                    StartIndex == 0 &&
+                    m_StartIndex == 0 &&
                     Length == list.Count;
             }
 
@@ -227,7 +266,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            int hash = StartIndex.GetHashCode() ^ Length.GetHashCode();
+            int hash = m_StartIndex.GetHashCode() ^ Length.GetHashCode();
             if (m_Source != null)
                 hash = (hash << 2) ^ m_Source.GetHashCode();
             return hash;
@@ -241,6 +280,16 @@ namespace BeauUtil
         static public bool operator !=(ListSlice<T> inA, ListSlice<T> inB)
         {
             return inA.Equals(inB);
+        }
+
+        static public implicit operator ListSlice<T>(T[] inArray)
+        {
+            return new ListSlice<T>(inArray);
+        }
+
+        static public implicit operator ListSlice<T>(List<T> inList)
+        {
+            return new ListSlice<T>(inList);
         }
 
         #endregion // Overrides
