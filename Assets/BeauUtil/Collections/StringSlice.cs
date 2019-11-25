@@ -41,8 +41,6 @@ namespace BeauUtil
             }
             else
             {
-                CollectionUtils.ClampRange(inString.Length, inStartIdx, ref inLength);
-
                 m_Source = inString;
                 m_StartIndex = inStartIdx;
                 Length = inLength;
@@ -96,28 +94,24 @@ namespace BeauUtil
             if (m_Source == null)
                 return -1;
 
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
-
             int srcIndex = m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         public int LastIndexOf(char inItem)
         {
-            return LastIndexOf(inItem, 0, Length);
+            return LastIndexOf(inItem, Length - 1, Length);
         }
 
         public int LastIndexOf(char inItem, int inStartIdx)
         {
-            return LastIndexOf(inItem, inStartIdx, Length - inStartIdx);
+            return LastIndexOf(inItem, inStartIdx, inStartIdx + 1);
         }
 
         public int LastIndexOf(char inItem, int inStartIdx, int inCount)
         {
             if (m_Source == null)
                 return -1;
-
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
             int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
@@ -194,8 +188,6 @@ namespace BeauUtil
             if (m_Source == null || inItem == null)
                 return -1;
 
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
-
             int srcIndex = m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount, StringComparison.Ordinal);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
@@ -205,38 +197,34 @@ namespace BeauUtil
             if (m_Source == null || inItem == null)
                 return -1;
 
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
-
             int srcIndex = m_Source.IndexOf(inItem, m_StartIndex + inStartIdx, inCount, inbIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
         public int LastIndexOf(string inItem)
         {
-            return LastIndexOf(inItem, 0, Length);
+            return LastIndexOf(inItem, Length - 1, Length);
         }
 
         public int LastIndexOf(string inItem, bool inbIgnoreCase)
         {
-            return LastIndexOf(inItem, 0, Length, inbIgnoreCase);
+            return LastIndexOf(inItem, Length - 1, Length, inbIgnoreCase);
         }
 
         public int LastIndexOf(string inItem, int inStartIdx)
         {
-            return LastIndexOf(inItem, inStartIdx, Length - inStartIdx);
+            return LastIndexOf(inItem, inStartIdx, inStartIdx + 1);
         }
 
         public int LastIndexOf(string inItem, int inStartIdx, bool inbIgnoreCase)
         {
-            return LastIndexOf(inItem, inStartIdx, Length - inStartIdx, inbIgnoreCase);
+            return LastIndexOf(inItem, inStartIdx, inStartIdx + 1, inbIgnoreCase);
         }
 
         public int LastIndexOf(string inItem, int inStartIdx, int inCount)
         {
             if (m_Source == null || inItem == null)
                 return -1;
-
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
             int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount, StringComparison.Ordinal);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
@@ -246,8 +234,6 @@ namespace BeauUtil
         {
             if (m_Source == null || inItem == null)
                 return -1;
-
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
 
             int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount, inbIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
@@ -420,11 +406,7 @@ namespace BeauUtil
 
         public void CopyTo(int inStartIndex, char[] inArray, int inArrayIdx, int inCount)
         {
-            CollectionUtils.ClampRange(Length, inStartIndex, ref inCount);
-
-            int destCount = inCount;
-            CollectionUtils.ClampRange(inArray.Length, inArrayIdx, ref destCount);
-            if (destCount != inCount)
+            if (inArray.Length < inCount)
                 throw new ArgumentException("Not enough room to copy " + inCount + " items to destination");
 
             for (int i = 0; i < inCount; ++i)

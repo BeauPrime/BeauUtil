@@ -37,8 +37,6 @@ namespace BeauUtil
             }
             else
             {
-                CollectionUtils.ClampRange(inArray.Length, inStartIdx, ref inLength);
-
                 m_Source = inArray;
                 m_StartIndex = inStartIdx;
                 Length = inLength;
@@ -59,8 +57,6 @@ namespace BeauUtil
             }
             else
             {
-                CollectionUtils.ClampRange(inList.Count, inStartIdx, ref inLength);
-
                 m_Source = inList;
                 m_StartIndex = inStartIdx;
                 Length = inLength;
@@ -102,8 +98,6 @@ namespace BeauUtil
             if (m_Source == null)
                 return -1;
 
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
-
             var comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < inCount; ++i)
             {
@@ -116,12 +110,12 @@ namespace BeauUtil
 
         public int LastIndexOf(T inItem)
         {
-            return LastIndexOf(inItem, 0, Length);
+            return LastIndexOf(inItem, Length - 1, Length);
         }
 
         public int LastIndexOf(T inItem, int inStartIdx)
         {
-            return LastIndexOf(inItem, inStartIdx, Length - inStartIdx);
+            return LastIndexOf(inItem, inStartIdx, inStartIdx + 1);
         }
 
         public int LastIndexOf(T inItem, int inStartIdx, int inCount)
@@ -129,13 +123,11 @@ namespace BeauUtil
             if (m_Source == null)
                 return -1;
 
-            CollectionUtils.ClampRange(Length, inStartIdx, ref inCount);
-
             var comparer = EqualityComparer<T>.Default;
-            for (int i = inCount - 1; i >= 0; --i)
+            for (int i = 0; i < inCount; ++i)
             {
-                if (comparer.Equals(m_Source[m_StartIndex + inStartIdx + i], inItem))
-                    return i;
+                if (comparer.Equals(m_Source[m_StartIndex + inStartIdx - i], inItem))
+                    return inStartIdx - i;
             }
 
             return -1;
@@ -152,11 +144,7 @@ namespace BeauUtil
 
         public void CopyTo(int inStartIndex, T[] inArray, int inArrayIdx, int inCount)
         {
-            CollectionUtils.ClampRange(Length, inStartIndex, ref inCount);
-
-            int destCount = inCount;
-            CollectionUtils.ClampRange(inArray.Length, inArrayIdx, ref destCount);
-            if (destCount != inCount)
+            if (inArray.Length < inCount)
                 throw new ArgumentException("Not enough room to copy " + inCount + " items to destination");
 
             for (int i = 0; i < inCount; ++i)

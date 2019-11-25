@@ -5,7 +5,7 @@
  * 
  * File:    Singleton.cs
  * Purpose: Singleton behavior.
-*/
+ */
 
 using System;
 using UnityEngine;
@@ -52,6 +52,7 @@ namespace BeauUtil
                     if (!s_Instance.IsLocalToScene)
                         s_Instance.transform.SetParent(GetRoot());
                     s_Instance.gameObject.name = typeof(SType).Name + "::Instance";
+                    s_Instance.OnAssigned();
                 }
             }
             return s_Instance;
@@ -117,6 +118,7 @@ namespace BeauUtil
                 s_Instance = (SType) this;
                 if (!IsLocalToScene)
                     transform.SetParent(GetRoot());
+                OnAssigned();
             }
             else if (!ReferenceEquals(s_Instance, this))
                 Destroy(this);
@@ -135,5 +137,10 @@ namespace BeauUtil
         {
             s_ApplicationQuitting = true;
         }
+
+        /// <summary>
+        /// Called when the instance is initialized.
+        /// </summary>
+        protected virtual void OnAssigned() { }
     }
 }
