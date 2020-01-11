@@ -102,8 +102,10 @@ namespace BeauUtil.Editor
                 return string.Empty;
 
             string fullname = inType.FullName;
-            if (fullname.StartsWith("UnityEngine."))
+            if (fullname.StartsWith("UnityEngine.") || fullname.StartsWith("UnityEditor."))
+            {
                 fullname = fullname.Substring(12);
+            }
             return "t:" + fullname;
         }
 

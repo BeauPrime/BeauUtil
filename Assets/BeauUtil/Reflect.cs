@@ -486,6 +486,170 @@ namespace BeauUtil
         #endregion // Find Members
 
         #endregion // Attributes
+
+        #region Assemblies
+
+        /// <summary>
+        /// Filter for assembly types.
+        /// </summary>
+        [Flags]
+        public enum AssemblyType
+        {
+            /// <summary>
+            /// System libraries (System.Core)
+            /// </summary>
+            System = 0x001,
+
+            /// <summary>
+            /// Microsoft libraries (mscorlib)
+            /// </summary>
+            Microsoft = 0x002,
+
+            /// <summary>
+            /// Mono libraries
+            /// </summary>
+            Mono = 0x004,
+
+            /// <summary>
+            /// NUnit libraries (nunit.framework)
+            /// </summary>
+            NUnit = 0x008,
+
+            /// <summary>
+            /// Default Unity libraries (UnityEngine, UnityEditor)
+            /// </summary>
+            Unity = 0x010,
+
+            /// <summary>
+            /// Default Unity-generated libraries (Assembly-CSharp)
+            /// </summary>
+            UnityDefaultUser = 0x020,
+
+            /// <summary>
+            /// Mask for all assemblies
+            /// </summary>
+            EmptyMask = 0,
+
+            /// <summary>
+            /// Mask for the default non-user assemblies
+            /// </summary>
+            DefaultNonUserMask = System | Microsoft | Mono | NUnit | Unity
+        }
+
+        /// <summary>
+        /// Filters all loaded assemblies by type.
+        /// </summary>
+        static public IEnumerable<Assembly> FindAllAssemblies(AssemblyType inAllowMask, AssemblyType inIgnoreMask)
+        {
+            return FindAssemblies(AppDomain.CurrentDomain.GetAssemblies(), inAllowMask, inIgnoreMask);
+        }
+
+        /// <summary>
+        /// Filters the given set of assemblies by type.
+        /// </summary>
+        static public IEnumerable<Assembly> FindAssemblies(IEnumerable<Assembly> inAssemblies, AssemblyType inAllowMask, AssemblyType inIgnoreMask)
+        {
+            foreach (var assembly in inAssemblies)
+            {
+                if (!CheckAssemblyAgainstFilters(assembly, inAllowMask, inIgnoreMask))
+                    continue;
+
+                yield return assembly;
+            }
+        }
+
+        static private bool CheckAssemblyAgainstFilters(Assembly inAssembly, AssemblyType inAllowMask, AssemblyType inIgnoreMask)
+        {
+            string assemblyName = inAssembly.GetName().Name;
+            if (inIgnoreMask != 0)
+            {
+                if (CheckNameAgainstFilters(assemblyName, inIgnoreMask))
+                    return false;
+            }
+            if (inAllowMask != 0)
+            {
+                if (!CheckNameAgainstFilters(assemblyName, inAllowMask))
+                    return false;
+            }
+            return true;
+        }
+
+        static private bool CheckNameAgainstFilters(string inName, AssemblyType inTypeMask)
+        {
+            if ((inTypeMask & AssemblyType.System) == AssemblyType.System)
+            {
+                if (StringUtils.WildcardMatch(inName, SystemAssemblyFilters))
+                    return true;
+            }
+            if ((inTypeMask & AssemblyType.Microsoft) == AssemblyType.Microsoft)
+            {
+                if (StringUtils.WildcardMatch(inName, MicrosoftAssemblyFilters))
+                    return true;
+            }
+            if ((inTypeMask & AssemblyType.Mono) == AssemblyType.Mono)
+            {
+                if (StringUtils.WildcardMatch(inName, MonoAssemblyFilters))
+                    return true;
+            }
+            if ((inTypeMask & AssemblyType.NUnit) == AssemblyType.NUnit)
+            {
+                if (StringUtils.WildcardMatch(inName, NUnitAssemblyFilters))
+                    return true;
+            }
+            if ((inTypeMask & AssemblyType.Unity) == AssemblyType.Unity)
+            {
+                if (StringUtils.WildcardMatch(inName, UnityAssemblyFilters))
+                    return true;
+            }
+            if ((inTypeMask & AssemblyType.UnityDefaultUser) == AssemblyType.UnityDefaultUser)
+            {
+                if (StringUtils.WildcardMatch(inName, UnityDefaultUserAssemblyFilters))
+                    return true;
+            }
+
+            return false;
+        }
+
+        static private readonly string[] SystemAssemblyFilters = new string[]
+        {
+            "System",
+            "System.*",
+        };
+
+        static private readonly string[] MicrosoftAssemblyFilters = new string[]
+        {
+            "mscorlib",
+            "Microsoft.*"
+        };
+
+        static private readonly string[] MonoAssemblyFilters = new string[]
+        {
+            "Mono.*"
+        };
+
+        static private readonly string[] NUnitAssemblyFilters = new string[]
+        {
+            "nunit.framework"
+        };
+
+        static private readonly string[] UnityAssemblyFilters = new string[]
+        {
+            "Unity",
+            "Unity.*",
+            "UnityEngine",
+            "UnityEngine.*",
+            "UnityEditor",
+            "UnityEditor.*",
+            "Boo.Lang",
+            "ExCSS.Unity"
+        };
+
+        static private readonly string[] UnityDefaultUserAssemblyFilters = new string[]
+        {
+            "Assembly-*"
+        };
+
+        #endregion // Assemblies
     }
 
     /// <summary>
@@ -493,7 +657,7 @@ namespace BeauUtil
     /// </summary>
     public struct AttributeBinding<TAttribute, TInfo>
         where TAttribute : Attribute
-        where TInfo : MemberInfo
+		where TInfo : MemberInfo
     {
         public readonly TAttribute Attribute;
         public readonly TInfo Info;

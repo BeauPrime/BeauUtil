@@ -30,7 +30,7 @@ namespace BeauUtil
             /// <param name="inCharacter">Character to escape.</param>
             /// <param name="ioBuilder">Target for writing the escaped sequence.</param>
             bool TryEscape(char inCharacter, StringBuilder ioBuilder);
-            
+
             /// <summary>
             /// Attempts to unescape the given character.
             /// Should return whether or not this evaluator was able to handle the character.
@@ -344,6 +344,80 @@ namespace BeauUtil
         }
 
         #endregion // Equals
+
+        #region Pattern Matching
+
+        /// <summary>
+        /// Determines if a string matches any of the given filters.
+        /// Wildcard characters are supported at the start and end of the filter.
+        /// </summary>
+        /// <remarks>
+        /// This does not yet support wildcards in the middle of the filter.
+        /// </remarks>
+        static public bool WildcardMatch(string inString, string[] inFilters, char inWildcard = '*')
+        {
+            if (inFilters.Length == 0)
+                return false;
+
+            for (int i = 0; i < inFilters.Length; ++i)
+            {
+                if (WildcardMatch(inString, inFilters[i], inWildcard))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if a string matches the given filter.
+        /// Wildcard characters are supported at the start and end of the filter.
+        /// </summary>
+        /// <remarks>
+        /// This does not yet support wildcards in the middle of the filter.
+        /// </remarks>
+        static public bool WildcardMatch(string inString, string inFilter, char inWildcard = '*')
+        {
+            if (string.IsNullOrEmpty(inFilter))
+            {
+                return string.IsNullOrEmpty(inString);
+            }
+
+            int filterLength = inFilter.Length;
+            if (filterLength == 1 && inFilter[0] == inWildcard)
+                return true;
+
+            bool bStart = inFilter[0] == inWildcard;
+            bool bEnd = inFilter[filterLength - 1] == inWildcard;
+            if (bStart || bEnd)
+            {
+                string filterStr = inFilter;
+                int startIdx = 0;
+                if (bStart)
+                {
+                    ++startIdx;
+                    --filterLength;
+                }
+                if (bEnd)
+                {
+                    --filterLength;
+                }
+
+                filterStr = filterStr.Substring(startIdx, filterLength);
+                if (bStart && bEnd)
+                {
+                    return inString.Contains(filterStr);
+                }
+                if (bStart)
+                {
+                    return inString.EndsWith(filterStr);
+                }
+                return inString.StartsWith(filterStr);
+            }
+
+            return inString == inFilter;
+        }
+
+        #endregion // Pattern Matching
 
         /// <summary>
         /// CSV utils.

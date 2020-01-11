@@ -35,7 +35,7 @@ namespace BeauUtil
     /// <summary>
     /// Reference to an IRefCounted object.
     /// </summary>
-    public struct SharedRef<T> : IEquatable<T>, IEquatable<SharedRef<T>> where T : class, IRefCounted
+    public struct SharedRef<T> : IEquatable<T>, IEquatable<SharedRef<T>>, IDisposable where T : class, IRefCounted
     {
         private T m_Value;
 
@@ -93,6 +93,19 @@ namespace BeauUtil
         }
 
         #endregion // IEquatable
+
+        #region IDisposable
+
+        void IDisposable.Dispose()
+        {
+            if (m_Value != null)
+            {
+                m_Value.ReleaseRef();
+                m_Value = null;
+            }
+        }
+
+        #endregion // IDisposable
 
         #region Overrides
 
@@ -174,6 +187,17 @@ namespace BeauUtil
                 return;
 
             inRef.ReferenceCount -= inRefCount;
+            if (inRef.ReferenceCount == 0)
+            {
+                inRef.OnReleased();
+            }
+        }
+
+        /// <summary>
+        /// Releases the given object if its reference count is 0.
+        /// </summary>
+        static public void TryRelease(this IRefCounted inRef)
+        {
             if (inRef.ReferenceCount == 0)
             {
                 inRef.OnReleased();

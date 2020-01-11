@@ -94,6 +94,17 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Ensures a certain capacity for occupant tracking.
+        /// </summary>
+        public void EnsureOccupantCapacity(int inCapacity)
+        {
+            if (m_Occupants.Capacity < inCapacity)
+            {
+                m_Occupants.Capacity = inCapacity;
+            }
+        }
+
+        /// <summary>
         /// Returns the list of occupants.
         /// </summary>
         public IReadOnlyList<TCollider> Occupants()
