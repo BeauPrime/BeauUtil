@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017-2019. Filament Games, LLC. All rights reserved.
- * Author:  Alex Beauchesne
+ * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
  * File:    PolyRaycastFilter.cs
