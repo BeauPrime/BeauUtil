@@ -386,6 +386,9 @@ namespace BeauUtil
             if (filterLength == 1 && inFilter[0] == inWildcard)
                 return true;
 
+            if (filterLength == 2 && inFilter[0] == inWildcard && inFilter[1] == inWildcard)
+                return true;
+
             bool bStart = inFilter[0] == inWildcard;
             bool bEnd = inFilter[filterLength - 1] == inWildcard;
             if (bStart || bEnd)

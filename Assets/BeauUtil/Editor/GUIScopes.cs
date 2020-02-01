@@ -19,7 +19,7 @@ namespace BeauUtil.Editor
         /// </summary>
         public class LabelWidthScope : GUI.Scope
         {
-            private float m_LastLabelWidth;
+            private readonly float m_LastLabelWidth;
 
             public LabelWidthScope(float inNewWidth)
             {
@@ -38,7 +38,7 @@ namespace BeauUtil.Editor
         /// </summary>
         public class IndentLevelScope : GUI.Scope
         {
-            private int m_LastIndent;
+            private readonly int m_LastIndent;
 
             public IndentLevelScope(int inIndentChange)
             {
@@ -73,6 +73,25 @@ namespace BeauUtil.Editor
             {
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>
+        /// Changes the GUI color.
+        /// </summary>
+        public class ColorScope : GUI.Scope
+        {
+            private readonly Color m_LastColor;
+
+            public ColorScope(Color inColor)
+            {
+                m_LastColor = GUI.color;
+                GUI.color = inColor;
+            }
+
+            protected override void CloseScope()
+            {
+                GUI.color = m_LastColor;
             }
         }
     }

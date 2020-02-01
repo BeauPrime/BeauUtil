@@ -4,24 +4,24 @@ using UnityEngine;
 
 namespace BeauUtil.Editor
 {
-    [CustomPropertyDrawer(typeof(EditModeOnlyAttribute), true)]
-    internal sealed class EditModeOnlyPropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(PrefabModeOnlyAttribute), true)]
+    internal sealed class PrefabModeOnlyPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            EditModeOnlyAttribute attr = (EditModeOnlyAttribute) attribute;
+            PrefabModeOnlyAttribute attr = (PrefabModeOnlyAttribute) attribute;
             if (attr.Hide)
             {
-                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                if (!IsPrefab(property))
                     return;
-                    
+                
                 label = EditorGUI.BeginProperty(position, label, property);
                 EditorGUI.PropertyField(position, property, label, true);
                 EditorGUI.EndProperty();
             }
             else
             {
-                using(new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
+                using(new EditorGUI.DisabledScope(!IsPrefab(property)))
                 {
                     label = EditorGUI.BeginProperty(position, label, property);
                     EditorGUI.PropertyField(position, property, label, true);
@@ -32,13 +32,18 @@ namespace BeauUtil.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            EditModeOnlyAttribute attr = (EditModeOnlyAttribute) attribute;
-            if (attr.Hide && !EditorApplication.isPlayingOrWillChangePlaymode)
+            PrefabModeOnlyAttribute attr = (PrefabModeOnlyAttribute) attribute;
+            if (attr.Hide && !IsPrefab(property))
             {
                 return 0;
             }
 
             return EditorGUI.GetPropertyHeight(property, label, true);
+        }
+
+        static private bool IsPrefab(SerializedProperty property)
+        {
+            return SerializedObjectUtils.IsEditingPrefab(property);
         }
     }
 }

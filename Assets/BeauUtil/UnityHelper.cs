@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -18,6 +19,30 @@ namespace BeauUtil
     /// </summary>
     static public class UnityHelper
     {
+        #region Null Helper
+
+        /// <summary>
+        /// Returns if the given object is null by reference.
+        /// Avoids calling Unity's overridden equality operator.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool IsReferenceNull(this UnityEngine.Object inObject)
+        {
+            return System.Object.ReferenceEquals(inObject, null);
+        }
+
+        /// <summary>
+        /// Returns if the given object is equal by reference to another object.
+        /// Avoids calling Unity's overridden equality operator.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool IsReferenceEquals(this UnityEngine.Object inObject, UnityEngine.Object inOther)
+        {
+            return System.Object.ReferenceEquals(inObject, inOther);
+        }
+
+        #endregion // Null Helper
+
         #region SafeDestroy
 
         /// <summary>

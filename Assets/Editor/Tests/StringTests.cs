@@ -105,5 +105,19 @@ namespace BeauUtil.UnitTests
 
             Assert.AreEqual("Trim Me", trimmed.ToString());
         }
+
+        [Test]
+        public void CanMatchWildcardStrings()
+        {
+            string firstString = "Some things are better left unsaid.";
+
+            Assert.True(StringUtils.WildcardMatch(firstString, "*"), "Single wildcard match does not work");
+            Assert.True(StringUtils.WildcardMatch(firstString, "**"), "All wildcard match does not work");
+            Assert.False(StringUtils.WildcardMatch(firstString, "unsaid"), "Non-wildcard match does not work");
+            Assert.True(StringUtils.WildcardMatch(firstString, "*unsaid."), "Cannot test leading wildcard");
+            Assert.True(StringUtils.WildcardMatch(firstString, "Some*"), "Cannot test trailing wildcard");
+            Assert.True(StringUtils.WildcardMatch(firstString, "* things*"), "Cannot test leading and trailing wildcard combination");
+            Assert.False(StringUtils.WildcardMatch(firstString, "* things w*"), "Cannot test leading and trailing wildcard combination");
+        }
     }
 }
