@@ -14,9 +14,15 @@ using UnityEngine.Events;
 
 namespace BeauUtil
 {
-    public abstract class ColliderProxy2D : AbstractColliderProxy<Collider2D, Collision2D>
+    public abstract class ColliderProxy2D : AbstractColliderProxy<Collider2D, Collision2D, Rigidbody2D>
     {
-        protected override bool GetColliderEnabled(Collider2D inCollider) { return inCollider.enabled; }
+        protected override bool GetColliderEnabled(Collider2D inCollider) { return inCollider.enabled && inCollider.gameObject.activeInHierarchy; }
         protected override void SetColliderEnabled(Collider2D inCollider, bool inbEnabled) { inCollider.enabled = inbEnabled; }
+        protected override Rigidbody2D GetRigidbodyForCollider(Collider2D inCollider) { return inCollider.attachedRigidbody; }
+
+        protected override bool GetRigidbodyEnabled(Rigidbody2D inRigidbody)
+        {
+            return inRigidbody.gameObject.activeInHierarchy;
+        }
     }
 }

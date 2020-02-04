@@ -14,10 +14,25 @@ using UnityEngine.Events;
 
 namespace BeauUtil
 {
-    public abstract class AbstractColliderProxy<TCollider, TCollision> : MonoBehaviour where TCollider : Component
+    public abstract class AbstractColliderProxy<TCollider, TCollision, TRigidbody> : MonoBehaviour where TCollider : Component where TRigidbody : Component
     {
         private const string TrackTooltipString = "If checked, colliders that get disabled or destroyed will still dispatch their appropriate On_Exit messages" +
             "\nUncheck if you want the default behavior.";
+
+        /// <summary>
+        /// Object occupying this collider proxy.
+        /// </summary>
+        public struct Occupant
+        {
+            public readonly TCollider Collider;
+            public readonly TRigidbody Rigidbody;
+
+            internal Occupant(TCollider inCollider, TRigidbody inRigidbody)
+            {
+                Collider = inCollider;
+                Rigidbody = inRigidbody;
+            }
+        }
 
         #region Types
 
@@ -43,7 +58,7 @@ namespace BeauUtil
 
         #endregion // Inspector
 
-        [NonSerialized] protected List<TCollider> m_Occupants = new List<TCollider>();
+        [NonSerialized] protected List<Occupant> m_Occupants = new List<Occupant>();
 
         #region Unity Events
 
@@ -107,7 +122,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the list of occupants.
         /// </summary>
-        public IReadOnlyList<TCollider> Occupants()
+        public IReadOnlyList<Occupant> Occupants()
         {
             return m_Occupants;
         }
@@ -120,10 +135,13 @@ namespace BeauUtil
             if (!m_TrackOccupants)
                 return false;
 
-            if (m_Occupants.Contains(inCollider))
-                return false;
+            for (int i = m_Occupants.Count - 1; i >= 0; --i)
+            {
+                if (m_Occupants[i].Collider == inCollider)
+                    return false;
+            }
 
-            m_Occupants.Add(inCollider);
+            m_Occupants.Add(new Occupant(inCollider, GetRigidbodyForCollider(inCollider)));
             return true;
         }
 
@@ -135,7 +153,16 @@ namespace BeauUtil
             if (!m_TrackOccupants)
                 return false;
 
-            return m_Occupants.Remove(inCollider);
+            for (int i = m_Occupants.Count - 1; i >= 0; --i)
+            {
+                if (m_Occupants[i].Collider.IsReferenceEquals(inCollider))
+                {
+                    m_Occupants.RemoveAt(i);
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         /// <summary>
@@ -156,12 +183,20 @@ namespace BeauUtil
 
         protected void DiscardDeactivatedOccupants()
         {
+            Occupant occupant;
+            TCollider collider;
+            TRigidbody rigidbody;
             for (int i = m_Occupants.Count - 1; i >= 0; --i)
             {
-                TCollider occupant = m_Occupants[i];
-                if (!occupant || !GetColliderEnabled(occupant) || !occupant.gameObject.activeInHierarchy)
+                occupant = m_Occupants[i];
+                collider = occupant.Collider;
+                rigidbody = occupant.Rigidbody;
+
+                if (!collider || !GetColliderEnabled(collider) ||
+                    GetRigidbodyForCollider(collider) != rigidbody ||
+                    (!rigidbody.IsReferenceNull() && (!rigidbody || !GetRigidbodyEnabled(rigidbody))))
                 {
-                    OnOccupantDiscarded(occupant);
+                    OnOccupantDiscarded(collider);
                     m_Occupants.RemoveAt(i);
                 }
             }
@@ -171,7 +206,7 @@ namespace BeauUtil
         {
             for (int i = 0; i < m_Occupants.Count; ++i)
             {
-                OnOccupantDiscarded(m_Occupants[i]);
+                OnOccupantDiscarded(m_Occupants[i].Collider);
             }
 
             m_Occupants.Clear();
@@ -185,6 +220,9 @@ namespace BeauUtil
 
         protected abstract bool GetColliderEnabled(TCollider inCollider);
         protected abstract void SetColliderEnabled(TCollider inCollider, bool inbEnabled);
+        protected abstract TRigidbody GetRigidbodyForCollider(TCollider inCollider);
+
+        protected abstract bool GetRigidbodyEnabled(TRigidbody inRigidbody);
 
         #endregion // Internal
 
