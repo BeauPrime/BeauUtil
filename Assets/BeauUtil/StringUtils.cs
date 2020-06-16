@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    29 Oct 2019
  * 
@@ -421,6 +421,27 @@ namespace BeauUtil
         }
 
         #endregion // Pattern Matching
+
+        #region StringBuilder
+
+        /// <summary>
+        /// Retrieves the string from the StringBuilder
+        /// and clears the StringBuilder's state.
+        /// </summary>
+        static public string Flush(this StringBuilder ioBuilder)
+        {
+            if (ioBuilder == null)
+                throw new ArgumentNullException(nameof(ioBuilder));
+
+            if (ioBuilder.Length <= 0)
+                return string.Empty;
+
+            string str = ioBuilder.ToString();
+            ioBuilder.Length = 0;
+            return str;
+        }
+
+        #endregion // StringBuilder
 
         /// <summary>
         /// CSV utils.

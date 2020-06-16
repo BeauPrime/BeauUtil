@@ -5,8 +5,7 @@ using UnityEngine;
 
 namespace BeauUtil.UnitTests
 {
-    [TestFixture]
-    public class StringTests
+    static public class StringTests
     {
         public const string UnescapedString = "This is a \"string\" that requires some escaped characters" +
             "\nIt also has some newlines";
@@ -19,7 +18,7 @@ namespace BeauUtil.UnitTests
         public const string MultiLineString = "This\nHas\n\r\nMultiple Lines";
 
         [Test]
-        public void CanEscapeString()
+        static public void CanEscapeString()
         {
             string firstString = UnescapedString;
             string escaped = StringUtils.Escape(firstString);
@@ -28,7 +27,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanUnescapeString()
+        static public void CanUnescapeString()
         {
             string firstString = EscapedString;
             string unescaped = StringUtils.Unescape(firstString);
@@ -37,7 +36,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanEscapeCSV()
+        static public void CanEscapeCSV()
         {
             string firstString = UnescapedString;
             string escaped = StringUtils.Escape(firstString, StringUtils.CSV.Escaper.Instance);
@@ -46,7 +45,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanUnescapeCSV()
+        static public void CanUnescapeCSV()
         {
             string firstString = CSVEscapedString;
             string unescaped = StringUtils.Unescape(firstString, StringUtils.CSV.Escaper.Instance);
@@ -55,7 +54,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanSplitCSV()
+        static public void CanSplitCSV()
         {
             string firstString = CSVString;
             StringSlice[] split = StringSlice.Split(firstString, new StringUtils.CSV.Splitter(true), StringSplitOptions.RemoveEmptyEntries);
@@ -67,7 +66,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanSplitOnLineBreak()
+        static public void CanSplitOnLineBreak()
         {
             string firstString = MultiLineString;
             StringSlice[] split = StringSlice.Split(firstString, new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
@@ -80,7 +79,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanTrimStart()
+        static public void CanTrimStart()
         {
             StringSlice firstString = " \nTrim Me";
             StringSlice trimmed = firstString.TrimStart();
@@ -89,7 +88,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanTrimEnd()
+        static public void CanTrimEnd()
         {
             StringSlice firstString = "Trim Me \r";
             StringSlice trimmed = firstString.TrimEnd();
@@ -98,7 +97,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanTrimBoth()
+        static public void CanTrimBoth()
         {
             StringSlice firstString = "\n \tTrim Me\t\n";
             StringSlice trimmed = firstString.Trim();
@@ -107,7 +106,7 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        public void CanMatchWildcardStrings()
+        static public void CanMatchWildcardStrings()
         {
             string firstString = "Some things are better left unsaid.";
 
@@ -118,6 +117,17 @@ namespace BeauUtil.UnitTests
             Assert.True(StringUtils.WildcardMatch(firstString, "Some*"), "Cannot test trailing wildcard");
             Assert.True(StringUtils.WildcardMatch(firstString, "* things*"), "Cannot test leading and trailing wildcard combination");
             Assert.False(StringUtils.WildcardMatch(firstString, "* things w*"), "Cannot test leading and trailing wildcard combination");
+        }
+
+        [Test]
+        static public void CanFlushStringBuilder()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append("abcd").Append("efg");
+            
+            string flushed = builder.Flush();
+            Assert.AreEqual("abcdefg", flushed);
+            Assert.LessOrEqual(builder.Length, 0);
         }
     }
 }

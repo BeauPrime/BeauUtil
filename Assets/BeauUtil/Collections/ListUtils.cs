@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    9 Dec 2019
  * 
@@ -36,7 +36,7 @@ namespace BeauUtil
         /// Removes an element from the given list by swapping.
         /// Does not preserve order.
         /// </summary>
-        static public void FastRemoveAt<T>(List<T> ioList, int inIndex)
+        static public void FastRemoveAt<T>(IList<T> ioList, int inIndex)
         {
             int end = ioList.Count - 1;
             if (inIndex != end)

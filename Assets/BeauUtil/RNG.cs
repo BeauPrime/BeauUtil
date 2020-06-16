@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
@@ -54,7 +54,7 @@ namespace BeauUtil
         /// </summary>
         static public float NextFloat(this Random inRandom)
         {
-            return (float) inRandom.NextDouble();
+            return (float)inRandom.NextDouble();
         }
 
         /// <summary>
@@ -108,6 +108,43 @@ namespace BeauUtil
             return Chance(inRandom, 0.5f) ? -1 : 1;
         }
 
+        #region Bell
+
+        /// <summary>
+        /// Returns a random value, distributed with a bell curve in the given range.
+        /// </summary>
+        static public float BellCurve(this Random inRandom, float inMin, float inMax, int inCount = 3)
+        {
+            return BellCurve(inRandom, inMin, inMax, inMin, inMax, inCount);
+        }
+
+        /// <summary>
+        /// Returns a random value, distributed with a bell curve in the given range.
+        /// </summary>
+        static public float BellCurve(this Random inRandom, float inMin, float inMax, float inOutMin, float inOutMax, int inCount = 3)
+        {
+            int i;
+            float result;
+            do
+            {
+                result = 0;
+                for (i = 0; i < inCount; ++i)
+                {
+                    result += NextFloat(inRandom, inMin, inMax);
+                }
+                if (result < 0)
+                {
+                    result -= (inCount - 1);
+                }
+                result /= inCount;
+            }
+            while(result < inOutMin || result > inOutMax);
+            
+            return result;
+        }
+
+        #endregion // Bell
+
         #region Vector2
 
         /// <summary>
@@ -128,11 +165,11 @@ namespace BeauUtil
             float x = NextFloat(inRandom) - 0.5f;
             float y = NextFloat(inRandom) - 0.5f;
 
-            float magnitude = (float) Math.Sqrt(x * x + y * y);
+            float magnitude = (float)Math.Sqrt(x * x + y * y);
             x /= magnitude;
             y /= magnitude;
 
-            float c = (float) Math.Sqrt(NextFloat(inRandom, inMinDistance * inMinDistance, inMaxDistance * inMaxDistance));
+            float c = (float)Math.Sqrt(NextFloat(inRandom, inMinDistance * inMinDistance, inMaxDistance * inMaxDistance));
 
             return new Vector2(c * x, c * y);
         }
@@ -169,19 +206,19 @@ namespace BeauUtil
                     y = inRect.yMin;
                     break;
 
-                    // left
+                // left
                 case 1:
                     x = inRect.xMin;
                     y = NextFloat(inRandom, inRect.yMin, inRect.yMax);
                     break;
 
-                    // top
+                // top
                 case 2:
                     x = NextFloat(inRandom, inRect.xMin, inRect.xMax);
                     y = inRect.yMax;
                     break;
 
-                    // right
+                // right
                 case 3:
                 default:
                     x = inRect.xMax;
@@ -215,12 +252,12 @@ namespace BeauUtil
             float y = NextFloat(inRandom) - 0.5f;
             float z = NextFloat(inRandom) - 0.5f;
 
-            float magnitude = (float) Math.Sqrt(x * x + y * y + z * z);
+            float magnitude = (float)Math.Sqrt(x * x + y * y + z * z);
             x /= magnitude;
             y /= magnitude;
             z /= magnitude;
 
-            float c = (float) Math.Pow(NextFloat(inRandom, inMinDistance * inMinDistance * inMinDistance, inMaxDistance * inMaxDistance * inMaxDistance), 1f / 3);
+            float c = (float)Math.Pow(NextFloat(inRandom, inMinDistance * inMinDistance * inMinDistance, inMaxDistance * inMaxDistance * inMaxDistance), 1f / 3);
 
             return new Vector3(c * x, c * y, c * z);
         }
@@ -261,35 +298,35 @@ namespace BeauUtil
                     z = NextFloat(inRandom, min.z, max.z);
                     break;
 
-                    // left
+                // left
                 case 1:
                     x = min.x;
                     y = NextFloat(inRandom, min.y, max.y);
                     z = NextFloat(inRandom, min.z, max.z);
                     break;
 
-                    // front
+                // front
                 case 2:
                     x = NextFloat(inRandom, min.x, max.x);
                     y = NextFloat(inRandom, min.y, max.y);
                     z = min.z;
                     break;
 
-                    // right
+                // right
                 case 3:
                     x = max.x;
                     y = NextFloat(inRandom, min.y, max.y);
                     z = NextFloat(inRandom, min.z, max.z);
                     break;
 
-                    // back
+                // back
                 case 4:
                     x = NextFloat(inRandom, min.x, max.x);
                     y = NextFloat(inRandom, min.y, max.y);
                     z = max.z;
                     break;
 
-                    // top
+                // top
                 case 5:
                 default:
                     x = NextFloat(inRandom, min.x, max.x);
@@ -392,6 +429,16 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns a random element from the given set.
+        /// </summary>
+        static public T Choose<T>(this Random inRandom, WeightedSet<T> inChoices)
+        {
+            if (inChoices.Count == 0)
+                throw new IndexOutOfRangeException();
+            return inChoices.GetItemNormalized(inRandom.NextFloat());
+        }
+
+        /// <summary>
         /// Shuffles the given list.
         /// </summary>
         static public void Shuffle<T>(this Random inRandom, IList<T> inList)
@@ -422,6 +469,21 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Shuffles the given array.
+        /// </summary>
+        static public void Shuffle<T>(this Random inRandom, IRingBuffer<T> inBuffer)
+        {
+            int i = inBuffer.Count;
+            int j;
+            while (--i > 0)
+            {
+                T old = inBuffer[i];
+                inBuffer[i] = inBuffer[j = inRandom.Next(i + 1)];
+                inBuffer[j] = old;
+            }
+        }
+
+        /// <summary>
         /// Shuffles a region within the given list.
         /// </summary>
         static public void Shuffle<T>(this Random inRandom, IList<T> inList, int inIndex, int inLength)
@@ -448,6 +510,21 @@ namespace BeauUtil
                 T old = inArray[i];
                 inArray[i] = inArray[j = inRandom.Next(inIndex, i + 1)];
                 inArray[j] = old;
+            }
+        }
+
+        /// <summary>
+        /// Shuffles a region within the given array.
+        /// </summary>
+        static public void Shuffle<T>(this Random inRandom, IRingBuffer<T> inBuffer, int inIndex, int inLength)
+        {
+            int i = Math.Min(inIndex + inLength, inBuffer.Count);
+            int j;
+            while (--i > inIndex)
+            {
+                T old = inBuffer[i];
+                inBuffer[i] = inBuffer[j = inRandom.Next(inIndex, i + 1)];
+                inBuffer[j] = old;
             }
         }
 

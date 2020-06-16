@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    24 Oct 2019
  * 
@@ -127,6 +127,25 @@ namespace BeauUtil
                 Array.Copy(ioArray, inIndex + 1, newArr, inIndex, ioArray.Length - inIndex - 1);
 
             ioArray = newArr;
+        }
+
+        /// <summary>
+        /// Removes the element at the given index by swapping it with the last element.
+        /// </summary>
+        static public void FastRemoveAt<T>(ref T[] ioArray, ref int ioLength, int inIndex)
+        {
+            if (ioArray == null || inIndex < 0 || inIndex >= ioLength)
+                return;
+
+            int end = ioLength - 1;
+            if (inIndex != end)
+            {
+                T endCopy = ioArray[end];
+                ioArray[end] = ioArray[inIndex];
+                ioArray[inIndex] = endCopy;
+            }
+
+            --ioLength;
         }
 
         /// <summary>

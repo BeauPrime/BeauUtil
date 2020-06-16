@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
@@ -13,7 +13,7 @@ namespace BeauUtil
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Renderer))]
-    [AddComponentMenu("Filament/Rendering/Set Renderer Layer")]
+    [AddComponentMenu("BeauUtil/Rendering/Set Renderer Layer")]
     public sealed class SetRendererLayer : MonoBehaviour
     {
         #region Inspector

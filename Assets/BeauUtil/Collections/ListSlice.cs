@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    24 Oct 2019
  * 
@@ -278,6 +278,11 @@ namespace BeauUtil
         static public implicit operator ListSlice<T>(List<T> inList)
         {
             return new ListSlice<T>(inList);
+        }
+
+        static public implicit operator ListSlice<T>(RingBuffer<T> inBuffer)
+        {
+            return new ListSlice<T>(inBuffer);
         }
 
         #endregion // Overrides

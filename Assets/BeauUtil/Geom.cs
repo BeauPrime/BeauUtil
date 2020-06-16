@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
@@ -252,6 +252,35 @@ namespace BeauUtil
         /// Determines if a point is within the given polygon, assuming no holes.
         /// </summary>
         static public bool PointInPolygon(Vector2 inTest, IList<Vector2> inVertices)
+        {
+            int i, j;
+            bool check = false;
+
+            int numVerts = inVertices.Count;
+            float testX = inTest.x;
+            float testY = inTest.y;
+
+            float iX, iY, jX, jY;
+
+            for (i = 0, j = numVerts - 1; i < numVerts; j = i++)
+            {
+                iX = inVertices[i].x;
+                iY = inVertices[i].y;
+                jX = inVertices[j].x;
+                jY = inVertices[j].y;
+
+                if ((iY > testY) != (jY > testY) &&
+                    (testX < (jX - iX) * (testY - iY) / (jY - iY) + iX))
+                    check = !check;
+            }
+
+            return check;
+        }
+
+        /// <summary>
+        /// Determines if a point is within the given polygon, assuming no holes.
+        /// </summary>
+        static public bool PointInPolygon(Vector2 inTest, IReadOnlyList<Vector2> inVertices)
         {
             int i, j;
             bool check = false;

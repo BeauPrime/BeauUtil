@@ -16,7 +16,18 @@ namespace BeauUtil.Editor
 
             GUIContent newLabel = new GUIContent(label);
 
-            newLabel.text = keyProp.stringValue;
+            switch(keyProp.propertyType)
+            {
+                case SerializedPropertyType.String:
+                case SerializedPropertyType.Integer:
+                case SerializedPropertyType.Float:
+                case SerializedPropertyType.LayerMask:
+                case SerializedPropertyType.Character:
+                case SerializedPropertyType.Enum:
+                    newLabel.text = keyProp.stringValue;
+                    break;
+            }
+
             if (string.IsNullOrEmpty(newLabel.text))
             {
                 newLabel.text = label.text;

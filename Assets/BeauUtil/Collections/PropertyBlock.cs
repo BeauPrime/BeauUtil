@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020. Filament Games, LLC. All rights reserved.
+ * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    2 May 2019
  * 
@@ -570,8 +570,8 @@ namespace BeauUtil
                 foreach (var field in m_Fields)
                     duplicatedList.Add(field.Clone());
                 block.m_Fields = duplicatedList;
-                block.m_Prototype = m_Prototype;
             }
+            block.m_Prototype = m_Prototype;
             return block;
         }
 
