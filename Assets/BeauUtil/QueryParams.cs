@@ -218,18 +218,18 @@ namespace BeauUtil
         static private string EscapeURL(string inUrl)
         {
             #if USE_WEBREQUEST
-            return UnityEngine.Networking.UnityWebRequest.UnEscapeURL(inUrl);
+            return UnityEngine.Networking.UnityWebRequest.EscapeURL(inUrl);
             #else
-            return UnityEngine.WWW.UnEscapeURL(inUrl);
+            return UnityEngine.WWW.EscapeURL(inUrl);
             #endif // USE_WEBREQUEST
         }
 
         static private string UnEscapeURL(string inUrl)
         {
             #if USE_WEBREQUEST
-            return UnityEngine.Networking.UnityWebRequest.EscapeURL(inUrl);
+            return UnityEngine.Networking.UnityWebRequest.UnEscapeURL(inUrl);
             #else
-            return UnityEngine.WWW.EscapeURL(inUrl);
+            return UnityEngine.WWW.UnEscapeURL(inUrl);
             #endif // USE_WEBREQUEST
         }
 

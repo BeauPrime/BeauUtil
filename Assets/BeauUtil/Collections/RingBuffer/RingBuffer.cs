@@ -495,14 +495,6 @@ namespace BeauUtil
         #region Sorting
 
         /// <summary>
-        /// Sorts the buffer using the default comparer.
-        /// </summary>
-        public void Sort()
-        {
-            Sort(Comparer<T>.Default);
-        }
-
-        /// <summary>
         /// Sorts the buffer using the given comparer.
         /// </summary>
         public void Sort(IComparer<T> inComparer)
@@ -516,10 +508,19 @@ namespace BeauUtil
             }
             else
             {
+				throw new NotImplementedException();
                 // TODO: Rearrange into contiguous region
                 // TODO: Sort contiguous region
                 // TODO: Reset head/tail
             }
+        }
+
+        /// <summary>
+        /// Reverses element order in the buffer.
+        /// </summary>
+        public void Reverse()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion // Sorting

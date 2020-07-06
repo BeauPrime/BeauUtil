@@ -89,6 +89,18 @@ namespace BeauUtil
         }
 
         #endregion // Peek
+
+        #region Sort
+
+        /// <summary>
+        /// Sorts the given buffer with the default comparer.
+        /// </summary>
+        static public void Sort<T>(this IRingBuffer<T> inBuffer)
+        {
+            inBuffer.Sort(Comparer<T>.Default);
+        }
+
+        #endregion // Sort
     
         #region CopyTo
 

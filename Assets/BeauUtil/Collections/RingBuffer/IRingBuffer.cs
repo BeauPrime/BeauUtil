@@ -31,6 +31,8 @@ namespace BeauUtil
 
         void RemoveFromFront(int inCount);
         void RemoveFromBack(int inCount);
+
+        void Reverse();
     }
 
     /// <summary>
@@ -64,5 +66,7 @@ namespace BeauUtil
 
         int CopyTo(T[] inDest, int inSrcIndex, int inDestIndex, int inLength);
         int CopyReversed(T[] inDest, int inSrcIndex, int inDestIndex, int inLength);
+
+        void Sort(IComparer<T> inComparer);
     }
 }
