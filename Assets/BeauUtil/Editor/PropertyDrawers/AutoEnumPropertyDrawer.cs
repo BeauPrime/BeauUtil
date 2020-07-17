@@ -25,11 +25,16 @@ namespace BeauUtil.Editor
                 return;
             }
 
-            Enum enumVal = (Enum) Enum.ToObject(enumType, property.intValue);
+            int val = property.hasMultipleDifferentValues ? int.MinValue : property.intValue;
+            Enum enumVal = (Enum) Enum.ToObject(enumType, val);
 
             label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
-            enumVal = EnumGUI.EnumField(position, label, enumVal);
-            property.intValue = Convert.ToInt32(enumVal);
+            EditorGUI.BeginChangeCheck();
+            Enum newVal = EnumGUI.EnumField(position, label, enumVal);
+            if (EditorGUI.EndChangeCheck() && newVal != enumVal)
+            {
+                property.intValue = Convert.ToInt32(newVal);
+            }
             UnityEditor.EditorGUI.EndProperty();
         }
     }

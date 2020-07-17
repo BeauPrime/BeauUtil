@@ -24,7 +24,9 @@ namespace BeauUtil.Editor
         static public void CopyFrom(this GUIContent inContent, GUIContent inSource)
         {
             if (inSource == null)
-                throw new NullReferenceException("Cannot copy from null content");
+                throw new ArgumentNullException("inSource", "Cannot copy from null source");
+            if (inContent == null)
+                throw new ArgumentNullException("inContent", "Cannot copy to null content");
 
             inContent.text = inSource.text;
             inContent.tooltip = inSource.tooltip;
@@ -36,6 +38,9 @@ namespace BeauUtil.Editor
         /// </summary>
         static public void Clear(this GUIContent inContent)
         {
+            if (inContent == null)
+                throw new ArgumentNullException("inContent", "Cannot clear null content");
+
             inContent.text = null;
             inContent.tooltip = null;
             inContent.image = null;
