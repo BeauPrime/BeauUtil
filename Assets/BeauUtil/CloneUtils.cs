@@ -17,6 +17,19 @@ namespace BeauUtil
         #region Clone
 
         /// <summary>
+        /// Returns a clone of the given object by using CopyFrom.
+        /// </summary>
+        static public T DefaultClone<T>(T inObject) where T : ICopyCloneable<T>, new()
+        {
+            if (inObject == null)
+                return default(T);
+
+            T newObj = new T();
+            newObj.CopyFrom(inObject);
+            return newObj;
+        }
+
+        /// <summary>
         /// Returns a copy of the given object.
         /// </summary>
         static public T Clone<T>(T inObject) where T : ICopyCloneable<T>

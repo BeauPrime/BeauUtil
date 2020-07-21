@@ -132,7 +132,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes the element at the given index by swapping it with the last element.
         /// </summary>
-        static public void FastRemoveAt<T>(ref T[] ioArray, ref int ioLength, int inIndex)
+        static public void FastRemoveAt<T>(T[] ioArray, ref int ioLength, int inIndex)
         {
             if (ioArray == null || inIndex < 0 || inIndex >= ioLength)
                 return;
