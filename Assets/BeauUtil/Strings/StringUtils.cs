@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -417,7 +418,73 @@ namespace BeauUtil
                 return inString.StartsWith(filterStr);
             }
 
-            return inString == inFilter;
+            return inString.Equals(inFilter, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Returns if the given string contains the given string at the given index.
+        /// </summary>
+        static public bool AttemptMatch(this string inString, int inIndex, string inMatch, bool inbIgnoreCase = false)
+        {
+            if (string.IsNullOrEmpty(inString))
+                return false;
+
+            if (string.IsNullOrEmpty(inMatch))
+                return false;
+
+            if (inIndex < 0 || inIndex + inMatch.Length > inString.Length)
+                return false;
+
+            for(int i = 0; i < inMatch.Length; ++i)
+            {
+                char a = inString[inIndex + i];
+                char b = inMatch[i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if the given StringSlice contains the given string at the given index.
+        /// </summary>
+        static public bool AttemptMatch(this StringSlice inString, int inIndex, string inMatch, bool inbIgnoreCase = false)
+        {
+            if (inString.IsEmpty)
+                return false;
+
+            if (string.IsNullOrEmpty(inMatch))
+                return false;
+
+            if (inIndex < 0 || inIndex + inMatch.Length > inString.Length)
+                return false;
+
+            for(int i = 0; i < inMatch.Length; ++i)
+            {
+                char a = inString[inIndex + i];
+                char b = inMatch[i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         #endregion // Pattern Matching
@@ -431,7 +498,7 @@ namespace BeauUtil
         static public string Flush(this StringBuilder ioBuilder)
         {
             if (ioBuilder == null)
-                throw new ArgumentNullException(nameof(ioBuilder));
+                throw new ArgumentNullException("ioBuilder");
 
             if (ioBuilder.Length <= 0)
                 return string.Empty;
@@ -439,6 +506,51 @@ namespace BeauUtil
             string str = ioBuilder.ToString();
             ioBuilder.Length = 0;
             return str;
+        }
+
+        /// <summary>
+        /// Appends a StringSlice to the given StringBuilder.
+        /// </summary>
+        static public StringBuilder Append(this StringBuilder ioBuilder, StringSlice inSlice)
+        {
+            if (ioBuilder == null)
+                throw new ArgumentNullException("ioBuilder");
+
+            inSlice.AppendTo(ioBuilder);
+            return ioBuilder;
+        }
+
+        /// <summary>
+        /// Returns if the given StringBuilder contains the given string at the given index.
+        /// </summary>
+        static public bool AttemptMatch(this StringBuilder inBuilder, int inIndex, string inMatch, bool inbIgnoreCase = false)
+        {
+            if (inBuilder == null)
+                throw new ArgumentNullException(nameof(inBuilder));
+
+            if (string.IsNullOrEmpty(inMatch))
+                return false;
+
+            if (inIndex < 0 || inIndex + inMatch.Length > inBuilder.Length)
+                return false;
+
+            for(int i = 0; i < inMatch.Length; ++i)
+            {
+                char a = inBuilder[inIndex + i];
+                char b = inMatch[i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         #endregion // StringBuilder
@@ -540,6 +652,27 @@ namespace BeauUtil
                     return false;
                 }
             }
+        }
+    
+        /// <summary>
+        /// Rich text utils.
+        /// </summary>
+        static public class RichText
+        {
+            static private readonly string[] s_KnownRichTags = new string[]
+            {
+                "align", "alpha", "color", "b", "i", "cspace", "font", "indent",
+                "line-height", "line-indent", "link", "lowercase", "uppercase", "smallcaps",
+                "margin", "mark", "mspace", "noparse", "nobr", "page", "pos",
+                "size", "space", "sprite", "s", "u", "style", "sub", "sup",
+                "voffset", "width", "material", "quad"
+            };
+
+            /// <summary>
+            /// List of all recognized rich tags.
+            /// This includes Unity's Rich Tags and TextMesh Pro's rich tags.
+            /// </summary>
+            static public IReadOnlyList<string> RecognizedRichTags { get { return s_KnownRichTags; } }
         }
     }
 }

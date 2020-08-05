@@ -41,6 +41,16 @@ namespace BeauUtil
             return System.Object.ReferenceEquals(inObject, inOther);
         }
 
+        /// <summary>
+        /// Returns if the given object reference was destroyed.
+        /// This occurs if you have a hanging reference to an object that was destroyed.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool IsReferenceDestroyed(this UnityEngine.Object inObject)
+        {
+            return !System.Object.ReferenceEquals(inObject, null) && !inObject;
+        }
+
         #endregion // Null Helper
 
         #region SafeDestroy
@@ -203,5 +213,48 @@ namespace BeauUtil
         static private List<Component> s_CachedComponentList;
 
         #endregion // GetComponentsInChildren
+        
+        #region Canvas
+
+        /// <summary>
+        /// Attempts to get the default camera used to render this canvas.
+        /// </summary>
+        static public bool TryGetCamera(this Canvas inCanvas, out Camera outCamera)
+        {
+            switch(inCanvas.renderMode)
+            {
+                case RenderMode.WorldSpace:
+                {
+                    outCamera = inCanvas.worldCamera;
+                    if (!outCamera)
+                    {
+                        return inCanvas.transform.TryGetCameraFromLayer(out outCamera);
+                    }
+
+                    return true;
+                }
+
+                case RenderMode.ScreenSpaceOverlay:
+                {
+                    outCamera = null;
+                    return true;
+                }
+
+                case RenderMode.ScreenSpaceCamera:
+                {
+                    outCamera = inCanvas.worldCamera;
+                    if (!outCamera)
+                    {
+                        outCamera = null;
+                    }
+                    return true;
+                }
+
+                default:
+                    throw new InvalidOperationException("Camera mode " + inCanvas.renderMode + " is not recognized");
+            }
+        }
+
+        #endregion // Canvas
     }
 }

@@ -27,13 +27,13 @@ namespace BeauUtil
         /// </summary>
         public readonly int Length;
 
-        public StringSlice(string inString) : this(inString, 0, inString.Length) { }
+        public StringSlice(string inString) : this(inString, 0, inString != null ? inString.Length : 0) { }
 
-        public StringSlice(string inString, int inStartIdx) : this(inString, inStartIdx, inString.Length - inStartIdx) { }
+        public StringSlice(string inString, int inStartIdx) : this(inString, inStartIdx, inString != null ? inString.Length - inStartIdx : 0) { }
 
         public StringSlice(string inString, int inStartIdx, int inLength)
         {
-            if (string.IsNullOrEmpty(inString))
+            if (string.IsNullOrEmpty(inString) || inLength <= 0)
             {
                 m_Source = null;
                 m_StartIndex = 0;
@@ -605,6 +605,14 @@ namespace BeauUtil
         #endregion // Overrides
 
         #region Internal
+
+        public void AppendTo(StringBuilder ioBuilder)
+        {
+            if (Length <= 0)
+                return;
+            
+            ioBuilder.Append(m_Source, m_StartIndex, Length);
+        }
 
         static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
         {

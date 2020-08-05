@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 
 namespace BeauUtil
 {
@@ -158,6 +159,30 @@ namespace BeauUtil
                 Array.Clear(ioArray, 0, ioArray.Length);
                 Array.Resize(ref ioArray, 0);
             }
+        }
+
+        /// <summary>
+        /// Returns if two arrays have the same content.
+        /// </summary>
+        static public bool ContentEquals<T>(T[] inA, T[] inB) where T : IEquatable<T>
+        {
+            if (inA == null)
+                return inB == null;
+            if (inB == null)
+                return false;
+
+            if (inA.Length != inB.Length)
+                return false;
+
+            var comparer = EqualityComparer<T>.Default;
+
+            for(int i = 0, len = inA.Length; i < len; ++i)
+            {
+                if (!comparer.Equals(inA[i], inB[i]))
+                    return false;
+            }
+
+            return true;
         }
     }
 }

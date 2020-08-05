@@ -60,7 +60,10 @@ namespace BeauUtil
         {
             TrackedTransform tracker = inTransform.GetComponent<TrackedTransform>();
             if (!tracker)
+            {
                 tracker = inTransform.gameObject.AddComponent<TrackedTransform>();
+                tracker.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
+            }
             return tracker;
         }
     }

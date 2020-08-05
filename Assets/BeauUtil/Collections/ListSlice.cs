@@ -23,9 +23,9 @@ namespace BeauUtil
 
         public readonly int Length;
 
-        public ListSlice(T[] inArray) : this(inArray, 0, inArray.Length) { }
+        public ListSlice(T[] inArray) : this(inArray, 0, inArray != null ? inArray.Length : 0) { }
 
-        public ListSlice(T[] inArray, int inStartIdx) : this(inArray, inStartIdx, inArray.Length - inStartIdx) { }
+        public ListSlice(T[] inArray, int inStartIdx) : this(inArray, inStartIdx, inArray != null ? inArray.Length - inStartIdx : 0) { }
 
         public ListSlice(T[] inArray, int inStartIdx, int inLength)
         {
@@ -43,9 +43,9 @@ namespace BeauUtil
             }
         }
 
-        public ListSlice(IReadOnlyList<T> inList) : this(inList, 0, inList.Count) { }
+        public ListSlice(IReadOnlyList<T> inList) : this(inList, 0, inList != null ? inList.Count : 0) { }
 
-        public ListSlice(IReadOnlyList<T> inList, int inStartIdx) : this(inList, inStartIdx, inList.Count - inStartIdx) { }
+        public ListSlice(IReadOnlyList<T> inList, int inStartIdx) : this(inList, inStartIdx, inList != null ? inList.Count - inStartIdx : 0) { }
 
         public ListSlice(IReadOnlyList<T> inList, int inStartIdx, int inLength)
         {
