@@ -106,6 +106,11 @@ namespace BeauUtil
             public PropertyName Type;
 
             /// <summary>
+            /// Indicates if this closes a previous event.
+            /// </summary>
+            public bool IsClosing;
+
+            /// <summary>
             /// String argument.
             /// </summary>
             public string StringArgument;
@@ -134,14 +139,16 @@ namespace BeauUtil
             public EventData(PropertyName inType)
             {
                 Type = inType;
+                IsClosing = false;
                 StringArgument = null;
                 NumberArgument = 0;
-                AdditionalData = null;  
+                AdditionalData = null;
             }
 
             public EventData(PropertyName inType, string inStringArg)
             {
                 Type = inType;
+                IsClosing = false;
                 StringArgument = inStringArg;
                 NumberArgument = 0;
                 AdditionalData = null;  
@@ -150,6 +157,7 @@ namespace BeauUtil
             public EventData(PropertyName inType, StringSlice inStringArg)
             {
                 Type = inType;
+                IsClosing = false;
                 StringArgument = inStringArg.ToString();
                 NumberArgument = 0;
                 AdditionalData = null;  
@@ -158,6 +166,7 @@ namespace BeauUtil
             public EventData(PropertyName inType, float inNumber)
             {
                 Type = inType;
+                IsClosing = false;
                 StringArgument = null;
                 NumberArgument = inNumber;
                 AdditionalData = null;  
@@ -166,6 +175,7 @@ namespace BeauUtil
             public EventData(PropertyName inType, INodeData inData)
             {
                 Type = inType;
+                IsClosing = false;
                 StringArgument = null;
                 NumberArgument = 0;
                 AdditionalData = inData;  
@@ -179,6 +189,7 @@ namespace BeauUtil
             public void Reset()
             {
                 Type = default(PropertyName);
+                IsClosing = false;
                 StringArgument = null;
                 NumberArgument = 0;
                 AdditionalData = null;

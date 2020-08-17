@@ -290,7 +290,7 @@ namespace BeauUtil
                         case 'u':
                             {
                                 string unicode = inString.Substring(realIdx + 1, 4);
-                                char code = (char) int.Parse(unicode, NumberStyles.AllowHexSpecifier);
+                                char code = (char)int.Parse(unicode, NumberStyles.AllowHexSpecifier);
                                 ioBuilder.Append(code);
                                 idx += 4;
                                 break;
@@ -355,14 +355,35 @@ namespace BeauUtil
         /// <remarks>
         /// This does not yet support wildcards in the middle of the filter.
         /// </remarks>
-        static public bool WildcardMatch(string inString, string[] inFilters, char inWildcard = '*')
+        static public bool WildcardMatch(StringSlice inString, string[] inFilters, char inWildcard = '*', bool inbIgnoreCase = false)
         {
             if (inFilters.Length == 0)
                 return false;
 
             for (int i = 0; i < inFilters.Length; ++i)
             {
-                if (WildcardMatch(inString, inFilters[i], inWildcard))
+                if (WildcardMatch(inString, inFilters[i], inWildcard, inbIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if a string matches any of the given filters.
+        /// Wildcard characters are supported at the start and end of the filter.
+        /// </summary>
+        /// <remarks>
+        /// This does not yet support wildcards in the middle of the filter.
+        /// </remarks>
+        static public bool WildcardMatch(StringSlice inString, ICollection<string> inFilters, char inWildcard = '*', bool inbIgnoreCase = false)
+        {
+            if (inFilters.Count == 0)
+                return false;
+
+            foreach (var filter in inFilters)
+            {
+                if (WildcardMatch(inString, filter, inWildcard, inbIgnoreCase))
                     return true;
             }
 
@@ -376,11 +397,11 @@ namespace BeauUtil
         /// <remarks>
         /// This does not yet support wildcards in the middle of the filter.
         /// </remarks>
-        static public bool WildcardMatch(string inString, string inFilter, char inWildcard = '*')
+        static public bool WildcardMatch(StringSlice inString, string inFilter, char inWildcard = '*', bool inbIgnoreCase = false)
         {
             if (string.IsNullOrEmpty(inFilter))
             {
-                return string.IsNullOrEmpty(inString);
+                return inString.IsEmpty;
             }
 
             int filterLength = inFilter.Length;
@@ -409,16 +430,16 @@ namespace BeauUtil
                 filterStr = filterStr.Substring(startIdx, filterLength);
                 if (bStart && bEnd)
                 {
-                    return inString.Contains(filterStr);
+                    return inString.Contains(filterStr, inbIgnoreCase);
                 }
                 if (bStart)
                 {
-                    return inString.EndsWith(filterStr);
+                    return inString.EndsWith(filterStr, inbIgnoreCase);
                 }
-                return inString.StartsWith(filterStr);
+                return inString.StartsWith(filterStr, inbIgnoreCase);
             }
 
-            return inString.Equals(inFilter, StringComparison.Ordinal);
+            return inString.Equals(inFilter, inbIgnoreCase);
         }
 
         /// <summary>
@@ -435,7 +456,7 @@ namespace BeauUtil
             if (inIndex < 0 || inIndex + inMatch.Length > inString.Length)
                 return false;
 
-            for(int i = 0; i < inMatch.Length; ++i)
+            for (int i = 0; i < inMatch.Length; ++i)
             {
                 char a = inString[inIndex + i];
                 char b = inMatch[i];
@@ -468,7 +489,7 @@ namespace BeauUtil
             if (inIndex < 0 || inIndex + inMatch.Length > inString.Length)
                 return false;
 
-            for(int i = 0; i < inMatch.Length; ++i)
+            for (int i = 0; i < inMatch.Length; ++i)
             {
                 char a = inString[inIndex + i];
                 char b = inMatch[i];
@@ -526,7 +547,7 @@ namespace BeauUtil
         static public bool AttemptMatch(this StringBuilder inBuilder, int inIndex, string inMatch, bool inbIgnoreCase = false)
         {
             if (inBuilder == null)
-                throw new ArgumentNullException(nameof(inBuilder));
+                throw new ArgumentNullException("inBuilder");
 
             if (string.IsNullOrEmpty(inMatch))
                 return false;
@@ -534,7 +555,7 @@ namespace BeauUtil
             if (inIndex < 0 || inIndex + inMatch.Length > inBuilder.Length)
                 return false;
 
-            for(int i = 0; i < inMatch.Length; ++i)
+            for (int i = 0; i < inMatch.Length; ++i)
             {
                 char a = inBuilder[inIndex + i];
                 char b = inMatch[i];
@@ -571,6 +592,11 @@ namespace BeauUtil
                 public Splitter(bool inbUnescape = false)
                 {
                     m_Unescape = inbUnescape;
+                }
+
+                public void Reset()
+                {
+                    m_QuoteMode = false;
                 }
 
                 public bool Evaluate(string inString, int inIndex, out int outAdvance)
@@ -653,7 +679,111 @@ namespace BeauUtil
                 }
             }
         }
-    
+
+        /// <summary>
+        /// Comma-separated argument list utils.
+        /// </summary>
+        static public class ArgsList
+        {
+            /// <summary>
+            /// String splitter for arg lists.
+            /// </summary>
+            public sealed class Splitter : StringSlice.ISplitter
+            {
+                private readonly bool m_Unescape;
+                private bool m_QuoteMode;
+
+                public Splitter(bool inbUnescape = false)
+                {
+                    m_Unescape = inbUnescape;
+                }
+
+                public void Reset()
+                {
+                    m_QuoteMode = false;
+                }
+
+                public bool Evaluate(string inString, int inIndex, out int outAdvance)
+                {
+                    outAdvance = 0;
+                    char c = inString[inIndex];
+                    if (c == ',')
+                    {
+                        return !m_QuoteMode;
+                    }
+                    if (c == '"')
+                    {
+                        if (m_QuoteMode)
+                        {
+                            if (inIndex > inString.Length && inString[inIndex - 1] == '\\')
+                            {
+                                outAdvance = 1;
+                            }
+                            else
+                            {
+                                m_QuoteMode = !m_QuoteMode;
+                            }
+                        }
+                        else
+                        {
+                            m_QuoteMode = true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                public StringSlice Process(StringSlice inSlice)
+                {
+                    StringSlice slice = inSlice.TrimStart().Trim(QuoteTrim);
+
+                    // if this contains escaped CSV sequences, unescape it here
+                    if (m_Unescape && (slice.Contains("\\") || slice.Contains("\\\"")))
+                    {
+                        return slice.Unescape(Escaper.Instance);
+                    }
+                    return slice;
+                }
+
+                static private readonly char[] QuoteTrim = { '"' };
+            }
+
+            /// <summary>
+            /// Escape/unescape for arg lists.
+            /// </summary>
+            public sealed class Escaper : ICustomEscapeEvaluator
+            {
+                static public readonly Escaper Instance = new Escaper();
+
+                public bool TryEscape(char inCharacter, StringBuilder ioBuilder)
+                {
+                    if (inCharacter == '"')
+                    {
+                        ioBuilder.Append("\\\"");
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                public bool TryUnescape(char inCharacter, string inString, int inIndex, out int outAdvance, StringBuilder ioBuilder)
+                {
+                    if (inCharacter == '\\')
+                    {
+                        if (inIndex < inString.Length - 1 && inString[inIndex + 1] == '"')
+                        {
+                            ioBuilder.Append('"');
+                            outAdvance = 1;
+                            return true;
+                        }
+                    }
+
+                    outAdvance = 0;
+                    return false;
+                }
+            }
+        }
+
         /// <summary>
         /// Rich text utils.
         /// </summary>

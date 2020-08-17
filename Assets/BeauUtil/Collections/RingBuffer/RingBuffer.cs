@@ -162,7 +162,7 @@ namespace BeauUtil
         public void SetCapacity(int inCapacity)
         {
             if (inCapacity < 0)
-                throw new ArgumentOutOfRangeException(nameof(inCapacity));
+                throw new ArgumentOutOfRangeException("inCapacity");
 
             if (m_Capacity == inCapacity)
                 return;
@@ -220,7 +220,7 @@ namespace BeauUtil
             get
             {
                 if (inIndex < 0 || inIndex >= m_Count)
-                    throw new ArgumentOutOfRangeException(nameof(inIndex));
+                    throw new ArgumentOutOfRangeException("inIndex");
                 return ref m_Data[(m_Head + inIndex) % m_Capacity];
             }
         }
@@ -235,13 +235,13 @@ namespace BeauUtil
             get
             {
                 if (inIndex < 0 || inIndex >= m_Count)
-                    throw new ArgumentOutOfRangeException(nameof(inIndex));
+                    throw new ArgumentOutOfRangeException("inIndex");
                 return m_Data[(m_Head + inIndex) % m_Capacity];
             }
             set
             {
                 if (inIndex < 0 || inIndex >= m_Count)
-                    throw new ArgumentOutOfRangeException(nameof(inIndex));
+                    throw new ArgumentOutOfRangeException("inIndex");
                 m_Data[(m_Head + inIndex) % m_Capacity] = value;
             }
         }
@@ -406,7 +406,7 @@ namespace BeauUtil
         public void FastRemoveAt(int inIndex)
         {
             if (inIndex < 0 || inIndex >= m_Count)
-                throw new ArgumentOutOfRangeException(nameof(inIndex));
+                throw new ArgumentOutOfRangeException("inIndex");
 
             int tailIdx = (m_Tail + m_Capacity - 1) % m_Capacity;
             int entryIdx = (m_Head + inIndex) % m_Capacity;
@@ -430,7 +430,7 @@ namespace BeauUtil
                 return;
 
             if (inCount < 0 || inCount > m_Count)
-                throw new ArgumentOutOfRangeException(nameof(inCount));
+                throw new ArgumentOutOfRangeException("inCount");
 
             if (inCount == m_Count)
             {
@@ -464,7 +464,7 @@ namespace BeauUtil
                 return;
 
             if (inCount < 0 || inCount > m_Count)
-                throw new ArgumentOutOfRangeException(nameof(inCount));
+                throw new ArgumentOutOfRangeException("inCount");
 
             if (inCount == m_Count)
             {
@@ -565,7 +565,7 @@ namespace BeauUtil
 #endif // EXPANDED_REFS
         {
             if (inComparer == null)
-                throw new ArgumentNullException(nameof(inComparer));
+                throw new ArgumentNullException("inComparer");
 
             if (m_Count <= 0)
                 return -1;
@@ -605,7 +605,7 @@ namespace BeauUtil
 #endif // EXPANDED_REFS
         {
             if (inComparer == null)
-                throw new ArgumentNullException(nameof(inComparer));
+                throw new ArgumentNullException("inComparer");
 
             if (m_Count <= 0)
                 return -1;
@@ -653,7 +653,7 @@ namespace BeauUtil
             get
             {
                 if (inIndex < 0 || inIndex >= m_Count)
-                    throw new ArgumentOutOfRangeException(nameof(inIndex));
+                    throw new ArgumentOutOfRangeException("inIndex");
                 return m_Data[(m_Head + inIndex) % m_Capacity];
             }
         }

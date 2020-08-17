@@ -41,7 +41,7 @@ namespace BeauUtil
         public CompareWrapper(IComparer<T> inComparer, SearchFlags inFlags)
         {
             if (inComparer == null)
-                throw new ArgumentNullException(nameof(inComparer));
+                throw new ArgumentNullException("inComparer");
             
             m_Source = inComparer;
             m_Flags = inFlags;

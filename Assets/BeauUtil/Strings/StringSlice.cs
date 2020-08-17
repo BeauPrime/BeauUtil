@@ -134,7 +134,7 @@ namespace BeauUtil
             if (m_Source == null || inItem == null)
                 return false;
 
-            return MatchStart(m_Source, m_StartIndex + Length - inItem.Length, inItem.Length, inItem, 0, inItem.Length, inbIgnoreCase);
+            return MatchStart(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
         public bool Contains(string inItem)
@@ -313,6 +313,11 @@ namespace BeauUtil
         /// </summary>
         public interface ISplitter
         {
+            /// <summary>
+            /// Resets the splitter's state.
+            /// </summary>
+            void Reset();
+
             /// <summary>
             /// Evaluates whether or not to split on a given character.
             /// </summary>
@@ -782,6 +787,8 @@ namespace BeauUtil
                 return 0;
             }
 
+            inSplitter.Reset();
+
             int startIdx = inStartIdx;
             int currentLength = 0;
             int slices = 0;
@@ -902,6 +909,8 @@ namespace BeauUtil
                 }
                 yield break;
             }
+
+            inSplitter.Reset();
 
             int startIdx = inStartIdx;
             int currentLength = 0;

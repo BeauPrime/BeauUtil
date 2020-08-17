@@ -107,14 +107,24 @@ namespace BeauUtil
             
             internal ClosingTagState CloseState;
 
-            public bool IsEnd()
+            /// <summary>
+            /// Returns if this has a closing tag at its beginning.
+            /// This is generally paired with a previous tag,
+            /// and is used to indicate the end of a region.
+            /// </summary>
+            public bool IsClosing()
             {
                 return (CloseState & ClosingTagState.Start) != 0;
             }
 
-            public bool IsSelfContained()
+            /// <summary>
+            /// Returns if this has a closing tag at its end.
+            /// This can be used to indicate the tag is
+            /// self-contained in some way.
+            /// </summary>
+            public bool IsSelfClosed()
             {
-                return CloseState == 0 || (CloseState & ClosingTagState.End) != 0;
+                return (CloseState & ClosingTagState.End) != 0;
             }
         }
 
@@ -145,7 +155,7 @@ namespace BeauUtil
         static public void ParseTag(StringSlice inSlice, IDelimiterRules inDelimiters, out TagData outTagData)
         {
             if (inDelimiters == null)
-                throw new ArgumentNullException(nameof(IDelimiterRules));
+                throw new ArgumentNullException("inDelimiters");
 
             StringSlice tag = inSlice;
             tag = tag.Trim(TagWhitespaceChars);
@@ -227,15 +237,15 @@ namespace BeauUtil
         /// </summary>
         public interface IEventProcessor
         {
-            bool TryProcess(TagData inData, out TagString.EventData outEvent);
+            bool TryProcess(TagData inData, object inContext, out TagString.EventData outEvent);
         }
 
         /// <summary>
         /// Interface for parsing replace tags.
         /// </summary>
-        public interface ITextProcessor
+        public interface IReplaceProcessor
         {
-            bool TryReplace(TagData inData, out string outReplace);
+            bool TryReplace(TagData inData, object inContext, out string outReplace);
         }
 
         #endregion // Tag Processors
@@ -247,6 +257,8 @@ namespace BeauUtil
             public StringSlice Input;
             public TagString Target;
 
+            public object Context;
+
             public StringBuilder RichOutput;
             public StringBuilder StrippedOutput;
             public StringBuilder RegenBuilder;
@@ -255,10 +267,12 @@ namespace BeauUtil
             public int RichStart;
             public int TagStart;
 
-            public void Initialize(StringSlice inInput, TagString inTarget, StringBuilder inRichOutput, StringBuilder inStrippedOutput, StringBuilder inRegenBuilder)
+            public void Initialize(StringSlice inInput, TagString inTarget, object inContext, StringBuilder inRichOutput, StringBuilder inStrippedOutput, StringBuilder inRegenBuilder)
             {
                 Input = inInput;
                 Target = inTarget;
+
+                Context = inContext;
 
                 RichOutput = inRichOutput;
                 StrippedOutput = inStrippedOutput;

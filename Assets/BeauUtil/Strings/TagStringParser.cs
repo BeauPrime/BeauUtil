@@ -24,7 +24,7 @@ namespace BeauUtil
 
         protected IDelimiterRules m_Delimiters = RichTextDelimiters;
         protected IEventProcessor m_EventProcessor;
-        protected ITextProcessor m_ReplaceProcessor;
+        protected IReplaceProcessor m_ReplaceProcessor;
 
         // string state
 
@@ -62,7 +62,7 @@ namespace BeauUtil
         /// <summary>
         /// Replace processor.
         /// </summary>
-        public ITextProcessor ReplaceProcessor
+        public IReplaceProcessor ReplaceProcessor
         {
             get { return m_ReplaceProcessor; }
             set { m_ReplaceProcessor = value; }
@@ -75,17 +75,17 @@ namespace BeauUtil
         /// <summary>
         /// Parses the given string into a TagString.
         /// </summary>
-        public TagString Parse(StringSlice inInput)
+        public TagString Parse(StringSlice inInput, object inContext = null)
         {
             TagString str = new TagString();
-            Parse(inInput, ref str);
+            Parse(inInput, ref str, inContext);
             return str;
         }
 
         /// <summary>
         /// Parses the given string into a TagString.
         /// </summary>
-        public void Parse(StringSlice inInput, ref TagString outTarget)
+        public void Parse(StringSlice inInput, ref TagString outTarget, object inContext = null)
         {
             if (outTarget == null)
             {
@@ -100,7 +100,7 @@ namespace BeauUtil
                 return;
 
             m_RichBuilder.Length = 0;
-            ProcessInput(inInput, outTarget);
+            ProcessInput(inInput, outTarget, inContext);
             outTarget.RichText = m_RichBuilder.Flush();
             outTarget.VisibleText = m_StrippedBuilder.Flush();
         }
@@ -109,7 +109,7 @@ namespace BeauUtil
 
         #region Processing
 
-        protected void ProcessInput(StringSlice inInput, TagString outTarget)
+        protected void ProcessInput(StringSlice inInput, TagString outTarget, object inContext)
         {
             bool bTrackRichText = m_Delimiters.RichText;
             bool bTrackTags = !bTrackRichText || !HasSameDelims(m_Delimiters, RichTextDelimiters);
@@ -119,11 +119,12 @@ namespace BeauUtil
                 // if we're not considering rich text, and we have no processors, there's nothing to do here
                 outTarget.AddNode(TagString.Node.TextNode((uint) inInput.Length));
                 inInput.AppendTo(m_RichBuilder);
+                inInput.AppendTo(m_StrippedBuilder);
                 return;
             }
 
             ParseState state = new ParseState();
-            state.Initialize(inInput, outTarget, m_RichBuilder, m_StrippedBuilder, m_SpliceBuilder);
+            state.Initialize(inInput, outTarget, inContext, m_RichBuilder, m_StrippedBuilder, m_SpliceBuilder);
 
             int length = state.Input.Length;
             int charIdx = 0;
@@ -141,7 +142,7 @@ namespace BeauUtil
                     else if (state.Input.AttemptMatch(charIdx, ">"))
                     {
                         StringSlice richSlice = state.Input.Substring(state.RichStart, charIdx - state.RichStart + 1);
-                        TagData richTag = ParseTag(richSlice, m_Delimiters);
+                        TagData richTag = ParseTag(richSlice, RichTextDelimiters);
 
                         CopyNonRichText(ref state, state.RichStart);
 
@@ -157,7 +158,7 @@ namespace BeauUtil
                             if (m_ReplaceProcessor != null)
                             {
                                 string replace;
-                                if (m_ReplaceProcessor.TryReplace(richTag, out replace))
+                                if (m_ReplaceProcessor.TryReplace(richTag, state.Context, out replace))
                                 {
                                     if (ContainsPotentialTags(replace, m_Delimiters))
                                     {
@@ -177,7 +178,7 @@ namespace BeauUtil
                             if (!bRichHandled && m_EventProcessor != null)
                             {
                                 TagString.EventData eventData;
-                                if (m_EventProcessor.TryProcess(richTag, out eventData))
+                                if (m_EventProcessor.TryProcess(richTag, state.Context, out eventData))
                                 {
                                     outTarget.AddEvent(eventData);
                                     SkipText(ref state, charIdx + 1);
@@ -216,7 +217,7 @@ namespace BeauUtil
                         if (m_ReplaceProcessor != null)
                         {
                             string replace;
-                            if (m_ReplaceProcessor.TryReplace(tag, out replace))
+                            if (m_ReplaceProcessor.TryReplace(tag, state.Context, out replace))
                             {
                                 if (ContainsPotentialTags(replace, m_Delimiters))
                                 {
@@ -236,7 +237,7 @@ namespace BeauUtil
                         if (!bTagHandled && m_EventProcessor != null)
                         {
                             TagString.EventData eventData;
-                            if (m_EventProcessor.TryProcess(tag, out eventData))
+                            if (m_EventProcessor.TryProcess(tag, state.Context, out eventData))
                             {
                                 outTarget.AddEvent(eventData);
                                 SkipText(ref state, charIdx + 1);
@@ -332,6 +333,29 @@ namespace BeauUtil
 
         static protected bool RecognizeRichText(TagData inData, IDelimiterRules inDelimiters)
         {
+            // recognize hex colors
+            if (inData.Id.StartsWith('#'))
+            {
+                StringSlice colorCheck = inData.Id.Substring(1);
+                if (colorCheck.Length == 6 || colorCheck.Length == 8)
+                {
+                    bool bIsColor = true;
+                    for(int i = 0; i < colorCheck.Length; ++i)
+                    {
+                        char c = char.ToLowerInvariant(colorCheck[i]);
+                        bool bIsHex = char.IsNumber(c) || (c >= 'a' && c <= 'f');
+                        if (!bIsHex)
+                        {
+                            bIsColor = false;
+                            break;
+                        }
+                    }
+
+                    if (bIsColor)
+                        return true;
+                }
+            }
+
             foreach(var tag in StringUtils.RichText.RecognizedRichTags)
             {
                 if (inData.Id.Equals(tag, true))
@@ -372,7 +396,7 @@ namespace BeauUtil
             if (inDelimiters.RichText)
             {
                 bool bIdenticalDelims = inDelimiters.TagStartDelimiter == "<" && inDelimiters.TagEndDelimiter == ">";
-                if (inSlice.Contains("<") && inSlice.Contains(">"))
+                if (inSlice.Contains("<") || inSlice.Contains(">"))
                     return true;
 
                 if (bIdenticalDelims)
