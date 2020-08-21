@@ -37,7 +37,30 @@ namespace BeauUtil
         /// Removes an element from the given list by swapping.
         /// Does not preserve order.
         /// </summary>
-        static public void FastRemoveAt<T>(IList<T> ioList, int inIndex)
+        static public bool FastRemove<T>(this IList<T> ioList, T inItem)
+        {
+            var comparer = EqualityComparer<T>.Default;
+
+            int end = ioList.Count - 1;
+            for(int index = 0; index <= end; ++index)
+            {
+                if (comparer.Equals(ioList[index], inItem))
+                {
+                    if (index != end)
+                        ioList[index] = ioList[end];
+                    ioList.RemoveAt(end);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Removes an element from the given list by swapping.
+        /// Does not preserve order.
+        /// </summary>
+        static public void FastRemoveAt<T>(this IList<T> ioList, int inIndex)
         {
             int end = ioList.Count - 1;
             if (inIndex != end)

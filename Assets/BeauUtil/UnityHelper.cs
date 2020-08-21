@@ -256,5 +256,54 @@ namespace BeauUtil
         }
 
         #endregion // Canvas
+    
+        #region Components
+
+        static public T CacheComponent<T>(this GameObject inGameObject, ref T ioComponent) where T : Component
+        {
+            if (IsReferenceNull(ioComponent))
+                ioComponent = inGameObject.GetComponent<T>();
+            return ioComponent;
+        }
+
+        static public T CacheComponent<T>(this Component inComponent, ref T ioComponent) where T : Component
+        {
+            if (IsReferenceNull(ioComponent))
+                ioComponent = inComponent.GetComponent<T>();
+            return ioComponent;
+        }
+
+        static public T EnsureComponent<T>(this GameObject inGameObject, ref T ioComponent) where T : Component
+        {
+            if (IsReferenceNull(ioComponent))
+            {
+                ioComponent = EnsureComponent<T>(inGameObject);
+            }
+            return ioComponent;
+        }
+
+        static public T EnsureComponent<T>(this Component inComponent, ref T ioComponent) where T : Component
+        {
+            if (IsReferenceNull(ioComponent))
+            {
+                ioComponent = EnsureComponent<T>(inComponent.gameObject);
+            }
+            return ioComponent;
+        }
+
+        static public T EnsureComponent<T>(this GameObject inGameObject) where T : Component
+        {
+            T component = inGameObject.GetComponent<T>();
+            if (!component)
+                component = inGameObject.AddComponent<T>();
+            return component;
+        }
+
+        static public T EnsureComponent<T>(this Component inComponent) where T : Component
+        {
+            return EnsureComponent<T>(inComponent.gameObject);
+        }
+
+        #endregion // Components
     }
 }

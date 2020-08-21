@@ -68,6 +68,76 @@ namespace BeauUtil
             );
         }
 
+        /// <summary>
+        /// Constrains a rectangle to be contained with another rectangle's edges.
+        /// </summary>
+        static public Rect Constrain(Rect inRect, Rect inRegion, RectEdges inEdges = RectEdges.All)
+        {
+            Constrain(ref inRect, inRegion, inEdges);
+            return inRect;
+        }
+
+        /// <summary>
+        /// Constrains a rectangle to be contained with another rectangle's edges.
+        /// </summary>
+        static public void Constrain(ref Rect ioRect, Rect inRegion, RectEdges inEdges = RectEdges.All)
+        {
+            if (inEdges == 0)
+                return;
+
+            float leftDist = Mathf.Max(inRegion.xMin - ioRect.xMin, 0);
+            float rightDist = Mathf.Max(ioRect.xMax - inRegion.xMax, 0);
+            float topDist = Mathf.Max(ioRect.yMax - inRegion.yMax, 0);
+            float bottomDist = Mathf.Max(inRegion.yMin - ioRect.yMin, 0);
+
+            if ((inEdges & RectEdges.Left) == 0)
+                leftDist = 0;
+            if ((inEdges & RectEdges.Right) == 0)
+                rightDist = 0;
+            if ((inEdges & RectEdges.Top) == 0)
+                topDist = 0;
+            if ((inEdges & RectEdges.Bottom) == 0)
+                bottomDist = 0;
+
+            ioRect.x += leftDist - rightDist;
+            ioRect.y += bottomDist - topDist;
+        }
+
+        /// <summary>
+        /// Constrains a position to be contained with another rectangle's edges.
+        /// </summary>
+        static public Vector2 Constrain(Vector2 inCenter, Vector2 inSize, Rect inRegion, RectEdges inEdges = RectEdges.All)
+        {
+            Constrain(ref inCenter, inSize, inRegion, inEdges);
+            return inCenter;
+        }
+
+        /// <summary>
+        /// Constrains a position to be contained with another rectangle's edges.
+        /// </summary>
+        static public void Constrain(ref Vector2 ioCenter, Vector2 inSize, Rect inRegion, RectEdges inEdges = RectEdges.All)
+        {
+            if (inEdges == 0)
+                return;
+
+            float leftDist = Mathf.Max(inRegion.xMin - (ioCenter.x - inSize.x / 2), 0);
+            float rightDist = Mathf.Max((ioCenter.x + inSize.x / 2) - inRegion.xMax, 0);
+            float topDist = Mathf.Max((ioCenter.y + inSize.y / 2) - inRegion.yMax, 0);
+            float bottomDist = Mathf.Max(inRegion.yMin - (ioCenter.y - inSize.y / 2), 0);
+
+            if ((inEdges & RectEdges.Left) == 0)
+                leftDist = 0;
+            if ((inEdges & RectEdges.Right) == 0)
+                rightDist = 0;
+            if ((inEdges & RectEdges.Top) == 0)
+                topDist = 0;
+            if ((inEdges & RectEdges.Bottom) == 0)
+                bottomDist = 0;
+
+            ioCenter.x += leftDist - rightDist;
+            ioCenter.y += bottomDist - topDist;
+        }
+
         #endregion // Rectangle
 
         #region Normals

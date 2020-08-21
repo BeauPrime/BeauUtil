@@ -28,7 +28,7 @@ namespace BeauUtil
             }
         }
 
-        #region Load/Unload
+        #region Load/Unload Events
 
         /// <summary>
         /// Delegate to execute when a scene is loaded/unloaded.
@@ -78,7 +78,7 @@ namespace BeauUtil
         static private readonly SceneComponentAction<ISceneLoadHandler> s_DispatchSceneLoad = (scene, handler) => handler.OnSceneLoad(scene);
         static private readonly SceneComponentAction<ISceneUnloadHandler> s_DispatchSceneUnload = (scene, handler) => handler.OnSceneUnload(scene);
 
-        #endregion // Load/Unload
+        #endregion // Load/Unload Events
 
         #region Scene Filtering
 
@@ -193,33 +193,9 @@ namespace BeauUtil
         #region Scene List
 
         /// <summary>
-        /// Scene categories.
-        /// </summary>
-        public enum SceneCategories : byte
-        {
-            // All Scenes in the build settings
-            Build = 0x01,
-
-            // All Loaded Scenes
-            Loaded = 0x02,
-
-            // Only the Active Scene
-            ActiveOnly = 0x04,
-
-            // Includes Ignored Scenes
-            IncludeIgnored = 0x08,
-
-            // All Loaded Scenes, including ignored ones
-            AllLoaded = Loaded | IncludeIgnored,
-
-            // All Scenes in the build settings, including ignored ones
-            AllBuild = Build | IncludeIgnored
-        }
-
-        /// <summary>
         /// Finds scenes, filtering by category.
         /// </summary>
-        static public IEnumerable<Scene> FindScenes(SceneCategories inCategories = SceneCategories.Loaded)
+        static public IEnumerable<Scene> FindScenes(SceneCategories inCategories)
         {
             bool bBuild = (inCategories & SceneCategories.Build) == SceneCategories.Build;
             bool bLoaded = (inCategories & SceneCategories.Loaded) == SceneCategories.Loaded;
@@ -260,15 +236,40 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Finds a scene, filtering by category.
+        /// </summary>
+        static public Scene FindScene(SceneCategories inCategories)
+        {
+            foreach(var scene in FindScenes(inCategories))
+                return scene;
+
+            return default(Scene);
+        }
+
+        /// <summary>
         /// Finds scenes, filtering by name and category.
         /// </summary>
-        static public IEnumerable<Scene> FindScenesByName(string inNameFilter, SceneCategories inCategories = SceneCategories.Loaded)
+        static public IEnumerable<Scene> FindScenesByName(string inNameFilter, SceneCategories inCategories)
         {
             foreach(var scene in FindScenes(inCategories))
             {
                 if (StringUtils.WildcardMatch(scene.name, inNameFilter))
                     yield return scene;
             }
+        }
+
+        /// <summary>
+        /// Finds a scene, filtering by name and category.
+        /// </summary>
+        static public Scene FindSceneByName(string inNameFilter, SceneCategories inCategories)
+        {
+            foreach(var scene in FindScenes(inCategories))
+            {
+                if (StringUtils.WildcardMatch(scene.name, inNameFilter))
+                    return scene;
+            }
+
+            return default(Scene);
         }
 
         /// <summary>
@@ -298,6 +299,26 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Gathers all scenes in the build.
+        /// </summary>
+        static public int AllBuildScenes(ICollection<Scene> outScenes, bool inbIncludeIgnored = false)
+        {
+            int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+
+            int returnedCount = 0;
+            for(int i = 0; i < buildSceneCount; ++i)
+            {
+                Scene scene = SceneManager.GetSceneByBuildIndex(i);
+                if (inbIncludeIgnored || !IsIgnored(scene))
+                {
+                    outScenes.Add(scene);
+                    ++returnedCount;
+                }
+            }
+            return returnedCount;
+        }
+
+        /// <summary>
         /// Returns all active scenes.
         /// </summary>
         static public IEnumerable<Scene> AllLoadedScenes(bool inbIncludeIgnored = false)
@@ -309,6 +330,27 @@ namespace BeauUtil
                 if (inbIncludeIgnored || !IsIgnored(scene))
                     yield return scene;
             }
+        }
+
+        /// <summary>
+        /// Returns all active scenes.
+        /// </summary>
+        static public int AllLoadedScenes(ICollection<Scene> outScenes, bool inbIncludeIgnored = false)
+        {
+            int sceneCount = SceneManager.sceneCount;
+
+            int returnedCount = 0;
+            for(int i = 0; i < sceneCount; ++i)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (inbIncludeIgnored || !IsIgnored(scene))
+                {
+                    outScenes.Add(scene);
+                    ++returnedCount;
+                }
+            }
+
+            return returnedCount;
         }
 
         #endregion // Scene List
@@ -394,5 +436,49 @@ namespace BeauUtil
         }
 
         #endregion // ForEachComponent
+    
+        #region Load Wrappers
+
+        /// <summary>
+        /// Loads a scene asynchronously, dispatching the appropriate load and unload events.
+        /// </summary>
+        static public AsyncOperation LoadAsync(Scene inScene, LoadSceneMode inMode = LoadSceneMode.Single)
+        {
+            if (!inScene.IsValid())
+            {
+                Debug.LogErrorFormat("Cannot load invalid scene '{0}'", inScene.path);
+                return null;
+            }
+            
+            if (inMode == LoadSceneMode.Single)
+            {
+                foreach(var scene in FindScenes(SceneCategories.Loaded))
+                    scene.OnUnload();
+            }
+
+            AsyncOperation loadOp = SceneManager.LoadSceneAsync(inScene.path, inMode);
+            loadOp.completed += (AsyncOperation op) =>
+            {
+                inScene.OnLoaded();
+            };
+            return loadOp;
+        }
+
+        /// <summary>
+        /// Unloads a scene asynchronously, dispatching the appropriate unload events.
+        /// </summary>
+        static public AsyncOperation UnloadAsync(Scene inScene, UnloadSceneOptions inOptions = UnloadSceneOptions.None)
+        {
+            if (!inScene.IsValid())
+            {
+                Debug.LogErrorFormat("Cannot unload invalid scene '{0}'", inScene.path);
+                return null;
+            }
+
+            inScene.OnUnload();
+            return SceneManager.UnloadSceneAsync(inScene, inOptions);
+        }
+
+        #endregion // Load Wrappers
     }
 }

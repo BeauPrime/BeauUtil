@@ -15,7 +15,7 @@ namespace BeauUtil
     /// <summary>
     /// This game object and its children will persist across scene changes.
     /// </summary>
-    [AddComponentMenu("BeauUtil/Persist")]
+    [AddComponentMenu("BeauUtil/Persist"), DisallowMultipleComponent]
     public sealed class Persist : MonoBehaviour
     {
         static private readonly HashSet<string> s_ExistingIDs = new HashSet<string>();
