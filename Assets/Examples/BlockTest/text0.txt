@@ -1,0 +1,15 @@
+// some text in this file
+
+:: node0
+First node! Woo!
+
+:: node1
+@color red
+@position 0 5
+this time in red!
+
+:: node2
+@position 0 -5
+@color black
+what if no?
+and if it had some text starting with this key?

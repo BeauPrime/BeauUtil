@@ -24,7 +24,10 @@ namespace BeauUtil
             public override void OnGUI(Rect position, UnityEditor.SerializedProperty property, GUIContent label)
             {
                 label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
-                property.intValue = UnityEditor.EditorGUI.LayerField(position, label, property.intValue);
+                UnityEditor.EditorGUI.BeginChangeCheck();
+                int nextVal = UnityEditor.EditorGUI.LayerField(position, label, property.intValue);
+                if (UnityEditor.EditorGUI.EndChangeCheck())
+                    property.intValue = nextVal;
                 UnityEditor.EditorGUI.EndProperty();
             }
         }

@@ -46,9 +46,9 @@ namespace BeauUtil
 
                 int layerIdx = property.hasMultipleDifferentValues ? -1 : Array.IndexOf(s_LayerIds, property.intValue);
 
-                GUI.changed = false;
+                UnityEditor.EditorGUI.BeginChangeCheck();
                 int nextLayerIdx = UnityEditor.EditorGUI.Popup(position, label, layerIdx, s_LayerContent);
-                if (GUI.changed)
+                if (UnityEditor.EditorGUI.EndChangeCheck())
                     property.intValue = nextLayerIdx >= 0 ? s_LayerIds[nextLayerIdx] : -1;
 
                 UnityEditor.EditorGUI.EndProperty();

@@ -17,6 +17,7 @@ namespace BeauUtil
     {
         #region Inspector
 
+        [Header("Events")]
         [SerializeField] private CollisionEvent m_OnCollisionEnter = new CollisionEvent();
         [SerializeField] private TaggedCollisionEvent m_TaggedCollisionEnter = new TaggedCollisionEvent();
         [SerializeField] private CollisionEvent m_OnCollisionExit = new CollisionEvent();
@@ -37,6 +38,9 @@ namespace BeauUtil
 
         private void OnCollisionEnter(Collision inCollision)
         {
+            if (!CheckFilters(inCollision.collider, ColliderProxyEventMask.OnEnter))
+                return;
+
             AddOccupant(inCollision.collider);
             m_OnCollisionEnter.Invoke(inCollision);
             m_TaggedCollisionEnter.Invoke(m_Id, inCollision);
@@ -44,6 +48,9 @@ namespace BeauUtil
 
         private void OnCollisionExit(Collision inCollision)
         {
+            if (!CheckFilters(inCollision.collider, ColliderProxyEventMask.OnExit))
+                return;
+
             RemoveOccupant(inCollision.collider);
             m_OnCollisionExit.Invoke(inCollision);
             m_TaggedCollisionExit.Invoke(m_Id, inCollision);
@@ -53,6 +60,11 @@ namespace BeauUtil
         {
             m_OnCollisionCancel.Invoke(inCollider);
             m_TaggedCollisionCancel.Invoke(m_Id, inCollider);
+        }
+
+        protected override void SetupCollider(Collider inCollider)
+        {
+            inCollider.isTrigger = false;
         }
     }
 }

@@ -15,6 +15,7 @@ namespace BeauUtil
     {
         #region Inspector
 
+        [Header("Events")]
         [SerializeField] private ColliderEvent m_OnTriggerEnter = new ColliderEvent();
         [SerializeField] private TaggedColliderEvent m_TaggedTriggerEnter = new TaggedColliderEvent();
         [SerializeField] private ColliderEvent m_OnTriggerExit = new ColliderEvent();
@@ -30,6 +31,9 @@ namespace BeauUtil
 
         private void OnTriggerEnter(Collider inCollider)
         {
+            if (!CheckFilters(inCollider, ColliderProxyEventMask.OnEnter))
+                return;
+
             AddOccupant(inCollider);
             m_OnTriggerEnter.Invoke(inCollider);
             m_TaggedTriggerEnter.Invoke(m_Id, inCollider);
@@ -37,6 +41,9 @@ namespace BeauUtil
 
         private void OnTriggerExit(Collider inCollider)
         {
+            if (!CheckFilters(inCollider, ColliderProxyEventMask.OnExit))
+                return;
+
             RemoveOccupant(inCollider);
             m_OnTriggerExit.Invoke(inCollider);
             m_TaggedTriggerExit.Invoke(m_Id, inCollider);
@@ -46,6 +53,11 @@ namespace BeauUtil
         {
             m_OnTriggerExit.Invoke(inCollider);
             m_TaggedTriggerExit.Invoke(m_Id, inCollider);
+        }
+
+        protected override void SetupCollider(Collider inCollider)
+        {
+            inCollider.isTrigger = true;
         }
     }
 }

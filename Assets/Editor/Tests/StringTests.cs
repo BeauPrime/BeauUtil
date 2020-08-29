@@ -17,6 +17,9 @@ namespace BeauUtil.UnitTests
         public const string CSVString = "Test,\"\",\"Test, with Comma\",\"Quoted \"\"Test\"\", with Comma\"";
         public const string MultiLineString = "This\nHas\n\r\nMultiple Lines";
 
+        private static readonly string[] IntParseStrings = new string[] { "0", "255", "333", "-1", "-130", "-64", "", "not", "0+", "10000000", "--555", "-66666", "+6234", "5555555555555555555555", "83987192837192837192837912873918273918273" };
+        private static readonly string[] FloatParseStrings = new string[] { "0.5", ".2", "1.", "NaN", "naN", "Infinity", "infinity", "-Infinity", "-infinity", "5.23123123", "66.2317075189723", "-25555.30239817239", "4.25e+64" };
+
         [Test]
         static public void CanEscapeString()
         {
@@ -129,5 +132,102 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual("abcdefg", flushed);
             Assert.LessOrEqual(builder.Length, 0);
         }
+
+        [Test]
+        static public void CanParseBools()
+        {
+            TestParser<bool>(bool.TryParse, StringParser.TryParseBool,
+                "true", "false", "", "True", "False", "TrUe", "fAlSe");
+        }
+
+        [Test]
+        static public void CanParseBytes()
+        {
+            TestParser<byte>(byte.TryParse, StringParser.TryParseByte, IntParseStrings);
+            TestParser<sbyte>(sbyte.TryParse, StringParser.TryParseSByte, IntParseStrings);
+        }
+
+        [Test]
+        static public void CanParseShorts()
+        {
+            TestParser<short>(short.TryParse, StringParser.TryParseShort, IntParseStrings);
+            TestParser<ushort>(ushort.TryParse, StringParser.TryParseUShort, IntParseStrings);
+        }
+
+        [Test]
+        static public void CanParseInts()
+        {
+            TestParser<int>(int.TryParse, StringParser.TryParseInt, IntParseStrings);
+            TestParser<uint>(uint.TryParse, StringParser.TryParseUInt, IntParseStrings);
+        }
+
+        [Test]
+        static public void CanParseLongs()
+        {
+            TestParser<long>(long.TryParse, StringParser.TryParseLong, IntParseStrings);
+            TestParser<ulong>(ulong.TryParse, StringParser.TryParseULong, IntParseStrings);
+        }
+
+        [Test]
+        static public void CanParseFloatsAsIntegers()
+        {
+            TestParserFloat(float.TryParse, StringParser.TryParseFloat, IntParseStrings);
+            TestParserDouble(double.TryParse, StringParser.TryParseDouble, IntParseStrings);
+        }
+
+        [Test]
+        static public void CanParseFloats()
+        {
+            TestParserFloat(float.TryParse, StringParser.TryParseFloat, FloatParseStrings);
+            TestParserDouble(double.TryParse, StringParser.TryParseDouble, FloatParseStrings);
+        }
+
+        static private void TestParser<T>(StringParseDelegate<T> inStringParse, StringSliceParseDelegate<T> inSliceParse, params string[] inStrings)
+        {
+            foreach(var str in inStrings)
+            {
+                T valFromString, valFromSlice;
+                bool bFromString = inStringParse(str, out valFromString);
+                bool bFromSlice = inSliceParse(str, out valFromSlice);
+
+                Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3} and {4}:{5}", str, typeof(T).Name, bFromString, valFromString, bFromSlice, valFromSlice);
+
+                Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, bFromSlice, bFromString, str);
+                Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, valFromSlice, valFromString, str);
+            }
+        }
+
+        static private void TestParserFloat(StringParseDelegate<float> inStringParse, StringSliceParseDelegate<float> inSliceParse, params string[] inStrings)
+        {
+            foreach(var str in inStrings)
+            {
+                float valFromString, valFromSlice;
+                bool bFromString = inStringParse(str, out valFromString);
+                bool bFromSlice = inSliceParse(str, out valFromSlice);
+
+                Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3} and {4}:{5}", str, typeof(float).Name, bFromString, valFromString, bFromSlice, valFromSlice);
+
+                Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(float).Name, bFromSlice, bFromString, str);
+                Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(float).Name, valFromSlice, valFromString, str);
+            }
+        }
+
+        static private void TestParserDouble(StringParseDelegate<double> inStringParse, StringSliceParseDelegate<double> inSliceParse, params string[] inStrings)
+        {
+            foreach(var str in inStrings)
+            {
+                double valFromString, valFromSlice;
+                bool bFromString = inStringParse(str, out valFromString);
+                bool bFromSlice = inSliceParse(str, out valFromSlice);
+
+                Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3} and {4}:{5}", str, typeof(double).Name, bFromString, valFromString, bFromSlice, valFromSlice);
+
+                Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(double).Name, bFromSlice, bFromString, str);
+                Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(double).Name, valFromSlice, valFromString, str);
+            }
+        }
+
+        private delegate bool StringParseDelegate<T>(string arg0, out T out0);
+        private delegate bool StringSliceParseDelegate<T>(StringSlice arg0, out T out0);
     }
 }

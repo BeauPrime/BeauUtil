@@ -33,7 +33,7 @@ namespace BeauUtil
         /// <summary>
         /// Delegate to execute when a scene is loaded/unloaded.
         /// </summary>
-        public delegate void SceneLoadAction(Scene inScene);
+        public delegate void SceneLoadAction(Scene inScene, object inContext);
 
         /// <summary>
         /// Event invoked when a scene indicates it is finished loading
@@ -52,12 +52,12 @@ namespace BeauUtil
         /// Will dispatch to all ISceneLoadHandler components in the scene
         /// and invoke SceneHelper.OnSceneLoaded
         /// </summary>
-        static public void OnLoaded(this Scene inScene)
+        static public void OnLoaded(this Scene inScene, object inContext = null)
         {
-            inScene.ForEachComponent<ISceneLoadHandler>(true, s_DispatchSceneLoad);
+            inScene.ForEachComponent<ISceneLoadHandler>(true, inContext, s_DispatchSceneLoad);
             if (OnSceneLoaded != null)
             {
-                OnSceneLoaded(inScene);
+                OnSceneLoaded(inScene, inContext);
             }
         }
 
@@ -66,17 +66,17 @@ namespace BeauUtil
         /// Will dispatch to all ISceneUnloadHandler components in the scene
         /// and invoke SceneHelper.OnSceneUnload
         /// </summary>
-        static public void OnUnload(this Scene inScene)
+        static public void OnUnload(this Scene inScene, object inContext = null)
         {
-            inScene.ForEachComponent<ISceneUnloadHandler>(true, s_DispatchSceneUnload);
+            inScene.ForEachComponent<ISceneUnloadHandler>(true, inContext, s_DispatchSceneUnload);
             if (OnSceneUnload != null)
             {
-                OnSceneUnload(inScene);
+                OnSceneUnload(inScene, inContext);
             }
         }
 
-        static private readonly SceneComponentAction<ISceneLoadHandler> s_DispatchSceneLoad = (scene, handler) => handler.OnSceneLoad(scene);
-        static private readonly SceneComponentAction<ISceneUnloadHandler> s_DispatchSceneUnload = (scene, handler) => handler.OnSceneUnload(scene);
+        static private readonly SceneComponentContextAction<ISceneLoadHandler> s_DispatchSceneLoad = (scene, handler, context) => handler.OnSceneLoad(scene, context);
+        static private readonly SceneComponentContextAction<ISceneUnloadHandler> s_DispatchSceneUnload = (scene, handler, context) => handler.OnSceneUnload(scene, context);
 
         #endregion // Load/Unload Events
 
@@ -415,6 +415,11 @@ namespace BeauUtil
         public delegate void SceneComponentAction<T>(Scene inScene, T inComponent);
 
         /// <summary>
+        /// Delegate to execute on components in a scene.
+        /// </summary>
+        public delegate void SceneComponentContextAction<T>(Scene inScene, T inComponent, object inContext);
+
+        /// <summary>
         /// Executes an action on each active component of the given type in the scene.
         /// </summary>
         static public void ForEachComponent<T>(this Scene inScene, SceneComponentAction<T> inAction)
@@ -435,6 +440,27 @@ namespace BeauUtil
             }
         }
 
+        /// <summary>
+        /// Executes an action on each active component of the given type in the scene, with a context.
+        /// </summary>
+        static public void ForEachComponent<T>(this Scene inScene, object inContext, SceneComponentContextAction<T> inAction)
+        {
+            ForEachComponent<T>(inScene, false, inContext, inAction);
+        }
+
+        /// <summary>
+        /// Executes an action on each component of the given type in the scene, with a context.
+        /// </summary>
+        static public void ForEachComponent<T>(this Scene inScene, bool inbIncludeInteractive, object inContext, SceneComponentContextAction<T> inAction)
+        {
+            List<T> allComponents = new List<T>();
+            GetAllComponents<T>(inScene, inbIncludeInteractive, allComponents);
+            for(int i = 0, count = allComponents.Count; i < count; ++i)
+            {
+                inAction(inScene, allComponents[i], inContext);
+            }
+        }
+
         #endregion // ForEachComponent
     
         #region Load Wrappers
@@ -442,7 +468,7 @@ namespace BeauUtil
         /// <summary>
         /// Loads a scene asynchronously, dispatching the appropriate load and unload events.
         /// </summary>
-        static public AsyncOperation LoadAsync(Scene inScene, LoadSceneMode inMode = LoadSceneMode.Single)
+        static public AsyncOperation LoadAsync(Scene inScene, object inContext = null, LoadSceneMode inMode = LoadSceneMode.Single)
         {
             if (!inScene.IsValid())
             {
@@ -453,13 +479,13 @@ namespace BeauUtil
             if (inMode == LoadSceneMode.Single)
             {
                 foreach(var scene in FindScenes(SceneCategories.Loaded))
-                    scene.OnUnload();
+                    scene.OnUnload(inContext);
             }
 
             AsyncOperation loadOp = SceneManager.LoadSceneAsync(inScene.path, inMode);
             loadOp.completed += (AsyncOperation op) =>
             {
-                inScene.OnLoaded();
+                inScene.OnLoaded(inContext);
             };
             return loadOp;
         }
@@ -467,7 +493,7 @@ namespace BeauUtil
         /// <summary>
         /// Unloads a scene asynchronously, dispatching the appropriate unload events.
         /// </summary>
-        static public AsyncOperation UnloadAsync(Scene inScene, UnloadSceneOptions inOptions = UnloadSceneOptions.None)
+        static public AsyncOperation UnloadAsync(Scene inScene, object inContext = null, UnloadSceneOptions inOptions = UnloadSceneOptions.None)
         {
             if (!inScene.IsValid())
             {
@@ -475,7 +501,7 @@ namespace BeauUtil
                 return null;
             }
 
-            inScene.OnUnload();
+            inScene.OnUnload(inContext);
             return SceneManager.UnloadSceneAsync(inScene, inOptions);
         }
 

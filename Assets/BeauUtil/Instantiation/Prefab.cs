@@ -175,7 +175,7 @@ namespace BeauUtil
 
             public PrefabGroup(Prefab[] inPrefabs)
             {
-                m_Prefabs = new Dictionary<string, Prefab>(inPrefabs.Length);
+                m_Prefabs = new Dictionary<string, Prefab>(inPrefabs.Length, StringComparer.Ordinal);
                 for(int i = 0; i < inPrefabs.Length; ++i)
                 {
                     string variantName = inPrefabs[i].GetVariantName();

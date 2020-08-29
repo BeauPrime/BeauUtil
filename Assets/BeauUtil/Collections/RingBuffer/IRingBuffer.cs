@@ -64,8 +64,7 @@ namespace BeauUtil
         T PopBack();
         T PeekBack();
 
-        int CopyTo(T[] inDest, int inSrcIndex, int inDestIndex, int inLength);
-        int CopyReversed(T[] inDest, int inSrcIndex, int inDestIndex, int inLength);
+        int CopyTo(int inSrcIndex, T[] ioDest, int inDestIndex, int inLength);
 
         void Sort(IComparer<T> inComparer);
     }

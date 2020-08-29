@@ -532,7 +532,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends a StringSlice to the given StringBuilder.
         /// </summary>
-        static public StringBuilder Append(this StringBuilder ioBuilder, StringSlice inSlice)
+        static public StringBuilder AppendSlice(this StringBuilder ioBuilder, StringSlice inSlice)
         {
             if (ioBuilder == null)
                 throw new ArgumentNullException("ioBuilder");

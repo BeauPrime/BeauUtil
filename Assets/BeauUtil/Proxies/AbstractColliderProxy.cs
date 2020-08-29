@@ -14,10 +14,13 @@ using UnityEngine.Events;
 
 namespace BeauUtil
 {
-    public abstract class AbstractColliderProxy<TCollider, TCollision, TRigidbody> : MonoBehaviour where TCollider : Component where TRigidbody : Component
+    public abstract class AbstractColliderProxy<TCollider, TCollision, TRigidbody> : MonoBehaviour
+        where TCollider : Component
+        where TRigidbody : Component
     {
         private const string TrackTooltipString = "If checked, colliders that get disabled or destroyed will still dispatch their appropriate On_Exit messages" +
             "\nUncheck if you want the default behavior.";
+        static protected readonly string UntaggedTag = "Untagged";
 
         /// <summary>
         /// Object occupying this collider proxy.
@@ -56,16 +59,28 @@ namespace BeauUtil
         [SerializeField] protected TCollider m_Collider = null;
         [SerializeField, Tooltip(TrackTooltipString)] protected bool m_TrackOccupants = true;
 
+        [Header("Filtering")]
+        [SerializeField, AutoEnum] protected ColliderProxyEventMask m_FilterEventMask = ColliderProxyEventMask.OnEnterAndExit;
+        [SerializeField] protected LayerMask m_LayerMaskFilter = 0;
+        [SerializeField, UnityTag] protected List<string> m_CompareTagFilters = new List<string>();
+        [SerializeField] protected string m_NameFilter = null;
+
         #endregion // Inspector
 
-        [NonSerialized] protected List<Occupant> m_Occupants = new List<Occupant>();
+        [NonSerialized] protected readonly List<Occupant> m_Occupants = new List<Occupant>();
+        [NonSerialized] protected Type m_RequiredComponentType = null;
+        [NonSerialized] protected ComponentLookupDirection m_RequiredComponentLookup;
 
         #region Unity Events
 
         protected virtual void Awake()
         {
             if (!m_Collider)
+            {
                 m_Collider = GetComponent<TCollider>();
+                if (m_Collider)
+                    SetupCollider(m_Collider);
+            }
         }
 
         protected virtual void OnEnable()
@@ -92,6 +107,87 @@ namespace BeauUtil
             get { return m_Id; }
             set { m_Id = value; }
         }
+
+        #region Filter
+
+        /// <summary>
+        /// Mask indicating which collision events will filter colliders.
+        /// </summary>
+        public ColliderProxyEventMask FilterEventMask
+        {
+            get { return m_FilterEventMask; }
+            set { m_FilterEventMask = value; }
+        }
+
+        /// <summary>
+        /// Filter by GameObject layer.
+        /// </summary>
+        public LayerMask LayerFilter
+        {
+            get { return m_LayerMaskFilter; }
+            set { m_LayerMaskFilter = value; }
+        }
+
+        /// <summary>
+        /// Filter by GameObject tag.
+        /// </summary>
+        public ICollection<string> TagFilter
+        {
+            get { return m_CompareTagFilters; }
+        }
+
+        /// <summary>
+        /// Filter by GameObject name.
+        /// Supports wildcards.
+        /// </summary>
+        public string NameFilter
+        {
+            get { return m_NameFilter; }
+            set { m_NameFilter = value; }
+        }
+
+        /// <summary>
+        /// Filter by a component.
+        /// </summary>
+        public Type ComponentFilter
+        {
+            get { return m_RequiredComponentType; }
+        }
+
+        /// <summary>
+        /// Component filter lookup direction.
+        /// </summary>
+        public ComponentLookupDirection ComponentFilterDirection
+        {
+            get { return m_RequiredComponentLookup; }
+        }
+
+        /// <summary>
+        /// Sets the component filter.
+        /// </summary>
+        public void FilterByComponent(Type inType, ComponentLookupDirection inLookup = ComponentLookupDirection.Self)
+        {
+            m_RequiredComponentType = inType;
+            m_RequiredComponentLookup = inLookup;
+        }
+
+        /// <summary>
+        /// Sets the component filter.
+        /// </summary>
+        public void FilterByComponent<T>(ComponentLookupDirection inLookup = ComponentLookupDirection.Self)
+        {
+            FilterByComponent(typeof(T), inLookup);
+        }
+
+        /// <summary>
+        /// Clears the component filter.
+        /// </summary>
+        public void ClearComponentFilter()
+        {
+            FilterByComponent(null);
+        }
+
+        #endregion // Filter
 
         #region Occupants
 
@@ -137,7 +233,7 @@ namespace BeauUtil
 
             for (int i = m_Occupants.Count - 1; i >= 0; --i)
             {
-                if (m_Occupants[i].Collider == inCollider)
+                if (m_Occupants[i].Collider.IsReferenceEquals(inCollider))
                     return false;
             }
 
@@ -194,6 +290,7 @@ namespace BeauUtil
 
                 if (!collider || !GetColliderEnabled(collider) ||
                     GetRigidbodyForCollider(collider) != rigidbody ||
+                    !CheckFilters(collider, ColliderProxyEventMask.OnIdle) ||
                     (!rigidbody.IsReferenceNull() && (!rigidbody || !GetRigidbodyEnabled(rigidbody))))
                 {
                     OnOccupantDiscarded(collider);
@@ -212,6 +309,65 @@ namespace BeauUtil
             m_Occupants.Clear();
         }
 
+        protected bool CheckFilters(TCollider inCollider, ColliderProxyEventMask inEvent)
+        {
+            if ((m_FilterEventMask & inEvent) == 0)
+                return true;
+
+            GameObject go = inCollider.gameObject;
+
+            if (m_LayerMaskFilter != 0 && ((1 << go.layer) & m_LayerMaskFilter) == 0)
+                return false;
+
+            if (m_CompareTagFilters != null && m_CompareTagFilters.Count > 0)
+            {
+                bool bFound = false;
+                for(int i = 0; i < m_CompareTagFilters.Count; ++i)
+                {
+                    if (go.CompareTag(m_CompareTagFilters[i]))
+                    {
+                        bFound = true;
+                        break;
+                    }
+                }
+                
+                if (!bFound)
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(m_NameFilter) && !StringUtils.WildcardMatch(go.name, m_NameFilter))
+                return false;
+
+            if (m_RequiredComponentType != null)
+            {
+                switch(m_RequiredComponentLookup)
+                {
+                    case ComponentLookupDirection.Self:
+                        {
+                            if (!go.GetComponent(m_RequiredComponentType))
+                                return false;
+                            break;
+                        }
+
+                    case ComponentLookupDirection.Parent:
+                        {
+                            if (!go.GetComponentInParent(m_RequiredComponentType))
+                                return false;
+                            break;
+                        }
+
+                    case ComponentLookupDirection.Children:
+                        {
+                            if (!go.GetComponentInChildren(m_RequiredComponentType))
+                                return false;
+                            break;
+                        }
+                }
+            }
+
+            return true;
+        }
+
         protected abstract void OnOccupantDiscarded(TCollider inCollider);
 
         #endregion // Occupants
@@ -223,6 +379,7 @@ namespace BeauUtil
         protected abstract TRigidbody GetRigidbodyForCollider(TCollider inCollider);
 
         protected abstract bool GetRigidbodyEnabled(TRigidbody inRigidbody);
+        protected abstract void SetupCollider(TCollider inCollider);
 
         #endregion // Internal
 
@@ -231,11 +388,15 @@ namespace BeauUtil
         private void Reset()
         {
             m_Collider = GetComponent<TCollider>();
+            if (m_Collider)
+                SetupCollider(m_Collider);
         }
 
         private void OnValidate()
         {
             m_Collider = GetComponent<TCollider>();
+            if (m_Collider)
+                SetupCollider(m_Collider);
         }
 
         #endif // UNITY_EDITOR

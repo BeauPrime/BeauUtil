@@ -60,6 +60,23 @@ namespace BeauUtil
             get { return Length == 0; }
         }
 
+        /// <summary>
+        /// Returns if slice is empty or has only whitespace characters.
+        /// </summary>
+        public bool IsWhitespace
+        {
+            get
+            {
+                for(int i = 0; i < Length; ++i)
+                {
+                    if (!char.IsWhiteSpace(m_Source[m_StartIndex + i]))
+                        return false;
+                }
+
+                return true;
+            }
+        }
+
         #region Search
 
         #region Char

@@ -81,7 +81,7 @@ namespace BeauUtil
             if (inMap == null)
                 return null;
 
-            return new Dictionary<K, V>(inMap);
+            return new Dictionary<K, V>(inMap, inMap.Comparer);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace BeauUtil
             if (inMap == null)
                 return null;
 
-            Dictionary<K, V> clone = new Dictionary<K, V>();
+            Dictionary<K, V> clone = new Dictionary<K, V>(inMap.Comparer);
             foreach (var kv in inMap)
             {
                 clone.Add(kv.Key, Clone(kv.Value));
@@ -268,7 +268,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    ioDest = new Dictionary<K, V>(inSource);
+                    ioDest = new Dictionary<K, V>(inSource, inSource.Comparer);
                 }
             }
         }

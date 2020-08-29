@@ -26,6 +26,10 @@ namespace BeauUtil.Editor
                 case SerializedPropertyType.Enum:
                     newLabel.text = keyProp.stringValue;
                     break;
+
+                case SerializedPropertyType.ObjectReference:
+                    newLabel.text = keyProp.objectReferenceValue == null ? string.Empty : keyProp.objectReferenceValue.name;
+                    break;
             }
 
             if (string.IsNullOrEmpty(newLabel.text))

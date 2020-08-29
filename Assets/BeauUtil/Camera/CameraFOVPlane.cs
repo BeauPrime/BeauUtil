@@ -10,6 +10,7 @@
 
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace BeauUtil
 {
@@ -21,17 +22,42 @@ namespace BeauUtil
     [AddComponentMenu("BeauUtil/Camera FOV Plane"), DisallowMultipleComponent]
     public class CameraFOVPlane : MonoBehaviour
     {
+        public struct CameraSettings
+        {
+            public readonly float Height;
+            public readonly float Zoom;
+
+            public readonly float Distance;
+            public readonly float ZoomedHeight;
+            public readonly float FieldOfView;
+
+            public CameraSettings(float inHeight, float inZoom, float inDistance, float inZoomedHeight, float inFOV)
+            {
+                Height = inHeight;
+                Zoom = inZoom;
+                Distance = inDistance;
+                ZoomedHeight = inZoomedHeight;
+                FieldOfView = inFOV;
+            }
+        }
+
+        public class SettingsEvent : UnityEvent<CameraSettings> { }
+
         #region Inspector
 
         [SerializeField] private Transform m_Target = null;
         [SerializeField] private float m_Height = 10;
         [SerializeField, Range(0.01f, 25)] private float m_Zoom = 1;
 
+        [SerializeField] private SettingsEvent m_OnFOVChanged = new SettingsEvent();
+
         #endregion // Inspector
 
         [NonSerialized] private Transform m_Transform;
         [NonSerialized] private Camera m_Camera;
         [NonSerialized] private float m_LastDistance = 1;
+
+        public SettingsEvent OnFOVChanged { get { return m_OnFOVChanged; } }
 
         private void OnEnable()
         {
@@ -98,6 +124,7 @@ namespace BeauUtil
             if (fov != m_Camera.fieldOfView)
             {
                 m_Camera.fieldOfView = fov;
+                m_OnFOVChanged.Invoke(new CameraSettings(Height, Zoom, newDist, height, fov));
             }
         }
 

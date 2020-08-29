@@ -104,7 +104,31 @@ namespace BeauUtil
     
         #region CopyTo
 
+        /// <summary>
+        /// Copies the given buffer into a destination array.
+        /// </summary>
+        static public void CopyTo<T>(this IRingBuffer<T> inBuffer, T[] ioDest)
+        {
+            inBuffer.CopyTo(0, ioDest, 0, inBuffer.Count);
+        }
 
+        /// <summary>
+        /// Copies the given buffer into a destination array.
+        /// </summary>
+        static public void CopyTo<T>(this IRingBuffer<T> inBuffer, int inIndex, T[] ioDest)
+        {
+            inBuffer.CopyTo(inIndex, ioDest, 0, inBuffer.Count - inIndex);
+        }
+
+        /// <summary>
+        /// Copies the given buffer into a new array.
+        /// </summary>
+        static public T[] ToArray<T>(this IRingBuffer<T> inBuffer)
+        {
+            T[] array = new T[inBuffer.Count];
+            CopyTo(inBuffer, array);
+            return array;
+        }
         
         #endregion // CopyTo
     }

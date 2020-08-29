@@ -12,20 +12,18 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace BeauUtil
+namespace BeauUtil.Tags
 {
     /// <summary>
     /// Customizable tag parser configuration object.
     /// </summary>
-    public class CustomTagParserConfig : TagStringParser.IReplaceProcessor, TagStringParser.IEventProcessor
+    public class CustomTagParserConfig : IReplaceProcessor, IEventProcessor
     {
-        private readonly List<ReplaceRule> m_ReplaceRules = new List<ReplaceRule>(16);
-        private readonly TagStringParser.IReplaceProcessor m_ReplaceInheritFrom;
-        private bool m_ReplaceDirty = false;
+        private readonly MatchRuleSet<ReplaceRule> m_ReplaceRules = new MatchRuleSet<ReplaceRule>(16);
+        private readonly IReplaceProcessor m_ReplaceInheritFrom;
 
-        private readonly TagStringParser.IEventProcessor m_EventInheritFrom;
-        private readonly List<EventRule> m_EventRules = new List<EventRule>(16);
-        private bool m_EventDirty = false;
+        private readonly MatchRuleSet<EventRule> m_EventRules = new MatchRuleSet<EventRule>(16);
+        private readonly IEventProcessor m_EventInheritFrom;
 
         private bool m_Locked = false;
 
@@ -39,7 +37,7 @@ namespace BeauUtil
             m_EventInheritFrom = inInherit;
         }
 
-        public CustomTagParserConfig(TagStringParser.IReplaceProcessor inInheritReplace, TagStringParser.IEventProcessor inInheritEvent)
+        public CustomTagParserConfig(IReplaceProcessor inInheritReplace, IEventProcessor inInheritEvent)
         {
             m_ReplaceInheritFrom = inInheritReplace;
             m_EventInheritFrom = inInheritEvent;
@@ -48,156 +46,21 @@ namespace BeauUtil
         #region Delegate Types
 
         public delegate string ReplaceDelegate();
-        public delegate string ReplaceWithContextDelegate(TagStringParser.TagData inTag, object inContext);
-        public delegate bool TryReplaceDelegate(TagStringParser.TagData inTag, object inContext, out string outReplace);
+        public delegate string ReplaceWithContextDelegate(TagData inTag, object inContext);
+        public delegate bool TryReplaceDelegate(TagData inTag, object inContext, out string outReplace);
 
-        public delegate void EventDelegate(TagStringParser.TagData inTag, object inContext, ref TagString.EventData ioData);
+        public delegate void EventDelegate(TagData inTag, object inContext, ref TagEventData ioData);
 
         #endregion // Delegate Types
-
-        #region Rule
-
-        public abstract class CustomRule<T> : IComparable<CustomRule<T>> where T : CustomRule<T>
-        {
-            protected string m_IdMatch;
-            protected string[] m_Aliases;
-            protected bool m_CaseSensitive;
-            protected int m_Specificity;
-            protected bool m_HandleClosing;
-
-            protected void SetId(string inId)
-            {
-                if (m_IdMatch != inId)
-                {
-                    m_IdMatch = inId;
-                    RecalculateSpecificity();
-                }
-            }
-
-            protected void SetCaseSentitive(bool inbCaseSensitive)
-            {
-                if (m_CaseSensitive != inbCaseSensitive)
-                {
-                    m_CaseSensitive = inbCaseSensitive;
-                    RecalculateSpecificity();
-                }
-            }
-
-            protected void AddAliases(params string[] inAliases)
-            {
-                if (inAliases == null || inAliases.Length == 0)
-                    return;
-
-                if (m_Aliases == null)
-                {
-                    m_Aliases = (string[]) inAliases.Clone();
-                }
-                else
-                {
-                    int copyIdx = m_Aliases.Length;
-                    Array.Resize(ref m_Aliases, m_Aliases.Length + inAliases.Length);
-                    Array.Copy(inAliases, 0, m_Aliases, copyIdx, inAliases.Length);
-                }
-
-                RecalculateSpecificity();
-            }
-
-            protected void RecalculateSpecificity()
-            {
-                int specificity = CalculateSpecificity(m_IdMatch, m_CaseSensitive);
-                if (m_Aliases != null)
-                {
-                    foreach (string alias in m_Aliases)
-                    {
-                        int aliasSpecificity = CalculateSpecificity(alias, m_CaseSensitive);
-                        if (aliasSpecificity < specificity)
-                            specificity = aliasSpecificity;
-                    }
-                }
-
-                m_Specificity = specificity;
-            }
-
-            static protected int CalculateSpecificity(string inMatchRule, bool inbCaseSensitive)
-            {
-                if (string.IsNullOrEmpty(inMatchRule))
-                    return 0;
-
-                int specificity = ushort.MaxValue - inMatchRule.Length;
-                if (inMatchRule.StartsWith("*") || inMatchRule.EndsWith("*"))
-                    specificity = Math.Max(inMatchRule.Length - 2, 0);
-
-                if (inbCaseSensitive)
-                    specificity *= 2;
-
-                return specificity;
-            }
-
-            internal bool CanHandle(StringSlice inTagId)
-            {
-                if (StringUtils.WildcardMatch(inTagId, m_IdMatch, '*', !m_CaseSensitive))
-                    return true;
-
-                if (m_Aliases != null)
-                    return StringUtils.WildcardMatch(inTagId, m_Aliases, '*', !m_CaseSensitive);
-
-                return false;
-            }
-
-            int IComparable<CustomRule<T>>.CompareTo(CustomRule<T> other)
-            {
-                int diff = m_Specificity - other.m_Specificity;
-                if (diff > 0)
-                    return -1;
-                if (diff < 0)
-                    return 1;
-                return 0;
-            }
-
-            #region Builder
-
-            /// <summary>
-            /// Adds a set of aliases for matching.
-            /// Wildcard matching is supported.
-            /// </summary>
-            public T WithAliases(params string[] inAliases)
-            {
-                AddAliases(inAliases);
-                return (T)this;
-            }
-
-            /// <summary>
-            /// Matching will be case-sensitive.
-            /// By default, matching is case-insensitive.
-            /// </summary>
-            public T CaseSensitive()
-            {
-                SetCaseSentitive(true);
-                return (T)this;
-            }
-
-            /// <summary>
-            /// Matching will be case-insensitive.
-            /// By default, matching is case-insensitive.
-            /// </summary>
-            public T CaseInsensitive()
-            {
-                SetCaseSentitive(false);
-                return (T)this;
-            }
-
-            #endregion // Builder
-        }
-
-        #endregion // Rule
 
         #region Text Replace
 
         /// <summary>
         /// Rule for replacing tags with text.
         /// </summary>
-        public class ReplaceRule : CustomRule<ReplaceRule>
+        public class ReplaceRule : MatchRule<ReplaceRule>
         {
+            private bool m_HandleClosing;
             private string m_ConstantText;
             private string m_ConstantClosingText;
 
@@ -309,7 +172,7 @@ namespace BeauUtil
 
             #endregion // Builder
 
-            internal bool Evaluate(TagStringParser.TagData inTag, object inContext, out string outReplace)
+            internal bool Evaluate(TagData inTag, object inContext, out string outReplace)
             {
                 if (m_TryReplaceCallback != null)
                     return m_TryReplaceCallback(inTag, inContext, out outReplace);
@@ -361,7 +224,6 @@ namespace BeauUtil
 
             ReplaceRule rule = new ReplaceRule(inId);
             m_ReplaceRules.Add(rule);
-            m_ReplaceDirty = true;
             return rule;
         }
 
@@ -374,7 +236,6 @@ namespace BeauUtil
 
             ReplaceRule rule = new ReplaceRule(inId);
             m_ReplaceRules.Add(rule);
-            m_ReplaceDirty = true;
             rule.ReplaceWith(inReplaceWith);
             return rule;
         }
@@ -388,7 +249,6 @@ namespace BeauUtil
 
             ReplaceRule rule = new ReplaceRule(inId);
             m_ReplaceRules.Add(rule);
-            m_ReplaceDirty = true;
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -402,7 +262,6 @@ namespace BeauUtil
 
             ReplaceRule rule = new ReplaceRule(inId);
             m_ReplaceRules.Add(rule);
-            m_ReplaceDirty = true;
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -416,32 +275,15 @@ namespace BeauUtil
 
             ReplaceRule rule = new ReplaceRule(inId);
             m_ReplaceRules.Add(rule);
-            m_ReplaceDirty = true;
             rule.TryReplaceWith(inReplace);
             return rule;
         }
 
-        protected void CacheReplace()
+        public bool TryReplace(TagData inData, object inContext, out string outReplace)
         {
-            if (!m_ReplaceDirty)
-                return;
-
-            m_ReplaceRules.Sort();
-            m_ReplaceDirty = false;
-        }
-
-        public bool TryReplace(TagStringParser.TagData inData, object inContext, out string outReplace)
-        {
-            CacheReplace();
-
-            for (int i = 0, count = m_ReplaceRules.Count; i < count; ++i)
-            {
-                ReplaceRule rule = m_ReplaceRules[i];
-                if (rule.CanHandle(inData.Id))
-                {
-                    return rule.Evaluate(inData, inContext, out outReplace);
-                }
-            }
+            ReplaceRule rule = m_ReplaceRules.FindMatch(inData.Id);
+            if (rule != null)
+                return rule.Evaluate(inData, inContext, out outReplace);
 
             if (m_ReplaceInheritFrom != null)
             {
@@ -459,9 +301,9 @@ namespace BeauUtil
         /// <summary>
         /// Rule for parsing tags into events.
         /// </summary>
-        public class EventRule : CustomRule<EventRule>
+        public class EventRule : MatchRule<EventRule>
         {
-            private enum ArgumentMode
+            private enum DataMode
             {
                 None,
                 String,
@@ -469,13 +311,15 @@ namespace BeauUtil
                 Bool
             }
 
+            private bool m_HandleClosing;
+
             private PropertyName m_EventId;
             private PropertyName m_EventClosingId;
 
             private EventDelegate m_EventDelegate;
             private EventDelegate m_EventClosingDelegate;
 
-            private ArgumentMode m_DataMode;
+            private DataMode m_DataMode;
             private float m_DefaultFloat;
             private bool m_DefaultBool;
             private string m_DefaultString;
@@ -552,7 +396,7 @@ namespace BeauUtil
             /// </summary>
             public EventRule WithStringData(string inDefault = null)
             {
-                m_DataMode = ArgumentMode.String;
+                m_DataMode = DataMode.String;
                 m_DefaultString = inDefault;
                 return this;
             }
@@ -562,7 +406,7 @@ namespace BeauUtil
             /// </summary>
             public EventRule WithFloatData(float inDefault = 0)
             {
-                m_DataMode = ArgumentMode.Float;
+                m_DataMode = DataMode.Float;
                 m_DefaultFloat = inDefault;
                 return this;
             }
@@ -572,21 +416,21 @@ namespace BeauUtil
             /// </summary>
             public EventRule WithBoolData(bool inbDefault = false)
             {
-                m_DataMode = ArgumentMode.Bool;
+                m_DataMode = DataMode.Bool;
                 m_DefaultBool = inbDefault;
                 return this;
             }
 
             #endregion // Builder
 
-            internal bool Evaluate(TagStringParser.TagData inData, object inContext, out TagString.EventData outEvent)
+            internal bool Evaluate(TagData inData, object inContext, out TagEventData outEvent)
             {
-                outEvent = new TagString.EventData(m_EventId);
+                outEvent = new TagEventData(m_EventId);
                 outEvent.IsClosing = inData.IsClosing();
 
                 switch(m_DataMode)
                 {
-                    case ArgumentMode.String:
+                    case DataMode.String:
                         {
                             if (inData.Data.IsEmpty)
                                 outEvent.StringArgument = m_DefaultString;
@@ -595,19 +439,19 @@ namespace BeauUtil
                             break;
                         }
 
-                    case ArgumentMode.Float:
+                    case DataMode.Float:
                         {
                             float arg;
-                            if (inData.Data.IsEmpty || !float.TryParse(inData.Data.ToString(), out arg))
+                            if (!StringParser.TryParseFloat(inData.Data, out arg))
                                 arg = m_DefaultFloat;
                             outEvent.NumberArgument = arg;
                             break;
                         }
 
-                    case ArgumentMode.Bool:
+                    case DataMode.Bool:
                         {
                             bool arg;
-                            if (inData.Data.IsEmpty || !bool.TryParse(inData.Data.ToString(), out arg))
+                            if (!StringParser.TryParseBool(inData.Data, out arg))
                                 arg = m_DefaultBool;
                             outEvent.BoolArgument = arg;
                             break;
@@ -645,7 +489,6 @@ namespace BeauUtil
 
             EventRule rule = new EventRule(inId);
             m_EventRules.Add(rule);
-            m_EventDirty = true;
             return rule;
         }
 
@@ -658,7 +501,6 @@ namespace BeauUtil
 
             EventRule rule = new EventRule(inId);
             m_EventRules.Add(rule);
-            m_EventDirty = true;
 
             rule.ProcessWith(inEventId);
             return rule;
@@ -673,7 +515,6 @@ namespace BeauUtil
 
             EventRule rule = new EventRule(inId);
             m_EventRules.Add(rule);
-            m_EventDirty = true;
             rule.ProcessWith(inDelegate);
             return rule;
         }
@@ -687,39 +528,22 @@ namespace BeauUtil
 
             EventRule rule = new EventRule(inId);
             m_EventRules.Add(rule);
-            m_EventDirty = true;
             rule.ProcessWith(inEventId, inDelegate);
             return rule;
         }
 
-        protected void CacheEvents()
+        public bool TryProcess(TagData inData, object inContext, out TagEventData outEvent)
         {
-            if (!m_EventDirty)
-                return;
-
-            m_EventRules.Sort();
-            m_EventDirty = false;
-        }
-
-        public bool TryProcess(TagStringParser.TagData inData, object inContext, out TagString.EventData outEvent)
-        {
-            CacheEvents();
-
-            for (int i = 0, count = m_EventRules.Count; i < count; ++i)
-            {
-                EventRule rule = m_EventRules[i];
-                if (rule.CanHandle(inData.Id))
-                {
-                    return rule.Evaluate(inData, inContext, out outEvent);
-                }
-            }
+            EventRule rule = m_EventRules.FindMatch(inData.Id);
+            if (rule != null)
+                return rule.Evaluate(inData, inContext, out outEvent);
 
             if (m_EventInheritFrom != null)
             {
                 return m_EventInheritFrom.TryProcess(inData, inContext, out outEvent);
             }
 
-            outEvent = default(TagString.EventData);
+            outEvent = default(TagEventData);
             return false;
         }
 

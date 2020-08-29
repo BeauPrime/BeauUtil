@@ -16,20 +16,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace BeauUtil
+namespace BeauUtil.Tags
 {
     /// <summary>
-    /// Collection of event handlers to be used in conjunction with TagString.EventData instances.
+    /// Collection of event handlers to be used in conjunction with EventData instances.
     /// </summary>
     public class TagStringEventHandler : IDisposable
     {
         #region Types
 
         public delegate void InstantEventDelegate();
-        public delegate void InstantEventWithContextDelegate(TagString.EventData inEvent, object inContext);
+        public delegate void InstantEventWithContextDelegate(TagEventData inEvent, object inContext);
 
         public delegate IEnumerator CoroutineEventDelegate();
-        public delegate IEnumerator CoroutineEventWithContextDelegate(TagString.EventData inEvent, object inContext);
+        public delegate IEnumerator CoroutineEventWithContextDelegate(TagEventData inEvent, object inContext);
 
         private struct Handler
         {
@@ -72,9 +72,9 @@ namespace BeauUtil
             }
 
             #if EXPANDED_REFS
-            public IEnumerator Execute(in TagString.EventData inEvent, object inContext)
+            public IEnumerator Execute(in TagEventData inEvent, object inContext)
             #else
-            public IEnumerator Execute(TagString.EventData inEvent, object inContext)
+            public IEnumerator Execute(EventData inEvent, object inContext)
             #endif // EXPANDED_REFS
             {
                 if (Instant != null)
@@ -105,14 +105,37 @@ namespace BeauUtil
 
         #endregion // Types
 
-        private TagStringEventHandler m_InheritFrom;
+        private TagStringEventHandler m_Base;
         private Dictionary<PropertyName, Handler> m_Handlers = new Dictionary<PropertyName, Handler>(16);
 
         public TagStringEventHandler() { }
 
-        public TagStringEventHandler(TagStringEventHandler inInheritFrom)
+        public TagStringEventHandler(TagStringEventHandler inBase)
         {
-            m_InheritFrom = inInheritFrom;
+            m_Base = inBase;
+        }
+
+        /// <summary>
+        /// The base TagStringEventHandler.
+        /// Any events not explicitly defined on this handler
+        /// will be deferred to the base handler.
+        /// </summary>
+        public TagStringEventHandler Base
+        {
+            get { return m_Base; }
+            set
+            {
+                if (m_Base != value)
+                {
+                    if (value != null)
+                    {
+                        if (value == this || value.m_Base == this)
+                            throw new InvalidOperationException("Provided parent would cause infinite loop");
+                    }
+
+                    m_Base = value;
+                }
+            }
         }
 
         #region Register/Deregister
@@ -172,9 +195,9 @@ namespace BeauUtil
         /// Outputs the coroutine to execute if the handler is a coroutine.
         /// </summary>
         #if EXPANDED_REFS
-        public bool TryEvaluate(in TagString.EventData inEventData, object inContext, out IEnumerator outCoroutine)
+        public bool TryEvaluate(in TagEventData inEventData, object inContext, out IEnumerator outCoroutine)
         #else
-        public bool TryEvaluate(TagString.EventData inEventData, object inContext, out IEnumerator outCoroutine)
+        public bool TryEvaluate(TagEventData inEventData, object inContext, out IEnumerator outCoroutine)
         #endif // EXPANDED_REFS
         {
             PropertyName id = inEventData.Type;
@@ -185,9 +208,9 @@ namespace BeauUtil
                 return true;
             }
 
-            if (m_InheritFrom != null)
+            if (m_Base != null)
             {
-                return m_InheritFrom.TryEvaluate(inEventData, inContext, out outCoroutine);
+                return m_Base.TryEvaluate(inEventData, inContext, out outCoroutine);
             }
 
             Debug.LogErrorFormat("[TagStringEventHandler] Unable to handle event type '{0}'", id);
@@ -199,7 +222,7 @@ namespace BeauUtil
 
         public void Dispose()
         {
-            m_InheritFrom = null;
+            m_Base = null;
             if (m_Handlers != null)
             {
                 m_Handlers.Clear();

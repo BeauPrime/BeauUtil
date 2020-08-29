@@ -114,6 +114,20 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Adds an item to the set with a given weight.
+        /// If the item already exists in the set, this will add the weight
+        /// to the existing entry instead.
+        /// </summary>
+#if EXPANDED_REFS
+        public WeightedSet<T> Add(in PriorityValue<T> inValue)
+#else
+        public WeightedSet<T> Add(PriorityValue<T> inValue)
+#endif // EXPANDED_REFS
+        {
+            return Add(inValue.Value, inValue.Priority);
+        }
+
+        /// <summary>
         /// Modifies the weight for an item in the set.
         /// </summary>
 #if EXPANDED_REFS
@@ -210,6 +224,18 @@ namespace BeauUtil
             m_TotalWeight += inWeight;
             m_Cached = false;
             return this;
+        }
+
+        /// <summary>
+        /// Inserts and sets the weight for an item in the set.
+        /// </summary>
+#if EXPANDED_REFS
+        public WeightedSet<T> SetWeight(in PriorityValue<T> inValue)
+#else
+        public WeightedSet<T> SetWeight(PriorityValue<T> inValue)
+#endif // EXPANDED_REFS
+        {
+            return SetWeight(inValue.Value, inValue.Priority);
         }
 
         /// <summary>

@@ -13,7 +13,7 @@
 
 using System;
 
-namespace BeauUtil
+namespace BeauUtil.Tags
 {
     public sealed partial class TagString : IDisposable, ICopyCloneable<TagString>
     {
@@ -21,9 +21,9 @@ namespace BeauUtil
 
         private string m_RichText = string.Empty;
         private string m_StrippedText = string.Empty;
-        private Node[] m_Nodes = null;
+        private TagNodeData[] m_Nodes = null;
         private int m_NodeCount = 0;
-        private ListSlice<Node> m_NodeList;
+        private ListSlice<TagNodeData> m_NodeList;
 
         #region Output Data
 
@@ -50,7 +50,7 @@ namespace BeauUtil
         /// <summary>
         /// List of nodes generated from the processed string.
         /// </summary>
-        public ListSlice<Node> Nodes { get { return m_NodeList; } }
+        public ListSlice<TagNodeData> Nodes { get { return m_NodeList; } }
 
         #endregion // Output Data
 
@@ -60,14 +60,14 @@ namespace BeauUtil
         /// Adds a node to the node list.
         /// </summary>
 #if EXPANDED_REFS
-        public void AddNode(in Node inNode)
+        public void AddNode(in TagNodeData inNode)
 #else
-        public void AddNode(Node inNode)
+        public void AddNode(TagNodeData inNode)
 #endif // EXPANDED_REFS
         {
             if (m_Nodes == null)
             {
-                m_Nodes = new Node[InitialNodeCount];
+                m_Nodes = new TagNodeData[InitialNodeCount];
             }
             else if (m_NodeCount >= m_Nodes.Length)
             {
@@ -75,7 +75,7 @@ namespace BeauUtil
             }
 
             m_Nodes[m_NodeCount++] = inNode;
-            m_NodeList = new ListSlice<Node>(m_Nodes, 0, m_NodeCount);
+            m_NodeList = new ListSlice<TagNodeData>(m_Nodes, 0, m_NodeCount);
         }
 
         /// <summary>
@@ -88,12 +88,12 @@ namespace BeauUtil
 
             if (m_Nodes == null)
             {
-                m_Nodes = new Node[InitialNodeCount];
+                m_Nodes = new TagNodeData[InitialNodeCount];
             }
 
-            if (m_NodeCount == 0 || m_Nodes[m_NodeCount - 1].Type != NodeType.Text)
+            if (m_NodeCount == 0 || m_Nodes[m_NodeCount - 1].Type != TagNodeType.Text)
             {
-                AddNode(Node.TextNode(inVisibleCharacterCount));
+                AddNode(TagNodeData.TextNode(inVisibleCharacterCount));
             }
             else
             {
@@ -106,12 +106,12 @@ namespace BeauUtil
         /// </summary>
         /// <param name="inEventData"></param>
 #if EXPANDED_REFS
-        public void AddEvent(in EventData inEventData)
+        public void AddEvent(in TagEventData inEventData)
 #else
-        public void AddEvent(in EventData inEventData)
+        public void AddEvent(in TagEventData inEventData)
 #endif // EXPANDED_REFS
         {
-            AddNode(Node.EventNode(inEventData));
+            AddNode(TagNodeData.EventNode(inEventData));
         }
         
         /// <summary>
@@ -126,7 +126,7 @@ namespace BeauUtil
             {
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_NodeCount = 0;
-                m_NodeList = default(ListSlice<Node>);
+                m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
 
@@ -138,7 +138,7 @@ namespace BeauUtil
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_Nodes = null;
                 m_NodeCount = 0;
-                m_NodeList = default(ListSlice<Node>);
+                m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
 
@@ -159,7 +159,7 @@ namespace BeauUtil
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_Nodes = null;
                 m_NodeCount = 0;
-                m_NodeList = default(ListSlice<Node>);
+                m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
     
@@ -191,14 +191,14 @@ namespace BeauUtil
             else
             {
                 if (m_Nodes == null)
-                    m_Nodes = new Node[inClone.m_Nodes.Length];
+                    m_Nodes = new TagNodeData[inClone.m_Nodes.Length];
                 else if (m_Nodes.Length < inClone.m_Nodes.Length)
                     Array.Resize(ref m_Nodes, inClone.m_Nodes.Length);
 
                 m_NodeCount = inClone.m_NodeCount;
                 Array.Copy(inClone.m_Nodes, m_Nodes, m_NodeCount);
 
-                m_NodeList = new ListSlice<Node>(m_Nodes, 0, m_NodeCount);
+                m_NodeList = new ListSlice<TagNodeData>(m_Nodes, 0, m_NodeCount);
             }
         }
 

@@ -408,17 +408,30 @@ namespace BeauUtil
             if (inIndex < 0 || inIndex >= m_Count)
                 throw new ArgumentOutOfRangeException("inIndex");
 
-            int tailIdx = (m_Tail + m_Capacity - 1) % m_Capacity;
             int entryIdx = (m_Head + inIndex) % m_Capacity;
-
-            if (tailIdx != entryIdx)
+            
+            if (inIndex < m_Count / 2)
             {
-                m_Data[entryIdx] = m_Data[tailIdx];
+                if (m_Head != entryIdx)
+                {
+                    m_Data[entryIdx] = m_Data[m_Head];
+                }
+                m_Data[m_Head] = default(T);
+                m_Head = (m_Head + 1) % m_Capacity;
             }
-            m_Data[tailIdx] = default(T);
+            else
+            {
+                int tailIdx = (m_Tail + m_Capacity - 1) % m_Capacity;
+
+                if (tailIdx != entryIdx)
+                {
+                    m_Data[entryIdx] = m_Data[tailIdx];
+                }
+                m_Data[tailIdx] = default(T);
+                m_Tail = tailIdx;
+            }
 
             --m_Count;
-            m_Tail = tailIdx;
         }
 
         /// <summary>
@@ -502,17 +515,8 @@ namespace BeauUtil
             if (m_Count <= 1)
                 return;
 
-            if (m_Head < m_Tail)
-            {
-                Array.Sort(m_Data, m_Head, m_Count, inComparer);
-            }
-            else
-            {
-				throw new NotImplementedException();
-                // TODO: Rearrange into contiguous region
-                // TODO: Sort contiguous region
-                // TODO: Reset head/tail
-            }
+            Compress(false);
+            Array.Sort(m_Data, m_Head, m_Count, inComparer);
         }
 
         /// <summary>
@@ -520,23 +524,92 @@ namespace BeauUtil
         /// </summary>
         public void Reverse()
         {
-            throw new NotImplementedException();
+            if (m_Count <= 1)
+                return;
+
+            Compress(false);
+            Array.Reverse(m_Data, m_Head, m_Count);
+        }
+
+        /// <summary>
+        /// Compresses the buffer to ensure elements are contiguous in memory.
+        /// </summary>
+        public void Compress()
+        {
+            Compress(true);
+        }
+
+        private void Compress(bool inbForceToZero)
+        {
+            if (m_Count == 0)
+                return;
+
+            if (inbForceToZero && m_Head == 0)
+            {
+                return;
+            }
+
+            if (m_Head < m_Tail)
+            {
+                if (inbForceToZero)
+                {
+                    Array.Copy(m_Data, m_Head, m_Data, 0, m_Count);
+                    m_Head = 0;
+                    Array.Clear(m_Data, m_Count, m_Data.Length - m_Count);
+                }
+                return;
+            }
+
+            // TODO(Beau): Implement this inline, without extra alloc
+
+            T[] newData = new T[m_Capacity];
+            int headLength = m_Capacity - m_Head;
+            int tailLength = m_Count - headLength;
+
+            Array.Copy(m_Data, m_Head, newData, 0, headLength);
+            Array.Copy(m_Data, 0, newData, headLength, tailLength);
+            m_Head = 0;
+            m_Tail = m_Count;
+
+            m_Data = newData;
         }
 
         #endregion // Sorting
 
         #region Copy
 
-        public int CopyTo(T[] inDest, int inSrcIndex, int inDestIndex, int inLength)
+        /// <summary>
+        /// Copies the contents of the ring buffer into an array.
+        /// Returns how many elements were able to be copied.
+        /// </summary>
+        public int CopyTo(int inSrcIndex, T[] ioDest, int inDestIndex, int inLength)
         {
-            // TODO: Implement
-            throw new NotImplementedException();
-        }
+            int desiredCopy = inLength - inDestIndex;
+            int available = m_Count - inSrcIndex;
+            if (desiredCopy > m_Count)
+                desiredCopy = m_Count;
+            if (desiredCopy > available)
+                desiredCopy = available;
+            if (desiredCopy > ioDest.Length)
+                desiredCopy = ioDest.Length;
+            
+            if (desiredCopy <= 0)
+                return 0;
 
-        public int CopyReversed(T[] inDest, int inSrcIndex, int inDestIndex, int inLength)
-        {
-            // TODO: Implement
-            throw new NotImplementedException();
+            if (m_Head + desiredCopy <= m_Capacity)
+            {
+                Array.Copy(m_Data, m_Head, ioDest, inDestIndex, desiredCopy);
+            }
+            else
+            {
+                int headLength = m_Capacity - m_Head;
+                int tailLength = desiredCopy - headLength;
+
+                Array.Copy(m_Data, m_Head, ioDest, inDestIndex, headLength);
+                Array.Copy(m_Data, 0, ioDest, inDestIndex + headLength, tailLength);
+            }
+
+            return desiredCopy;
         }
 
         #endregion // Copy
@@ -645,7 +718,7 @@ namespace BeauUtil
 
         void ICollection.CopyTo(Array array, int index)
         {
-            CopyTo((T[]) array, 0, index, m_Count);
+            CopyTo(0, (T[]) array, index, m_Count);
         }
 
         T IReadOnlyList<T>.this[int inIndex]

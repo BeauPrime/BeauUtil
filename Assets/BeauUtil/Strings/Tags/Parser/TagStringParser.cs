@@ -11,7 +11,7 @@ using System;
 using System.Text;
 using UnityEngine;
 
-namespace BeauUtil
+namespace BeauUtil.Tags
 {
     /// <summary>
     /// Parser to turn a string into a TagString.
@@ -117,7 +117,7 @@ namespace BeauUtil
             if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
             {
                 // if we're not considering rich text, and we have no processors, there's nothing to do here
-                outTarget.AddNode(TagString.Node.TextNode((uint) inInput.Length));
+                outTarget.AddNode(TagNodeData.TextNode((uint) inInput.Length));
                 inInput.AppendTo(m_RichBuilder);
                 inInput.AppendTo(m_StrippedBuilder);
                 return;
@@ -142,7 +142,7 @@ namespace BeauUtil
                     else if (state.Input.AttemptMatch(charIdx, ">"))
                     {
                         StringSlice richSlice = state.Input.Substring(state.RichStart, charIdx - state.RichStart + 1);
-                        TagData richTag = ParseTag(richSlice, RichTextDelimiters);
+                        TagData richTag = TagData.Parse(richSlice, RichTextDelimiters);
 
                         CopyNonRichText(ref state, state.RichStart);
 
@@ -177,7 +177,7 @@ namespace BeauUtil
 
                             if (!bRichHandled && m_EventProcessor != null)
                             {
-                                TagString.EventData eventData;
+                                TagEventData eventData;
                                 if (m_EventProcessor.TryProcess(richTag, state.Context, out eventData))
                                 {
                                     outTarget.AddEvent(eventData);
@@ -208,7 +208,7 @@ namespace BeauUtil
                     else if (state.Input.AttemptMatch(charIdx, m_Delimiters.TagEndDelimiter))
                     {
                         StringSlice tagSlice = state.Input.Substring(state.TagStart, charIdx - state.TagStart + 1);
-                        TagData tag = ParseTag(tagSlice, m_Delimiters);
+                        TagData tag = TagData.Parse(tagSlice, m_Delimiters);
 
                         CopyNonRichText(ref state, state.TagStart);
 
@@ -236,7 +236,7 @@ namespace BeauUtil
 
                         if (!bTagHandled && m_EventProcessor != null)
                         {
-                            TagString.EventData eventData;
+                            TagEventData eventData;
                             if (m_EventProcessor.TryProcess(tag, state.Context, out eventData))
                             {
                                 outTarget.AddEvent(eventData);
@@ -407,6 +407,47 @@ namespace BeauUtil
         }
 
         #endregion // Processing
+
+        #region Parsing State
+
+        protected struct ParseState
+        {
+            public StringSlice Input;
+            public TagString Target;
+
+            public object Context;
+
+            public StringBuilder RichOutput;
+            public StringBuilder StrippedOutput;
+            public StringBuilder RegenBuilder;
+
+            public int CopyStart;
+            public int RichStart;
+            public int TagStart;
+
+            public void Initialize(StringSlice inInput, TagString inTarget, object inContext, StringBuilder inRichOutput, StringBuilder inStrippedOutput, StringBuilder inRegenBuilder)
+            {
+                Input = inInput;
+                Target = inTarget;
+
+                Context = inContext;
+
+                RichOutput = inRichOutput;
+                StrippedOutput = inStrippedOutput;
+                RegenBuilder = inRegenBuilder;
+
+                CopyStart = 0;
+                RichStart = -1;
+                TagStart = -1;
+            }
+
+            public int CopyLengthExclusive(int inEnd)
+            {
+                return inEnd - CopyStart;
+            }
+        }
+
+        #endregion // Parsing State
 
         #region IDisposable
 

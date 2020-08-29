@@ -43,7 +43,21 @@ namespace BeauUtil.Editor
                 return false;
             }
 
-            return conditionalProp.boolValue == attr.DesiredValue;
+            bool bBool;
+
+            switch(conditionalProp.propertyType)
+            {
+                case SerializedPropertyType.Boolean:
+                default:
+                    bBool = conditionalProp.boolValue;
+                    break;
+
+                case SerializedPropertyType.ObjectReference:
+                    bBool = conditionalProp.objectReferenceValue != null;
+                    break;
+            }
+
+            return bBool == attr.DesiredValue;
         }
     }
 }
