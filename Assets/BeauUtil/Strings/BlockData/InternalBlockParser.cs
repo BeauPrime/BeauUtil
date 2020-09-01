@@ -55,6 +55,7 @@ namespace BeauUtil.Blocks
             public IBlockParsingRules Rules;
             public IBlockGenerator<TBlock, TPackage> Generator;
             public IDelimiterRules TagDelimiters;
+            public BlockMetaCache Cache;
 
             public TPackage Package;
             public TBlock CurrentBlock;
@@ -62,6 +63,7 @@ namespace BeauUtil.Blocks
             public BlockFilePosition Position;
 
             public StringBuilder Builder;
+            public StringBuilder ContentBuilder;
             public uint TempFlags;
 
             public bool Error;
@@ -80,6 +82,21 @@ namespace BeauUtil.Blocks
                     BlockParser.ReturnStringBuilder(Builder);
                     Builder = null;
                 }
+
+                if (ContentBuilder != null)
+                {
+                    BlockParser.ReturnStringBuilder(ContentBuilder);
+                    ContentBuilder = null;
+                }
+
+                PrefixPriorities = null;
+                Rules = null;
+                Generator = null;
+                TagDelimiters = null;
+                Cache = null;
+
+                Package = null;
+                CurrentBlock = null;
             }
         }
 
@@ -87,7 +104,7 @@ namespace BeauUtil.Blocks
 
         #region Parse
 
-        static internal IEnumerator ParseFile(string inFileName, StringSlice inFile, TPackage ioPackage, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator)
+        static internal IEnumerator ParseFile(string inFileName, StringSlice inFile, TPackage ioPackage, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache)
         {
             var state = new ParseState();
             state.PrefixPriorities = GeneratePrefixPriority(inRules);
@@ -96,6 +113,8 @@ namespace BeauUtil.Blocks
             state.TagDelimiters = new BlockParser.BlockTagDelimiters(inRules);
             state.Package = ioPackage;
             state.Builder = BlockParser.RentStringBuilder();
+            state.ContentBuilder = BlockParser.RentStringBuilder();
+            state.Cache = inCache ?? BlockMetaCache.Default;
 
             using(var disposeRef = state)
             {
@@ -132,7 +151,10 @@ namespace BeauUtil.Blocks
             StringSlice lineComment = StringSlice.Empty;
 
             if (lineContents.IsEmpty)
-                return LineResult.Empty;
+            {
+                if (ioState.CurrentState != BlockState.InData)
+                    return LineResult.Empty;
+            }
 
             int commentIdx = lineContents.IndexOf(ioState.Rules.CommentPrefix);
             if (commentIdx >= 0)
@@ -144,10 +166,10 @@ namespace BeauUtil.Blocks
             try
             {
                 bool bSuccess = true;
+                bool bProcessedCommand = false;
+                
                 if (!lineContents.IsEmpty)
                 {
-                    bool bProcessedCommand = false;
-                    
                     for (int i = 0; i < ioState.PrefixPriorities.Length && !bProcessedCommand; ++i)
                     {
                         PrefixType type = ioState.PrefixPriorities[i];
@@ -220,18 +242,19 @@ namespace BeauUtil.Blocks
                                 }
                         }
                     }
+                }
 
-                    if (!bProcessedCommand)
+                if (!bProcessedCommand)
+                {
+                    if (ioState.Rules.RequireExplicitBlockContent && !string.IsNullOrEmpty(ioState.Rules.BlockContentPrefix))
                     {
-                        if (ioState.Rules.RequireExplicitBlockContent && !string.IsNullOrEmpty(ioState.Rules.BlockContentPrefix))
-                        {
-                            BlockParser.LogError(ioState.Position, "Cannot add content '{0}', must have content prefix '{1}'", lineContents, ioState.Rules.BlockContentPrefix);
-                            bSuccess = false;
-                        }
-                        else
-                        {
+                        BlockParser.LogError(ioState.Position, "Cannot add content '{0}', must have content prefix '{1}'", lineContents, ioState.Rules.BlockContentPrefix);
+                        bSuccess = false;
+                    }
+                    else
+                    {
+                        if (!lineContents.IsEmpty || ioState.CurrentState == BlockState.InData)
                             bSuccess &= TryAddContent(ref ioState, lineContents);
-                        }
                     }
                 }
 
@@ -311,7 +334,7 @@ namespace BeauUtil.Blocks
                         }
 
                         ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
-                        ioState.Generator.CompleteBlock(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty, ioState.BlockError);
+                        FlushBlock(ref ioState, TagData.Empty);
                         break;
                     }
 
@@ -328,7 +351,7 @@ namespace BeauUtil.Blocks
                         {
                             ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
                         }
-                        ioState.Generator.CompleteBlock(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty, ioState.BlockError);
+                        FlushBlock(ref ioState, TagData.Empty);
                         break;
                     }
 
@@ -381,7 +404,15 @@ namespace BeauUtil.Blocks
                     }
             }
 
-            return !data.IsEmpty() && ioState.Generator.TryEvaluateMeta(ioState, ioState.Package, ioState.CurrentBlock, data);
+            if (!data.IsEmpty())
+            {
+                bool bHandled = ioState.Generator.TryEvaluateMeta(ioState, ioState.Package, ioState.CurrentBlock, data);
+                if (!bHandled)
+                    bHandled = ioState.Cache.TryEvaluateCommand(ioState.CurrentBlock, data);
+                return bHandled;
+            }
+
+            return false;
         }
 
         // Attempts to end the current block header
@@ -451,7 +482,7 @@ namespace BeauUtil.Blocks
                     }
             }
 
-            ioState.Generator.CompleteBlock(ioState, ioState.Package, ioState.CurrentBlock, data, ioState.BlockError);
+            FlushBlock(ref ioState, data);
             ioState.CurrentState = BlockState.BlockDone;
             ioState.CurrentBlock = null;
             return true;
@@ -460,9 +491,6 @@ namespace BeauUtil.Blocks
         // Attempts to add content to the current block
         static private bool TryAddContent(ref ParseState ioState, StringSlice inContent)
         {
-            if (inContent.IsEmpty)
-                return true;
-
             switch (ioState.CurrentState)
             {
                 case BlockState.NotStarted:
@@ -496,7 +524,32 @@ namespace BeauUtil.Blocks
                     break;
             }
 
-            return ioState.Generator.TryAddContent(ioState, ioState.Package, ioState.CurrentBlock, inContent);
+            bool bHandled = ioState.Generator.TryAddContent(ioState, ioState.Package, ioState.CurrentBlock, inContent);
+            if (!bHandled)
+            {
+                BlockMetaCache.ContentInfo contentSetter;
+                if (ioState.Cache.TryGetContent(ioState.CurrentBlock, out contentSetter))
+                {
+                    if (contentSetter.Mode == BlockContentMode.LineByLine)
+                    {
+                        StringSlice contentString = inContent;
+                        if (contentString.Contains('\\'))
+                        {
+                            contentString = inContent.Unescape();
+                        }
+
+                        bHandled = contentSetter.Invoke(ioState.CurrentBlock, contentString, ioState.Cache.SharedResources);
+                    }
+                    else
+                    {
+                        if (ioState.ContentBuilder.Length > 0 && contentSetter.LineSeparator != 0)
+                            ioState.ContentBuilder.Append(contentSetter.LineSeparator);
+                        ioState.ContentBuilder.AppendSlice(inContent);
+                    }
+                }
+            }
+
+            return bHandled;
         }
 
         // Attempts to add a comment
@@ -531,7 +584,40 @@ namespace BeauUtil.Blocks
                     }
             }
 
-            return !data.IsEmpty() && ioState.Generator.TryEvaluatePackage(ioState, ioState.Package, ioState.CurrentBlock, data);
+            if (!data.IsEmpty())
+            {
+                bool bHandled = ioState.Generator.TryEvaluatePackage(ioState, ioState.Package, ioState.CurrentBlock, data);
+                if (!bHandled)
+                    bHandled = ioState.Cache.TryEvaluateCommand(ioState.Package, data);
+                return bHandled;
+            }
+
+            return false; 
+        }
+
+        static private void FlushBlock(ref ParseState ioState, TagData inEndData)
+        {
+            ioState.ContentBuilder.TrimEnd(BlockParser.TrimCharsWithSpace);
+            if (ioState.ContentBuilder.Length > 0)
+            {
+                BlockMetaCache.ContentInfo contentSetter;
+                if (ioState.Cache.TryGetContent(ioState.CurrentBlock, out contentSetter))
+                {
+                    if (contentSetter.Mode == BlockContentMode.BatchContent)
+                    {
+                        string contentString = ioState.ContentBuilder.Flush();
+                        if (contentString.IndexOf('\\') >= 0)
+                        {
+                            contentString = StringUtils.Unescape(contentString);
+                        }
+                        ioState.BlockError |= contentSetter.Invoke(ioState.CurrentBlock, contentString, ioState.Cache.SharedResources);
+                        ioState.Error |= ioState.BlockError;
+                    }
+                }
+
+                ioState.ContentBuilder.Length = 0;
+            }
+            ioState.Generator.CompleteBlock(ioState, ioState.Package, ioState.CurrentBlock, inEndData, ioState.BlockError);
         }
 
         #endregion // Parse Commands

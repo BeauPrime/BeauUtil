@@ -3,7 +3,7 @@
  * Author:  Autumn Beauchesne
  * Date:    23 August 2020
  * 
- * File:    IBlock.cs
+ * File:    IDataBlock.cs
  * Purpose: A block of data.
  */
 

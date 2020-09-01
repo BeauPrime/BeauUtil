@@ -53,12 +53,13 @@ namespace BeauUtil.Blocks
 
         /// <summary>
         /// Creates a new block object.
+        /// Returns if handled.
         /// </summary>
         bool TryCreateBlock(IBlockParserUtil inUtil, TPackage inPackage, TagData inId, out TBlock outBlock);
         
         /// <summary>
         /// Attempts to evaluate data through the block object header.
-        /// Returns if no error.
+        /// Returns if handled.
         /// </summary>
         bool TryEvaluateMeta(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inMetadata);
         
@@ -69,7 +70,7 @@ namespace BeauUtil.Blocks
         
         /// <summary>
         /// Attempts to add content to the block object data.
-        /// Returns if no error.
+        /// Returns if handled.
         /// </summary>
         bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringSlice inContent);
         
@@ -82,7 +83,7 @@ namespace BeauUtil.Blocks
     
         /// <summary>
         /// Attempts to add a comment.
-        /// Returns if no error.
+        /// Returns if handled.
         /// </summary>
         bool TryAddComment(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, StringSlice inComment);
     }

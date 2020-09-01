@@ -17,7 +17,7 @@ namespace BeauUtil
     /// <summary>
     /// A section of a string.
     /// </summary>
-    public struct StringSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringSlice>, IEquatable<string>
+    public struct StringSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringSlice>, IEquatable<string>, IConvertible, IComparable<StringSlice>
     {
         private readonly string m_Source;
         private readonly int m_StartIndex;
@@ -371,6 +371,16 @@ namespace BeauUtil
             return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, outSlices);
         }
 
+        public int Split(char[] inSeparator, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        {
+            return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions, outSlices);
+        }
+
+        public int Split(ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        {
+            return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, outSlices);
+        }
+
         public IEnumerable<StringSlice> EnumeratedSplit(char[] inSeparator, StringSplitOptions inSplitOptions)
         {
             return EnumerableSplit(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions);
@@ -401,6 +411,16 @@ namespace BeauUtil
         }
 
         static public int Split(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        {
+            return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, outSlices);
+        }
+
+        static public int Split(string inString, char[] inSeparator, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        {
+            return Split(inString, 0, inString.Length, inSeparator, inSplitOptions, outSlices);
+        }
+
+        static public int Split(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
         {
             return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, outSlices);
         }
@@ -554,6 +574,173 @@ namespace BeauUtil
         }
 
         #endregion // IEquatable
+
+        #region IConvertible
+
+        TypeCode IConvertible.GetTypeCode()
+        {
+            return TypeCode.Object;
+        }
+
+        bool IConvertible.ToBoolean(IFormatProvider provider)
+        {
+            bool b;
+            if (!StringParser.TryParseBool(this, out b))
+                throw new FormatException();
+            return b;
+        }
+
+        byte IConvertible.ToByte(IFormatProvider provider)
+        {
+            byte b;
+            if (!StringParser.TryParseByte(this, out b))
+                throw new FormatException();
+            return b;
+        }
+
+        char IConvertible.ToChar(IFormatProvider provider)
+        {
+            if (Length == 0)
+                throw new FormatException();
+            return this[0];
+        }
+
+        DateTime IConvertible.ToDateTime(IFormatProvider provider)
+        {
+            return Convert.ToDateTime(ToString());
+        }
+
+        decimal IConvertible.ToDecimal(IFormatProvider provider)
+        {
+            double d;
+            if (!StringParser.TryParseDouble(this, out d))
+                throw new FormatException();
+            return (decimal) d;
+        }
+
+        double IConvertible.ToDouble(IFormatProvider provider)
+        {
+            double d;
+            if (!StringParser.TryParseDouble(this, out d))
+                throw new FormatException();
+            return d;
+        }
+
+        short IConvertible.ToInt16(IFormatProvider provider)
+        {
+            short s;
+            if (!StringParser.TryParseShort(this, out s))
+                throw new FormatException();
+            return s;
+        }
+
+        int IConvertible.ToInt32(IFormatProvider provider)
+        {
+            int i;
+            if (!StringParser.TryParseInt(this, out i))
+                throw new FormatException();
+            return i;
+        }
+
+        long IConvertible.ToInt64(IFormatProvider provider)
+        {
+            long l;
+            if (!StringParser.TryParseLong(this, out l))
+                throw new FormatException();
+            return l;
+        }
+
+        sbyte IConvertible.ToSByte(IFormatProvider provider)
+        {
+            sbyte s;
+            if (!StringParser.TryParseSByte(this, out s))
+                throw new FormatException();
+            return s;
+        }
+
+        float IConvertible.ToSingle(IFormatProvider provider)
+        {
+            float f;
+            if (!StringParser.TryParseFloat(this, out f))
+                throw new FormatException();
+            return f;
+        }
+
+        string IConvertible.ToString(IFormatProvider provider)
+        {
+            return ToString();
+        }
+
+        object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+        {
+            object o;
+            if (!StringParser.TryConvertTo(this, conversionType, out o))
+                throw new FormatException();
+            return o;
+        }
+
+        ushort IConvertible.ToUInt16(IFormatProvider provider)
+        {
+            ushort u;
+            if (!StringParser.TryParseUShort(this, out u))
+                throw new FormatException();
+            return u;
+        }
+
+        uint IConvertible.ToUInt32(IFormatProvider provider)
+        {
+            uint u;
+            if (!StringParser.TryParseUInt(this, out u))
+                throw new FormatException();
+            return u;
+        }
+
+        ulong IConvertible.ToUInt64(IFormatProvider provider)
+        {
+            ulong u;
+            if (!StringParser.TryParseULong(this, out u))
+                throw new FormatException();
+            return u;
+        }
+
+        #endregion // IConvertible
+
+        #region IComparable
+
+        public int CompareTo(StringSlice other)
+        {
+            if (Length == 0)
+            {
+                if (other.Length == 0)
+                {
+                    return 0;
+                }
+
+                return -1;
+            }
+            if (other.Length == 0)
+            {
+                return 1;
+            }
+
+            int minLength = Math.Min(Length, other.Length);
+            int baseCompare = string.CompareOrdinal(m_Source, m_StartIndex, other.m_Source, other.m_StartIndex, minLength);
+            if (baseCompare != 0)
+            {
+                return baseCompare;
+            }
+
+            int lengthCompare = Length - other.Length;
+
+            if (lengthCompare < 0)
+                return -1;
+            if (lengthCompare > 0)
+                return 1;
+            
+            return 0;
+        }
+
+        #endregion // IComparable
 
         #region Overrides
 
@@ -787,6 +974,138 @@ namespace BeauUtil
         }
 
         static private int Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        {
+            if (inString == null)
+                return 0;
+
+            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+
+            if (inSplitter == null)
+            {
+                if (!bRemoveEmpty || inLength > 0)
+                {
+                    outSlices.Add(new StringSlice(inString, inStartIdx, inLength));
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            inSplitter.Reset();
+
+            int startIdx = inStartIdx;
+            int currentLength = 0;
+            int slices = 0;
+
+            for (int charIdx = 0; charIdx < inLength; ++charIdx)
+            {
+                int realIdx = inStartIdx + charIdx;
+
+                int evalAdvance;
+                bool bSplit = inSplitter.Evaluate(inString, realIdx, out evalAdvance);
+
+                charIdx += evalAdvance;
+                currentLength += evalAdvance;
+
+                if (bSplit)
+                {
+                    if (!bRemoveEmpty || currentLength > 0)
+                    {
+                        StringSlice slice = new StringSlice(inString, startIdx, currentLength);
+                        slice = inSplitter.Process(slice);
+                        if (!bRemoveEmpty || slice.Length > 0)
+                        {
+                            outSlices.Add(slice);
+                            ++slices;
+                        }
+                    }
+
+                    startIdx = realIdx + 1 + evalAdvance;
+                    currentLength = 0;
+                }
+                else
+                {
+                    ++currentLength;
+                }
+            }
+
+            if (currentLength > 0)
+            {
+                StringSlice slice = new StringSlice(inString, startIdx, currentLength);
+                slice = inSplitter.Process(slice);
+                if (!bRemoveEmpty || slice.Length > 0)
+                {
+                    outSlices.Add(slice);
+                    ++slices;
+                }
+            }
+
+            return slices;
+        }
+
+        static private int Split(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        {
+            if (inString == null)
+                return 0;
+
+            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+
+            if (inSeparators == null || inSeparators.Length == 0)
+            {
+                if (!bRemoveEmpty || inLength > 0)
+                {
+                    outSlices.Add(new StringSlice(inString, inStartIdx, inLength));
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            int sepCount = inSeparators.Length;
+
+            int startIdx = inStartIdx;
+            int currentLength = 0;
+            int slices = 0;
+
+            for (int charIdx = 0; charIdx < inLength; ++charIdx)
+            {
+                int realIdx = inStartIdx + charIdx;
+                char c = inString[realIdx];
+                bool bSplit = false;
+                for (int sepIdx = 0; !bSplit && sepIdx < sepCount; ++sepIdx)
+                {
+                    bSplit = c == inSeparators[sepIdx];
+                }
+
+                if (bSplit)
+                {
+                    if (!bRemoveEmpty || currentLength > 0)
+                    {
+                        StringSlice slice = new StringSlice(inString, startIdx, currentLength);
+                        outSlices.Add(slice);
+                        ++slices;
+                    }
+
+                    startIdx = realIdx + 1;
+                    currentLength = 0;
+                }
+                else
+                {
+                    ++currentLength;
+                }
+            }
+
+            if (currentLength > 0)
+            {
+                StringSlice slice = new StringSlice(inString, startIdx, currentLength);
+                outSlices.Add(slice);
+                ++slices;
+            }
+
+            return slices;
+        }
+
+        static private int Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
         {
             if (inString == null)
                 return 0;

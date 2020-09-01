@@ -47,7 +47,7 @@ namespace BeauUtil.Blocks
 
         public virtual void CompleteHeader(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData) { }
 
-        public abstract bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringSlice inContent);
+        public virtual bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringSlice inContent) { return false; }
         
         public virtual void CompleteBlock(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData, bool inbError) { }
 

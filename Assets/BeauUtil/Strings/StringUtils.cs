@@ -574,6 +574,51 @@ namespace BeauUtil
             return true;
         }
 
+        /// <summary>
+        /// Trims characters from the end of a StringBuilder.
+        /// </summary>
+        static public StringBuilder TrimEnd(this StringBuilder ioBuilder, char[] inTrimChars)
+        {
+            if (ioBuilder == null)
+                throw new ArgumentNullException("ioBuilder");
+            if (inTrimChars == null)
+                throw new ArgumentException("inTrimChars");
+
+            if (inTrimChars.Length == 0)
+                return ioBuilder;
+
+            int length = ioBuilder.Length;
+            char c;
+            bool bFound;
+            int toRemove = 0;
+            while(length > 0)
+            {
+                c = ioBuilder[length - 1];
+                bFound = false;
+                for(int i = 0; !bFound && i < inTrimChars.Length; ++i)
+                {
+                    bFound = c == inTrimChars[i];
+                }
+
+                if (bFound)
+                {
+                    --length;
+                    ++toRemove;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (toRemove > 0)
+            {
+                ioBuilder.Length -= toRemove;
+            }
+
+            return ioBuilder;
+        }
+
         #endregion // StringBuilder
 
         /// <summary>
@@ -715,7 +760,7 @@ namespace BeauUtil
                     {
                         if (m_QuoteMode)
                         {
-                            if (inIndex > inString.Length && inString[inIndex - 1] == '\\')
+                            if (inIndex > 0 && inString[inIndex - 1] == '\\')
                             {
                                 outAdvance = 1;
                             }

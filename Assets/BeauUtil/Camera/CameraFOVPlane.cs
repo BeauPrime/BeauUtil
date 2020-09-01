@@ -105,10 +105,18 @@ namespace BeauUtil
             return Mathf.Clamp(m_Height / inZoom, 0.01f, 10000f);
         }
 
+        /// <summary>
+        /// Returns the current settings.
+        /// </summary>
+        public void GetSettings(out CameraSettings outSettings)
+        {
+            outSettings = new CameraSettings(Height, Zoom, m_LastDistance, ZoomedHeight(), m_Camera.fieldOfView);
+        }
+
         private void OnPreCull()
         {
             float newDist;
-            bool bHit = CalculateDistanceToPlane(out newDist);
+            bool bHit = m_Camera.TryGetDistanceToObjectPlane(m_Target, out newDist);
 
             if (!bHit)
             {
@@ -126,20 +134,6 @@ namespace BeauUtil
                 m_Camera.fieldOfView = fov;
                 m_OnFOVChanged.Invoke(new CameraSettings(Height, Zoom, newDist, height, fov));
             }
-        }
-
-        private bool CalculateDistanceToPlane(out float outDistance)
-        {
-            if (!m_Target)
-            {
-                outDistance = 0;
-                return false;
-            }
-
-            Plane p = new Plane(-m_Transform.forward, m_Target.position);
-            Ray r = m_Camera.ViewportPointToRay(s_CenterViewportPoint);
-
-            return p.Raycast(r, out outDistance);
         }
 
         static private readonly Vector3 s_CenterViewportPoint = new Vector3(0.5f, 0.5f, 1);

@@ -29,12 +29,12 @@ namespace BeauUtil.Blocks
         /// <summary>
         /// Parses the given file contents into blocks.
         /// </summary>
-        static public TPackage Parse<TBlock, TPackage>(string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator)
+        static public TPackage Parse<TBlock, TPackage>(string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
         {
             IEnumerator parser;
-            TPackage package = ParseAsync(inFileName, inFile, inRules, inGenerator, out parser);
+            TPackage package = ParseAsync(inFileName, inFile, inRules, inGenerator, inCache, out parser);
             while (parser.MoveNext()) ;
             return package;
         }
@@ -43,11 +43,11 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks
         /// and merges into the given package.
         /// </summary>
-        static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator)
+        static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
         {
-            IEnumerator parser = ParseAsync(ref ioPackage, inFileName, inFile, inRules, inGenerator);
+            IEnumerator parser = ParseAsync(ref ioPackage, inFileName, inFile, inRules, inGenerator, inCache);
             while (parser.MoveNext()) ;
         }
 
@@ -56,6 +56,17 @@ namespace BeauUtil.Blocks
         /// Each MoveNext() call on the returned IEnumerator will parse one line.
         /// </summary>
         static public TPackage ParseAsync<TBlock, TPackage>(string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync<TBlock, TPackage>(inFileName, inFile, inRules, inGenerator, null, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one line.
+        /// </summary>
+        static public TPackage ParseAsync<TBlock, TPackage>(string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
         {
@@ -72,7 +83,7 @@ namespace BeauUtil.Blocks
 
             string fileName = string.IsNullOrEmpty(inFileName) ? NullFilename : inFileName;
             TPackage package = inGenerator.CreatePackage(fileName);
-            outLoader = InternalBlockParser<TBlock, TPackage>.ParseFile(fileName, inFile, package, inRules, inGenerator);
+            outLoader = InternalBlockParser<TBlock, TPackage>.ParseFile(fileName, inFile, package, inRules, inGenerator, inCache);
             return package;
         }
 
@@ -81,7 +92,7 @@ namespace BeauUtil.Blocks
         /// and merges into the given package.
         /// Each MoveNext() call on the returned IEnumerator will parse one line.
         /// </summary>
-        static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator)
+        static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, string inFileName, StringSlice inFile, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
         {
@@ -100,7 +111,7 @@ namespace BeauUtil.Blocks
             {
                 ioPackage = inGenerator.CreatePackage(fileName);
             }
-            return InternalBlockParser<TBlock, TPackage>.ParseFile(fileName, inFile, ioPackage, inRules, inGenerator);
+            return InternalBlockParser<TBlock, TPackage>.ParseFile(fileName, inFile, ioPackage, inRules, inGenerator, inCache);
         }
 
         #endregion // Parse

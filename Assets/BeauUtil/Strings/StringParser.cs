@@ -62,6 +62,18 @@ namespace BeauUtil
             outBool = false;
             return false;
         }
+
+        /// <summary>
+        /// Parses a string slice into a bool.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public bool ParseBool(StringSlice inSlice, bool inbDefault = false)
+        {
+            bool result;
+            if (!TryParseBool(inSlice, out result))
+                result = inbDefault;
+            return result;
+        }
         
         #endregion // Bool
 
@@ -119,6 +131,18 @@ namespace BeauUtil
 
             outByte = (byte) accum;
             return true;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a byte.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public byte ParseByte(StringSlice inSlice, byte inDefault = 0)
+        {
+            byte result;
+            if (!TryParseByte(inSlice, out result))
+                result = inDefault;
+            return result;
         }
 
         /// <summary>
@@ -185,6 +209,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Parses a string slice into a sbyte.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public sbyte ParseSByte(StringSlice inSlice, sbyte inDefault = 0)
+        {
+            sbyte result;
+            if (!TryParseSByte(inSlice, out result))
+                result = inDefault;
+            return result;
+        }
+
+        /// <summary>
         /// Attempts to parse a string slice into a ushort.
         /// </summary>
         static public bool TryParseUShort(StringSlice inSlice, out ushort outUShort)
@@ -236,6 +272,18 @@ namespace BeauUtil
 
             outUShort = (ushort) accum;
             return true;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a ushort.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public ushort ParseUShort(StringSlice inSlice, ushort inDefault = 0)
+        {
+            ushort result;
+            if (!TryParseUShort(inSlice, out result))
+                result = inDefault;
+            return result;
         }
 
         /// <summary>
@@ -302,6 +350,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Parses a string slice into a short.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public short ParseShort(StringSlice inSlice, short inDefault = 0)
+        {
+            short result;
+            if (!TryParseShort(inSlice, out result))
+                result = inDefault;
+            return result;
+        }
+
+        /// <summary>
         /// Attempts to parse a string slice into a uint.
         /// </summary>
         static public bool TryParseUInt(StringSlice inSlice, out uint outUInt)
@@ -353,6 +413,18 @@ namespace BeauUtil
 
             outUInt = (uint) accum;
             return true;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a uint.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public uint ParseUInt(StringSlice inSlice, uint inDefault = 0)
+        {
+            uint result;
+            if (!TryParseUInt(inSlice, out result))
+                result = inDefault;
+            return result;
         }
 
         /// <summary>
@@ -419,6 +491,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Parses a string slice into an int.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public int ParseInt(StringSlice inSlice, int inDefault = 0)
+        {
+            int result;
+            if (!TryParseInt(inSlice, out result))
+                result = inDefault;
+            return result;
+        }
+
+        /// <summary>
         /// Attempts to parse a string slice into a ulong.
         /// </summary>
         static public bool TryParseULong(StringSlice inSlice, out ulong outULong)
@@ -470,6 +554,18 @@ namespace BeauUtil
 
             outULong = (uint) accum;
             return true;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a ulong.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public ulong ParseULong(StringSlice inSlice, ulong inDefault = 0)
+        {
+            ulong result;
+            if (!TryParseULong(inSlice, out result))
+                result = inDefault;
+            return result;
         }
 
         /// <summary>
@@ -533,6 +629,18 @@ namespace BeauUtil
 
             outLong = (long) accum;
             return true;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a long.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public long ParseLong(StringSlice inSlice, long inDefault = 0)
+        {
+            long result;
+            if (!TryParseLong(inSlice, out result))
+                result = inDefault;
+            return result;
         }
 
         #endregion // Integers
@@ -599,6 +707,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Parses a string slice into a float.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public float ParseFloat(StringSlice inSlice, float inDefault = 0)
+        {
+            float result;
+            if (!TryParseFloat(inSlice, out result))
+                result = inDefault;
+            return result;
+        }
+
+        /// <summary>
         /// Attempts to parse a string slice into a double.
         /// </summary>
         static public bool TryParseDouble(StringSlice inSlice, out double outDouble)
@@ -655,7 +775,277 @@ namespace BeauUtil
             return double.TryParse(inSlice.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out outDouble);
         }
 
+        /// <summary>
+        /// Parses a string slice into a double.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public double ParseDouble(StringSlice inSlice, double inDefault = 0)
+        {
+            double result;
+            if (!TryParseDouble(inSlice, out result))
+                result = inDefault;
+            return result;
+        }
+
         #endregion // Float
+
+        #region Convert
+
+        /// <summary>
+        /// Attempts to convert a string slice into a value of the given type.
+        /// </summary>
+        static public bool TryConvertTo(StringSlice inSlice, Type inType, out object outValue)
+        {
+            TypeCode tc = Type.GetTypeCode(inType);
+
+            switch(tc)
+            {
+                case TypeCode.Boolean:
+                    {
+                        bool b;
+                        if (TryParseBool(inSlice, out b))
+                        {
+                            outValue = b;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Byte:
+                    {
+                        byte b;
+                        if (TryParseByte(inSlice, out b))
+                        {
+                            outValue = b;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Char:
+                    {
+                        if (inSlice.Length > 0)
+                        {
+                            outValue = inSlice[0];
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.DateTime:
+                    {
+                        try
+                        {
+                            outValue = Convert.ToDateTime(inSlice.ToString());
+                            return true;
+                        }
+                        catch
+                        {
+                            outValue = null;
+                            return false;
+                        }
+                    }
+
+                case TypeCode.Decimal:
+                    {
+                        double d;
+                        if (TryParseDouble(inSlice, out d))
+                        {
+                            outValue = (decimal) d;
+                            return true;
+                        }
+
+                        break;
+                    }
+                
+                case TypeCode.Double:
+                    {
+                        double d;
+                        if (TryParseDouble(inSlice, out d))
+                        {
+                            outValue = d;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Int16:
+                    {
+                        short s;
+                        if (TryParseShort(inSlice, out s))
+                        {
+                            outValue = s;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Int32:
+                    {
+                        int i;
+                        if (TryParseInt(inSlice, out i))
+                        {
+                            outValue = i;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Int64:
+                    {
+                        long l;
+                        if (TryParseLong(inSlice, out l))
+                        {
+                            outValue = l;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Object:
+                    {
+                        if (inType == typeof(StringSlice) || inType == typeof(object))
+                        {
+                            outValue = inSlice;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.SByte:
+                    {
+                        sbyte s;
+                        if (TryParseSByte(inSlice, out s))
+                        {
+                            outValue = s;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Single:
+                    {
+                        float f;
+                        if (TryParseFloat(inSlice, out f))
+                        {
+                            outValue = f;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.String:
+                    {
+                        outValue = inSlice.ToString();
+                        return true;
+                    }
+
+                case TypeCode.UInt16:
+                    {
+                        ushort u;
+                        if (TryParseUShort(inSlice, out u))
+                        {
+                            outValue = u;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.UInt32:
+                    {
+                        uint u;
+                        if (TryParseUInt(inSlice, out u))
+                        {
+                            outValue = u;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.UInt64:
+                    {
+                        ulong u;
+                        if (TryParseULong(inSlice, out u))
+                        {
+                            outValue = u;
+                            return true;
+                        }
+
+                        break;
+                    }
+            }
+
+            outValue = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a ulong.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public object ConvertTo(StringSlice inSlice, Type inType, object inDefault = null)
+        {
+            object result;
+            if (!TryConvertTo(inSlice, inType, out result))
+                result = inDefault;
+            return result;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a ulong.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public T ConvertTo<T>(StringSlice inSlice, T inDefault = default(T))
+        {
+            object result;
+            if (!TryConvertTo(inSlice, typeof(T), out result))
+                return inDefault;
+            return (T) result;
+        }
+
+        /// <summary>
+        /// Returns if a string is convertible to the given type.
+        /// </summary>
+        static public bool CanConvertTo(Type inType)
+        {
+            TypeCode tc = Type.GetTypeCode(inType);
+
+            if (tc == TypeCode.Object)
+                return inType == typeof(object) || inType == typeof(StringSlice);
+
+            return Array.IndexOf(ValidConversionTypes, tc) >= 0;
+        }
+
+        /// <summary>
+        /// Returns if a string is convertible to the given type.
+        /// </summary>
+        static public bool CanConvertTo<T>()
+        {
+            return CanConvertTo(typeof(T));
+        }
+
+        static private readonly TypeCode[] ValidConversionTypes = new TypeCode[]
+        {
+            TypeCode.Boolean, TypeCode.Byte, TypeCode.Char, TypeCode.DateTime, TypeCode.Decimal, TypeCode.Double,
+            TypeCode.Int16, TypeCode.Int32, TypeCode.Int64, TypeCode.SByte, TypeCode.Single, TypeCode.String,
+            TypeCode.UInt16, TypeCode.UInt32, TypeCode.UInt64
+        };
+
+        #endregion // Convert
+
+        #region Internal
 
         static private bool TryParseLongDouble(StringSlice inSlice, out double outDouble)
         {
@@ -785,5 +1175,7 @@ namespace BeauUtil
 
             return inSlice.Length > inMaxLength;
         }
+
+        #endregion // Internal
     }
 }

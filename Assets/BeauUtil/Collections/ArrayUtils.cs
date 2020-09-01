@@ -162,6 +162,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Clears all elements from the array and sets the reference to null.
+        /// </summary>
+        static public void Dispose<T>(ref T[] ioArray)
+        {
+            if (ioArray != null)
+            {
+                Array.Clear(ioArray, 0, ioArray.Length);
+                ioArray = null;
+            }
+        }
+
+        /// <summary>
         /// Returns if two arrays have the same content.
         /// </summary>
         static public bool ContentEquals<T>(T[] inA, T[] inB) where T : IEquatable<T>

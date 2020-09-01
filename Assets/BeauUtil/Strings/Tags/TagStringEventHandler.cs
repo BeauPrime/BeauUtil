@@ -143,41 +143,46 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Registers an instant event handler.
         /// </summary>
-        public void Register(PropertyName inId, InstantEventDelegate inInstant)
+        public TagStringEventHandler Register(PropertyName inId, InstantEventDelegate inInstant)
         {
             m_Handlers[inId] = new Handler(inInstant);
+            return this;
         }
 
         /// <summary>
         /// Registers an instant event handler with context arguments.
         /// </summary>
-        public void Register(PropertyName inId, InstantEventWithContextDelegate inInstantWithContext)
+        public TagStringEventHandler Register(PropertyName inId, InstantEventWithContextDelegate inInstantWithContext)
         {
             m_Handlers[inId] = new Handler(inInstantWithContext);
+            return this;
         }
 
         /// <summary>
         /// Registers a coroutine event handler.
         /// </summary>
-        public void Register(PropertyName inId, CoroutineEventDelegate inCoroutine)
+        public TagStringEventHandler Register(PropertyName inId, CoroutineEventDelegate inCoroutine)
         {
             m_Handlers[inId] = new Handler(inCoroutine);
+            return this;
         }
 
         /// <summary>
         /// Registers a coroutine event handler with context arguments.
         /// </summary>
-        public void Register(PropertyName inId, CoroutineEventWithContextDelegate inCoroutineWithContext)
+        public TagStringEventHandler Register(PropertyName inId, CoroutineEventWithContextDelegate inCoroutineWithContext)
         {
             m_Handlers[inId] = new Handler(inCoroutineWithContext);
+            return this;
         }
 
         /// <summary>
         /// Deregisters an event handler.
         /// </summary>
-        public void Deregister(PropertyName inId)
+        public TagStringEventHandler Deregister(PropertyName inId)
         {
             m_Handlers.Remove(inId);
+            return this;
         }
 
         /// <summary>

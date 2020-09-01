@@ -161,7 +161,11 @@ namespace BeauUtil.Tags
             {
                 int idx = tag.IndexOf(delim);
                 if (idx >= 0 && idx < dataDelimIdx)
+                {
                     dataDelimIdx = idx;
+                    if (idx <= 0)
+                        break;
+                }
             }
 
             if (dataDelimIdx >= tag.Length)
