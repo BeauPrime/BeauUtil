@@ -26,8 +26,8 @@ namespace BeauUtil
 
         #endregion // Inspector
 
-        [NonSerialized] private System.Type m_CachedType;
         [NonSerialized] private string m_CachedName;
+        [NonSerialized] private System.Type m_CachedType;
 
         public SystemTypeReference(System.Type inType)
             : this()

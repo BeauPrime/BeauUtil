@@ -24,7 +24,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Id of event type.
         /// </summary>
-        public PropertyName Type;
+        public StringHash Type;
 
         /// <summary>
         /// Indicates if this closes a previous event.
@@ -37,18 +37,14 @@ namespace BeauUtil.Tags
         public string StringArgument;
 
         /// <summary>
-        /// Number argument.
+        /// Variant argument 0.
         /// </summary>
-        public float NumberArgument;
+        public Variant Argument0;
 
         /// <summary>
-        /// Bool argument.
+        /// Variant argument 1.
         /// </summary>
-        public bool BoolArgument
-        {
-            get { return NumberArgument > 0; }
-            set { NumberArgument = value ? 1 : 0; }
-        }
+        public Variant Argument1;
 
         /// <summary>
         /// Additional data, if required
@@ -57,49 +53,44 @@ namespace BeauUtil.Tags
 
         #region Constructors
 
-        public TagEventData(PropertyName inType)
+        public TagEventData(StringHash inType)
         {
             Type = inType;
             IsClosing = false;
             StringArgument = null;
-            NumberArgument = 0;
+            Argument0 = Variant.Null;
+            Argument1 = Variant.Null;
             AdditionalData = null;
         }
 
-        public TagEventData(PropertyName inType, string inStringArg)
+        public TagEventData(StringHash inType, string inStringArg)
         {
             Type = inType;
             IsClosing = false;
             StringArgument = inStringArg;
-            NumberArgument = 0;
+            Argument0 = Variant.Null;
+            Argument1 = Variant.Null;
             AdditionalData = null;
         }
 
-        public TagEventData(PropertyName inType, StringSlice inStringArg)
+        public TagEventData(StringHash inType, StringSlice inStringArg)
         {
             Type = inType;
             IsClosing = false;
             StringArgument = inStringArg.ToString();
-            NumberArgument = 0;
+            Argument0 = Variant.Null;
+            Argument1 = Variant.Null;
             AdditionalData = null;
         }
 
-        public TagEventData(PropertyName inType, float inNumber)
+        public TagEventData(StringHash inType, Variant inArgument)
         {
             Type = inType;
             IsClosing = false;
             StringArgument = null;
-            NumberArgument = inNumber;
+            Argument0 = inArgument;
+            Argument1 = Variant.Null;
             AdditionalData = null;
-        }
-
-        public TagEventData(PropertyName inType, ICustomNodeData inData)
-        {
-            Type = inType;
-            IsClosing = false;
-            StringArgument = null;
-            NumberArgument = 0;
-            AdditionalData = inData;
         }
 
         #endregion // Constructors
@@ -109,10 +100,11 @@ namespace BeauUtil.Tags
         /// </summary>
         public void Reset()
         {
-            Type = default(PropertyName);
+            Type = StringHash.Null;
             IsClosing = false;
             StringArgument = null;
-            NumberArgument = 0;
+            Argument0 = Variant.Null;
+            Argument1 = Variant.Null;
             AdditionalData = null;
         }
     }

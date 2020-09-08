@@ -48,14 +48,14 @@ namespace BeauUtil.Blocks
         {
             internal Type Type;
 
-            private Dictionary<StringSlice, MetaInfo> m_MetaCommands;
+            private Dictionary<StringHash, MetaInfo> m_MetaCommands;
             private ContentInfo m_ContentCommand;
 
             internal TypeInfo(Type inType)
             {
                 Type = inType;
 
-                m_MetaCommands = new Dictionary<StringSlice, MetaInfo>(8);
+                m_MetaCommands = new Dictionary<StringHash, MetaInfo>(8);
             }
 
             internal bool TryGetMetaInfo(TagData inData, out MetaInfo outMeta)

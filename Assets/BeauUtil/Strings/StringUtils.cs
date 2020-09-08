@@ -652,7 +652,7 @@ namespace BeauUtil
                     {
                         return !m_QuoteMode;
                     }
-                    if (c == '"')
+                    else if (c == '"')
                     {
                         if (m_QuoteMode)
                         {
@@ -737,6 +737,7 @@ namespace BeauUtil
             {
                 private readonly bool m_Unescape;
                 private bool m_QuoteMode;
+                private int m_GroupingDepth;
 
                 public Splitter(bool inbUnescape = false)
                 {
@@ -754,9 +755,23 @@ namespace BeauUtil
                     char c = inString[inIndex];
                     if (c == ',')
                     {
-                        return !m_QuoteMode;
+                        return !m_QuoteMode && m_GroupingDepth <= 0;
                     }
-                    if (c == '"')
+                    else if (c == '(' || c == '[')
+                    {
+                        if (!m_QuoteMode)
+                        {
+                            ++m_GroupingDepth;
+                        }
+                    }
+                    else if (c == ')' || c == ']')
+                    {
+                        if (!m_QuoteMode)
+                        {
+                            --m_GroupingDepth;
+                        }
+                    }
+                    else if (c == '"')
                     {
                         if (m_QuoteMode)
                         {

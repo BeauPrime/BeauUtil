@@ -77,6 +77,14 @@ namespace BeauUtil
             }
         }
 
+        /// <summary>
+        /// Returns the hash of this string slice.
+        /// </summary>
+        public StringHash Hash()
+        {
+            return new StringHash(CalculateHash());
+        }
+
         #region Search
 
         #region Char
@@ -756,14 +764,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            uint hash = 2166136261;
-            for (int i = 0; i < Length; ++i)
-            {
-                char c = m_Source[m_StartIndex + i];
-                byte b = (byte) (c % 256);
-                hash = (hash ^ b) * 16777619;
-            }
-            return (int) hash;
+            return (int) CalculateHash();
         }
 
         public override string ToString()
@@ -793,7 +794,7 @@ namespace BeauUtil
 
         static public bool operator !=(StringSlice inA, string inB)
         {
-            return inA.Equals(inB);
+            return !inA.Equals(inB);
         }
 
         static public bool operator ==(string inA, StringSlice inB)
@@ -803,7 +804,7 @@ namespace BeauUtil
 
         static public bool operator !=(string inA, StringSlice inB)
         {
-            return inB.Equals(inA);
+            return !inB.Equals(inA);
         }
 
         static public implicit operator StringSlice(string inString)
@@ -821,6 +822,11 @@ namespace BeauUtil
                 return;
             
             ioBuilder.Append(m_Source, m_StartIndex, Length);
+        }
+
+        internal uint CalculateHash()
+        {
+            return StringHash.StoreHash(m_Source, m_StartIndex, Length);
         }
 
         static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -89,6 +90,60 @@ namespace BeauUtil.Editor
                 EditorApplication.ExecuteMenuItem("Assets/Open C# Project");
                 // TODO(Beau): Replace with a more stable method for syncing C# projects
             }
+        }
+
+        /// <summary>
+        /// Generates a 40-character hash for a build id.
+        /// This takes into account the current time, build settings
+        /// player settings, and build environment.
+        /// </summary>
+        static public string GenerateBuildId(string inAdditionalData = null)
+        {
+            return GenerateBuildId(DateTime.UtcNow, inAdditionalData);
+        }
+
+        /// <summary>
+        /// Generates a 40-character hash for a build id.
+        /// This takes into account the time, build settings
+        /// player settings, and build environment.
+        /// </summary>
+        static public string GenerateBuildId(DateTime inTime, string inAdditionalData = null)
+        {
+            TimeSpan timeOffset = inTime.ToUniversalTime() - DateTime.MinValue;
+
+            byte[] bytes;
+
+            using(MemoryStream memStream = new MemoryStream())
+            using(BinaryWriter writer = new BinaryWriter(memStream))
+            using(var sha = SHA1.Create())
+            {
+                // provided info   
+                writer.Write(timeOffset.Ticks);
+                writer.Write(inAdditionalData ?? string.Empty);
+
+                try
+                {
+                    // build environment
+                    writer.Write(Environment.MachineName ?? string.Empty);
+                    writer.Write(Environment.UserName ?? string.Empty);
+                }
+                catch { }
+
+                // build settings
+                writer.Write((int) EditorUserBuildSettings.activeBuildTarget);
+                writer.Write(EditorUserBuildSettings.development);
+
+                // player settings
+                writer.Write(PlayerSettings.bundleVersion ?? string.Empty);
+                writer.Write(PlayerSettings.applicationIdentifier ?? string.Empty);
+                writer.Write(PlayerSettings.productName ?? string.Empty);
+                
+                writer.Flush();
+
+                bytes = sha.ComputeHash(memStream.GetBuffer());
+            }
+
+            return BitConverter.ToString(bytes).Replace("-", "");
         }
     }
 }

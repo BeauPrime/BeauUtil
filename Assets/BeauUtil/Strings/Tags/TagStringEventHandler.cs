@@ -106,7 +106,7 @@ namespace BeauUtil.Tags
         #endregion // Types
 
         private TagStringEventHandler m_Base;
-        private Dictionary<PropertyName, Handler> m_Handlers = new Dictionary<PropertyName, Handler>(16);
+        private Dictionary<StringHash, Handler> m_Handlers = new Dictionary<StringHash, Handler>(16);
 
         public TagStringEventHandler() { }
 
@@ -143,7 +143,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Registers an instant event handler.
         /// </summary>
-        public TagStringEventHandler Register(PropertyName inId, InstantEventDelegate inInstant)
+        public TagStringEventHandler Register(StringHash inId, InstantEventDelegate inInstant)
         {
             m_Handlers[inId] = new Handler(inInstant);
             return this;
@@ -152,7 +152,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Registers an instant event handler with context arguments.
         /// </summary>
-        public TagStringEventHandler Register(PropertyName inId, InstantEventWithContextDelegate inInstantWithContext)
+        public TagStringEventHandler Register(StringHash inId, InstantEventWithContextDelegate inInstantWithContext)
         {
             m_Handlers[inId] = new Handler(inInstantWithContext);
             return this;
@@ -161,7 +161,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Registers a coroutine event handler.
         /// </summary>
-        public TagStringEventHandler Register(PropertyName inId, CoroutineEventDelegate inCoroutine)
+        public TagStringEventHandler Register(StringHash inId, CoroutineEventDelegate inCoroutine)
         {
             m_Handlers[inId] = new Handler(inCoroutine);
             return this;
@@ -170,7 +170,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Registers a coroutine event handler with context arguments.
         /// </summary>
-        public TagStringEventHandler Register(PropertyName inId, CoroutineEventWithContextDelegate inCoroutineWithContext)
+        public TagStringEventHandler Register(StringHash inId, CoroutineEventWithContextDelegate inCoroutineWithContext)
         {
             m_Handlers[inId] = new Handler(inCoroutineWithContext);
             return this;
@@ -179,7 +179,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Deregisters an event handler.
         /// </summary>
-        public TagStringEventHandler Deregister(PropertyName inId)
+        public TagStringEventHandler Deregister(StringHash inId)
         {
             m_Handlers.Remove(inId);
             return this;
@@ -205,7 +205,7 @@ namespace BeauUtil.Tags
         public bool TryEvaluate(TagEventData inEventData, object inContext, out IEnumerator outCoroutine)
         #endif // EXPANDED_REFS
         {
-            PropertyName id = inEventData.Type;
+            StringHash id = inEventData.Type;
             Handler handler;
             if (m_Handlers.TryGetValue(id, out handler))
             {
