@@ -916,6 +916,11 @@ namespace BeauUtil
                             outValue = inSlice;
                             return true;
                         }
+                        if (inType == typeof(StringHash))
+                        {
+                            outValue = inSlice.Hash();
+                            return true;
+                        }
 
                         break;
                     }
@@ -1023,7 +1028,7 @@ namespace BeauUtil
             TypeCode tc = Type.GetTypeCode(inType);
 
             if (tc == TypeCode.Object)
-                return inType == typeof(object) || inType == typeof(StringSlice);
+                return inType == typeof(object) || inType == typeof(StringSlice) || inType == typeof(StringHash);
 
             return Array.IndexOf(ValidConversionTypes, tc) >= 0;
         }
