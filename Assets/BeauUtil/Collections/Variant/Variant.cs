@@ -9,6 +9,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace BeauUtil
@@ -17,6 +18,7 @@ namespace BeauUtil
     /// Data variant.
     /// Can be null, or can contain a bool, an int, a float, or a string hash.
     /// </summary>
+    [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Explicit, Size = 8)]
     public struct Variant : IEquatable<Variant>, IComparable<Variant>
     {
@@ -52,8 +54,11 @@ namespace BeauUtil
         public Variant(StringHash inValue)
             : this()
         {
-            m_Type = VariantType.StringHash;
-            m_StringHashValue = inValue;
+            if (inValue)
+            {
+                m_Type = VariantType.StringHash;
+                m_StringHashValue = inValue;
+            }
         }
 
         #endregion // Constructors
@@ -79,7 +84,7 @@ namespace BeauUtil
                     return m_FloatValue > 0;
 
                 case VariantType.StringHash:
-                    return !m_StringHashValue.IsNullOrEmpty();
+                    return !m_StringHashValue.IsEmpty;
 
                 default:
                     throw new InvalidOperationException("Variant type " + m_Type.ToString() + " not recognized");
@@ -293,7 +298,7 @@ namespace BeauUtil
             switch(m_Type)
             {
                 case VariantType.Null:
-                    return "null";
+                    return string.Empty;
                 case VariantType.Bool:
                     return m_BoolValue ? "true" : "false";
                 case VariantType.Int:
@@ -462,7 +467,12 @@ namespace BeauUtil
 
         static public implicit operator Variant(string inValue)
         {
-            return new Variant(new StringHash(inValue));
+            return string.IsNullOrEmpty(inValue) ? Variant.Null : new Variant(new StringHash(inValue));
+        }
+
+        static public implicit operator Variant(StringHash inValue)
+        {
+            return inValue.IsEmpty ? Variant.Null : new Variant(inValue);
         }
 
         #endregion // Operators

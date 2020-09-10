@@ -14,12 +14,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Double-ended queue.
     /// </summary>
+    [DebuggerDisplay("Count = {Count}")]
     public class RingBuffer<T> : IRingBuffer<T>
     {
         static private readonly T[] s_EmptyArray = new T[0];

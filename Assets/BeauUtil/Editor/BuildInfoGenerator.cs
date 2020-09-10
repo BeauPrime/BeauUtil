@@ -65,7 +65,7 @@ namespace BeauUtil.Editor
         }
 #endif // UNITY_2018_1_OR_NEWER
 
-        [MenuItem("Assets/[BeauUtil] Generate Build Info", false, 1001)]
+        [MenuItem("Assets/BeauUtil/Generate Build Info", false, 1001)]
         static private void GenerateFromMenuCommand()
         {
             TryGenerateBuildInfo(true);

@@ -11,6 +11,10 @@
 #define USE_WEBREQUEST
 #endif // UNITY_2018_3_OR_NEWER
 
+#if CSHARP_7_3_OR_NEWER
+#define EXPANDED_REFS
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,25 +27,37 @@ namespace BeauUtil
     /// </summary>
     public class QueryParams
     {
-        private class Parameter
+        private struct Parameter
         {
             public string Key;
-            public string Value;
 
-            public void Create(string inKeyValue)
+            public string StringValue;
+            public Variant VariantValue;
+
+            public void Set(string inValue)
             {
-                Key = inKeyValue;
-                Value = null;
+                StringValue = inValue;
+                VariantValue = Variant.Null;
             }
 
-            public void Create(string inKey, string inValue)
+            public void Set(Variant inValue)
             {
-                Key = inKey;
-                Value = inValue;
+                StringValue = null;
+                VariantValue = inValue;
+            }
+
+            public override string ToString()
+            {
+                if (StringValue != null)
+                {
+                    return string.Format("{0}: \"{1}\"", Key, StringValue);
+                }
+
+                return string.Format("{0}: {1}", VariantValue.ToDebugString());
             }
         }
 
-        private List<Parameter> m_Parameters;
+        private RingBuffer<Parameter> m_Parameters;
 
         #region Get/Set
 
@@ -50,7 +66,7 @@ namespace BeauUtil
         /// </summary>
         public bool Contains(string inKey)
         {
-            return GetParamByKey(inKey) != null;
+            return GetParamIndexByKey(inKey, false) >= 0;
         }
 
         /// <summary>
@@ -58,8 +74,15 @@ namespace BeauUtil
         /// </summary>
         public void Set(string inKey)
         {
-            Parameter parm = GetParamByKey(inKey, true);
-            parm.Value = null;
+            int idx = GetParamIndexByKey(inKey, true);
+            #if EXPANDED_REFS
+            ref Parameter parm = ref m_Parameters[idx];
+            parm.Set(Variant.Null);
+            #else
+            Parameter parm = m_Parameters[idx];
+            parm.Set(Variant.Null);
+            m_Parameters[idx] = parm;
+            #endif // EXPANDED_REFS
         }
 
         /// <summary>
@@ -67,8 +90,31 @@ namespace BeauUtil
         /// </summary>
         public void Set(string inKey, string inValue)
         {
-            Parameter parm = GetParamByKey(inKey, true);
-            parm.Value = inValue;
+            int idx = GetParamIndexByKey(inKey, true);
+            #if EXPANDED_REFS
+            ref Parameter parm = ref m_Parameters[idx];
+            parm.Set(inValue);
+            #else
+            Parameter parm = m_Parameters[idx];
+            parm.Set(inValue);
+            m_Parameters[idx] = parm;
+            #endif // EXPANDED_REFS
+        }
+
+        /// <summary>
+        /// Sets a parameter with the given value.
+        /// </summary>
+        public void Set(string inKey, Variant inValue)
+        {
+            int idx = GetParamIndexByKey(inKey, true);
+            #if EXPANDED_REFS
+            ref Parameter parm = ref m_Parameters[idx];
+            parm.Set(inValue);
+            #else
+            Parameter parm = m_Parameters[idx];
+            parm.Set(inValue);
+            m_Parameters[idx] = parm;
+            #endif // EXPANDED_REFS
         }
 
         /// <summary>
@@ -76,18 +122,31 @@ namespace BeauUtil
         /// </summary>
         public void Remove(string inKey)
         {
-            Parameter parm = GetParamByKey(inKey, false);
-            if (parm != null)
-                m_Parameters.Remove(parm);
+            int idx = GetParamIndexByKey(inKey);
+            if (idx >= 0)
+                m_Parameters.FastRemoveAt(idx);
         }
 
         /// <summary>
-        /// Returns the value of the parameter with the given key.
+        /// Returns the string value of the parameter with the given key.
         /// </summary>
         public string Get(string inKey)
         {
-            Parameter parm = GetParamByKey(inKey, false);
-            return parm == null ? null : parm.Value;
+            int idx = GetParamIndexByKey(inKey);
+            if (idx >= 0)
+                return m_Parameters[idx].StringValue ?? m_Parameters[idx].VariantValue.ToString();
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the variant value of the parameter with the given key.
+        /// </summary>
+        public Variant GetVariant(string inKey)
+        {
+            int idx = GetParamIndexByKey(inKey);
+            if (idx >= 0)
+                return m_Parameters[idx].VariantValue;
+            return null;
         }
 
         /// <summary>
@@ -127,9 +186,13 @@ namespace BeauUtil
                     builder.Append('&');
 
                 builder.Append(EscapeURL(parm.Key));
-                if (parm.Value != null)
+                if (parm.StringValue != null)
                 {
-                    builder.Append('=').Append(EscapeURL(parm.Value));
+                    builder.Append('=').Append(EscapeURL(parm.StringValue));
+                }
+                else if (parm.VariantValue != Variant.Null)
+                {
+                    builder.Append('=').Append(parm.VariantValue.ToString());
                 }
             }
 
@@ -150,23 +213,23 @@ namespace BeauUtil
                 return false;
             }
 
-            string paramSection = inURL.Substring(queryStartIdx + 1);
-            string[] paramChunks = paramSection.Split('&');
+            StringSlice paramSection = new StringSlice(inURL, queryStartIdx + 1);
+            StringSlice[] paramChunks = paramSection.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
 
             if (m_Parameters == null)
             {
-                m_Parameters = new List<Parameter>(paramChunks.Length);
+                m_Parameters = new RingBuffer<Parameter>(paramChunks.Length, RingBufferMode.Expand);
             }
             else
             {
                 m_Parameters.Clear();
                 if (m_Parameters.Capacity < paramChunks.Length)
-                    m_Parameters.Capacity = paramChunks.Length;
+                    m_Parameters.SetCapacity(paramChunks.Length);
             }
 
             for (int i = 0; i < paramChunks.Length; ++i)
             {
-                string chunk = paramChunks[i];
+                StringSlice chunk = paramChunks[i];
                 if (chunk.Length == 0 || chunk[0] == '=')
                     continue;
 
@@ -175,20 +238,28 @@ namespace BeauUtil
                 int equalIdx = chunk.IndexOf('=');
                 if (equalIdx < 0)
                 {
-                    string unescaped = UnEscapeURL(chunk);
-                    parm.Create(unescaped);
+                    StringSlice key = UnEscapeURL(chunk);
+                    parm.Key = key.ToString();
                 }
                 else
                 {
-                    string key = UnEscapeURL(chunk.Substring(0, equalIdx));
-                    string value = equalIdx >= chunk.Length - 1 ? string.Empty : UnEscapeURL(chunk.Substring(equalIdx + 1));
-                    if (value.Equals("null", StringComparison.Ordinal))
-                        value = null;
+                    StringSlice key = UnEscapeURL(chunk.Substring(0, equalIdx));
+                    parm.Key = key.ToString();
 
-                    parm.Create(key, value);
+                    StringSlice value = equalIdx >= chunk.Length - 1 ? string.Empty : UnEscapeURL(chunk.Substring(equalIdx + 1));
+                    
+                    Variant variantValue;
+                    if (StringParser.TryParseVariant(value, out variantValue))
+                    {
+                        parm.VariantValue = variantValue;
+                    }
+                    else
+                    {
+                        parm.StringValue = value.ToString();
+                    }
                 }
 
-                m_Parameters.Add(parm);
+                m_Parameters.PushBack(parm);
             }
 
             return true;
@@ -198,6 +269,9 @@ namespace BeauUtil
 
         #region Static
 
+        /// <summary>
+        /// Attempts to parse a set of QueryParams from the given url.
+        /// </summary>
         static public bool TryParse(string inURL, out QueryParams outParams)
         {
             QueryParams parms = new QueryParams();
@@ -224,20 +298,25 @@ namespace BeauUtil
             #endif // USE_WEBREQUEST
         }
 
-        static private string UnEscapeURL(string inUrl)
+        static private StringSlice UnEscapeURL(StringSlice inUrl)
         {
+            if (!inUrl.Contains('%') && !inUrl.Contains('+'))
+                return inUrl;
+            
             #if USE_WEBREQUEST
-            return UnityEngine.Networking.UnityWebRequest.UnEscapeURL(inUrl);
+            return UnityEngine.Networking.UnityWebRequest.UnEscapeURL(inUrl.ToString());
             #else
-            return UnityEngine.WWW.UnEscapeURL(inUrl);
+            return UnityEngine.WWW.UnEscapeURL(inUrl.ToString());
             #endif // USE_WEBREQUEST
         }
 
+        static private readonly char[] SplitChars = new char[] { '&' };
+
         #endregion
 
-        private Parameter GetParamByKey(string inKey, bool inbCreate = false)
+        private int GetParamIndexByKey(string inKey, bool inbCreate = false)
         {
-            Parameter parm = null;
+            int parmIdx = -1;
             if (m_Parameters != null)
             {
                 for (int i = 0; i < m_Parameters.Count; ++i)
@@ -245,23 +324,26 @@ namespace BeauUtil
                     Parameter check = m_Parameters[i];
                     if (check.Key.Equals(inKey, StringComparison.OrdinalIgnoreCase))
                     {
-                        parm = check;
+                        parmIdx = i;
                         break;
                     }
                 }
             }
 
-            if (parm == null && inbCreate)
+            if (parmIdx == -1 && inbCreate)
             {
                 if (m_Parameters == null)
-                    m_Parameters = new List<Parameter>();
+                    m_Parameters = new RingBuffer<Parameter>();
+
+                parmIdx = m_Parameters.Count;
+                Parameter parm = new Parameter();
 
                 parm = new Parameter();
                 parm.Key = inKey;
-                m_Parameters.Add(parm);
+                m_Parameters.PushBack(parm);
             }
 
-            return parm;
+            return parmIdx;
         }
     }
 }

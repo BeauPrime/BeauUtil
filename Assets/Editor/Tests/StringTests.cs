@@ -17,7 +17,7 @@ namespace BeauUtil.UnitTests
         public const string CSVString = "Test,\"\",\"Test, with Comma\",\"Quoted \"\"Test\"\", with Comma\"";
         public const string MultiLineString = "This\nHas\n\r\nMultiple Lines";
 
-        private static readonly string[] IntParseStrings = new string[] { "0", "255", "333", "-1", "-130", "-64", "", "not", "0+", "10000000", "--555", "-66666", "+6234", "5555555555555555555555", "83987192837192837192837912873918273918273" };
+        private static readonly string[] IntParseStrings = new string[] { "0", "255", "333", "-1", "-130", "-64", "", "not", "0+", "10000000", "--555", "-66666", "+6234", "5555555555555555555555", "83987192837192837192837912873918273918273", "0x000442F", "0x2371", "0x00000000", "0x4E423ab" };
         private static readonly string[] FloatParseStrings = new string[] { "0.5", ".2", "1.", "NaN", "naN", "Infinity", "infinity", "-Infinity", "-infinity", "5.23123123", "66.2317075189723", "-25555.30239817239", "4.25e+64" };
 
         [Test]
@@ -169,6 +169,12 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
+        static public void CanParseVariants()
+        {
+            TestParser<Variant>(StringParser.TryParseVariant, IntParseStrings);
+        }
+
+        [Test]
         static public void CanParseFloatsAsIntegers()
         {
             TestParserFloat(float.TryParse, StringParser.TryParseFloat, IntParseStrings);
@@ -194,6 +200,17 @@ namespace BeauUtil.UnitTests
 
                 Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, bFromSlice, bFromString, str);
                 Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, valFromSlice, valFromString, str);
+            }
+        }
+
+        static private void TestParser<T>(StringSliceParseDelegate<T> inSliceParse, params string[] inStrings)
+        {
+            foreach(var str in inStrings)
+            {
+                T valFromSlice;
+                bool bFromSlice = inSliceParse(str, out valFromSlice);
+
+                Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3}", str, typeof(T).Name, bFromSlice, valFromSlice);
             }
         }
 

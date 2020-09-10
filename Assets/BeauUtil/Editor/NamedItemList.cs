@@ -47,7 +47,7 @@ namespace BeauUtil.Editor
 
         #endregion // Types
 
-        private readonly List<Entry> m_Entries = new List<Entry>();
+        private readonly List<Entry> m_Entries;
 
         private GUIContent[] m_GUIContent = null;
         private string[] m_StringContent = null;
@@ -65,11 +65,19 @@ namespace BeauUtil.Editor
             return m_StringContent;
         }
 
-        public NamedItemList() { }
+        public NamedItemList()
+        {
+           m_Entries = new List<Entry>();
+        }
 
         public NamedItemList(NamedItemList<T> inSource)
         {
-            m_Entries.AddRange(inSource.m_Entries);
+            m_Entries = new List<Entry>(inSource.m_Entries);
+        }
+
+        public NamedItemList(int inCapacity)
+        {
+            m_Entries = new List<Entry>(inCapacity);
         }
 
         #region Modifications

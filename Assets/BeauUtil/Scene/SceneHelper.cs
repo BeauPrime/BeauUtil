@@ -33,7 +33,7 @@ namespace BeauUtil
         /// <summary>
         /// Delegate to execute when a scene is loaded/unloaded.
         /// </summary>
-        public delegate void SceneLoadAction(Scene inScene, object inContext);
+        public delegate void SceneLoadAction(SceneBinding inScene, object inContext);
 
         /// <summary>
         /// Event invoked when a scene indicates it is finished loading
@@ -52,7 +52,7 @@ namespace BeauUtil
         /// Will dispatch to all ISceneLoadHandler components in the scene
         /// and invoke SceneHelper.OnSceneLoaded
         /// </summary>
-        static public void OnLoaded(this Scene inScene, object inContext = null)
+        static public void OnLoaded(Scene inScene, object inContext = null)
         {
             inScene.ForEachComponent<ISceneLoadHandler>(true, inContext, s_DispatchSceneLoad);
             if (OnSceneLoaded != null)
@@ -66,7 +66,7 @@ namespace BeauUtil
         /// Will dispatch to all ISceneUnloadHandler components in the scene
         /// and invoke SceneHelper.OnSceneUnload
         /// </summary>
-        static public void OnUnload(this Scene inScene, object inContext = null)
+        static public void OnUnload(Scene inScene, object inContext = null)
         {
             inScene.ForEachComponent<ISceneUnloadHandler>(true, inContext, s_DispatchSceneUnload);
             if (OnSceneUnload != null)
@@ -93,16 +93,16 @@ namespace BeauUtil
                 Path = inPathFilter;
             }
 
-            public bool Match(Scene inScene)
+            public bool Match(SceneBinding inScene)
             {
                 if (!string.IsNullOrEmpty(Name))
                 {
-                    return StringUtils.WildcardMatch(inScene.name, Name);
+                    return StringUtils.WildcardMatch(inScene.Name, Name);
                 }
 
                 if (!string.IsNullOrEmpty(Path))
                 {
-                    return StringUtils.WildcardMatch(inScene.path, Path);
+                    return StringUtils.WildcardMatch(inScene.Path, Path);
                 }
 
                 return false;
@@ -177,7 +177,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given scene is ignored by filters.
         /// </summary>
-        static public bool IsIgnored(Scene inScene)
+        static public bool IsIgnored(SceneBinding inScene)
         {
             for(int i = 0; i < s_IgnoredSceneFilters.Count; ++i)
             {
@@ -195,7 +195,7 @@ namespace BeauUtil
         /// <summary>
         /// Finds scenes, filtering by category.
         /// </summary>
-        static public IEnumerable<Scene> FindScenes(SceneCategories inCategories)
+        static public IEnumerable<SceneBinding> FindScenes(SceneCategories inCategories)
         {
             bool bBuild = (inCategories & SceneCategories.Build) == SceneCategories.Build;
             bool bLoaded = (inCategories & SceneCategories.Loaded) == SceneCategories.Loaded;
@@ -204,14 +204,14 @@ namespace BeauUtil
 
             if (bActive)
             {
-                Scene active = SceneManager.GetActiveScene();
+                SceneBinding active = SceneManager.GetActiveScene();
                 if (!bIncludeIgnored && IsIgnored(active))
                     yield break;
 
-                if (bBuild && active.buildIndex < 0)
+                if (bBuild && active.BuildIndex < 0)
                     yield break;
 
-                if (bLoaded && !active.isLoaded)
+                if (bLoaded && !active.IsLoaded())
                     yield break;
 
                 yield return active;
@@ -220,7 +220,7 @@ namespace BeauUtil
             {
                 foreach(var scene in AllBuildScenes(bIncludeIgnored))
                 {
-                    if (bLoaded && !scene.isLoaded)
+                    if (bLoaded && !scene.IsLoaded())
                         continue;
 
                     yield return scene;
@@ -238,22 +238,22 @@ namespace BeauUtil
         /// <summary>
         /// Finds a scene, filtering by category.
         /// </summary>
-        static public Scene FindScene(SceneCategories inCategories)
+        static public SceneBinding FindScene(SceneCategories inCategories)
         {
             foreach(var scene in FindScenes(inCategories))
                 return scene;
 
-            return default(Scene);
+            return default(SceneBinding);
         }
 
         /// <summary>
         /// Finds scenes, filtering by name and category.
         /// </summary>
-        static public IEnumerable<Scene> FindScenesByName(string inNameFilter, SceneCategories inCategories)
+        static public IEnumerable<SceneBinding> FindScenesByName(string inNameFilter, SceneCategories inCategories)
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.name, inNameFilter))
+                if (StringUtils.WildcardMatch(scene.Name, inNameFilter))
                     yield return scene;
             }
         }
@@ -261,57 +261,73 @@ namespace BeauUtil
         /// <summary>
         /// Finds a scene, filtering by name and category.
         /// </summary>
-        static public Scene FindSceneByName(string inNameFilter, SceneCategories inCategories)
+        static public SceneBinding FindSceneByName(string inNameFilter, SceneCategories inCategories)
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.name, inNameFilter))
+                if (StringUtils.WildcardMatch(scene.Name, inNameFilter))
                     return scene;
             }
 
-            return default(Scene);
+            return default(SceneBinding);
         }
 
         /// <summary>
         /// Finds scenes, filtering by path and category.
         /// </summary>
-        static public IEnumerable<Scene> FindScenesByPath(string inPathFilter, SceneCategories inCategories = SceneCategories.Loaded)
+        static public IEnumerable<SceneBinding> FindScenesByPath(string inPathFilter, SceneCategories inCategories = SceneCategories.Loaded)
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.path, inPathFilter))
+                if (StringUtils.WildcardMatch(scene.Path, inPathFilter))
                     yield return scene;
             }
         }
 
         /// <summary>
+        /// Finds a scene, filtering by path and category.
+        /// </summary>
+        static public SceneBinding FindSceneByPath(string inPathFilter, SceneCategories inCategories)
+        {
+            foreach(var scene in FindScenes(inCategories))
+            {
+                if (StringUtils.WildcardMatch(scene.Path, inPathFilter))
+                    return scene;
+            }
+
+            return default(SceneBinding);
+        }
+
+        /// <summary>
         /// Returns all scenes in the build.
         /// </summary>
-        static public IEnumerable<Scene> AllBuildScenes(bool inbIncludeIgnored = false)
+        static public IEnumerable<SceneBinding> AllBuildScenes(bool inbIncludeIgnored = false)
         {
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
             for(int i = 0; i < buildSceneCount; ++i)
             {
-                Scene scene = SceneManager.GetSceneByBuildIndex(i);
-                if (inbIncludeIgnored || !IsIgnored(scene))
-                    yield return scene;
+                string path = SceneUtility.GetScenePathByBuildIndex(i);
+                SceneBinding binding = new SceneBinding(i, path);
+                if (inbIncludeIgnored || !IsIgnored(binding))
+                    yield return binding;
             }
         }
 
         /// <summary>
         /// Gathers all scenes in the build.
         /// </summary>
-        static public int AllBuildScenes(ICollection<Scene> outScenes, bool inbIncludeIgnored = false)
+        static public int AllBuildScenes(ICollection<SceneBinding> outScenes, bool inbIncludeIgnored = false)
         {
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
 
             int returnedCount = 0;
             for(int i = 0; i < buildSceneCount; ++i)
             {
-                Scene scene = SceneManager.GetSceneByBuildIndex(i);
-                if (inbIncludeIgnored || !IsIgnored(scene))
+                string path = SceneUtility.GetScenePathByBuildIndex(i);
+                SceneBinding binding = new SceneBinding(i, path);
+                if (inbIncludeIgnored || !IsIgnored(binding))
                 {
-                    outScenes.Add(scene);
+                    outScenes.Add(binding);
                     ++returnedCount;
                 }
             }
@@ -321,31 +337,31 @@ namespace BeauUtil
         /// <summary>
         /// Returns all active scenes.
         /// </summary>
-        static public IEnumerable<Scene> AllLoadedScenes(bool inbIncludeIgnored = false)
+        static public IEnumerable<SceneBinding> AllLoadedScenes(bool inbIncludeIgnored = false)
         {
             int sceneCount = SceneManager.sceneCount;
             for(int i = 0; i < sceneCount; ++i)
             {
-                Scene scene = SceneManager.GetSceneAt(i);
-                if (inbIncludeIgnored || !IsIgnored(scene))
-                    yield return scene;
+                SceneBinding sceneBinding = SceneManager.GetSceneAt(i);
+                if (inbIncludeIgnored || !IsIgnored(sceneBinding))
+                    yield return sceneBinding;
             }
         }
 
         /// <summary>
         /// Returns all active scenes.
         /// </summary>
-        static public int AllLoadedScenes(ICollection<Scene> outScenes, bool inbIncludeIgnored = false)
+        static public int AllLoadedScenes(ICollection<SceneBinding> outScenes, bool inbIncludeIgnored = false)
         {
             int sceneCount = SceneManager.sceneCount;
 
             int returnedCount = 0;
             for(int i = 0; i < sceneCount; ++i)
             {
-                Scene scene = SceneManager.GetSceneAt(i);
-                if (inbIncludeIgnored || !IsIgnored(scene))
+                SceneBinding sceneBinding = SceneManager.GetSceneAt(i);
+                if (inbIncludeIgnored || !IsIgnored(sceneBinding))
                 {
-                    outScenes.Add(scene);
+                    outScenes.Add(sceneBinding);
                     ++returnedCount;
                 }
             }
@@ -468,11 +484,11 @@ namespace BeauUtil
         /// <summary>
         /// Loads a scene asynchronously, dispatching the appropriate load and unload events.
         /// </summary>
-        static public AsyncOperation LoadAsync(Scene inScene, object inContext = null, LoadSceneMode inMode = LoadSceneMode.Single)
+        static public AsyncOperation LoadAsync(SceneBinding inScene, object inContext = null, LoadSceneMode inMode = LoadSceneMode.Single)
         {
             if (!inScene.IsValid())
             {
-                Debug.LogErrorFormat("Cannot load invalid scene '{0}'", inScene.path);
+                Debug.LogErrorFormat("Cannot load invalid scene '{0}'", inScene.Path);
                 return null;
             }
             
@@ -482,7 +498,7 @@ namespace BeauUtil
                     scene.OnUnload(inContext);
             }
 
-            AsyncOperation loadOp = SceneManager.LoadSceneAsync(inScene.path, inMode);
+            AsyncOperation loadOp = SceneManager.LoadSceneAsync(inScene.Path, inMode);
             loadOp.completed += (AsyncOperation op) =>
             {
                 inScene.OnLoaded(inContext);
@@ -493,16 +509,16 @@ namespace BeauUtil
         /// <summary>
         /// Unloads a scene asynchronously, dispatching the appropriate unload events.
         /// </summary>
-        static public AsyncOperation UnloadAsync(Scene inScene, object inContext = null, UnloadSceneOptions inOptions = UnloadSceneOptions.None)
+        static public AsyncOperation UnloadAsync(SceneBinding inScene, object inContext = null, UnloadSceneOptions inOptions = UnloadSceneOptions.None)
         {
             if (!inScene.IsValid())
             {
-                Debug.LogErrorFormat("Cannot unload invalid scene '{0}'", inScene.path);
+                Debug.LogErrorFormat("Cannot unload invalid scene '{0}'", inScene.Path);
                 return null;
             }
 
             inScene.OnUnload(inContext);
-            return SceneManager.UnloadSceneAsync(inScene, inOptions);
+            return SceneManager.UnloadSceneAsync(inScene.Scene, inOptions);
         }
 
         #endregion // Load Wrappers

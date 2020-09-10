@@ -78,14 +78,14 @@ namespace BeauUtil.Tags
         public TagString Parse(StringSlice inInput, object inContext = null)
         {
             TagString str = new TagString();
-            Parse(inInput, ref str, inContext);
+            Parse(ref str, inInput, inContext);
             return str;
         }
 
         /// <summary>
         /// Parses the given string into a TagString.
         /// </summary>
-        public void Parse(StringSlice inInput, ref TagString outTarget, object inContext = null)
+        public void Parse(ref TagString outTarget, StringSlice inInput, object inContext = null)
         {
             if (outTarget == null)
             {

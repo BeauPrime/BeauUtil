@@ -13,17 +13,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Four-byte string hash.
     /// </summary>
+    [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Sequential, Size=4)]
+    [Serializable]
     public struct StringHash : IEquatable<StringHash>, IComparable<StringHash>
     {
+        internal const char Prefix = '@';
+
         static StringHash()
         {
             #if DEVELOPMENT
@@ -34,29 +40,37 @@ namespace BeauUtil
         private const string ReverseLookupUnavailable = "[Unavailable]";
         private const string ReverseLookupUnknownFormat = "[Unknown]:{0}";
 
-        public readonly uint HashValue;
+        [SerializeField, HideInInspector] private uint m_HashValue;
 
         public StringHash(string inString)
         {
-            HashValue = StoreHash(inString, 0, inString == null ? 0 : inString.Length);
+            m_HashValue = StoreHash(inString, 0, inString == null ? 0 : inString.Length);
         }
 
         public StringHash(StringSlice inSlice)
         {
-            HashValue = inSlice.CalculateHash();
+            m_HashValue = inSlice.CalculateHash();
         }
 
         public StringHash(uint inHash) 
         {
-            HashValue = inHash;
+            m_HashValue = inHash;
+        }
+
+        /// <summary>
+        /// Returns the hash value.
+        /// </summary>
+        public uint HashValue
+        {
+            get { return m_HashValue; }
         }
 
         /// <summary>
         /// Returns if this is an empty hash.
         /// </summary>
-        public bool IsNullOrEmpty()
+        public bool IsEmpty
         {
-            return HashValue == 0;
+            get { return m_HashValue == 0; }
         }
 
         static public readonly StringHash Null = new StringHash();
@@ -65,7 +79,7 @@ namespace BeauUtil
 
         public bool Equals(StringHash other)
         {
-            return HashValue == other.HashValue;
+            return m_HashValue == other.m_HashValue;
         }
 
         #endregion // IEquatable
@@ -74,7 +88,7 @@ namespace BeauUtil
 
         public int CompareTo(StringHash other)
         {
-            return HashValue.CompareTo(other.HashValue);
+            return m_HashValue.CompareTo(other.m_HashValue);
         }
 
         #endregion // IComparable
@@ -91,17 +105,17 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            return (int) HashValue;
+            return (int) m_HashValue;
         }
 
         public override string ToString()
         {
-            return HashValue.ToString();
+            return string.Format("@{0:X8}", m_HashValue);
         }
 
         public string ToDebugString()
         {
-            return ReverseLookup(HashValue);
+            return ReverseLookup(m_HashValue);
         }
 
         #endregion // Overrides
@@ -110,12 +124,12 @@ namespace BeauUtil
 
         static public bool operator==(StringHash left, StringHash right)
         {
-            return left.HashValue == right.HashValue;
+            return left.m_HashValue == right.m_HashValue;
         }
 
         static public bool operator!=(StringHash left, StringHash right)
         {
-            return left.HashValue != right.HashValue;
+            return left.m_HashValue != right.m_HashValue;
         }
 
         static public implicit operator StringHash(StringSlice inSlice)
@@ -126,6 +140,11 @@ namespace BeauUtil
         static public implicit operator StringHash(string inString)
         {
             return new StringHash(inString);
+        }
+
+        static public implicit operator bool(StringHash inHash)
+        {
+            return inHash.m_HashValue != 0;
         }
 
         #endregion // Operators
@@ -170,6 +189,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if reverse hash lookup is enabled.
+        /// </summary>
+        static public bool IsReverseLookupEnabled()
+        {
+            return s_ReverseLookupEnabled;
+        }
+
+        /// <summary>
         /// Clears the reverse hash lookup cache.
         /// Non-functional in non-development builds.
         /// </summary>
@@ -198,7 +225,6 @@ namespace BeauUtil
                 }
                 else
                 {
-                    UnityEngine.Debug.LogFormat("[StringHash] Hash of '{0}' is {1}", current, hash);
                     s_ReverseLookup.Add(hash, current.ToString());
                 }
             }
@@ -230,6 +256,14 @@ namespace BeauUtil
         {
             if (inbEnabled)
                 throw new InvalidOperationException("Reverse lookup cannot be enabled in non-development builds");
+        }
+
+        /// <summary>
+        /// Returns if reverse hash lookup is enabled.
+        /// </summary>
+        static public bool IsReverseLookupEnabled()
+        {
+            return false;
         }
 
         /// <summary>

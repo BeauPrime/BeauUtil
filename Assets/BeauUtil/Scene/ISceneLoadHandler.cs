@@ -13,6 +13,6 @@ namespace BeauUtil
 {
     public interface ISceneLoadHandler
     {
-        void OnSceneLoad(Scene inScene, object inContext);
+        void OnSceneLoad(SceneBinding inScene, object inContext);
     }
 }

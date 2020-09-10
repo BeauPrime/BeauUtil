@@ -381,12 +381,12 @@ namespace BeauUtil
 
         public int Split(char[] inSeparator, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
         {
-            return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions, outSlices);
+            return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions, ref outSlices);
         }
 
         public int Split(ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
         {
-            return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, outSlices);
+            return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, ref outSlices);
         }
 
         public IEnumerable<StringSlice> EnumeratedSplit(char[] inSeparator, StringSplitOptions inSplitOptions)
@@ -425,12 +425,12 @@ namespace BeauUtil
 
         static public int Split(string inString, char[] inSeparator, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
         {
-            return Split(inString, 0, inString.Length, inSeparator, inSplitOptions, outSlices);
+            return Split(inString, 0, inString.Length, inSeparator, inSplitOptions, ref outSlices);
         }
 
         static public int Split(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
         {
-            return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, outSlices);
+            return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, ref outSlices);
         }
 
         static public IEnumerable<StringSlice> EnumeratedSplit(string inString, char[] inSeparator, StringSplitOptions inSplitOptions)

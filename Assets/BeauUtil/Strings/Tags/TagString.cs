@@ -23,6 +23,7 @@ namespace BeauUtil.Tags
         private string m_StrippedText = string.Empty;
         private TagNodeData[] m_Nodes = null;
         private int m_NodeCount = 0;
+        private int m_EventCount = 0;
         private ListSlice<TagNodeData> m_NodeList;
 
         #region Output Data
@@ -52,6 +53,11 @@ namespace BeauUtil.Tags
         /// </summary>
         public ListSlice<TagNodeData> Nodes { get { return m_NodeList; } }
 
+        /// <summary>
+        /// Number of generated event nodes.
+        /// </summary>
+        public int EventCount { get { return m_EventCount; } }
+
         #endregion // Output Data
 
         #region Operations
@@ -76,6 +82,9 @@ namespace BeauUtil.Tags
 
             m_Nodes[m_NodeCount++] = inNode;
             m_NodeList = new ListSlice<TagNodeData>(m_Nodes, 0, m_NodeCount);
+
+            if (inNode.Type == TagNodeType.Event)
+                ++m_EventCount;
         }
 
         /// <summary>
@@ -104,7 +113,6 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new Event node.
         /// </summary>
-        /// <param name="inEventData"></param>
 #if EXPANDED_REFS
         public void AddEvent(in TagEventData inEventData)
 #else
@@ -126,6 +134,7 @@ namespace BeauUtil.Tags
             {
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_NodeCount = 0;
+                m_EventCount = 0;
                 m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
@@ -138,6 +147,7 @@ namespace BeauUtil.Tags
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_Nodes = null;
                 m_NodeCount = 0;
+                m_EventCount = 0;
                 m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
@@ -159,6 +169,7 @@ namespace BeauUtil.Tags
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_Nodes = null;
                 m_NodeCount = 0;
+                m_EventCount = 0;
                 m_NodeList = default(ListSlice<TagNodeData>);
             }
         }

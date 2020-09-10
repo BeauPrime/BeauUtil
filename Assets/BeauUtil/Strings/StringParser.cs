@@ -27,6 +27,8 @@ namespace BeauUtil
         private const int MaxDigits32 = 10;
         private const int MaxDigits64 = 20;
 
+        private const int MaxDigitsHex64 = 16;
+
         private const int ReadAsInteger = 0;
         private const int ReadAsDecimalPlace = 1;
         private const int ReadAsSystemFloat = 2;
@@ -86,6 +88,19 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 2, out hex))
+                {
+                    outByte = (byte) hex;
+                    return true;
+                }
+
+                outByte = 0;
+                return false;
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits8))
             {
                 outByte = 0;
@@ -114,7 +129,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outByte = 0;
                     return false;
@@ -151,6 +166,19 @@ namespace BeauUtil
         static public bool TryParseSByte(StringSlice inSlice, out sbyte outSByte)
         {
             inSlice = inSlice.Trim();
+            
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 2, out hex))
+                {
+                    outSByte = (sbyte) hex;
+                    return true;
+                }
+
+                outSByte = 0;
+                return false;
+            }
 
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits8))
             {
@@ -187,7 +215,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outSByte = 0;
                     return false;
@@ -227,6 +255,19 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 4, out hex))
+                {
+                    outUShort = (ushort) hex;
+                    return true;
+                }
+
+                outUShort = 0;
+                return false;
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits16))
             {
                 outUShort = 0;
@@ -255,7 +296,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outUShort = 0;
                     return false;
@@ -293,6 +334,19 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 4, out hex))
+                {
+                    outShort = (short) hex;
+                    return true;
+                }
+
+                outShort = 0;
+                return false;
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits16))
             {
                 outShort = 0;
@@ -328,7 +382,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outShort = 0;
                     return false;
@@ -368,6 +422,19 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 8, out hex))
+                {
+                    outUInt = (uint) hex;
+                    return true;
+                }
+
+                outUInt = 0;
+                return false;
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits32))
             {
                 outUInt = 0;
@@ -396,7 +463,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outUInt = 0;
                     return false;
@@ -434,6 +501,19 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 8, out hex))
+                {
+                    outInt = (int) hex;
+                    return true;
+                }
+
+                outInt = 0;
+                return false;
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits32))
             {
                 outInt = 0;
@@ -469,7 +549,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outInt = 0;
                     return false;
@@ -509,6 +589,11 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                return TryParseHex(inSlice.Substring(2), 16, out outULong);
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits64))
             {
                 outULong = 0;
@@ -537,7 +622,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outULong = 0;
                     return false;
@@ -575,6 +660,19 @@ namespace BeauUtil
         {
             inSlice = inSlice.Trim();
 
+            if (inSlice.StartsWith("0x"))
+            {
+                ulong hex;
+                if (TryParseHex(inSlice.Substring(2), 16, out hex))
+                {
+                    outLong = (long) hex;
+                    return true;
+                }
+
+                outLong = 0;
+                return false;
+            }
+
             if (inSlice.Length == 0 || TooLong(inSlice, MaxDigits64))
             {
                 outLong = 0;
@@ -610,7 +708,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outLong = 0;
                     return false;
@@ -789,6 +887,114 @@ namespace BeauUtil
 
         #endregion // Float
 
+        #region StringHash
+
+        static public bool TryParseHash(StringSlice inSlice, out StringHash outHash)
+        {
+            if (inSlice.StartsWith(StringHash.Prefix))
+            {
+                ulong hexVal;
+                if (TryParseHex(inSlice.Substring(1), 8, out hexVal))
+                {
+                    outHash = new StringHash((uint) hexVal);
+                    return true;
+                }
+            }
+            else if (inSlice.StartsWith("0x"))
+            {
+                ulong hexVal;
+                if (TryParseHex(inSlice.Substring(2), 8, out hexVal))
+                {
+                    outHash = new StringHash((uint) hexVal);
+                    return true;
+                }
+
+                outHash = default(StringHash);
+                return false;
+            }
+
+            outHash = inSlice.Hash();
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the string slice into a hash.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public StringHash ParseHash(StringSlice inSlice, StringHash inDefault = default(StringHash))
+        {
+            StringHash val;
+            if (!TryParseHash(inSlice, out val))
+                val = inDefault;
+            return val;
+        }
+
+        #endregion // StringHash
+
+        #region Variant
+
+        /// <summary>
+        /// Attempts to parse a string slice into a variant.
+        /// </summary>
+        static public bool TryParseVariant(StringSlice inSlice, out Variant outValue)
+        {
+            inSlice = inSlice.Trim();
+
+            if (inSlice.Length <= 0 || inSlice.Equals("null", true))
+            {
+                outValue = Variant.Null;
+                return true;
+            }
+
+            if (inSlice.StartsWith(StringHash.Prefix))
+            {
+                StringHash hash;
+                if (TryParseHash(inSlice, out hash))
+                {
+                    outValue = hash;
+                    return true;
+                }
+            }
+
+            bool bBoolVal;
+            if (TryParseBool(inSlice, out bBoolVal))
+            {
+                outValue = new Variant(bBoolVal);
+                return true;
+            }
+
+            int intVal;
+            if (TryParseInt(inSlice, out intVal))
+            {
+                outValue = new Variant(intVal);
+                return true;
+            }
+
+            float floatVal;
+            if (TryParseFloat(inSlice, out floatVal))
+            {
+                outValue = new Variant(floatVal);
+                return true;
+            }
+
+            outValue = default(Variant);
+            return false;
+        }
+
+        /// <summary>
+        /// Parses the string slice into a variant.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public Variant ParseVariant(StringSlice inSlice, Variant inDefault = default(Variant))
+        {
+            Variant val;
+            if (!TryParseVariant(inSlice, out val))
+                val = inDefault;
+            return val;
+        }
+
+        #endregion // Variant
+
         #region Convert
 
         /// <summary>
@@ -918,8 +1124,21 @@ namespace BeauUtil
                         }
                         if (inType == typeof(StringHash))
                         {
-                            outValue = inSlice.Hash();
-                            return true;
+                            StringHash hash;
+                            if (TryParseHash(inSlice, out hash))
+                            {
+                                outValue = hash;
+                                return true;
+                            }
+                        }
+                        else if (inType == typeof(Variant))
+                        {
+                            Variant v;
+                            if (TryParseVariant(inSlice, out v))
+                            {
+                                outValue = v;
+                                return true;
+                            }
                         }
 
                         break;
@@ -1028,7 +1247,7 @@ namespace BeauUtil
             TypeCode tc = Type.GetTypeCode(inType);
 
             if (tc == TypeCode.Object)
-                return inType == typeof(object) || inType == typeof(StringSlice) || inType == typeof(StringHash);
+                return inType == typeof(object) || inType == typeof(StringSlice) || inType == typeof(StringHash) || inType == typeof(Variant);
 
             return Array.IndexOf(ValidConversionTypes, tc) >= 0;
         }
@@ -1051,6 +1270,39 @@ namespace BeauUtil
         #endregion // Convert
 
         #region Internal
+
+        static private bool TryParseHex(StringSlice inSlice, int inMaxChars, out ulong outULong)
+        {
+            if (inSlice.Length <= 0 || inSlice.Length > inMaxChars)
+            {
+                outULong = 0;
+                return false;
+            }
+
+            ulong accum = 0;
+            char c;
+            for(int i = 0; i < inSlice.Length; ++i)
+            {
+                c = char.ToUpperInvariant(inSlice[i]);
+
+                if (IsDigit(c))
+                {
+                    accum = (accum << 4) + (ulong) (c - '0');
+                }
+                else if (IsHexAlpha(c))
+                {
+                    accum = (accum << 4) + (ulong) (10 + c - 'A');
+                }
+                else
+                {
+                    outULong = 0;
+                    return false;
+                }
+            }
+
+            outULong = accum;
+            return true;
+        }
 
         static private bool TryParseLongDouble(StringSlice inSlice, out double outDouble)
         {
@@ -1096,7 +1348,7 @@ namespace BeauUtil
                     return false;
                 }
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     outDouble = 0;
                     return false;
@@ -1114,6 +1366,9 @@ namespace BeauUtil
 
         static private int EvaluateFloatMode(StringSlice inSlice)
         {
+            if (inSlice.StartsWith("0x"))
+                return ReadAsInteger;
+
             if (TooLong(inSlice, MaxDigits32))
                 return ReadAsSystemFloat;
 
@@ -1165,6 +1420,12 @@ namespace BeauUtil
         static private bool IsDigit(char inChar)
         {
             return inChar >= '0' && inChar <= '9';
+        }
+
+        [MethodImpl(256)]
+        static private bool IsHexAlpha(char inChar)
+        {
+            return inChar >= 'A' && inChar <= 'F';
         }
 
         [MethodImpl(256)]
