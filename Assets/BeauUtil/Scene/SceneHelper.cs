@@ -495,13 +495,13 @@ namespace BeauUtil
             if (inMode == LoadSceneMode.Single)
             {
                 foreach(var scene in FindScenes(SceneCategories.Loaded))
-                    scene.OnUnload(inContext);
+                    scene.BroadcastUnload(inContext);
             }
 
             AsyncOperation loadOp = SceneManager.LoadSceneAsync(inScene.Path, inMode);
             loadOp.completed += (AsyncOperation op) =>
             {
-                inScene.OnLoaded(inContext);
+                inScene.BroadcastLoaded(inContext);
             };
             return loadOp;
         }
@@ -517,7 +517,7 @@ namespace BeauUtil
                 return null;
             }
 
-            inScene.OnUnload(inContext);
+            inScene.BroadcastUnload(inContext);
             return SceneManager.UnloadSceneAsync(inScene.Scene, inOptions);
         }
 

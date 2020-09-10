@@ -18,7 +18,7 @@ namespace BeauUtil
     /// Wrapper for a scene.
     /// Can accomodate unloaded scenes.
     /// </summary>
-    public struct SceneBinding
+    public struct SceneBinding : IEquatable<SceneBinding>, IComparable<SceneBinding>
     {
         public readonly StringHash Id;
 
@@ -26,7 +26,12 @@ namespace BeauUtil
         public readonly string  Path;
         public readonly int     BuildIndex;
 
-        public Scene Scene { get; private set; }
+        private Scene m_CachedScene;
+
+        public Scene Scene
+        {
+            get { return CacheScene(); }
+        }
 
         public SceneBinding(Scene inScene)
         {
@@ -34,7 +39,7 @@ namespace BeauUtil
             Name = inScene.name;
             BuildIndex = inScene.buildIndex;
 
-            Scene = inScene;
+            m_CachedScene = inScene;
             Id = Path;
         }
 
@@ -44,37 +49,107 @@ namespace BeauUtil
             Name = System.IO.Path.GetFileNameWithoutExtension(Path);
             BuildIndex = inBuildIndex;
             
-            Scene = SceneManager.GetSceneByPath(Path);
+            m_CachedScene = SceneManager.GetSceneByPath(Path);
             Id = Path;
         }
 
-        public void Refresh()
+        private Scene CacheScene()
         {
-            if (!Scene.IsValid() || !Scene.isLoaded)
-                Scene = SceneManager.GetSceneByPath(Path);
+            if (!m_CachedScene.IsValid() || !m_CachedScene.isLoaded)
+                m_CachedScene = SceneManager.GetSceneByPath(Path);
+            return m_CachedScene;
         }
 
+        /// <summary>
+        /// Returns if the scene is currently loaded.
+        /// </summary>
         public bool IsLoaded()
         {
-            Refresh();
-            return Scene.isLoaded;
+            return CacheScene().isLoaded;
         }
 
-        public void OnLoaded(object inContext = null)
+        /// <summary>
+        /// Dispatches the OnLoaded callback.
+        /// </summary>
+        public void BroadcastLoaded(object inContext = null)
         {
-            Refresh();
-            SceneHelper.OnLoaded(Scene, inContext);
+            SceneHelper.OnLoaded(CacheScene(), inContext);
         }
 
-        public void OnUnload(object inContext = null)
+        /// <summary>
+        /// Dispatches the OnUnload callback.
+        /// </summary>
+        public void BroadcastUnload(object inContext = null)
         {
-            Refresh();
-            SceneHelper.OnUnload(Scene, inContext);
+            SceneHelper.OnUnload(CacheScene(), inContext);
         }
 
         public bool IsValid()
         {
             return !string.IsNullOrEmpty(Path);
+        }
+
+        #region IEquatable
+
+        public bool Equals(SceneBinding other)
+        {
+            return Id == other.Id;
+        }
+
+        #endregion // IEquatable
+
+        #region IComparable
+
+        public int CompareTo(SceneBinding other)
+        {
+            int buildIdxComp = BuildIndex - other.BuildIndex;
+            if (buildIdxComp < 0)
+                return -1;
+            if (buildIdxComp > 0)
+                return 1;
+            
+            return Id.CompareTo(other.Id);
+        }
+
+        #endregion // IComparable
+
+        #region Overrides
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SceneBinding)
+            {
+                return Equals((SceneBinding) obj);
+            }
+
+            return false;
+        }
+
+        public override string ToString()
+        {
+            if (!Id)
+                return "Null Scene";
+            
+            return string.Format("Scene {0} (path: '{1}', buildIndex: {2})", Id.ToString(), Path, BuildIndex);
+        }
+
+        #endregion // Overrides
+
+        #region Operators
+
+        static public bool operator==(SceneBinding left, SceneBinding right)
+        {
+            return left.Id == right.Id;
+        }
+
+        static public bool operator!=(SceneBinding left, SceneBinding right)
+        {
+            return left.Id != right.Id;
         }
 
         static public implicit operator SceneBinding(Scene inScene)
@@ -84,7 +159,9 @@ namespace BeauUtil
 
         static public implicit operator Scene(SceneBinding inBinding)
         {
-            return SceneManager.GetSceneByPath(inBinding.Path);
+            return inBinding.Scene;
         }
+    
+        #endregion // Operators
     }
 }
