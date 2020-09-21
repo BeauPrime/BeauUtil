@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using NUnit.Framework;
 using UnityEngine;
+using BeauUtil.Variants;
 
 namespace BeauUtil.UnitTests
 {
@@ -171,7 +172,7 @@ namespace BeauUtil.UnitTests
         [Test]
         static public void CanParseVariants()
         {
-            TestParser<Variant>(StringParser.TryParseVariant, IntParseStrings);
+            TestParser<Variant>(Variant.TryParse, IntParseStrings);
         }
 
         [Test]

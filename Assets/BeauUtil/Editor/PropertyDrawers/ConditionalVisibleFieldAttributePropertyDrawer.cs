@@ -52,6 +52,10 @@ namespace BeauUtil.Editor
                     bBool = conditionalProp.boolValue;
                     break;
 
+                case SerializedPropertyType.String:
+                    bBool = !string.IsNullOrEmpty(conditionalProp.stringValue);
+                    break;
+
                 case SerializedPropertyType.ObjectReference:
                     bBool = conditionalProp.objectReferenceValue != null;
                     break;

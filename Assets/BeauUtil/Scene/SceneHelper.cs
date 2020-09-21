@@ -299,6 +299,20 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Finds a scene, filtering by id and category.
+        /// </summary>
+        static public SceneBinding FindSceneById(StringHash inId, SceneCategories inCategories)
+        {
+            foreach(var scene in FindScenes(inCategories))
+            {
+                if (scene.Id == inId)
+                    return scene;
+            }
+
+            return default(SceneBinding);
+        }
+
+        /// <summary>
         /// Returns all scenes in the build.
         /// </summary>
         static public IEnumerable<SceneBinding> AllBuildScenes(bool inbIncludeIgnored = false)

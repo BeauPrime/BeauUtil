@@ -7,14 +7,16 @@
  * Purpose: Variant container with a name.
  */
 
+using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace BeauUtil
+namespace BeauUtil.Variants
 {
     /// <summary>
     /// Data variant with a name.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    [DebuggerDisplay("{ToDebugString()}")]
     public struct NamedVariant : IKeyValuePair<StringHash, Variant>
     {
         public StringHash Id;
@@ -25,6 +27,20 @@ namespace BeauUtil
             Id = inId;
             Value = inValue;
         }
+
+        #region Overrides
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1}", Id, Value);
+        }
+
+        public string ToDebugString()
+        {
+            return string.Format("{0}: {1}", Id.ToDebugString(), Value.ToDebugString());
+        }
+
+        #endregion // Overrides
 
         #region IKeyValuePair
 

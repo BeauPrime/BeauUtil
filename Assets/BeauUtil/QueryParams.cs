@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using BeauUtil.Variants;
 
 namespace BeauUtil
 {
@@ -249,7 +250,7 @@ namespace BeauUtil
                     StringSlice value = equalIdx >= chunk.Length - 1 ? string.Empty : UnEscapeURL(chunk.Substring(equalIdx + 1));
                     
                     Variant variantValue;
-                    if (StringParser.TryParseVariant(value, out variantValue))
+                    if (Variant.TryParse(value, false, out variantValue))
                     {
                         parm.VariantValue = variantValue;
                     }

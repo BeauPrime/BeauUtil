@@ -545,6 +545,15 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Filters all loaded assemblies to the ones that aren't
+        /// the default non-user assemblies.
+        /// </summary>
+        static public IEnumerable<Assembly> FindAllUserAssemblies()
+        {
+            return FindAllAssemblies(0, AssemblyType.DefaultNonUserMask);
+        }
+
+        /// <summary>
         /// Filters the given set of assemblies by type.
         /// </summary>
         static public IEnumerable<Assembly> FindAssemblies(IEnumerable<Assembly> inAssemblies, AssemblyType inAllowMask, AssemblyType inIgnoreMask)

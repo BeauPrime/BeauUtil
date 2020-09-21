@@ -10,6 +10,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using BeauUtil.Variants;
 
 namespace BeauUtil
 {
@@ -887,114 +888,6 @@ namespace BeauUtil
 
         #endregion // Float
 
-        #region StringHash
-
-        static public bool TryParseHash(StringSlice inSlice, out StringHash outHash)
-        {
-            if (inSlice.StartsWith(StringHash.Prefix))
-            {
-                ulong hexVal;
-                if (TryParseHex(inSlice.Substring(1), 8, out hexVal))
-                {
-                    outHash = new StringHash((uint) hexVal);
-                    return true;
-                }
-            }
-            else if (inSlice.StartsWith("0x"))
-            {
-                ulong hexVal;
-                if (TryParseHex(inSlice.Substring(2), 8, out hexVal))
-                {
-                    outHash = new StringHash((uint) hexVal);
-                    return true;
-                }
-
-                outHash = default(StringHash);
-                return false;
-            }
-
-            outHash = inSlice.Hash();
-            return true;
-        }
-
-        /// <summary>
-        /// Parses the string slice into a hash.
-        /// If unable to parse, the given default will be used instead.
-        /// </summary>
-        static public StringHash ParseHash(StringSlice inSlice, StringHash inDefault = default(StringHash))
-        {
-            StringHash val;
-            if (!TryParseHash(inSlice, out val))
-                val = inDefault;
-            return val;
-        }
-
-        #endregion // StringHash
-
-        #region Variant
-
-        /// <summary>
-        /// Attempts to parse a string slice into a variant.
-        /// </summary>
-        static public bool TryParseVariant(StringSlice inSlice, out Variant outValue)
-        {
-            inSlice = inSlice.Trim();
-
-            if (inSlice.Length <= 0 || inSlice.Equals("null", true))
-            {
-                outValue = Variant.Null;
-                return true;
-            }
-
-            if (inSlice.StartsWith(StringHash.Prefix))
-            {
-                StringHash hash;
-                if (TryParseHash(inSlice, out hash))
-                {
-                    outValue = hash;
-                    return true;
-                }
-            }
-
-            bool bBoolVal;
-            if (TryParseBool(inSlice, out bBoolVal))
-            {
-                outValue = new Variant(bBoolVal);
-                return true;
-            }
-
-            int intVal;
-            if (TryParseInt(inSlice, out intVal))
-            {
-                outValue = new Variant(intVal);
-                return true;
-            }
-
-            float floatVal;
-            if (TryParseFloat(inSlice, out floatVal))
-            {
-                outValue = new Variant(floatVal);
-                return true;
-            }
-
-            outValue = default(Variant);
-            return false;
-        }
-
-        /// <summary>
-        /// Parses the string slice into a variant.
-        /// If unable to parse, the given default will be used instead.
-        /// </summary>
-        static public Variant ParseVariant(StringSlice inSlice, Variant inDefault = default(Variant))
-        {
-            Variant val;
-            if (!TryParseVariant(inSlice, out val))
-                val = inDefault;
-            return val;
-        }
-
-        #endregion // Variant
-
         #region Convert
 
         /// <summary>
@@ -1125,7 +1018,7 @@ namespace BeauUtil
                         if (inType == typeof(StringHash))
                         {
                             StringHash hash;
-                            if (TryParseHash(inSlice, out hash))
+                            if (StringHash.TryParse(inSlice, out hash))
                             {
                                 outValue = hash;
                                 return true;
@@ -1134,7 +1027,7 @@ namespace BeauUtil
                         else if (inType == typeof(Variant))
                         {
                             Variant v;
-                            if (TryParseVariant(inSlice, out v))
+                            if (Variant.TryParse(inSlice, true, out v))
                             {
                                 outValue = v;
                                 return true;
@@ -1271,7 +1164,7 @@ namespace BeauUtil
 
         #region Internal
 
-        static private bool TryParseHex(StringSlice inSlice, int inMaxChars, out ulong outULong)
+        static internal bool TryParseHex(StringSlice inSlice, int inMaxChars, out ulong outULong)
         {
             if (inSlice.Length <= 0 || inSlice.Length > inMaxChars)
             {

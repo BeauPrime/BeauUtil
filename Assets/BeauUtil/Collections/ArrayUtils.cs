@@ -18,6 +18,67 @@ namespace BeauUtil
     static public class ArrayUtils
     {
         /// <summary>
+        /// Creates an array from the given collection.
+        /// </summary>
+        static public T[] CreateFrom<T>(IReadOnlyCollection<T> inSource)
+        {
+            if (inSource == null)
+                return null;
+
+            T[] copy = new T[inSource.Count];
+            int idx = 0;
+            foreach(var obj in inSource)
+                copy[idx++] = obj;
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates an array from the given collection.
+        /// </summary>
+        static public C[] MapFrom<T, C>(IReadOnlyCollection<T> inSource, Converter<T, C> inConverter)
+        {
+            if (inSource == null)
+                return null;
+            if (inConverter == null)
+                throw new ArgumentNullException("inMapper");
+
+            C[] copy = new C[inSource.Count];
+            int idx = 0;
+            foreach(var obj in inSource)
+                copy[idx++] = inConverter(obj);
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates an array from the given collection.
+        /// </summary>
+        static public C[] MapFrom<T, C>(T[] inSource, Converter<T, C> inConverter)
+        {
+            if (inSource == null)
+                return null;
+            if (inConverter == null)
+                throw new ArgumentNullException("inMapper");
+
+            return Array.ConvertAll(inSource, inConverter);
+        }
+
+        /// <summary>
+        /// Creates an array from the given collection.
+        /// </summary>
+        static public C[] MapFrom<T, C>(IReadOnlyList<T> inSource, Converter<T, C> inConverter)
+        {
+            if (inSource == null)
+                return null;
+            if (inConverter == null)
+                throw new ArgumentNullException("inMapper");
+
+            C[] copy = new C[inSource.Count];
+            for(int i = 0; i < copy.Length; ++i)
+                copy[i] = inConverter(inSource[i]);
+            return copy;
+        }
+
+        /// <summary>
         /// Casts an array to an array of a more derived type.
         /// </summary>
         static public C[] CastDown<T, C>(T[] inArray) where C : T

@@ -3,7 +3,7 @@
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
- * File:    Table.cs
+ * File:    Grid2D.cs
  * Purpose: Two-dimensional table of values.
  */
 
@@ -18,22 +18,17 @@ namespace BeauUtil
     /// Table of values.
     /// </summary>
     [Serializable]
-    public class Table<T> : IEnumerable<T>
+    public class Grid2D<T> : IEnumerable<T>
     {
-        [SerializeField]
-        protected T[] m_Data;
+        [SerializeField] protected T[] m_Data;
+        [SerializeField] protected int m_Width;
+        [SerializeField] protected int m_Height;
 
-        [SerializeField]
-        protected int m_Width;
-
-        [SerializeField]
-        protected int m_Height;
-
-        public Table()
+        public Grid2D()
             : this(1, 1)
         { }
 
-        public Table(int inWidth, int inHeight)
+        public Grid2D(int inWidth, int inHeight)
         {
             m_Width = inWidth;
             m_Height = inHeight;
@@ -41,19 +36,19 @@ namespace BeauUtil
             m_Data = new T[inWidth * inHeight];
         }
 
-        public Table(int inWidth, int inHeight, T inDefault)
+        public Grid2D(int inWidth, int inHeight, T inDefault)
             : this(inWidth, inHeight)
         {
             for (int i = 0; i < m_Data.Length; ++i)
                 m_Data[i] = inDefault;
         }
 
-        public Table(Table<T> inGrid)
+        public Grid2D(Grid2D<T> inGrid)
         {
             m_Width = inGrid.m_Width;
             m_Height = inGrid.m_Height;
 
-            m_Data = (T[])inGrid.m_Data.Clone();
+            m_Data = (T[]) inGrid.m_Data.Clone();
         }
 
         public int Width
@@ -161,7 +156,7 @@ namespace BeauUtil
         {
             // If we're a reference type, we can
             // skip over the null entries
-            if (typeof(T).IsClass)
+            if (s_IsClass)
             {
                 for (int i = 0; i < m_Data.Length; ++i)
                     if (m_Data[i] != null)
@@ -183,5 +178,7 @@ namespace BeauUtil
         {
             return m_Data;
         }
+
+        static private readonly bool s_IsClass = typeof(T).IsClass;
     }
 }

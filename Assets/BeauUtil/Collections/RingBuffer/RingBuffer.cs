@@ -44,6 +44,9 @@ namespace BeauUtil
 
         public RingBuffer(int inCapacity, RingBufferMode inMode)
         {
+            if (inCapacity < 0)
+                throw new ArgumentOutOfRangeException("inCapacity");
+            
             m_Capacity = inCapacity;
             m_Data = m_Capacity == 0 ? s_EmptyArray : new T[m_Capacity];
             m_BufferMode = inMode;
@@ -412,26 +415,13 @@ namespace BeauUtil
 
             int entryIdx = (m_Head + inIndex) % m_Capacity;
             
-            if (inIndex < m_Count / 2)
+            int tailIdx = (m_Tail + m_Capacity - 1) % m_Capacity;
+            if (tailIdx != entryIdx)
             {
-                if (m_Head != entryIdx)
-                {
-                    m_Data[entryIdx] = m_Data[m_Head];
-                }
-                m_Data[m_Head] = default(T);
-                m_Head = (m_Head + 1) % m_Capacity;
+                m_Data[entryIdx] = m_Data[tailIdx];
             }
-            else
-            {
-                int tailIdx = (m_Tail + m_Capacity - 1) % m_Capacity;
-
-                if (tailIdx != entryIdx)
-                {
-                    m_Data[entryIdx] = m_Data[tailIdx];
-                }
-                m_Data[tailIdx] = default(T);
-                m_Tail = tailIdx;
-            }
+            m_Data[tailIdx] = default(T);
+            m_Tail = tailIdx;
 
             --m_Count;
         }
@@ -741,7 +731,7 @@ namespace BeauUtil
         {
             int head = m_Head;
             for(int i = 0, length = m_Count; i < length; ++i)
-                yield return m_Data[head + length % m_Capacity];
+                yield return m_Data[(head + i) % m_Capacity];
         }
 
         #endregion // Overrides

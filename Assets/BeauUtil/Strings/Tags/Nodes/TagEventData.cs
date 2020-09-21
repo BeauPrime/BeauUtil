@@ -12,6 +12,7 @@
 #endif // CSHARP_7_3_OR_NEWER
 
 using System;
+using BeauUtil.Variants;
 using UnityEngine;
 
 namespace BeauUtil.Tags

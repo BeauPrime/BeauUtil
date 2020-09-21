@@ -14,9 +14,9 @@ using System.Collections.Generic;
 namespace BeauUtil
 {
     /// <summary>
-    /// Temporary list, going up to 16 elements.
+    /// Temporary list, going up to 8 elements.
     /// </summary>
-    public struct TempList16<T> : IList<T>
+    public struct TempList8<T> : ITempList<T>
     {
         private T m_0;
         private T m_1;
@@ -26,15 +26,19 @@ namespace BeauUtil
         private T m_5;
         private T m_6;
         private T m_7;
-        private T m_8;
-        private T m_9;
-        private T m_10;
-        private T m_11;
-        private T m_12;
-        private T m_13;
-        private T m_14;
-        private T m_15;
-        private int m_Count;
+        private byte m_Count;
+
+        public TempList8(IReadOnlyList<T> inSource)
+            : this()
+        {
+            if (inSource.Count > 8)
+                throw new ArgumentException("Source list has more than 8 elements");
+                
+            for(int i = 0; i < inSource.Count; ++i)
+            {
+                SetSlow(i, inSource[i]);
+            }
+        }
 
         public T this[int index]
         {
@@ -59,28 +63,44 @@ namespace BeauUtil
 
         public int Count { get { return m_Count; } }
 
+        public int Capacity { get { return 8; } }
+
+        public T[] ToArray()
+        {
+            T[] arr = new T[m_Count];
+            if (m_Count > 0)
+                arr[0] = m_0;
+            if (m_Count > 1)
+                arr[1] = m_1;
+            if (m_Count > 2)
+                arr[2] = m_2;
+            if (m_Count > 3)
+                arr[3] = m_3;
+            if (m_Count > 4)
+                arr[4] = m_4;
+            if (m_Count > 5)
+                arr[5] = m_5;
+            if (m_Count > 6)
+                arr[6] = m_6;
+            if (m_Count > 7)
+                arr[7] = m_7;
+            return arr;
+        }
+
         #region IList
 
-        bool ICollection<T>.IsReadOnly { get { return false; }}
+        bool ICollection<T>.IsReadOnly { get { return false; } }
 
         public void Add(T item)
         {
-            if (++m_Count > 16)
-                throw new InvalidOperationException("Cannot exceed maximum of 16 entries in a TempList");
+            if (++m_Count > 8)
+                throw new InvalidOperationException("Cannot exceed maximum of 8 entries in a TempList8");
 
             SetSlow(m_Count - 1, item);
         }
 
         public void Clear()
         {
-            m_15 = default(T);
-            m_14 = default(T);
-            m_13 = default(T);
-            m_12 = default(T);
-            m_11 = default(T);
-            m_10 = default(T);
-            m_9 = default(T);
-            m_8 = default(T);
             m_7 = default(T);
             m_6 = default(T);
             m_5 = default(T);
@@ -166,22 +186,6 @@ namespace BeauUtil
                     return m_6;
                 case 7:
                     return m_7;
-                case 8:
-                    return m_8;
-                case 9:
-                    return m_9;
-                case 10:
-                    return m_10;
-                case 11:
-                    return m_11;
-                case 12:
-                    return m_12;
-                case 13:
-                    return m_13;
-                case 14:
-                    return m_14;
-                case 15:
-                    return m_15;
 
                 default:
                     throw new InvalidOperationException();
@@ -218,30 +222,6 @@ namespace BeauUtil
                     break;
                 case 7:
                     m_7 = inValue;
-                    break;
-                case 8:
-                    m_8 = inValue;
-                    break;
-                case 9:
-                    m_9 = inValue;
-                    break;
-                case 10:
-                    m_10 = inValue;
-                    break;
-                case 11:
-                    m_11 = inValue;
-                    break;
-                case 12:
-                    m_12 = inValue;
-                    break;
-                case 13:
-                    m_13 = inValue;
-                    break;
-                case 14:
-                    m_14 = inValue;
-                    break;
-                case 15:
-                    m_15 = inValue;
                     break;
 
                 default:

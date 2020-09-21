@@ -795,7 +795,7 @@ namespace BeauUtil
 
                 public StringSlice Process(StringSlice inSlice)
                 {
-                    StringSlice slice = inSlice.TrimStart().Trim(QuoteTrim);
+                    StringSlice slice = inSlice.Trim();
 
                     // if this contains escaped CSV sequences, unescape it here
                     if (m_Unescape && (slice.Contains("\\") || slice.Contains("\\\"")))

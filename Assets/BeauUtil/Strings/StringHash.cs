@@ -28,7 +28,8 @@ namespace BeauUtil
     [Serializable]
     public struct StringHash : IEquatable<StringHash>, IComparable<StringHash>
     {
-        internal const char Prefix = '@';
+        internal const char CustomHashPrefix = '@';
+        internal const char StringPrefix = '\'';
 
         static StringHash()
         {
@@ -88,7 +89,7 @@ namespace BeauUtil
 
         public int CompareTo(StringHash other)
         {
-            return m_HashValue.CompareTo(other.m_HashValue);
+            return m_HashValue < other.m_HashValue ? -1 : (m_HashValue > other.m_HashValue ? 1 : 0);
         }
 
         #endregion // IComparable
@@ -142,21 +143,85 @@ namespace BeauUtil
             return new StringHash(inString);
         }
 
-        static public implicit operator bool(StringHash inHash)
+        static public explicit operator bool(StringHash inHash)
         {
             return inHash.m_HashValue != 0;
         }
 
         #endregion // Operators
 
-        static internal uint Hash(string inString, int inOffset, int inLength)
+        #region Parse
+
+        static public bool TryParse(StringSlice inSlice, out StringHash outHash)
+        {
+            if (inSlice.StartsWith(CustomHashPrefix))
+            {
+                ulong hexVal;
+                if (StringParser.TryParseHex(inSlice.Substring(1), 8, out hexVal))
+                {
+                    outHash = new StringHash((uint) hexVal);
+                    return true;
+                }
+            }
+            else if (inSlice.StartsWith("0x"))
+            {
+                ulong hexVal;
+                if (StringParser.TryParseHex(inSlice.Substring(2), 8, out hexVal))
+                {
+                    outHash = new StringHash((uint) hexVal);
+                    return true;
+                }
+
+                outHash = default(StringHash);
+                return false;
+            }
+            else if (inSlice.StartsWith(StringPrefix))
+            {
+                outHash = inSlice.Substring(1).Hash();
+                return true;
+            }
+            else if (inSlice.StartsWith('"') && inSlice.EndsWith('"'))
+            {
+                outHash = inSlice.Substring(1, inSlice.Length - 2).Hash();
+                return true;
+            }
+
+            outHash = inSlice.Hash();
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the string slice into a hash.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public StringHash Parse(StringSlice inSlice, StringHash inDefault = default(StringHash))
+        {
+            StringHash val;
+            if (!TryParse(inSlice, out val))
+                val = inDefault;
+            return val;
+        }
+
+        #endregion // Parse
+
+        static unsafe internal uint Hash(string inString, int inOffset, int inLength)
         {
             if (inLength <= 0)
                 return 0;
             
+            // fnv-1a
             uint hash = 2166136261;
-            for (int i = 0; i < inLength; ++i)
-                hash = (hash ^ inString[inOffset + i]) * 16777619;
+            
+            // unsafe method
+            fixed(char* ptr = inString)
+            {
+                char* inc = ptr + inOffset;
+                while(--inLength >= 0)
+                {
+                    hash = (hash ^ *inc++) * 16777619;
+                }
+            }
+            
             return hash;
         }
 
@@ -285,7 +350,7 @@ namespace BeauUtil
             return inHash == 0 ? string.Empty : ReverseLookupUnavailable;
         }
 
-#endif // DEVELOPMENT
+        #endif // DEVELOPMENT
 
         #endregion // Caching
     }

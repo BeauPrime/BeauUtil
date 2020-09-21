@@ -78,6 +78,23 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if this slice has any whitespace characters.
+        /// </summary>
+        public bool HasWhitespace
+        {
+            get
+            {
+                for(int i = 0; i < Length; ++i)
+                {
+                    if (char.IsWhiteSpace(m_Source[m_StartIndex + i]))
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Returns the hash of this string slice.
         /// </summary>
         public StringHash Hash()
@@ -379,12 +396,12 @@ namespace BeauUtil
             return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, outSlices);
         }
 
-        public int Split(char[] inSeparator, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        public int Split<T>(char[] inSeparator, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions, ref outSlices);
         }
 
-        public int Split(ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        public int Split<T>(ISplitter inSplitter, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, ref outSlices);
         }
@@ -1049,7 +1066,7 @@ namespace BeauUtil
             return slices;
         }
 
-        static private int Split(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        static private int Split<T>(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             if (inString == null)
                 return 0;
@@ -1111,7 +1128,7 @@ namespace BeauUtil
             return slices;
         }
 
-        static private int Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        static private int Split<T>(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             if (inString == null)
                 return 0;

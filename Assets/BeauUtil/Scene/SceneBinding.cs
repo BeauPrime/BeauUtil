@@ -56,7 +56,14 @@ namespace BeauUtil
         private Scene CacheScene()
         {
             if (!m_CachedScene.IsValid() || !m_CachedScene.isLoaded)
-                m_CachedScene = SceneManager.GetSceneByPath(Path);
+            {
+                #if UNITY_EDITOR
+                if (!UnityEditor.EditorApplication.isPlaying)
+                    m_CachedScene = UnityEditor.SceneManagement.EditorSceneManager.GetSceneByPath(Path);
+                else
+                #endif
+                    m_CachedScene = SceneManager.GetSceneByPath(Path);
+            }
             return m_CachedScene;
         }
 
@@ -132,7 +139,7 @@ namespace BeauUtil
 
         public override string ToString()
         {
-            if (!Id)
+            if (Id.IsEmpty)
                 return "Null Scene";
             
             return string.Format("Scene {0} (path: '{1}', buildIndex: {2})", Id.ToString(), Path, BuildIndex);

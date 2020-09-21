@@ -19,7 +19,7 @@ namespace BeauUtil.Debugger
     /// <summary>
     /// Profiling blocks for time and memory.
     /// </summary>
-    static public class Profile
+    static public class Profiling
     {
         #region Time
 
@@ -52,8 +52,8 @@ namespace BeauUtil.Debugger
             {
                 m_Stopwatch.Stop();
                 double durationMS = (double) m_Stopwatch.ElapsedTicks / Stopwatch.Frequency * 1000;
-                int durationFrames = UnityEngine.Time.frameCount - m_FrameStart + 1;
-                // TODO: Log
+                int durationFrames = UnityEngine.Time.frameCount - m_FrameStart;
+                UnityEngine.Debug.Log(string.Format("[Profile] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
             }
         }
 

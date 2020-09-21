@@ -7,6 +7,10 @@
  * Purpose: Parser with generics in header.
  */
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || DEBUG
+#define DEVELOPMENT
+#endif // DEVELOPMENT
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -409,6 +413,8 @@ namespace BeauUtil.Blocks
                 bool bHandled = ioState.Generator.TryEvaluateMeta(ioState, ioState.Package, ioState.CurrentBlock, data);
                 if (!bHandled)
                     bHandled = ioState.Cache.TryEvaluateCommand(ioState.CurrentBlock, data);
+                if (!bHandled)
+                    BlockParser.LogError(ioState.Position, "Unrecognized block metadata '{0}'", data);
                 return bHandled;
             }
 
@@ -545,9 +551,13 @@ namespace BeauUtil.Blocks
                         if (ioState.ContentBuilder.Length > 0 && contentSetter.LineSeparator != 0)
                             ioState.ContentBuilder.Append(contentSetter.LineSeparator);
                         ioState.ContentBuilder.AppendSlice(inContent);
+                        bHandled = true;
                     }
                 }
             }
+
+            if (!bHandled)
+                BlockParser.LogError(ioState.Position, "Unable to add content");
 
             return bHandled;
         }
@@ -558,7 +568,12 @@ namespace BeauUtil.Blocks
             if (inComment.IsEmpty)
                 return true;
 
-            return ioState.Generator.TryAddComment(ioState, ioState.Package, ioState.CurrentBlock, inComment);
+            if (!ioState.Generator.TryAddComment(ioState, ioState.Package, ioState.CurrentBlock, inComment))
+            {
+                BlockParser.LogError(ioState.Position, "Unhandled comment");
+            }
+
+            return true;
         }
 
         // Attempts to add package metadata
@@ -589,6 +604,8 @@ namespace BeauUtil.Blocks
                 bool bHandled = ioState.Generator.TryEvaluatePackage(ioState, ioState.Package, ioState.CurrentBlock, data);
                 if (!bHandled)
                     bHandled = ioState.Cache.TryEvaluateCommand(ioState.Package, data);
+                if (!bHandled)
+                    BlockParser.LogError(ioState.Position, "Unrecognized package metadata '{0}'", data);
                 return bHandled;
             }
 
