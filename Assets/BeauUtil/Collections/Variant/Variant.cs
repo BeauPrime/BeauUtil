@@ -28,7 +28,7 @@ namespace BeauUtil.Variants
         [FieldOffset(4)] private readonly int m_IntValue;
         [FieldOffset(4)] private readonly uint m_UIntValue;
         [FieldOffset(4)] private readonly float m_FloatValue;
-        [FieldOffset(4)] private readonly StringHash m_StringHashValue;
+        [FieldOffset(4)] private readonly StringHash32 m_StringHashValue;
 
         #region Constructors
 
@@ -60,7 +60,7 @@ namespace BeauUtil.Variants
             m_FloatValue = inValue;
         }
 
-        public Variant(StringHash inValue)
+        public Variant(StringHash32 inValue)
             : this()
         {
             m_Type = VariantType.StringHash;
@@ -163,12 +163,12 @@ namespace BeauUtil.Variants
             }
         }
 
-        public StringHash AsStringHash()
+        public StringHash32 AsStringHash()
         {
             switch(m_Type)
             {
                 case VariantType.Null:
-                    return StringHash.Null;
+                    return StringHash32.Null;
 
                 case VariantType.StringHash:
                     return m_StringHashValue;
@@ -354,7 +354,7 @@ namespace BeauUtil.Variants
                         }
                         else if (other.m_Type == VariantType.Null)
                         {
-                            return m_StringHashValue.CompareTo(StringHash.Null);
+                            return m_StringHashValue.CompareTo(StringHash32.Null);
                         }
                         break;
                     }
@@ -556,10 +556,10 @@ namespace BeauUtil.Variants
 
         static public implicit operator Variant(string inValue)
         {
-            return inValue == null ? Variant.Null : new Variant(new StringHash(inValue));
+            return inValue == null ? Variant.Null : new Variant(new StringHash32(inValue));
         }
 
-        static public implicit operator Variant(StringHash inValue)
+        static public implicit operator Variant(StringHash32 inValue)
         {
             return new Variant(inValue);
         }
@@ -589,11 +589,11 @@ namespace BeauUtil.Variants
                 return true;
             }
 
-            if (inSlice.StartsWith(StringHash.CustomHashPrefix) || inSlice.StartsWith(StringHash.StringPrefix)
+            if (inSlice.StartsWith(StringHash32.CustomHashPrefix) || inSlice.StartsWith(StringHash32.StringPrefix)
                 || (inSlice.StartsWith('"') && inSlice.EndsWith('"')))
             {
-                StringHash hash;
-                if (StringHash.TryParse(inSlice, out hash))
+                StringHash32 hash;
+                if (StringHash32.TryParse(inSlice, out hash))
                 {
                     outValue = hash;
                     return true;
@@ -630,8 +630,8 @@ namespace BeauUtil.Variants
 
             if (inbAllowImplicitHash)
             {
-                StringHash hash;
-                if (StringHash.TryParse(inSlice, out hash))
+                StringHash32 hash;
+                if (StringHash32.TryParse(inSlice, out hash))
                 {
                     outValue = hash;
                     return true;

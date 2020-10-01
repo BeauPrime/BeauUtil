@@ -21,7 +21,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Attempts to get a variant table from the given table id.
         /// </summary>
-        bool TryGetTable(object inContext, StringHash inTableId, out VariantTable outTable);
+        bool TryGetTable(object inContext, StringHash32 inTableId, out VariantTable outTable);
         
         /// <summary>
         /// Attempts to get a variant value from the given variant key.

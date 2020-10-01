@@ -3,8 +3,8 @@
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
- * File:    MapEntry.cs
- * Purpose: Serializable map entries.
+ * File:    KeyValue.cs
+ * Purpose: Serializable key-value pair entries.
 */
 
 using System;
@@ -15,7 +15,7 @@ namespace BeauUtil
     /// <summary>
     /// Interface for a key-value pair.
     /// </summary>
-    public interface IKeyValuePair<K, V> where K : IEquatable<K>
+    public interface IKeyValuePair<K, V>
     {
         K Key { get; }
         V Value { get; }
@@ -25,7 +25,7 @@ namespace BeauUtil
     /// Serializable map entry.
     /// Create subclass and mark serializable to use in the inspector.
     /// </summary>
-    public abstract class SerializableKeyValuePair<K, V> : IKeyValuePair<K, V> where K : IEquatable<K>
+    public abstract class SerializableKeyValuePair<K, V> : IKeyValuePair<K, V>
     {
         public K Key;
         public V Value;
@@ -44,7 +44,6 @@ namespace BeauUtil
         /// Creates a map out from a collection of key-value pairs.
         /// </summary>
         static public Dictionary<K, V> CreateMap<K, V, T>(this ICollection<T> inCollection)
-            where K : IEquatable<K>
             where T : IKeyValuePair<K, V>
         {
             Dictionary<K, V> dict = new Dictionary<K, V>(inCollection.Count);
@@ -59,7 +58,6 @@ namespace BeauUtil
         /// Creates a map out from an array of key-value pairs.
         /// </summary>
         static public Dictionary<K, V> CreateMap<K, V, T>(this T[] inCollection)
-            where K : IEquatable<K>
             where T : IKeyValuePair<K, V>
         {
             Dictionary<K, V> dict = new Dictionary<K, V>(inCollection.Length);
@@ -74,12 +72,12 @@ namespace BeauUtil
         /// Attempts to retrieve a value from a collection of key-value pairs.
         /// </summary>
         static public bool TryGetValue<K, V, T>(this ICollection<T> inCollection, K inKey, out V outValue)
-            where K : IEquatable<K>
             where T : IKeyValuePair<K, V>
         {
+            var keyComparer = EqualityComparer<K>.Default;
             foreach (var entry in inCollection)
             {
-                if (entry.Key.Equals(inKey))
+                if (keyComparer.Equals(entry.Key, inKey))
                 {
                     outValue = entry.Value;
                     return true;
@@ -94,12 +92,12 @@ namespace BeauUtil
         /// Attempts to retrieve a value from an array of key-value pairs.
         /// </summary>
         static public bool TryGetValue<K, V, T>(this T[] inCollection, K inKey, out V outValue)
-            where K : IEquatable<K>
             where T : IKeyValuePair<K, V>
         {
+            var keyComparer = EqualityComparer<K>.Default;
             foreach (var entry in inCollection)
             {
-                if (entry.Key.Equals(inKey))
+                if (keyComparer.Equals(entry.Key, inKey))
                 {
                     outValue = entry.Value;
                     return true;
@@ -114,7 +112,6 @@ namespace BeauUtil
         /// Validates that all keys in the given collection of key-value pairs are unique.
         /// </summary>
         static public bool ValidateKeys<K, V, T>(this ICollection<T> inCollection)
-            where K : IEquatable<K>
             where T : IKeyValuePair<K, V>
         {
             HashSet<K> keys = new HashSet<K>();
@@ -131,7 +128,6 @@ namespace BeauUtil
         /// Validates that all keys in the given collection of key-value pairs are unique.
         /// </summary>
         static public bool ValidateKeys<K, V, T>(this T[] inCollection)
-            where K : IEquatable<K>
             where T : IKeyValuePair<K, V>
         {
             HashSet<K> keys = new HashSet<K>();

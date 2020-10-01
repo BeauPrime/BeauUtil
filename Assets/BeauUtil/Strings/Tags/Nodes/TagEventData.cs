@@ -25,7 +25,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Id of event type.
         /// </summary>
-        public StringHash Type;
+        public StringHash32 Type;
 
         /// <summary>
         /// Indicates if this closes a previous event.
@@ -54,7 +54,7 @@ namespace BeauUtil.Tags
 
         #region Constructors
 
-        public TagEventData(StringHash inType)
+        public TagEventData(StringHash32 inType)
         {
             Type = inType;
             IsClosing = false;
@@ -64,7 +64,7 @@ namespace BeauUtil.Tags
             AdditionalData = null;
         }
 
-        public TagEventData(StringHash inType, string inStringArg)
+        public TagEventData(StringHash32 inType, string inStringArg)
         {
             Type = inType;
             IsClosing = false;
@@ -74,7 +74,7 @@ namespace BeauUtil.Tags
             AdditionalData = null;
         }
 
-        public TagEventData(StringHash inType, StringSlice inStringArg)
+        public TagEventData(StringHash32 inType, StringSlice inStringArg)
         {
             Type = inType;
             IsClosing = false;
@@ -84,7 +84,7 @@ namespace BeauUtil.Tags
             AdditionalData = null;
         }
 
-        public TagEventData(StringHash inType, Variant inArgument)
+        public TagEventData(StringHash32 inType, Variant inArgument)
         {
             Type = inType;
             IsClosing = false;
@@ -101,7 +101,7 @@ namespace BeauUtil.Tags
         /// </summary>
         public void Reset()
         {
-            Type = StringHash.Null;
+            Type = StringHash32.Null;
             IsClosing = false;
             StringArgument = null;
             Argument0 = Variant.Null;

@@ -3,6 +3,7 @@ using System.Text;
 using NUnit.Framework;
 using UnityEngine;
 using BeauUtil.Variants;
+using System.IO;
 
 namespace BeauUtil.UnitTests
 {
@@ -132,6 +133,26 @@ namespace BeauUtil.UnitTests
             string flushed = builder.Flush();
             Assert.AreEqual("abcdefg", flushed);
             Assert.LessOrEqual(builder.Length, 0);
+        }
+
+        [Test]
+        static public void TestStringHash32()
+        {
+            string allText = File.ReadAllText("Assets/Editor/words.txt");
+            foreach(var word in StringSlice.EnumeratedSplit(allText, new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                word.Hash32();
+            }
+        }
+
+        [Test]
+        static public void TestStringHash64()
+        {
+            string allText = File.ReadAllText("Assets/Editor/words.txt");
+            foreach(var word in StringSlice.EnumeratedSplit(allText, new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                word.Hash64();
+            }
         }
 
         [Test]

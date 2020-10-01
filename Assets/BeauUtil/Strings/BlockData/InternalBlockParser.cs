@@ -548,8 +548,14 @@ namespace BeauUtil.Blocks
                     }
                     else
                     {
-                        if (ioState.ContentBuilder.Length > 0 && contentSetter.LineSeparator != 0)
+                        if (ioState.ContentBuilder.Length == 0)
+                        {
+                            inContent = inContent.TrimStart(BlockParser.TrimCharsWithSpace);
+                        }
+                        else if (ioState.ContentBuilder.Length > 0 && contentSetter.LineSeparator != 0)
+                        {
                             ioState.ContentBuilder.Append(contentSetter.LineSeparator);
+                        }
                         ioState.ContentBuilder.AppendSlice(inContent);
                         bHandled = true;
                     }

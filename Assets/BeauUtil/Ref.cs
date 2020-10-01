@@ -47,6 +47,25 @@ namespace BeauUtil
     static public class Ref
     {
         /// <summary>
+        /// Safely disposes of an object, if it's an IDisposable, and sets its reference to null.
+        /// </summary>
+        static public bool TryDispose<T>(ref T ioObjectToDispose) where T : class
+        {
+            if (ioObjectToDispose != null)
+            {
+                IDisposable disposable = ioObjectToDispose as IDisposable;
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+                ioObjectToDispose = null;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Safely disposes of an object and sets its reference to null.
         /// </summary>
         static public bool Dispose<T>(ref T ioObjectToDispose) where T : class, IDisposable

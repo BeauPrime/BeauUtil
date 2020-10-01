@@ -26,8 +26,8 @@ namespace BeauUtil.Variants
         public delegate Variant GetVarWithContextDelegate(object inContext);
         
         // get var (assuming table id)
-        public delegate Variant GetVarWithIdDelegate(StringHash inId);
-        public delegate Variant GetVarWithIdAndContextDelegate(StringHash inId, object inContext);
+        public delegate Variant GetVarWithIdDelegate(StringHash32 inId);
+        public delegate Variant GetVarWithIdAndContextDelegate(StringHash32 inId, object inContext);
         
         // get var (fallback)
         public delegate Variant GetVarWithTableKeyDelegate(TableKeyPair inKey);
@@ -88,7 +88,7 @@ namespace BeauUtil.Variants
                 m_GetWithContextDelegate = inGetDelegate;
             }
 
-            public Variant Resolve(StringHash inId, object inContext)
+            public Variant Resolve(StringHash32 inId, object inContext)
             {
                 if (m_GetDelegate != null)
                     return m_GetDelegate(inId);
@@ -108,8 +108,8 @@ namespace BeauUtil.Variants
         public delegate VariantTable GetTableWithContextDelegate(object inContext);
 
         // get table (fallback)
-        public delegate VariantTable GetTableWithIdDelegate(StringHash inId);
-        public delegate VariantTable GetTableWithIdAndContextDelegate(StringHash inId, object inContext);
+        public delegate VariantTable GetTableWithIdDelegate(StringHash32 inId);
+        public delegate VariantTable GetTableWithIdAndContextDelegate(StringHash32 inId, object inContext);
 
         private class TableRule
         {
@@ -172,19 +172,19 @@ namespace BeauUtil.Variants
 
         // remap
         private Dictionary<TableKeyPair, TableKeyPair> m_FullKeyRemap;
-        private Dictionary<StringHash, StringHash> m_TableIdRemap;
-        private Dictionary<StringHash, StringHash> m_VariableIdRemap;
+        private Dictionary<StringHash32, StringHash32> m_TableIdRemap;
+        private Dictionary<StringHash32, StringHash32> m_VariableIdRemap;
         private bool m_HasRemaps;
 
         // table lookup
-        private Dictionary<StringHash, TableRule> m_TableLookup;
+        private Dictionary<StringHash32, TableRule> m_TableLookup;
         private TableRule m_DefaultTable;
         private GetTableWithIdDelegate m_GetTableFallback;
         private GetTableWithIdAndContextDelegate m_GetTableWithContextFallback;
 
         // var lookup
         private Dictionary<TableKeyPair, FullPathVarRule> m_FullPathVarLookup;
-        private Dictionary<StringHash, TableVarRule> m_TableVarLookup;
+        private Dictionary<StringHash32, TableVarRule> m_TableVarLookup;
         private GetVarWithTableKeyDelegate m_GetVarFallback;
         private GetVarWithTableKeyAndContextDelegate m_GetVarWithContextFallback;
         private bool m_HasSpecialVariantLookups;
@@ -254,11 +254,11 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Sets up a remap between two table ids.
         /// </summary>
-        public CustomVariantResolver RemapTableId(StringHash inId, StringHash inRemap)
+        public CustomVariantResolver RemapTableId(StringHash32 inId, StringHash32 inRemap)
         {
             m_HasRemaps = true;
             if (m_TableIdRemap == null)
-                m_TableIdRemap = new Dictionary<StringHash, StringHash>();
+                m_TableIdRemap = new Dictionary<StringHash32, StringHash32>();
 
             m_TableIdRemap[inId] = inRemap;
             return this;
@@ -267,11 +267,11 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Sets up a remap between two variable ids.
         /// </summary>
-        public CustomVariantResolver RemapVarId(StringHash inId, StringHash inRemap)
+        public CustomVariantResolver RemapVarId(StringHash32 inId, StringHash32 inRemap)
         {
             m_HasRemaps = true;
             if (m_VariableIdRemap == null)
-                m_VariableIdRemap = new Dictionary<StringHash, StringHash>();
+                m_VariableIdRemap = new Dictionary<StringHash32, StringHash32>();
 
             m_VariableIdRemap[inId] = inRemap;
             return this;
@@ -361,7 +361,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Sets the table associated with the given table id.
         /// </summary>
-        public CustomVariantResolver SetTable(StringHash inTableId, VariantTable inTable)
+        public CustomVariantResolver SetTable(StringHash32 inTableId, VariantTable inTable)
         {
             if (inTable == null)
                 throw new ArgumentNullException("inTable");
@@ -373,7 +373,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Uses a delegate to return a table for the given table id.
         /// </summary>
-        public CustomVariantResolver SetTable(StringHash inTableId, GetTableDelegate inGetter)
+        public CustomVariantResolver SetTable(StringHash32 inTableId, GetTableDelegate inGetter)
         {
             if (inGetter == null)
                 throw new ArgumentNullException("inGetter");
@@ -385,7 +385,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Uses a delegate to return a table for the given table id.
         /// </summary>
-        public CustomVariantResolver SetTable(StringHash inTableId, GetTableWithContextDelegate inGetter)
+        public CustomVariantResolver SetTable(StringHash32 inTableId, GetTableWithContextDelegate inGetter)
         {
             if (inGetter == null)
                 throw new ArgumentNullException("inGetter");
@@ -397,7 +397,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Removes table lookup for the given table id.
         /// </summary>
-        public CustomVariantResolver ClearTable(StringHash inTableId)
+        public CustomVariantResolver ClearTable(StringHash32 inTableId)
         {
             if (m_TableLookup != null)
                 m_TableLookup.Remove(inTableId);
@@ -424,12 +424,12 @@ namespace BeauUtil.Variants
             return this;
         }
 
-        private TableRule MakeTableRule(StringHash inTableId)
+        private TableRule MakeTableRule(StringHash32 inTableId)
         {
             TableRule rule;
             if (m_TableLookup == null)
             {
-                m_TableLookup = new Dictionary<StringHash, TableRule>();
+                m_TableLookup = new Dictionary<StringHash32, TableRule>();
                 rule = null;
             }
             else
@@ -444,6 +444,23 @@ namespace BeauUtil.Variants
             }
             
             return rule;
+        }
+
+        /// <summary>
+        /// Returns all tables loaded into the resolver.
+        /// </summary>
+        public IEnumerable<VariantTable> AllTables()
+        {
+            if (m_DefaultTable != null)
+                yield return m_DefaultTable.Resolve(null);
+
+            if (m_TableLookup != null)
+            {
+                foreach(var lookup in m_TableLookup.Values)
+                {
+                    yield return lookup.Resolve(null);
+                }
+            }
         }
 
         #endregion // Table Lookup
@@ -503,7 +520,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Uses a delegate to return a value for the given table id.
         /// </summary>
-        public CustomVariantResolver SetTableVar(StringHash inTableId, GetVarWithIdDelegate inGetter)
+        public CustomVariantResolver SetTableVar(StringHash32 inTableId, GetVarWithIdDelegate inGetter)
         {
             if (inGetter == null)
                 throw new ArgumentNullException("inGetter");
@@ -515,7 +532,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Uses a delegate to return a value for the given table id
         /// </summary>
-        public CustomVariantResolver SetTableVar(StringHash inTableId, GetVarWithIdAndContextDelegate inGetter)
+        public CustomVariantResolver SetTableVar(StringHash32 inTableId, GetVarWithIdAndContextDelegate inGetter)
         {
             if (inGetter == null)
                 throw new ArgumentNullException("inGetter");
@@ -527,7 +544,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Removes variable lookup for the given table id.
         /// </summary>
-        public CustomVariantResolver ClearTableVars(StringHash inTableId)
+        public CustomVariantResolver ClearTableVars(StringHash32 inTableId)
         {
             if (m_TableVarLookup != null)
             {
@@ -602,12 +619,12 @@ namespace BeauUtil.Variants
             return rule;
         }
 
-        private TableVarRule MakeTableVarRule(StringHash inTableId)
+        private TableVarRule MakeTableVarRule(StringHash32 inTableId)
         {
             TableVarRule rule;
             if (m_TableVarLookup == null)
             {
-                m_TableVarLookup = new Dictionary<StringHash, TableVarRule>();
+                m_TableVarLookup = new Dictionary<StringHash32, TableVarRule>();
                 rule = null;
                 m_HasSpecialVariantLookups = true;
             }
@@ -645,7 +662,7 @@ namespace BeauUtil.Variants
 
                 if (m_TableIdRemap != null)
                 {
-                    StringHash tableRemap;
+                    StringHash32 tableRemap;
                     if (m_TableIdRemap.TryGetValue(ioKey.TableId, out tableRemap))
                     {
                         ioKey.TableId = tableRemap;
@@ -654,7 +671,7 @@ namespace BeauUtil.Variants
 
                 if (m_VariableIdRemap != null)
                 {
-                    StringHash varRemap;
+                    StringHash32 varRemap;
                     if (m_VariableIdRemap.TryGetValue(ioKey.TableId, out varRemap))
                     {
                         ioKey.VariableId = varRemap;
@@ -668,7 +685,7 @@ namespace BeauUtil.Variants
             }
         }
 
-        public bool TryGetTable(object inContext, StringHash inTableId, out VariantTable outTable)
+        public bool TryGetTable(object inContext, StringHash32 inTableId, out VariantTable outTable)
         {
             if (inTableId.IsEmpty && m_DefaultTable != null && m_DefaultTable.IsActive())
             {

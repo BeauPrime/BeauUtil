@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using UnityEngine;
 
 namespace BeauUtil
@@ -305,5 +306,38 @@ namespace BeauUtil
         }
 
         #endregion // Components
+    
+        #region Path
+
+        /// <summary>
+        /// Returns the full path for this gameObject
+        /// </summary>
+        static public string FullPath(this GameObject inGameObject, bool inbIncludeScene = false)
+        {
+            if (!inGameObject)
+                return string.Empty;
+            
+            StringBuilder builder = new StringBuilder();
+            if (inbIncludeScene)
+            {
+                builder.Append(inGameObject.scene.name).Append(":/");
+            }
+            WritePath(inGameObject.transform, builder);
+            return builder.Flush();
+        }
+
+        static private void WritePath(Transform inTransform, StringBuilder ioBuilder)
+        {
+            Transform parent = inTransform.parent;
+            if (!parent.IsReferenceNull())
+            {
+                WritePath(parent, ioBuilder);
+                ioBuilder.Append('/');
+            }
+
+            ioBuilder.Append(inTransform.name);
+        }
+
+        #endregion // Path
     }
 }

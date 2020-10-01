@@ -95,11 +95,19 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Returns the hash of this string slice.
+        /// Returns the 32-bit hash of this string slice.
         /// </summary>
-        public StringHash Hash()
+        public StringHash32 Hash32()
         {
-            return new StringHash(CalculateHash());
+            return new StringHash32(CalculateHash32());
+        }
+
+        /// <summary>
+        /// Returns the 64-bit hash of this string slice.
+        /// </summary>
+        public StringHash64 Hash64()
+        {
+            return new StringHash64(CalculateHash64());
         }
 
         #region Search
@@ -781,7 +789,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            return (int) CalculateHash();
+            return (int) CalculateHash32();
         }
 
         public override string ToString()
@@ -841,9 +849,14 @@ namespace BeauUtil
             ioBuilder.Append(m_Source, m_StartIndex, Length);
         }
 
-        internal uint CalculateHash()
+        internal uint CalculateHash32()
         {
-            return StringHash.StoreHash(m_Source, m_StartIndex, Length);
+            return StringHash32.StoreHash(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong CalculateHash64()
+        {
+            return StringHash64.StoreHash(m_Source, m_StartIndex, Length);
         }
 
         static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)

@@ -576,6 +576,9 @@ namespace BeauUtil
         /// </summary>
         public int CopyTo(int inSrcIndex, T[] ioDest, int inDestIndex, int inLength)
         {
+            if (ioDest == null)
+                throw new ArgumentNullException("ioDest");
+
             int desiredCopy = inLength - inDestIndex;
             int available = m_Count - inSrcIndex;
             if (desiredCopy > m_Count)
@@ -602,6 +605,46 @@ namespace BeauUtil
             }
 
             return desiredCopy;
+        }
+
+        /// <summary>
+        /// Copies the contents of the ring buffer to another ring buffer.
+        /// </summary>
+        public int CopyTo(RingBuffer<T> ioDest)
+        {
+            if (ioDest == null)
+                throw new ArgumentNullException("ioDest");
+
+            if (m_Count <= 0)
+                return 0;
+
+            if (ioDest.m_Capacity == m_Capacity)
+            {
+                Array.Copy(m_Data, 0, ioDest.m_Data, 0, m_Capacity);
+                ioDest.m_Head = m_Head;
+                ioDest.m_Tail = m_Tail;
+                ioDest.m_Count = m_Count;
+                return m_Count;
+            }
+            else if (ioDest.m_Capacity > m_Capacity || ioDest.m_BufferMode != RingBufferMode.Expand)
+            {
+                Array.Clear(ioDest.m_Data, 0, ioDest.m_Capacity);
+                int copied = CopyTo(0, ioDest.m_Data, 0, m_Count);
+                ioDest.m_Head = 0;
+                ioDest.m_Tail = copied;
+                ioDest.m_Count = copied;
+                return copied;
+            }
+            else
+            {
+                Array.Clear(ioDest.m_Data, 0, ioDest.m_Capacity);
+                Array.Resize(ref ioDest.m_Data, m_Capacity);
+                int copied = CopyTo(0, ioDest.m_Data, 0, m_Count);
+                ioDest.m_Head = 0;
+                ioDest.m_Tail = m_Count;
+                ioDest.m_Count = m_Count;
+                return copied;
+            }
         }
 
         #endregion // Copy

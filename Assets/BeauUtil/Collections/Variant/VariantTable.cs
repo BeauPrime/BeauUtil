@@ -21,9 +21,9 @@ namespace BeauUtil.Variants
     /// <summary>
     /// Collection of named variant values.
     /// </summary>
-    public class VariantTable : IEnumerable<NamedVariant>, IReadOnlyList<NamedVariant>
+    public class VariantTable : IDisposable, IEnumerable<NamedVariant>, IReadOnlyList<NamedVariant>
     {
-        private StringHash m_Name;
+        private StringHash32 m_Name;
         private RingBuffer<NamedVariant> m_Values;
         private VariantTable m_Base;
         private bool m_Optimized = true;
@@ -33,13 +33,13 @@ namespace BeauUtil.Variants
             m_Values = new RingBuffer<NamedVariant>();
         }
 
-        public VariantTable(StringHash inName)
+        public VariantTable(StringHash32 inName)
             : this()
         {
             m_Name = inName;
         }
 
-        public VariantTable(StringHash inName, VariantTable inBase)
+        public VariantTable(StringHash32 inName, VariantTable inBase)
             : this(inName)
         {
             m_Base = inBase;
@@ -48,7 +48,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Name of the variant table.
         /// </summary>
-        public StringHash Name
+        public StringHash32 Name
         {
             get { return m_Name; }
             set { m_Name = value; }
@@ -82,7 +82,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Sets the value for the given id.
         /// </summary>
-        public void Set(StringHash inId, Variant inValue)
+        public void Set(StringHash32 inId, Variant inValue)
         {
             SetAt(IndexOf(inId), inId, inValue);
         }
@@ -91,7 +91,7 @@ namespace BeauUtil.Variants
         /// Retrieves the value on this table.
         /// Will not look into base tables.
         /// </summary>
-        public Variant Get(StringHash inId)
+        public Variant Get(StringHash32 inId)
         {
             return GetAt(IndexOf(inId));
         }
@@ -99,7 +99,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Gets/sets the variants for the given id.
         /// </summary>
-        public Variant this[StringHash inId]
+        public Variant this[StringHash32 inId]
         {
             get { return Get(inId); }
             set { Set(inId, value); }
@@ -108,7 +108,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Returns if a value with the given id exists on this table.
         /// </summary>
-        public bool Has(StringHash inId)
+        public bool Has(StringHash32 inId)
         {
             return IndexOf(inId) >= 0;
         }
@@ -116,7 +116,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Attempts to delete the value with the given id.
         /// </summary>
-        public bool Delete(StringHash inId)
+        public bool Delete(StringHash32 inId)
         {
             int idx = IndexOf(inId);
             if (idx >= 0)
@@ -136,6 +136,17 @@ namespace BeauUtil.Variants
         {
             m_Values.Clear();
             m_Optimized = true;
+        }
+
+        /// <summary>
+        /// Overwrites another table with this table's values.
+        /// </summary>
+        public void CopyTo(VariantTable inTarget)
+        {
+            if (inTarget == null)
+                throw new ArgumentNullException("inTarget");
+
+            m_Values.CopyTo(inTarget.m_Values);
         }
 
         /// <summary>
@@ -179,7 +190,7 @@ namespace BeauUtil.Variants
         /// Attempts to retrieve a value from the table.
         /// If not present in this table, it will look in the parent.
         /// </summary>
-        public bool TryLookup(StringHash inId, out Variant outValue)
+        public bool TryLookup(StringHash32 inId, out Variant outValue)
         {
             Optimize();
 
@@ -202,7 +213,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Modify a value on the table.
         /// </summary>
-        public void Modify(StringHash inId, VariantModifyOperator inOperator, Variant inOperand)
+        public void Modify(StringHash32 inId, VariantModifyOperator inOperator, Variant inOperand)
         {
             int idx = IndexOf(inId);
             switch(inOperator)
@@ -243,7 +254,7 @@ namespace BeauUtil.Variants
             }
         }
 
-        private int IndexOf(StringHash inId)
+        private int IndexOf(StringHash32 inId)
         {
             if (m_Optimized && m_Values.Count > 3)
                 return m_Values.BinarySearch(inId, SearchPredicate);
@@ -262,7 +273,7 @@ namespace BeauUtil.Variants
             return inIdx >= 0 ? m_Values[inIdx].Value : Variant.Null;
         }
 
-        private void SetAt(int inIdx, StringHash inId, Variant inValue)
+        private void SetAt(int inIdx, StringHash32 inId, Variant inValue)
         {
             if (inIdx >= 0)
             {
@@ -309,6 +320,16 @@ namespace BeauUtil.Variants
 
         #endregion // IEnumerable
 
+        #region IDisposable
+
+        public void Dispose()
+        {
+            Clear();
+            m_Base = null;
+        }
+
+        #endregion // IDisposable
+
         #region Binary Search
 
         private sealed class EntryComparer : IComparer<NamedVariant>
@@ -321,7 +342,7 @@ namespace BeauUtil.Variants
             }
         }
 
-        static private readonly ComparePredicate<NamedVariant, StringHash> SearchPredicate = (nv, sh) => {
+        static private readonly ComparePredicate<NamedVariant, StringHash32> SearchPredicate = (nv, sh) => {
             if (sh.HashValue < nv.Id.HashValue)
                 return 1;
             else if (sh.HashValue > nv.Id.HashValue)

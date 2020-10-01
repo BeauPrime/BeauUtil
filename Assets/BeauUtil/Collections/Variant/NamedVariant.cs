@@ -17,12 +17,12 @@ namespace BeauUtil.Variants
     /// Data variant with a name.
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
-    public struct NamedVariant : IKeyValuePair<StringHash, Variant>
+    public struct NamedVariant : IKeyValuePair<StringHash32, Variant>
     {
-        public StringHash Id;
+        public StringHash32 Id;
         public Variant Value;
 
-        public NamedVariant(StringHash inId, Variant inValue)
+        public NamedVariant(StringHash32 inId, Variant inValue)
         {
             Id = inId;
             Value = inValue;
@@ -44,9 +44,9 @@ namespace BeauUtil.Variants
 
         #region IKeyValuePair
 
-        StringHash IKeyValuePair<StringHash, Variant>.Key { get { return Id; } }
+        StringHash32 IKeyValuePair<StringHash32, Variant>.Key { get { return Id; } }
 
-        Variant IKeyValuePair<StringHash, Variant>.Value { get { return Value; } }
+        Variant IKeyValuePair<StringHash32, Variant>.Value { get { return Value; } }
 
         #endregion // IKeyValuePair
     }

@@ -32,7 +32,7 @@ namespace BeauUtil.Tags
         /// </summary>
         static public readonly IDelimiterRules AtCurlyBraceDelimiters = new CurlyBraceTextRules();
 
-        static private readonly char[] DefaultDataDelimiters = new char[] { '=', ' ', ':' };
+        static private readonly char[] DefaultDataDelimiters = new char[] { '=', ' ', ':', '\t' };
 
         private class RichTextRules : IDelimiterRules
         {

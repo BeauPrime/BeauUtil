@@ -23,16 +23,16 @@ namespace BeauUtil.Variants
         static public readonly string TableOperator = ":";
         static private readonly string StringFormat = "{0}" + TableOperator + "{1}";
 
-        public StringHash TableId;
-        public StringHash VariableId;
+        public StringHash32 TableId;
+        public StringHash32 VariableId;
 
-        public TableKeyPair(StringHash inVariantId)
+        public TableKeyPair(StringHash32 inVariantId)
         {
-            TableId = StringHash.Null;
+            TableId = StringHash32.Null;
             VariableId = inVariantId;
         }
 
-        public TableKeyPair(StringHash inTableId, StringHash inVariantId)
+        public TableKeyPair(StringHash32 inTableId, StringHash32 inVariantId)
         {
             TableId = inTableId;
             VariableId = inVariantId;

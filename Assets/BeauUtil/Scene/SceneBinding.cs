@@ -20,7 +20,7 @@ namespace BeauUtil
     /// </summary>
     public struct SceneBinding : IEquatable<SceneBinding>, IComparable<SceneBinding>
     {
-        public readonly StringHash Id;
+        public readonly StringHash32 Id;
 
         public readonly string  Name;
         public readonly string  Path;

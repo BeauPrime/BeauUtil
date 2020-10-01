@@ -84,6 +84,19 @@ namespace BeauUtil
             }
         }
 
+        public bool BlocksRaycasts
+        {
+            get { return m_BlocksRaycasts; }
+            set
+            {
+                if (m_BlocksRaycasts != value)
+                {
+                    m_BlocksRaycasts = value;
+                    UpdateRaycast();
+                }
+            }
+        }
+
         public Color Color
         {
             get { return GetColor(); }

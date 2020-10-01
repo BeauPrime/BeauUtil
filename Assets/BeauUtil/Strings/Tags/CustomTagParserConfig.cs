@@ -313,8 +313,8 @@ namespace BeauUtil.Tags
 
             private bool m_HandleClosing;
 
-            private StringHash m_EventId;
-            private StringHash m_EventClosingId;
+            private StringHash32 m_EventId;
+            private StringHash32 m_EventClosingId;
 
             private EventDelegate m_EventDelegate;
             private EventDelegate m_EventClosingDelegate;
@@ -329,13 +329,13 @@ namespace BeauUtil.Tags
             internal EventRule(string inId)
             {
                 SetId(inId);
-                m_EventId = new StringHash(inId);
+                m_EventId = new StringHash32(inId);
             }
 
             /// <summary>
             /// Processes tags with the given event id.
             /// </summary>
-            public EventRule ProcessWith(StringHash inId)
+            public EventRule ProcessWith(StringHash32 inId)
             {
                 m_EventId = inId;
                 return this;
@@ -353,7 +353,7 @@ namespace BeauUtil.Tags
             /// <summary>
             /// Process tags with the given event id and delegate.
             /// </summary>
-            public EventRule ProcessWith(StringHash inId, EventDelegate inDelegate)
+            public EventRule ProcessWith(StringHash32 inId, EventDelegate inDelegate)
             {
                 m_EventId = inId;
                 m_EventDelegate = inDelegate;
@@ -363,7 +363,7 @@ namespace BeauUtil.Tags
             /// <summary>
             /// Processes closing tags with the given id.
             /// </summary>
-            public EventRule CloseWith(StringHash inId)
+            public EventRule CloseWith(StringHash32 inId)
             {
                 m_EventClosingId = inId;
                 m_HandleClosing = true;
@@ -383,7 +383,7 @@ namespace BeauUtil.Tags
             /// <summary>
             /// Processes closing tags with the given id and delegate.
             /// </summary>
-            public EventRule CloseWith(StringHash inId, EventDelegate inDelegate)
+            public EventRule CloseWith(StringHash32 inId, EventDelegate inDelegate)
             {
                 m_EventClosingId = inId;
                 m_EventClosingDelegate = inDelegate;
@@ -495,7 +495,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new event parsing rule.
         /// </summary>
-        public EventRule AddEvent(string inId, StringHash inEventId)
+        public EventRule AddEvent(string inId, StringHash32 inEventId)
         {
             CheckLocked();
 
@@ -522,7 +522,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new event parsing rule processed with the given delegate.
         /// </summary>
-        public EventRule AddEvent(string inId, StringHash inEventId, EventDelegate inDelegate)
+        public EventRule AddEvent(string inId, StringHash32 inEventId, EventDelegate inDelegate)
         {
             CheckLocked();
 

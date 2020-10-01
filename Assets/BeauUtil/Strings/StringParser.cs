@@ -1015,10 +1015,19 @@ namespace BeauUtil
                             outValue = inSlice;
                             return true;
                         }
-                        if (inType == typeof(StringHash))
+                        if (inType == typeof(StringHash32))
                         {
-                            StringHash hash;
-                            if (StringHash.TryParse(inSlice, out hash))
+                            StringHash32 hash;
+                            if (StringHash32.TryParse(inSlice, out hash))
+                            {
+                                outValue = hash;
+                                return true;
+                            }
+                        }
+                        if (inType == typeof(StringHash64))
+                        {
+                            StringHash64 hash;
+                            if (StringHash64.TryParse(inSlice, out hash))
                             {
                                 outValue = hash;
                                 return true;
@@ -1140,7 +1149,7 @@ namespace BeauUtil
             TypeCode tc = Type.GetTypeCode(inType);
 
             if (tc == TypeCode.Object)
-                return inType == typeof(object) || inType == typeof(StringSlice) || inType == typeof(StringHash) || inType == typeof(Variant);
+                return inType == typeof(object) || inType == typeof(StringSlice) || inType == typeof(StringHash32) || inType == typeof(Variant);
 
             return Array.IndexOf(ValidConversionTypes, tc) >= 0;
         }

@@ -301,7 +301,7 @@ namespace BeauUtil
         /// <summary>
         /// Finds a scene, filtering by id and category.
         /// </summary>
-        static public SceneBinding FindSceneById(StringHash inId, SceneCategories inCategories)
+        static public SceneBinding FindSceneById(StringHash32 inId, SceneCategories inCategories)
         {
             foreach(var scene in FindScenes(inCategories))
             {
