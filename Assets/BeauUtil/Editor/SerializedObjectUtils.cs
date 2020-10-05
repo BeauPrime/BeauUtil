@@ -72,6 +72,64 @@ namespace BeauUtil.Editor
         }
 
         /// <summary>
+        /// Returns the C# type of the given property
+        /// </summary>
+        static public Type GetPropertyType(this SerializedProperty inProperty)
+        {
+            switch(inProperty.propertyType)
+            {
+                case SerializedPropertyType.AnimationCurve:
+                    return typeof(AnimationCurve);
+                case SerializedPropertyType.ArraySize:
+                    return typeof(int);
+                case SerializedPropertyType.Boolean:
+                    return typeof(bool);
+                case SerializedPropertyType.Bounds:
+                    return typeof(Bounds);
+                case SerializedPropertyType.BoundsInt:
+                    return typeof(BoundsInt);
+                case SerializedPropertyType.Character:
+                    return typeof(char);
+                case SerializedPropertyType.Color:
+                    return typeof(Color);
+                case SerializedPropertyType.FixedBufferSize:
+                    return typeof(int);
+                case SerializedPropertyType.Float:
+                    return inProperty.type == "double" ? typeof(double) : typeof(float);
+                case SerializedPropertyType.Integer:
+                    return inProperty.type == "long" ? typeof(long) : typeof(int);
+                case SerializedPropertyType.Quaternion:
+                    return typeof(Quaternion);
+                case SerializedPropertyType.Rect:
+                    return typeof(Rect);
+                case SerializedPropertyType.RectInt:
+                    return typeof(RectInt);
+                case SerializedPropertyType.String:
+                    return typeof(String);
+                case SerializedPropertyType.Vector2:
+                    return typeof(Vector2);
+                case SerializedPropertyType.Vector2Int:
+                    return typeof(Vector2Int);
+                case SerializedPropertyType.Vector3:
+                    return typeof(Vector3);
+                case SerializedPropertyType.Vector3Int:
+                    return typeof(Vector3Int);
+                case SerializedPropertyType.Vector4:
+                    return typeof(Vector4);
+                case SerializedPropertyType.Gradient:
+                    return typeof(Gradient);
+                case SerializedPropertyType.LayerMask:
+                    return typeof(LayerMask);
+                
+                case SerializedPropertyType.Enum:
+                case SerializedPropertyType.Generic:
+                case SerializedPropertyType.ObjectReference:
+                default:
+                    return LocateReflectedObjectType(inProperty.serializedObject.targetObject, inProperty.propertyPath);
+            }
+        }
+
+        /// <summary>
         /// Returns the object this property represents.
         /// </summary>
         static public object FindObject(this SerializedProperty inProperty)
@@ -276,6 +334,63 @@ namespace BeauUtil.Editor
             }
 
             return obj;
+        }
+
+        static private Type LocateReflectedObjectType(UnityEngine.Object inRoot, string inPath)
+        {
+            if (string.IsNullOrEmpty(inPath))
+                return inRoot.GetType();
+
+            object obj = inRoot;
+            Type type = inRoot.GetType();
+            foreach(var pathSegment in StringSlice.EnumeratedSplit(inPath, PathSplitChars, StringSplitOptions.None))
+            {
+                if (obj == null)
+                    break;
+
+                StringSlice fieldName = pathSegment;
+                Type objType = obj.GetType();
+                int arrayIdx = -1;
+
+                // capture array
+                if (pathSegment.EndsWith(']'))
+                {
+                    int elementIndexStart = pathSegment.IndexOf('[');
+                    int length = pathSegment.Length - elementIndexStart - 1;
+                    StringSlice elementIndexSlice = pathSegment.Substring(elementIndexStart + 1, length);
+                    arrayIdx = Convert.ToInt32(elementIndexSlice.ToString());
+                    fieldName = pathSegment.Substring(0, elementIndexStart);
+                }
+
+                FieldInfo field = objType.GetField(fieldName.ToString(), InstanceBindingFlags);
+                if (field == null)
+                    return null;
+                
+                obj = field.GetValue(obj);
+                if (arrayIdx >= 0)
+                {
+                    IEnumerable enumerable = obj as IEnumerable;
+                    if (enumerable == null)
+                        return null;
+
+                    type = enumerable.GetType().GetEnumerableType();
+
+                    IEnumerator enumerator = enumerable.GetEnumerator();
+                    for(int i = 0; i <= arrayIdx; ++i)
+                    {
+                        if (!enumerator.MoveNext())
+                            return null;
+                    }
+
+                    obj = enumerator.Current;
+                }
+                else
+                {
+                    type = field.FieldType;
+                }
+            }
+
+            return obj != null ? obj.GetType() : type;
         }
 
         static private void SetReflectedObject(UnityEngine.Object inRoot, string inPath, object inObject)

@@ -31,6 +31,11 @@ namespace BeauUtil.Editor
             {
                 EditorGUIUtility.labelWidth = m_LastLabelWidth;
             }
+
+            static public LabelWidthScope Adjust(float inAdjust)
+            {
+                return new LabelWidthScope(EditorGUIUtility.labelWidth + inAdjust);
+            }
         }
 
         /// <summary>

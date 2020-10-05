@@ -119,7 +119,7 @@ namespace BeauUtil.IO
 
         public void Dispose()
         {
-            Id = StringHash.Null;
+            Id = StringHash32.Null;
         }
 
         #endif // UNITY_EDITOR

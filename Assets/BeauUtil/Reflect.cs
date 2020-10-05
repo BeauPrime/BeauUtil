@@ -659,6 +659,35 @@ namespace BeauUtil
         };
 
         #endregion // Assemblies
+    
+        #region Generics
+
+        static private readonly Type GenericIEnumerableType = typeof(IEnumerable<>);
+
+        /// <summary>
+        /// Returns the element type of the given type, if it's an IEnumerable.
+        /// </summary>
+        static public Type GetEnumerableType(this Type inType)
+        {
+            if (inType == null)
+                throw new ArgumentNullException("inType");
+
+            if (inType.IsGenericType)
+            {
+                if (inType.GetGenericTypeDefinition() == GenericIEnumerableType)
+                    return inType.GetGenericArguments()[0];
+            }
+
+            foreach(var interfaceType in inType.GetInterfaces())
+            {
+                if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == GenericIEnumerableType)
+                    return interfaceType.GetGenericArguments()[0];
+            }
+
+            return null;
+        }
+
+        #endregion // Generics
     }
 
     /// <summary>
