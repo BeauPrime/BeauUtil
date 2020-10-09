@@ -139,6 +139,15 @@ namespace BeauUtil.Variants
         }
 
         /// <summary>
+        /// Clears values and base.
+        /// </summary>
+        public void Reset()
+        {
+            Clear();
+            m_Base = null;
+        }
+
+        /// <summary>
         /// Overwrites another table with this table's values.
         /// </summary>
         public void CopyTo(VariantTable inTarget)
@@ -322,10 +331,9 @@ namespace BeauUtil.Variants
 
         #region IDisposable
 
-        public void Dispose()
+        void IDisposable.Dispose()
         {
-            Clear();
-            m_Base = null;
+            Reset();
         }
 
         #endregion // IDisposable
