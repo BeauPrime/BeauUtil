@@ -190,6 +190,11 @@ namespace BeauUtil.Tags
             ' ', '\n', '\r', '\t', '\f', '\0'
         };
 
+        /// <summary>
+        /// Default delimiters between the tag id and data.
+        /// </summary>
+        static public readonly char[] DefaultDataDelimiters = new char[] { '=', ' ', ':', '\t' };
+
         #endregion // Parse
     }
 }

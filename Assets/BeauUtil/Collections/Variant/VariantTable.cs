@@ -21,11 +21,11 @@ namespace BeauUtil.Variants
     /// <summary>
     /// Collection of named variant values.
     /// </summary>
-    public class VariantTable : IDisposable, IEnumerable<NamedVariant>, IReadOnlyList<NamedVariant>
+    public class VariantTable : IVariantTable
     {
         private StringHash32 m_Name;
         private RingBuffer<NamedVariant> m_Values;
-        private VariantTable m_Base;
+        private IVariantTable m_Base;
         private bool m_Optimized = true;
 
         public VariantTable()
@@ -150,19 +150,20 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Overwrites another table with this table's values.
         /// </summary>
-        public void CopyTo(VariantTable inTarget)
+        public void CopyTo(IVariantTable inTarget)
         {
-            if (inTarget == null)
-                throw new ArgumentNullException("inTarget");
+            VariantTable validTarget = inTarget as VariantTable;
+            if (validTarget == null)
+                throw new ArgumentException("Invalid copy target", "inTarget");
 
-            m_Values.CopyTo(inTarget.m_Values);
+            m_Values.CopyTo(validTarget.m_Values);
         }
 
         /// <summary>
         /// The base VariantTable.
         /// Values that do not exist in this VariantTable will be looked up in the base.
         /// </summary>
-        public VariantTable Base
+        public IVariantTable Base
         {
             get { return m_Base; }
             set
@@ -171,7 +172,7 @@ namespace BeauUtil.Variants
                 {
                     if (value != null)
                     {
-                        if (value == this || value.m_Base == this)
+                        if (value == this || value.Base == this)
                             throw new InvalidOperationException("Provided parent would cause infinite loop");
                     }
 

@@ -28,10 +28,10 @@ namespace BeauUtil.Variants
                 return false;
 
             char c = inSlice[0];
-            if (!char.IsLetter(c))
+            if (char.IsDigit(c))
                 return false;
 
-            for(int i = 1; i < inSlice.Length; ++i)
+            for(int i = 0; i < inSlice.Length; ++i)
             {
                 c = inSlice[i];
                 if (char.IsLetterOrDigit(c))

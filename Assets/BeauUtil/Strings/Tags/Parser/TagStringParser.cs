@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
@@ -464,5 +465,73 @@ namespace BeauUtil.Tags
         }
     
         #endregion // IDisposable
+    
+        #region Utilities
+
+
+        /// <summary>
+        /// Returns if the given string contains any text or rich text tags.
+        /// </summary>
+        static public bool ContainsText(StringSlice inString, IDelimiterRules inDelimiters, IEnumerable<string> inReplaceTagSet = null)
+        {
+            bool bTrackRichText = inDelimiters.RichText;
+            bool bTrackTags = !bTrackRichText || !HasSameDelims(inDelimiters, RichTextDelimiters);
+
+            int length = inString.Length;
+            int charIdx = 0;
+            int richStart = -1;
+            int tagStart = -1;
+            int copyStart = 0;
+
+            while(charIdx < length)
+            {
+                if (bTrackRichText)
+                {
+                    if (inString.AttemptMatch(charIdx, "<"))
+                    {
+                        richStart = charIdx;
+                    }
+                    else if (inString.AttemptMatch(charIdx, ">"))
+                    {
+                        return true;
+                    }
+                }
+
+                if (bTrackTags)
+                {
+                    if (inString.AttemptMatch(charIdx, inDelimiters.TagStartDelimiter))
+                    {
+                        tagStart = charIdx;
+                    }
+                    else if (inString.AttemptMatch(charIdx, inDelimiters.TagEndDelimiter))
+                    {
+                        StringSlice check = inString.Substring(copyStart, tagStart);
+                        if (!check.IsWhitespace)
+                            return true;
+
+                        if (inReplaceTagSet != null)
+                        {
+                            TagData data = TagData.Parse(inString.Substring(tagStart, charIdx - tagStart + 1), inDelimiters);
+                            foreach(var tag in inReplaceTagSet)
+                            {
+                                if (data.Id == tag)
+                                    return true;
+                            }
+                        }
+                        
+                        copyStart = charIdx + 1;
+                        tagStart = -1;
+                        richStart = -1;
+                    }
+                }
+
+                ++charIdx;
+            }
+
+            StringSlice finalCheck = inString.Substring(copyStart, length - copyStart);
+            return !finalCheck.IsWhitespace;
+        }
+
+        #endregion // Utilities
     }
 }

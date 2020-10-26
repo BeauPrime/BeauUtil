@@ -895,6 +895,20 @@ namespace BeauUtil
         /// </summary>
         static public bool TryConvertTo(StringSlice inSlice, Type inType, out object outValue)
         {
+            if (inType.IsEnum)
+            {
+                try
+                {
+                    outValue = Enum.Parse(inType, inSlice.ToString(), false);
+                    return true;
+                }
+                catch
+                {
+                    outValue = null;
+                    return false;
+                }
+            }
+
             TypeCode tc = Type.GetTypeCode(inType);
 
             switch(tc)

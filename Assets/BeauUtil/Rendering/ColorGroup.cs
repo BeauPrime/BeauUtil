@@ -293,6 +293,9 @@ namespace BeauUtil
                         m_Renderer.GetPropertyBlock(s_SharedPropertyBlock);
                         m_Colors.Main = m_MaterialConfig.MainProperty.Retrieve(s_SharedPropertyBlock);
                     }
+
+                    if (m_Colors.Main == Color.clear)
+                        m_Colors.Main = Color.white;
                 }
             }
         }

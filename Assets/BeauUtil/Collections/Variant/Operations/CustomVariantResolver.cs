@@ -706,13 +706,15 @@ namespace BeauUtil.Variants
             if (m_GetTableWithContextFallback != null)
             {
                 outTable = m_GetTableWithContextFallback(inTableId, inContext);
-                return outTable != null;
+                if (outTable != null)
+                    return true;
             }
 
             if (m_GetTableFallback != null)
             {
                 outTable = m_GetTableFallback(inTableId);
-                return outTable != null;
+                if (outTable != null)
+                    return true;
             }
 
             if (m_Base != null)

@@ -218,7 +218,7 @@ namespace BeauUtil.Tags
                 return m_Base.TryEvaluate(inEventData, inContext, out outCoroutine);
             }
 
-            Debug.LogErrorFormat("[TagStringEventHandler] Unable to handle event type '{0}'", id);
+            Debug.LogErrorFormat("[TagStringEventHandler] Unable to handle event type '{0}'", id.ToDebugString());
             outCoroutine = null;
             return false;
         }

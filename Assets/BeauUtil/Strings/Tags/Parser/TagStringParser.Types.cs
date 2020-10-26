@@ -32,13 +32,11 @@ namespace BeauUtil.Tags
         /// </summary>
         static public readonly IDelimiterRules AtCurlyBraceDelimiters = new CurlyBraceTextRules();
 
-        static private readonly char[] DefaultDataDelimiters = new char[] { '=', ' ', ':', '\t' };
-
         private class RichTextRules : IDelimiterRules
         {
             public string TagStartDelimiter { get { return "<"; } }
             public string TagEndDelimiter { get { return ">"; } }
-            public char[] TagDataDelimiters { get { return DefaultDataDelimiters; } }
+            public char[] TagDataDelimiters { get { return TagData.DefaultDataDelimiters; } }
             public char RegionCloseDelimiter { get { return '/'; } }
 
             public bool RichText { get { return true; } }
@@ -49,7 +47,7 @@ namespace BeauUtil.Tags
         {
             public string TagStartDelimiter { get { return "{"; } }
             public string TagEndDelimiter { get { return "}"; } }
-            public char[] TagDataDelimiters { get { return DefaultDataDelimiters; } }
+            public char[] TagDataDelimiters { get { return TagData.DefaultDataDelimiters; } }
             public char RegionCloseDelimiter { get { return '/'; } }
 
             public bool RichText { get { return true; } }
@@ -60,7 +58,7 @@ namespace BeauUtil.Tags
         {
             public string TagStartDelimiter { get { return "@{"; } }
             public string TagEndDelimiter { get { return "}"; } }
-            public char[] TagDataDelimiters { get { return DefaultDataDelimiters; } }
+            public char[] TagDataDelimiters { get { return TagData.DefaultDataDelimiters; } }
             public char RegionCloseDelimiter { get { return '/'; } }
 
             public bool RichText { get { return true; } }

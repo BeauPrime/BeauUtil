@@ -26,6 +26,7 @@ namespace BeauUtil.IO
 
         private T m_Asset;
         private long m_LastEditTime;
+        private string m_AssetPath;
         private HotReloadAssetDelegate<T> m_OnReload;
 
         public HotReloadableAssetProxy(T inAsset, HotReloadAssetDelegate<T> inReload)
@@ -40,6 +41,7 @@ namespace BeauUtil.IO
             if (m_Asset)
             {
                 m_LastEditTime = IOHelper.GetAssetModifyTimestamp(inAsset);
+                m_AssetPath = UnityEditor.AssetDatabase.GetAssetPath(m_Asset);
                 m_OnReload = inReload;
                 Id = IOHelper.GetAssetIdentifier(inAsset);
             }
@@ -75,7 +77,11 @@ namespace BeauUtil.IO
                 return HotReloadOperation.Unaffected;
 
             if (m_Asset.IsReferenceDestroyed())
-                return HotReloadOperation.Deleted;
+            {
+                m_Asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(m_AssetPath);
+                if (!m_Asset)
+                    return HotReloadOperation.Deleted;
+            }
 
             long fsEditTime = IOHelper.GetAssetModifyTimestamp(m_Asset);
             if (m_LastEditTime != fsEditTime)

@@ -180,6 +180,22 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Sets the component filter.
+        /// </summary>
+        public void FilterByComponentInParent<T>()
+        {
+            FilterByComponent(typeof(T), ComponentLookupDirection.Parent);
+        }
+
+        /// <summary>
+        /// Sets the component filter.
+        /// </summary>
+        public void FilterByComponentInChildren<T>()
+        {
+            FilterByComponent(typeof(T), ComponentLookupDirection.Children);
+        }
+
+        /// <summary>
         /// Clears the component filter.
         /// </summary>
         public void ClearComponentFilter()

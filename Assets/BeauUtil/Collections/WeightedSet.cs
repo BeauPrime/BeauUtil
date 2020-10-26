@@ -325,6 +325,58 @@ namespace BeauUtil
 
             return false;
         }
+
+        /// <summary>
+        /// Removes all entries with weights below a certain amount.
+        /// </summary>
+        public int FilterHigh(float inWeightThreshold)
+        {
+            int removeCount = 0;
+
+            for(int i = m_Entries.Count - 1; i >= 0; --i)
+            {
+#if EXPANDED_REFS
+                ref Entry e = ref m_Entries[i];
+#else
+                Entry e = m_Entries[i];
+#endif // EXPANDED_REFS
+                if (e.Weight < inWeightThreshold)
+                {
+                    m_TotalWeight -= e.Weight;
+                    m_Entries.FastRemoveAt(i);
+                    m_Cached = false;
+                    ++removeCount;
+                }
+            }
+
+            return removeCount;
+        }
+
+        /// <summary>
+        /// Removes all entries with weights above a certain amount.
+        /// </summary>
+        public int FilterLow(float inWeightThreshold)
+        {
+            int removeCount = 0;
+
+            for(int i = m_Entries.Count - 1; i >= 0; --i)
+            {
+#if EXPANDED_REFS
+                ref Entry e = ref m_Entries[i];
+#else
+                Entry e = m_Entries[i];
+#endif // EXPANDED_REFS
+                if (e.Weight > inWeightThreshold)
+                {
+                    m_TotalWeight -= e.Weight;
+                    m_Entries.FastRemoveAt(i);
+                    m_Cached = false;
+                    ++removeCount;
+                }
+            }
+
+            return removeCount;
+        }
         
         /// <summary>
         /// Clears all items from the set.
