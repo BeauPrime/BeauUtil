@@ -313,6 +313,15 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Finds a scene with the given build index.
+        /// </summary>
+        static public SceneBinding FindSceneByIndex(int inIndex)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(inIndex);
+            return new SceneBinding(inIndex, path);
+        }
+
+        /// <summary>
         /// Returns all scenes in the build.
         /// </summary>
         static public IEnumerable<SceneBinding> AllBuildScenes(bool inbIncludeIgnored = false)
@@ -381,6 +390,14 @@ namespace BeauUtil
             }
 
             return returnedCount;
+        }
+
+        /// <summary>
+        /// Returns the currently active scene.
+        /// </summary>
+        static public SceneBinding ActiveScene()
+        {
+            return SceneManager.GetActiveScene();
         }
 
         #endregion // Scene List
