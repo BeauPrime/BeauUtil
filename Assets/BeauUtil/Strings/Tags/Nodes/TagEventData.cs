@@ -35,7 +35,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// String argument.
         /// </summary>
-        public string StringArgument;
+        public StringSlice StringArgument;
 
         /// <summary>
         /// Variant argument 0.
@@ -78,7 +78,7 @@ namespace BeauUtil.Tags
         {
             Type = inType;
             IsClosing = false;
-            StringArgument = inStringArg.ToString();
+            StringArgument = inStringArg;
             Argument0 = Variant.Null;
             Argument1 = Variant.Null;
             AdditionalData = null;

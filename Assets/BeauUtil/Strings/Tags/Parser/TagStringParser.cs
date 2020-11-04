@@ -19,6 +19,8 @@ namespace BeauUtil.Tags
     /// </summary>
     public partial class TagStringParser : IDisposable
     {
+        static public readonly string VisibleRichTagChar = char.ToString((char) 1);
+
         #region Local Vars
 
         // processors
@@ -152,6 +154,10 @@ namespace BeauUtil.Tags
                         if (RecognizeRichText(richTag, m_Delimiters))
                         {
                             CopyRichTag(ref state, charIdx + 1);
+                            if (StringUtils.RichText.GeneratesVisibleCharacter(richTag.Id.ToString()))
+                            {
+                                CopyOnlyNonRichText(ref state, VisibleRichTagChar);
+                            }
                             bRichHandled = true;
                         }
                         else if (!bTrackTags)
@@ -297,6 +303,24 @@ namespace BeauUtil.Tags
             ioState.CopyStart += copyLength;
 
             // Debug.LogFormat("[TagStringParser] Copied non-rich text '{0}'", copySlice);
+        }
+
+        static protected void CopyOnlyNonRichText(ref ParseState ioState, StringSlice inString)
+        {
+            int copyLength = inString.Length;
+            if (copyLength <= 0)
+                return;
+            
+            if (ioState.StrippedOutput.Length <= 0)
+            {
+                inString = inString.TrimStart();
+            }
+
+            if (inString.Length > 0)
+            {
+                ioState.Target.AddText((uint) inString.Length);
+                inString.AppendTo(ioState.StrippedOutput);
+            }
         }
 
         static protected void CopyRichTag(ref ParseState ioState, int inIdx)
@@ -505,7 +529,7 @@ namespace BeauUtil.Tags
                     }
                     else if (inString.AttemptMatch(charIdx, inDelimiters.TagEndDelimiter))
                     {
-                        StringSlice check = inString.Substring(copyStart, tagStart);
+                        StringSlice check = inString.Substring(copyStart, tagStart - copyStart);
                         if (!check.IsWhitespace)
                             return true;
 

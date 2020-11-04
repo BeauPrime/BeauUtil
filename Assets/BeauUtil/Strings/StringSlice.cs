@@ -41,6 +41,11 @@ namespace BeauUtil
             }
             else
             {
+                if (inStartIdx < 0)
+                    throw new ArgumentOutOfRangeException("inStartIdx");
+                if (inStartIdx + inLength > inString.Length)
+                    throw new ArgumentOutOfRangeException("inLength");
+                
                 m_Source = inString;
                 m_StartIndex = inStartIdx;
                 Length = inLength;
@@ -448,12 +453,12 @@ namespace BeauUtil
             return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, outSlices);
         }
 
-        static public int Split(string inString, char[] inSeparator, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        static public int Split<T>(string inString, char[] inSeparator, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(inString, 0, inString.Length, inSeparator, inSplitOptions, ref outSlices);
         }
 
-        static public int Split(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref TempList16<StringSlice> outSlices)
+        static public int Split<T>(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, ref outSlices);
         }
@@ -1103,7 +1108,7 @@ namespace BeauUtil
             int currentLength = 0;
             int slices = 0;
 
-            for (int charIdx = 0; charIdx < inLength; ++charIdx)
+            for (int charIdx = 0; charIdx < inLength && slices < outSlices.Capacity; ++charIdx)
             {
                 int realIdx = inStartIdx + charIdx;
                 char c = inString[realIdx];
@@ -1131,7 +1136,7 @@ namespace BeauUtil
                 }
             }
 
-            if (currentLength > 0)
+            if (currentLength > 0 && slices < outSlices.Capacity)
             {
                 StringSlice slice = new StringSlice(inString, startIdx, currentLength);
                 outSlices.Add(slice);
@@ -1165,7 +1170,7 @@ namespace BeauUtil
             int currentLength = 0;
             int slices = 0;
 
-            for (int charIdx = 0; charIdx < inLength; ++charIdx)
+            for (int charIdx = 0; charIdx < inLength && slices < outSlices.Capacity; ++charIdx)
             {
                 int realIdx = inStartIdx + charIdx;
 
@@ -1197,7 +1202,7 @@ namespace BeauUtil
                 }
             }
 
-            if (currentLength > 0)
+            if (currentLength > 0 && slices < outSlices.Capacity)
             {
                 StringSlice slice = new StringSlice(inString, startIdx, currentLength);
                 slice = inSplitter.Process(slice);

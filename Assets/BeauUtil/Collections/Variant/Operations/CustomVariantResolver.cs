@@ -763,6 +763,12 @@ namespace BeauUtil.Variants
                 }
             }
 
+            VariantTable table;
+            if (TryGetTable(inContext, inKey.TableId, out table))
+            {
+                return table.TryLookup(inKey.VariableId, out outVariant);
+            }
+
             if (m_Base != null)
             {
                 return m_Base.TryGetVariant(inContext, inKey, out outVariant);

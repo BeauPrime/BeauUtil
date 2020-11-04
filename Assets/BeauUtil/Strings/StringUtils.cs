@@ -858,6 +858,19 @@ namespace BeauUtil
                 "voffset", "width", "material", "quad"
             };
 
+            static private readonly string[] s_VisibleRichTags = new string[]
+            {
+                "sprite", "quad"
+            };
+
+            /// <summary>
+            /// Returns if this tag generates something visible.
+            /// </summary>
+            static public bool GeneratesVisibleCharacter(string inRichTag)
+            {
+                return Array.IndexOf(s_VisibleRichTags, inRichTag) >= 0;
+            }
+
             /// <summary>
             /// List of all recognized rich tags.
             /// This includes Unity's Rich Tags and TextMesh Pro's rich tags.

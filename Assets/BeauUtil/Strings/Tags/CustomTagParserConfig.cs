@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using BeauUtil.Variants;
 using UnityEngine;
 
 namespace BeauUtil.Tags
@@ -308,7 +309,8 @@ namespace BeauUtil.Tags
                 None,
                 String,
                 Float,
-                Bool
+                Bool,
+                StringHash
             }
 
             private bool m_HandleClosing;
@@ -320,8 +322,7 @@ namespace BeauUtil.Tags
             private EventDelegate m_EventClosingDelegate;
 
             private DataMode m_DataMode;
-            private float m_DefaultFloat;
-            private bool m_DefaultBool;
+            private Variant m_DefaultValue;
             private string m_DefaultString;
 
             #region Builder
@@ -407,7 +408,7 @@ namespace BeauUtil.Tags
             public EventRule WithFloatData(float inDefault = 0)
             {
                 m_DataMode = DataMode.Float;
-                m_DefaultFloat = inDefault;
+                m_DefaultValue = inDefault;
                 return this;
             }
 
@@ -417,7 +418,17 @@ namespace BeauUtil.Tags
             public EventRule WithBoolData(bool inbDefault = false)
             {
                 m_DataMode = DataMode.Bool;
-                m_DefaultBool = inbDefault;
+                m_DefaultValue = inbDefault;
+                return this;
+            }
+
+            /// <summary>
+            /// Preserves additional tag data before processing.
+            /// </summary>
+            public EventRule WithStringHashData(StringHash32 inDefault = default(StringHash32))
+            {
+                m_DataMode = DataMode.StringHash;
+                m_DefaultValue = inDefault;
                 return this;
             }
 
@@ -435,7 +446,7 @@ namespace BeauUtil.Tags
                             if (inData.Data.IsEmpty)
                                 outEvent.StringArgument = m_DefaultString;
                             else
-                                outEvent.StringArgument = inData.Data.ToString();
+                                outEvent.StringArgument = inData.Data;
                             break;
                         }
 
@@ -443,7 +454,7 @@ namespace BeauUtil.Tags
                         {
                             float arg;
                             if (!StringParser.TryParseFloat(inData.Data, out arg))
-                                arg = m_DefaultFloat;
+                                arg = m_DefaultValue.AsFloat();
                             outEvent.Argument0 = arg;
                             break;
                         }
@@ -452,7 +463,16 @@ namespace BeauUtil.Tags
                         {
                             bool arg;
                             if (!StringParser.TryParseBool(inData.Data, out arg))
-                                arg = m_DefaultBool;
+                                arg = m_DefaultValue.AsBool();
+                            outEvent.Argument0 = arg;
+                            break;
+                        }
+
+                    case DataMode.StringHash:
+                        {
+                            StringHash32 arg;
+                            if (!StringHash32.TryParse(inData.Data, out arg))
+                                arg = m_DefaultValue.AsStringHash();
                             outEvent.Argument0 = arg;
                             break;
                         }
