@@ -13,6 +13,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using BeauUtil.Tags;
 using UnityEditor;
 using UnityEngine;
 
@@ -144,6 +145,40 @@ namespace BeauUtil.Editor
             }
 
             return BitConverter.ToString(bytes).Replace("-", "");
+        }
+    
+        /// <summary>
+        /// Returns the branch name for source control.
+        /// </summary>
+        static public string GetSourceControlBranchName()
+        {
+            try
+            {
+                if (Directory.Exists(".git"))
+                {
+                    string headData = File.ReadAllText(".git/HEAD");
+                    foreach(var line in StringSlice.EnumeratedSplit(headData, new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        TagData tag = TagData.Parse(line, TagStringParser.RichTextDelimiters);
+                        if (tag.Id == "ref")
+                        {
+                            StringSlice data = tag.Data;
+                            if (data.StartsWith("refs/heads/"))
+                                data = data.Substring(11);
+                            return data.ToString();
+                        }
+                    }
+                }
+
+                // TODO: More version control types? svn?
+
+                return null;
+            }
+            catch(Exception e)
+            {
+                Debug.LogException(e);
+                return null;
+            }
         }
     }
 }
