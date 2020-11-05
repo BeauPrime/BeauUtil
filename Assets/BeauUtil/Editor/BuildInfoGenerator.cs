@@ -7,7 +7,6 @@
  * Purpose: Generator for caching build information.
  */
 
-#if UNITY_EDITOR
 using System;
 using System.IO;
 using System.Text;
@@ -16,7 +15,6 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEngine;
-#endif // UNITY_EDITOR
 
 namespace BeauUtil.Editor
 {
@@ -82,6 +80,8 @@ namespace BeauUtil.Editor
             if (IdLength >= 7 && IdLength < buildId.Length)
                 buildId = buildId.Substring(0, IdLength);
 
+            string branch = BuildUtils.GetSourceControlBranchName();
+
             StringBuilder dataBuilder = new StringBuilder(1024);
             dataBuilder.Append(buildId);
             dataBuilder.Append('\n').Append(buildTime.ToFileTimeUtc());
@@ -89,6 +89,9 @@ namespace BeauUtil.Editor
             dataBuilder.Append('\n');
             if (!string.IsNullOrEmpty(BuildTag))
                 StringUtils.Escape(BuildTag, dataBuilder);
+            dataBuilder.Append('\n');
+            if (!string.IsNullOrEmpty(branch))
+                StringUtils.Escape(branch, dataBuilder);
 
             string fileContents = dataBuilder.Flush();
             

@@ -22,6 +22,7 @@ namespace BeauUtil.Debugger
         [SerializeField] private TMP_Text m_BuildDateText = null;
         [SerializeField] private TMP_Text m_BuildVersionText = null;
         [SerializeField] private TMP_Text m_BuildTagText = null;
+        [SerializeField] private TMP_Text m_BuildBranchText = null;
 
         #endregion // Inspector
 
@@ -61,6 +62,11 @@ namespace BeauUtil.Debugger
             if (m_BuildTagText)
             {
                 m_BuildTagText.SetText(BuildInfo.Tag());
+            }
+
+            if (m_BuildBranchText)
+            {
+                m_BuildBranchText.SetText(BuildInfo.Branch());
             }
 
             m_Populated = true;

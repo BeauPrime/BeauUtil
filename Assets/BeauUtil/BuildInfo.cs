@@ -37,6 +37,7 @@ namespace BeauUtil
         static private string s_CachedBuildId;
         static private string s_CachedBuildDate;
         static private string s_CachedBuildTag;
+        static private string s_CachedBuildBranch;
         static private string s_CachedBundleVersion;
         static private Action s_LoadCallback;
 
@@ -109,6 +110,15 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the current build branch.
+        /// </summary>
+        static public string Branch()
+        {
+            RetrieveBuildInfo();
+            return s_CachedBuildBranch;
+        }
+
+        /// <summary>
         /// Returns if build information is available.
         /// </summary>
         static public bool IsAvailable()
@@ -156,6 +166,7 @@ namespace BeauUtil
             }
             s_CachedBuildTag = string.Empty;
             s_CachedBundleVersion = UnityEditor.PlayerSettings.bundleVersion ?? string.Empty;
+            s_CachedBuildBranch = string.Empty;
 
             Loaded();
             #else
@@ -258,6 +269,7 @@ namespace BeauUtil
                 s_CachedBuildDate = GenerateBuildDate(buildDate);
                 s_CachedBundleVersion = lines[2].ToString();
                 s_CachedBuildTag = lines.Length >= 4 ? lines[3].Unescape() : string.Empty;
+                s_CachedBuildBranch = lines.Length >= 5 ? lines[4].Unescape() : string.Empty;
 
                 Loaded();
             }
@@ -269,7 +281,7 @@ namespace BeauUtil
 
         static private void Loaded()
         {
-            Debug.LogFormat("[BuildInfo] Loaded build info\nBuild:   {0}\nDate:    {1}\nVersion: {2}\nTag:     {3}", s_CachedBuildId, s_CachedBuildDate, s_CachedBundleVersion, s_CachedBuildTag);
+            Debug.LogFormat("[BuildInfo] Loaded build info\nBuild:   {0}\nDate:    {1}\nVersion: {2}\nTag:     {3}\nBranch:     {4}", s_CachedBuildId, s_CachedBuildDate, s_CachedBundleVersion, s_CachedBuildTag, s_CachedBuildBranch);
             s_CurrentState = LoadState.Loaded;
 
             if (s_LoadCallback != null)
@@ -287,6 +299,7 @@ namespace BeauUtil
 
             s_CachedBuildId = "UNAVAILABLE";
             s_CachedBuildDate = string.Empty;
+            s_CachedBuildTag = string.Empty;
             s_CachedBuildTag = string.Empty;
 
             if (s_LoadCallback != null)
