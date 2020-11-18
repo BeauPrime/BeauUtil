@@ -27,7 +27,7 @@ namespace BeauUtil.Editor
             RequiredAttribute attr = (RequiredAttribute) attribute;
             ComponentLookupDirection? lookupDir = attr.AutoAssignDirection;
             
-            if (property.hasMultipleDifferentValues || !IsMissing(property))
+            if (property.hasMultipleDifferentValues || !IsSupported(property) || !IsMissing(property))
             {
                 label = EditorGUI.BeginProperty(position, label, property);
                 RenderNothing();
@@ -128,6 +128,19 @@ namespace BeauUtil.Editor
 
                 case SerializedPropertyType.String:
                     return string.IsNullOrEmpty(inProperty.stringValue);
+
+                default:
+                    return false;
+            }
+        }
+
+        static private bool IsSupported(SerializedProperty inProperty)
+        {
+            switch (inProperty.propertyType)
+            {
+                case SerializedPropertyType.ObjectReference:
+                case SerializedPropertyType.String:
+                    return true;
 
                 default:
                     return false;

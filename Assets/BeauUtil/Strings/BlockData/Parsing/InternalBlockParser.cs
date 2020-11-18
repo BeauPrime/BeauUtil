@@ -250,15 +250,14 @@ namespace BeauUtil.Blocks
 
                 if (!bProcessedCommand)
                 {
-                    if (ioState.Rules.RequireExplicitBlockContent && !string.IsNullOrEmpty(ioState.Rules.BlockContentPrefix))
+                    if (ioState.CurrentState == BlockState.InData && ioState.Rules.RequireExplicitBlockContent && !string.IsNullOrEmpty(ioState.Rules.BlockContentPrefix))
                     {
                         BlockParser.LogError(ioState.Position, "Cannot add content '{0}', must have content prefix '{1}'", lineContents, ioState.Rules.BlockContentPrefix);
                         bSuccess = false;
                     }
-                    else
+                    else if (!lineContents.IsEmpty || ioState.CurrentState == BlockState.InData)
                     {
-                        if (!lineContents.IsEmpty || ioState.CurrentState == BlockState.InData)
-                            bSuccess &= TryAddContent(ref ioState, lineContents);
+                        bSuccess &= TryAddContent(ref ioState, lineContents);
                     }
                 }
 
@@ -268,7 +267,6 @@ namespace BeauUtil.Blocks
                 }
 
                 ioState.Error |= !bSuccess;
-
                 return bSuccess ? LineResult.Error : LineResult.NoError;
             }
             catch (Exception e)
