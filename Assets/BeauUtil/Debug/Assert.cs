@@ -20,9 +20,10 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Reflection;
+
 #if UNITY_EDITOR
 using UnityEditor;
-using System.Reflection;
 #endif // UNITY_EDITOR
 
 namespace BeauUtil.Debugger
@@ -216,6 +217,13 @@ namespace BeauUtil.Debugger
             StringHash64 locationHash = string.Format("{0}@{1}", inCondition, inLocation);
             if (s_IgnoredLocations.Contains(locationHash))
                 return;
+
+            #if UNITY_EDITOR
+
+            if (EditorApplication.isCompiling)
+                return;
+
+            #endif // UNITY_EDITOR
 
             StringBuilder builder = new StringBuilder();
             builder.Append("Location: ").Append(inLocation)
