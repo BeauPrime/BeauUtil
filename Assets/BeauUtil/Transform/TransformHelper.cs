@@ -130,17 +130,26 @@ namespace BeauUtil
 
             int cameraCount = Camera.GetAllCameras(s_CachedCameraArray);
             
+            // find the camera with the most specific rendering mask that includes this layer
             Camera found = null;
+            int mostSpecificBitCount = int.MaxValue;
+            
             for(int i = 0; i < cameraCount; ++i)
             {
                 Camera cam = s_CachedCameraArray[i];
                 if (!inbIncludeInactive && !cam.isActiveAndEnabled)
                     continue;
 
-                if ((cam.cullingMask & layer) == layer)
+                int camCullingMask = cam.cullingMask;
+
+                if ((camCullingMask & layer) == layer)
                 {
-                    found = cam;
-                    break;
+                    int bitCount = Bits.Count(camCullingMask);
+                    if (bitCount < mostSpecificBitCount)
+                    {
+                        found = cam;
+                        mostSpecificBitCount = bitCount;
+                    }
                 }
             }
 

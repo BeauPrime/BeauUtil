@@ -155,7 +155,7 @@ namespace BeauUtil.UnitTests
             }
 
             if (collisionCount > 0)
-                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 16", collisionCount);
+                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 32", collisionCount);
 
             StringHashing.SetOnCollision(null);
         }
