@@ -260,16 +260,16 @@ namespace BeauUtil
     
         #region Components
 
-        static public T CacheComponent<T>(this GameObject inGameObject, ref T ioComponent) where T : Component
+        static public T CacheComponent<T>(this GameObject inGameObject, ref T ioComponent)
         {
-            if (IsReferenceNull(ioComponent))
+            if (object.ReferenceEquals(ioComponent, null))
                 ioComponent = inGameObject.GetComponent<T>();
             return ioComponent;
         }
 
-        static public T CacheComponent<T>(this Component inComponent, ref T ioComponent) where T : Component
+        static public T CacheComponent<T>(this Component inComponent, ref T ioComponent)
         {
-            if (IsReferenceNull(ioComponent))
+            if (object.ReferenceEquals(ioComponent, null))
                 ioComponent = inComponent.GetComponent<T>();
             return ioComponent;
         }
@@ -295,7 +295,7 @@ namespace BeauUtil
         static public T EnsureComponent<T>(this GameObject inGameObject) where T : Component
         {
             T component = inGameObject.GetComponent<T>();
-            if (!component)
+            if (component == null)
                 component = inGameObject.AddComponent<T>();
             return component;
         }
@@ -303,6 +303,29 @@ namespace BeauUtil
         static public T EnsureComponent<T>(this Component inComponent) where T : Component
         {
             return EnsureComponent<T>(inComponent.gameObject);
+        }
+
+        static public T GetComponent<T>(this GameObject inGameObject, ComponentLookupDirection inDirection, bool inbIncludeInactive = false)
+        {
+            switch(inDirection)
+            {
+                case ComponentLookupDirection.Self:
+                    return inGameObject.GetComponent<T>();
+
+                case ComponentLookupDirection.Parent:
+                    return inGameObject.GetComponentInParent<T>();
+
+                case ComponentLookupDirection.Children:
+                    return inGameObject.GetComponentInChildren<T>(inbIncludeInactive);
+
+                default:
+                    throw new ArgumentOutOfRangeException("inDirection");
+            }
+        }
+
+        static public T GetComponent<T>(this Component inComponent, ComponentLookupDirection inDirection, bool inbIncludeInactive = false)
+        {
+            return GetComponent<T>(inComponent.gameObject, inDirection, inbIncludeInactive);
         }
 
         #endregion // Components

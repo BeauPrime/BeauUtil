@@ -139,5 +139,53 @@ namespace BeauUtil
 
             return true;
         }
+
+        /// <summary>
+        /// Returns the index at which a sorted list of key value pairs a certain key can be found.
+        /// </summary>
+        static public int BinarySearch<K, V, T>(this IReadOnlyList<T> inCollection, K inKey)
+            where T : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            if (inCollection.Count <= 0)
+                return -1;
+
+            int low = 0;
+            int high = inCollection.Count - 1;
+
+            Comparer<K> comparer = Comparer<K>.Default;
+
+            while(low <= high)
+            {
+                int med = low + ((high - low) >> 1);
+                int comp = comparer.Compare(inCollection[med].Key, inKey);
+                if (comp == 0)
+                    return med;
+                if (comp == -1)
+                    low = med + 1;
+                else
+                    high = med - 1;
+            }
+
+            return ~low;
+        }
+
+        /// <summary>
+        /// Attempts to find the value associated with the given key, assuming the collection is sorted.
+        /// </summary>
+        static public bool TryBinarySearch<K, V, T>(this IReadOnlyList<T> inCollection, K inKey, out V outValue)
+            where T : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            int idx = BinarySearch<K, V, T>(inCollection, inKey);
+            if (idx >= 0)
+            {
+                outValue = inCollection[idx].Value;
+                return true;
+            }
+
+            outValue = default(V);
+            return false;
+        }
     }
 }

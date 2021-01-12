@@ -37,6 +37,11 @@ namespace BeauUtil
             }
             else
             {
+                if (inStartIdx < 0)
+                    throw new ArgumentOutOfRangeException("inStartIdx");
+                if (inStartIdx + inLength > inArray.Length)
+                    throw new ArgumentOutOfRangeException("inLength");
+
                 m_Source = inArray;
                 m_StartIndex = inStartIdx;
                 Length = inLength;
@@ -57,6 +62,11 @@ namespace BeauUtil
             }
             else
             {
+                if (inStartIdx < 0)
+                    throw new ArgumentOutOfRangeException("inStartIdx");
+                if (inStartIdx + inLength > inList.Count)
+                    throw new ArgumentOutOfRangeException("inLength");
+
                 m_Source = inList;
                 m_StartIndex = inStartIdx;
                 Length = inLength;
@@ -267,7 +277,7 @@ namespace BeauUtil
 
         static public bool operator !=(ListSlice<T> inA, ListSlice<T> inB)
         {
-            return inA.Equals(inB);
+            return !inA.Equals(inB);
         }
 
         static public implicit operator ListSlice<T>(T[] inArray)

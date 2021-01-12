@@ -265,6 +265,22 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Retrieves a random item using the default random source.
+        /// </summary>
+        public T GetItem()
+        {
+            return GetItem(RNG.Instance);
+        }
+
+        /// <summary>
+        /// Retrieves a random item using the given random source.
+        /// </summary>
+        public T GetItem(System.Random inRandom)
+        {
+            return GetItemNormalized(inRandom.NextFloat());
+        }
+
+        /// <summary>
         /// Retrieves the item from the given weight value between (0 - TotalWeight).
         /// </summary>
         public T GetItem(float inRandom)

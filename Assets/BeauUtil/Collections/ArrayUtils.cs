@@ -203,7 +203,7 @@ namespace BeauUtil
             if (inIndex != end)
             {
                 T endCopy = ioArray[end];
-                ioArray[end] = ioArray[inIndex];
+                ioArray[end] = default(T);
                 ioArray[inIndex] = endCopy;
             }
 

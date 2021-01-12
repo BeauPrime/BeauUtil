@@ -51,6 +51,22 @@ namespace BeauUtil
             }
         }
 
+        /// <summary>
+        /// Returns the inheritance depth of the given type.
+        /// </summary>
+        static public int GetInheritanceDepth(Type inType)
+        {
+            int depth = 0;
+            Type t = inType;
+            while(t != null)
+            {
+                ++depth;
+                t = t.BaseType;
+            }
+
+            return depth;
+        }
+
         #endregion // Inheritance
 
         #region Attributes

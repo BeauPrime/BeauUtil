@@ -11,10 +11,7 @@ using System;
 
 namespace BeauUtil
 {
-    /// <summary>
-    /// Rule for string matching.
-    /// </summary>
-    public abstract class MatchRule<TSelf> : IMatchRule, IComparable<MatchRule<TSelf>> where TSelf : MatchRule<TSelf>
+    public abstract class MatchRule : IMatchRule, IComparable<MatchRule>
     {
         private string m_IdMatch;
         private string[] m_Aliases;
@@ -106,6 +103,57 @@ namespace BeauUtil
             return false;
         }
 
+        #region IComparable
+
+        int IComparable<MatchRule>.CompareTo(MatchRule other)
+        {
+            int diff = m_Specificity - other.m_Specificity;
+            if (diff > 0)
+                return -1;
+            if (diff < 0)
+                return 1;
+            return 0;
+        }
+
+        #endregion // IComparable
+
+        #region Specificity
+
+        static public int CalculateSpecificity(StringSlice inMatchRule, bool inbCaseSensitive, char inWildcard = '*')
+        {
+            if (inMatchRule.IsEmpty)
+                return 0;
+
+            int specificity = (int.MaxValue / 2) - inMatchRule.Length;
+
+            bool bWildcardStart = inMatchRule.StartsWith(inWildcard);
+            bool bWildcardEnd = inMatchRule.EndsWith(inWildcard);
+            if (bWildcardStart && bWildcardEnd)
+            {
+                specificity = inMatchRule.Length - 2;
+            }
+            else if (bWildcardStart || bWildcardEnd)
+            {
+                specificity = inMatchRule.Length - 1;
+            }
+            
+            if (specificity < 0)
+                specificity = 0;
+
+            if (inbCaseSensitive)
+                specificity *= 2;
+
+            return specificity;
+        }
+
+        #endregion // Specificity
+    }
+
+    /// <summary>
+    /// Rule for string matching.
+    /// </summary>
+    public abstract class MatchRule<TSelf> : MatchRule where TSelf : MatchRule<TSelf>
+    {
         #region Builder
 
         /// <summary>
@@ -149,50 +197,5 @@ namespace BeauUtil
         }
 
         #endregion // Builder
-    
-        #region IComparable
-
-        int IComparable<MatchRule<TSelf>>.CompareTo(MatchRule<TSelf> other)
-        {
-            int diff = m_Specificity - other.m_Specificity;
-            if (diff > 0)
-                return -1;
-            if (diff < 0)
-                return 1;
-            return 0;
-        }
-
-        #endregion // IComparable
-
-        #region Specificity
-
-        static public int CalculateSpecificity(StringSlice inMatchRule, bool inbCaseSensitive, char inWildcard = '*')
-        {
-            if (inMatchRule.IsEmpty)
-                return 0;
-
-            int specificity = (int.MaxValue / 2) - inMatchRule.Length;
-
-            bool bWildcardStart = inMatchRule.StartsWith(inWildcard);
-            bool bWildcardEnd = inMatchRule.EndsWith(inWildcard);
-            if (bWildcardStart && bWildcardEnd)
-            {
-                specificity = inMatchRule.Length - 2;
-            }
-            else if (bWildcardStart || bWildcardEnd)
-            {
-                specificity = inMatchRule.Length - 1;
-            }
-            
-            if (specificity < 0)
-                specificity = 0;
-
-            if (inbCaseSensitive)
-                specificity *= 2;
-
-            return specificity;
-        }
-
-        #endregion // Specificity
     }
 }

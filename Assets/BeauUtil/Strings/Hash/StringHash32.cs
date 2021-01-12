@@ -28,24 +28,11 @@ namespace BeauUtil
     [Serializable]
     public struct StringHash32 : IEquatable<StringHash32>, IComparable<StringHash32>
     {
-        internal const char CustomHashPrefix = '@';
-        internal const char StringPrefix = '\'';
-
-        static StringHash32()
-        {
-            #if DEVELOPMENT
-            EnableReverseLookup(true);
-            #endif // DEVELOPMENT
-        }
-
-        private const string ReverseLookupUnavailable = "[Unavailable]";
-        private const string ReverseLookupUnknownFormat = "[Unknown]:{0}";
-
         [SerializeField, HideInInspector] private uint m_HashValue;
 
         public StringHash32(string inString)
         {
-            m_HashValue = StoreHash(inString, 0, inString == null ? 0 : inString.Length);
+            m_HashValue = StringHashing.StoreHash32(inString, 0, inString == null ? 0 : inString.Length);
         }
 
         public StringHash32(StringSlice inSlice)
@@ -116,7 +103,7 @@ namespace BeauUtil
 
         public string ToDebugString()
         {
-            return ReverseLookup(m_HashValue);
+            return StringHashing.ReverseLookup32(m_HashValue);
         }
 
         #endregion // Overrides
@@ -154,7 +141,7 @@ namespace BeauUtil
 
         static public bool TryParse(StringSlice inSlice, out StringHash32 outHash)
         {
-            if (inSlice.StartsWith(CustomHashPrefix))
+            if (inSlice.StartsWith(StringHashing.CustomHashPrefix))
             {
                 ulong hexVal;
                 if (StringParser.TryParseHex(inSlice.Substring(1), 8, out hexVal))
@@ -175,7 +162,7 @@ namespace BeauUtil
                 outHash = default(StringHash32);
                 return false;
             }
-            else if (inSlice.StartsWith(StringPrefix))
+            else if (inSlice.StartsWith(StringHashing.StringPrefix))
             {
                 outHash = inSlice.Substring(1).Hash32();
                 return true;
@@ -203,155 +190,5 @@ namespace BeauUtil
         }
 
         #endregion // Parse
-
-        static unsafe internal uint Hash(string inString, int inOffset, int inLength)
-        {
-            if (inLength <= 0)
-                return 0;
-            
-            // fnv-1a
-            uint hash = 2166136261;
-            
-            // unsafe method
-            fixed(char* ptr = inString)
-            {
-                char* inc = ptr + inOffset;
-                while(--inLength >= 0)
-                {
-                    hash = (hash ^ *inc++) * 16777619;
-                }
-            }
-            
-            return hash;
-        }
-
-        #region Caching
-
-        #if DEVELOPMENT
-
-        static private bool s_ReverseLookupEnabled;
-        static private Dictionary<uint, string> s_ReverseLookup;
-
-        /// <summary>
-        /// Enabled/disables reverse hash lookup.
-        /// Reverse lookup cannot be enabled in non-development builds.
-        /// </summary>
-        static public void EnableReverseLookup(bool inbEnabled)
-        {
-            if (s_ReverseLookupEnabled != inbEnabled)
-            {
-                s_ReverseLookupEnabled = inbEnabled;
-                if (inbEnabled)
-                {
-                    s_ReverseLookup = new Dictionary<uint, string>(256);
-                }
-                else
-                {
-                    s_ReverseLookup.Clear();
-                    s_ReverseLookup = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns if reverse hash lookup is enabled.
-        /// </summary>
-        static public bool IsReverseLookupEnabled()
-        {
-            return s_ReverseLookupEnabled;
-        }
-
-        /// <summary>
-        /// Clears the reverse hash lookup cache.
-        /// Non-functional in non-development builds.
-        /// </summary>
-        static public void ClearReverseLookup()
-        {
-            if (s_ReverseLookupEnabled)
-            {
-                s_ReverseLookup.Clear();
-            }
-        }
-
-        static internal uint StoreHash(string inString, int inOffset, int inLength)
-        {
-            uint hash = Hash(inString, inOffset, inLength);
-            if (inLength > 0 && s_ReverseLookupEnabled)
-            {
-                StringSlice current = new StringSlice(inString, inOffset, inLength);
-
-                string existing;
-                if (s_ReverseLookup.TryGetValue(hash, out existing))
-                {
-                    if (current != existing)
-                    {
-                        UnityEngine.Debug.LogErrorFormat("[StringHash32] Collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X8"));
-                    }
-                }
-                else
-                {
-                    s_ReverseLookup.Add(hash, current.ToString());
-                }
-            }
-            return hash;
-        }
-
-        static private string ReverseLookup(uint inHash)
-        {
-            if (inHash == 0)
-                return string.Empty;
-
-            if (!s_ReverseLookupEnabled)
-                return ReverseLookupUnavailable;
-
-            string str;
-            if (!s_ReverseLookup.TryGetValue(inHash, out str))
-                str = string.Format(ReverseLookupUnknownFormat, inHash);
-
-            return str;
-        }
-
-        #else
-
-        /// <summary>
-        /// Enabled/disables reverse hash lookup.
-        /// Reverse lookup cannot be enabled in non-development builds.
-        /// </summary>
-        static public void EnableReverseLookup(bool inbEnabled)
-        {
-            if (inbEnabled)
-                throw new InvalidOperationException("Reverse lookup cannot be enabled in non-development builds");
-        }
-
-        /// <summary>
-        /// Returns if reverse hash lookup is enabled.
-        /// </summary>
-        static public bool IsReverseLookupEnabled()
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Clears the reverse hash lookup cache.
-        /// Non-functional in non-development builds.
-        /// </summary>
-        static public void ClearReverseLookup()
-        {
-        }
-
-        [MethodImpl(256)]
-        static internal uint StoreHash(string inString, int inOffset, int inLength)
-        {
-            return Hash(inString, inOffset, inLength);
-        }
-
-        static private string ReverseLookup(uint inHash)
-        {
-            return inHash == 0 ? string.Empty : ReverseLookupUnavailable;
-        }
-
-        #endif // DEVELOPMENT
-
-        #endregion // Caching
     }
 }

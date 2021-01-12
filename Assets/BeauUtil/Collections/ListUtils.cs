@@ -34,6 +34,20 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Ensures a certain capacity for the list, making sure it is a power of 2.
+        /// </summary>
+        static public void EnsureCapacityPow2<T>(ref List<T> ioList, int inCapacity)
+        {
+            if ((inCapacity & (inCapacity - 1)) == 0)
+            {
+                EnsureCapacity(ref ioList, inCapacity);
+                return;
+            }
+            
+            EnsureCapacity(ref ioList, Mathf.NextPowerOfTwo(inCapacity));
+        }
+
+        /// <summary>
         /// Removes an element from the given list by swapping.
         /// Does not preserve order.
         /// </summary>

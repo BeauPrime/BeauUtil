@@ -589,7 +589,7 @@ namespace BeauUtil.Variants
                 return true;
             }
 
-            if (inSlice.StartsWith(StringHash32.CustomHashPrefix) || inSlice.StartsWith(StringHash32.StringPrefix)
+            if (inSlice.StartsWith(StringHashing.CustomHashPrefix) || inSlice.StartsWith(StringHashing.StringPrefix)
                 || (inSlice.StartsWith('"') && inSlice.EndsWith('"')))
             {
                 StringHash32 hash;

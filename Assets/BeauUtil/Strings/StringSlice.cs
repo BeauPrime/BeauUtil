@@ -856,12 +856,12 @@ namespace BeauUtil
 
         internal uint CalculateHash32()
         {
-            return StringHash32.StoreHash(m_Source, m_StartIndex, Length);
+            return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
         internal ulong CalculateHash64()
         {
-            return StringHash64.StoreHash(m_Source, m_StartIndex, Length);
+            return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
         }
 
         static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)

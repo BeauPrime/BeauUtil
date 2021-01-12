@@ -8,6 +8,25 @@ namespace BeauUtil.UnitTests
     static public class CollectionTests
     {
         [Test]
+        static public void BitTest()
+        {
+            int fullMask = 0;
+            for(int i = 0; i < Bits.Length; ++i)
+            {
+                Bits.Add(ref fullMask, i);
+                Debug.LogFormat("base10: {0}; base2: {1}", fullMask, Convert.ToString(fullMask, 2).PadLeft(32, '0'));
+            }
+
+            Assert.AreEqual(fullMask, Bits.All32);
+
+            for(int i = 0; i < 32; ++i)
+            {
+                bool bMatch = Bits.Contains(fullMask, i);
+                Assert.True(bMatch);
+            }
+        }
+
+        [Test]
         static public void FixedRingBufferTest()
         {
             RingBuffer<int> buffer = new RingBuffer<int>(4, RingBufferMode.Fixed);

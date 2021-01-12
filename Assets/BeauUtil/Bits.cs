@@ -17,22 +17,25 @@ namespace BeauUtil
         /// <summary>
         /// Total number of bits in an integer.
         /// </summary>
-        public const int LENGTH = 32;
+        public const int Length = 32;
+
+        public const int All32 = unchecked((int) AllU32);
+        public const uint AllU32 = 0xFFFFFFFF;
 
         /// <summary>
         /// Returns if the given uint has the given bit toggled on.
         /// </summary>
-        static public bool Contains(uint inBitArray, byte inBitIndex)
+        static public bool Contains(uint inBitArray, int inBitIndex)
         {
-            return (inBitArray & (1U << inBitIndex)) > 0;
+            return (inBitArray & (1U << inBitIndex)) != 0;
         }
 
         /// <summary>
         /// Returns if the given int has the given bit toggled on.
         /// </summary>
-        static public bool Contains(int inBitArray, byte inBitIndex)
+        static public bool Contains(int inBitArray, int inBitIndex)
         {
-            return (inBitArray & (1 << inBitIndex)) > 0;
+            return (inBitArray & (1 << inBitIndex)) != 0;
         }
 
         /// <summary>
@@ -40,7 +43,7 @@ namespace BeauUtil
         /// </summary>
         static public bool ContainsMask(uint inBitArray, uint inBitMask)
         {
-            return (inBitArray & inBitMask) > 0;
+            return (inBitArray & inBitMask) != 0;
         }
 
         /// <summary>
@@ -48,13 +51,13 @@ namespace BeauUtil
         /// </summary>
         static public bool ContainsMask(int inBitArray, int inBitMask)
         {
-            return (inBitArray & inBitMask) > 0;
+            return (inBitArray & inBitMask) != 0;
         }
 
         /// <summary>
         /// Toggles the given bit in the given uint to on.
         /// </summary>
-        static public void Add(ref uint ioBitArray, byte inBitIndex)
+        static public void Add(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1U << inBitIndex);
         }
@@ -62,7 +65,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to on.
         /// </summary>
-        static public void Add(ref int ioBitArray, byte inBitIndex)
+        static public void Add(ref int ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1 << inBitIndex);
         }
@@ -70,7 +73,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given uint to off.
         /// </summary>
-        static public void Remove(ref uint ioBitArray, byte inBitIndex)
+        static public void Remove(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1U << inBitIndex);
         }
@@ -78,7 +81,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to off.
         /// </summary>
-        static public void Remove(ref int ioBitArray, byte inBitIndex)
+        static public void Remove(ref int ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1 << inBitIndex);
         }
@@ -86,7 +89,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given uint to the given state.
         /// </summary>
-        static public void Set(ref uint ioBitArray, byte inBitIndex, bool inbState)
+        static public void Set(ref uint ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
                 Add(ref ioBitArray, inBitIndex);
@@ -97,7 +100,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to the given state.
         /// </summary>
-        static public void Set(ref int ioBitArray, byte inBitIndex, bool inbState)
+        static public void Set(ref int ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
                 Add(ref ioBitArray, inBitIndex);
@@ -141,6 +144,40 @@ namespace BeauUtil
                 ++shiftCount;
             }
             return shiftCount;
+        }
+
+        /// <summary>
+        /// Returns the number of set bits in the given bit array.
+        /// </summary>
+        static public int Count(int inBitArray)
+        {
+            int count = 0;
+            int mask = 1;
+            for(int i = 0; i < 32; ++i)
+            {
+                if ((inBitArray & mask) != 0)
+                    ++count;
+                
+                mask <<= 1;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Returns the number of set bits in the given bit array.
+        /// </summary>
+        static public int Count(uint inBitArray)
+        {
+            int count = 0;
+            uint mask = 1;
+            for(int i = 0; i < 32; ++i)
+            {
+                if ((inBitArray & mask) != 0)
+                    ++count;
+                
+                mask <<= 1;
+            }
+            return count;
         }
     }
 }

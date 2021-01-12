@@ -138,21 +138,51 @@ namespace BeauUtil.UnitTests
         [Test]
         static public void TestStringHash32()
         {
+            StringHashing.ClearReverseLookup();
+
+            int collisionCount = 0;
+            StringHashing.SetOnCollision((a, b, s, h) => collisionCount++);
+
+            for(int i = -1000; i <= 1000; ++i)
+            {
+                new StringHash32(i.ToString());
+            }
+
             string allText = File.ReadAllText("Assets/Editor/words.txt");
             foreach(var word in StringSlice.EnumeratedSplit(allText, new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 word.Hash32();
             }
+
+            if (collisionCount > 0)
+                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 16", collisionCount);
+
+            StringHashing.SetOnCollision(null);
         }
 
         [Test]
         static public void TestStringHash64()
         {
+            StringHashing.ClearReverseLookup();
+
+            int collisionCount = 0;
+            StringHashing.SetOnCollision((a, b, s, h) => collisionCount++);
+
+            for(int i = -1000; i <= 1000; ++i)
+            {
+                new StringHash64(i.ToString());
+            }
+
             string allText = File.ReadAllText("Assets/Editor/words.txt");
             foreach(var word in StringSlice.EnumeratedSplit(allText, new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 word.Hash64();
             }
+
+            if (collisionCount > 0)
+                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 16", collisionCount);
+
+            StringHashing.SetOnCollision(null);
         }
 
         [Test]
