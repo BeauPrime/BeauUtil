@@ -559,6 +559,10 @@ namespace BeauUtil
             FindParent();
             FindRenderer(true);
             UpdateChildren();
+        }
+
+        private void OnEnable()
+        {
             Refresh();
         }
 
