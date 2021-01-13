@@ -73,7 +73,42 @@ namespace BeauUtil
 
             if (inCamera.orthographic)
             {
-                outNewPosition = inTransform.position;
+                outNewPosition = sourcePos;
+                return true;
+            }
+
+            Vector3 sourceViewport = inCamera.WorldToViewportPoint(sourcePos);
+
+            Plane p = new Plane(-inCamera.transform.forward, inTargetTransform.position);
+            Ray r = inCamera.ViewportPointToRay(sourceViewport);
+
+            float dist;
+            if (p.Raycast(r, out dist))
+            {
+                outNewPosition = r.GetPoint(dist);
+                return true;
+            }
+
+            outNewPosition = default(Vector3);
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to cast a position from one camera plane to another plane.
+        /// </summary>
+        static public bool TryCastPositionToTargetPlane(this Camera inCamera, Vector3 inPosition, Transform inTargetTransform, out Vector3 outNewPosition)
+        {
+            if (!inTargetTransform)
+            {
+                outNewPosition = default(Vector3);
+                return false;
+            }
+
+            Vector3 sourcePos = inPosition;
+
+            if (inCamera.orthographic)
+            {
+                outNewPosition = inPosition;
                 return true;
             }
 
