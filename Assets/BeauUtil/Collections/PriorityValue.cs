@@ -28,7 +28,7 @@ namespace BeauUtil
         #if EXPANDED_REFS
         public PriorityValue(in T inValue, float inPriority = 0)
         #else
-        public PriorityValue(TItem inValue, float inPriority = 0)
+        public PriorityValue(T inValue, float inPriority = 0)
         #endif // EXPANDED_REFS
         {
             Value = inValue;
