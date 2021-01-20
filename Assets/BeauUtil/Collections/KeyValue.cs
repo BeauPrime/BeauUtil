@@ -141,6 +141,26 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Sorts the given array by key.
+        /// </summary>
+        static public void SortByKey<K, V, T>(this T[] inArray)
+            where T : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            Array.Sort(inArray, KeySorter<K, V, T>.KeyComparer);
+        }
+
+        /// <summary>
+        /// Sorts the given list by key.
+        /// </summary>
+        static public void SortByKey<K, V, T>(this List<T> inList)
+            where T : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            inList.Sort(KeySorter<K, V, T>.KeyComparer);
+        }
+
+        /// <summary>
         /// Returns the index at which a sorted list of key value pairs a certain key can be found.
         /// </summary>
         static public int BinarySearch<K, V, T>(this IReadOnlyList<T> inCollection, K inKey)
@@ -186,6 +206,54 @@ namespace BeauUtil
 
             outValue = default(V);
             return false;
+        }
+
+        static private class KeySorter<K, V, T> where T : IKeyValuePair<K, V> where K : IComparable<K>
+        {
+            static private Comparison<T> s_CachedComparison;
+
+            static internal Comparison<T> KeyComparer
+            {
+                get
+                {
+                    if (s_CachedComparison == null)
+                    {
+                        if (typeof(T).IsClass || typeof(T).IsInterface)
+                        {
+                            s_CachedComparison = CompareClass;
+                        }
+                        else
+                        {
+                            s_CachedComparison = CompareStruct;
+                        }
+                    }
+
+                    return s_CachedComparison;
+                }
+            }
+
+            static private int CompareStruct(T x, T y)
+            {
+                return x.Key.CompareTo(y.Key);
+            }
+
+            static private int CompareClass(T x, T y)
+            {
+                if (x == null)
+                {
+                    if (y == null)
+                        return 0;
+
+                    return -1;
+                }
+
+                if (y == null)
+                {
+                    return 1;
+                }
+
+                return x.Key.CompareTo(y.Key);
+            }
         }
     }
 }
