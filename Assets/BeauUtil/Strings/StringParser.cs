@@ -659,9 +659,14 @@ namespace BeauUtil
         /// </summary>
         static public bool TryParseLong(StringSlice inSlice, out long outLong)
         {
+            return TryParseLongInternal(inSlice, true, out outLong);
+        }
+
+        static private bool TryParseLongInternal(StringSlice inSlice, bool inbCheckHex, out long outLong)
+        {
             inSlice = inSlice.Trim();
 
-            if (inSlice.StartsWith("0x"))
+            if (inbCheckHex && inSlice.StartsWith("0x"))
             {
                 ulong hex;
                 if (TryParseHex(inSlice.Substring(2), 16, out hex))
@@ -786,7 +791,7 @@ namespace BeauUtil
             else if (evalMode == ReadAsInteger)
             {
                 long l;
-                if (TryParseLong(inSlice, out l))
+                if (TryParseLongInternal(inSlice, false, out l))
                 {
                     outFloat = (float) l;
                     return true;
@@ -857,7 +862,7 @@ namespace BeauUtil
             else if (evalMode == ReadAsInteger)
             {
                 long l;
-                if (TryParseLong(inSlice, out l))
+                if (TryParseLongInternal(inSlice, false, out l))
                 {
                     outDouble = (double) l;
                     return true;

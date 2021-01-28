@@ -67,7 +67,100 @@ namespace BeauUtil
             return depth;
         }
 
+        /// <summary>
+        /// Returns the type and all non-interface types used to derive this type.
+        /// </summary>
+        static public IEnumerable<Type> GetBaseTypes(Type inType)
+        {
+            Type _type = inType;
+            while(_type != null)
+            {
+                yield return _type;
+                _type = _type.BaseType;
+            }
+        }
+
+        /// <summary>
+        /// Returns the type and all types used to derive this type.
+        /// </summary>
+        static public IEnumerable<Type> GetBaseTypesAndInterfaces(Type inType)
+        {
+            Type _type = inType;
+            while(_type != null)
+            {
+                yield return _type;
+                _type = _type.BaseType;
+            }
+
+            foreach(var _interface in inType.GetInterfaces())
+            {
+                yield return _interface;
+            }
+        }
+
         #endregion // Inheritance
+
+        #region Members
+
+        /// <summary>
+        /// Returns the value type of the given member.
+        /// </summary>
+        static public Type GetValueType(MemberInfo inInfo)
+        {
+            FieldInfo field = inInfo as FieldInfo;
+            if (field != null)
+                return field.FieldType;
+
+            PropertyInfo prop = inInfo as PropertyInfo;
+            if (prop != null)
+                return prop.PropertyType;
+
+            throw new NotSupportedException(string.Format("Member '{0}' of type '{1}' does not have a get/set value type", inInfo.Name, inInfo.GetType()));
+        }
+
+        /// <summary>
+        /// Gets the value of the given member.
+        /// </summary>
+        static public object GetValue(MemberInfo inInfo, object inObject)
+        {
+            FieldInfo field = inInfo as FieldInfo;
+            if (field != null)
+            {
+                return field.GetValue(inObject);
+            }
+
+            PropertyInfo prop = inInfo as PropertyInfo;
+            if (prop != null)
+            {
+                return prop.GetValue(inObject);
+            }
+
+            throw new NotSupportedException(string.Format("Member '{0}' of type '{1}' is not gettable", inInfo.Name, inInfo.GetType()));
+        }
+
+        /// <summary>
+        /// Sets the value of the given member.
+        /// </summary>
+        static public void SetValue(MemberInfo inInfo, object inObject, object inValue)
+        {
+            FieldInfo field = inInfo as FieldInfo;
+            if (field != null)
+            {
+                field.SetValue(inObject, inValue);
+                return;
+            }
+
+            PropertyInfo prop = inInfo as PropertyInfo;
+            if (prop != null)
+            {
+                prop.SetValue(inObject, inValue);
+                return;
+            }
+
+            throw new NotSupportedException(string.Format("Member '{0}' of type '{1}' is not settable", inInfo.Name, inInfo.GetType()));
+        }
+
+        #endregion // Members
 
         #region Attributes
 

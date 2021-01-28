@@ -7,6 +7,10 @@
  * Purpose: Two-dimensional table of values.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define EXPANDED_REFS
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -66,21 +70,77 @@ namespace BeauUtil
             get { return m_Width * m_Height; }
         }
 
+        #if EXPANDED_REFS
+
+        public ref T this[int inX, int inY]
+        {
+            get
+            {
+                if (!IsValid(inX, inY))
+                    throw new ArgumentOutOfRangeException();
+                
+                return ref m_Data[inX + inY * m_Width];
+            }
+        }
+
+        public ref T this[int inIndex]
+        {
+            get
+            {
+                if (inIndex < 0 || inIndex >= m_Data.Length)
+                    throw new ArgumentOutOfRangeException("inIndex");
+                
+                return ref m_Data[inIndex];
+            }
+        }
+
+        #else
+
         public T this[int inX, int inY]
         {
-            get { return m_Data[inX + inY * m_Width]; }
-            set { m_Data[inX + inY * m_Width] = value; }
+            get
+            {   if (!IsValid(inX, inY))
+                    throw new ArgumentOutOfRangeException();
+
+                return m_Data[inX + inY * m_Width];
+            }
+            set
+            {
+                if (!IsValid(inX, inY))
+                    throw new ArgumentOutOfRangeException();
+                
+                m_Data[inX + inY * m_Width] = value;
+            }
         }
 
         public T this[int inIndex]
         {
-            get { return m_Data[inIndex]; }
-            set { m_Data[inIndex] = value; }
+            get 
+            {
+                if (inIndex < 0 || inIndex >= m_Data.Length)
+                    throw new ArgumentOutOfRangeException("inIndex");
+
+                return m_Data[inIndex];
+            }
+            set
+            {
+                if (inIndex < 0 || inIndex >= m_Data.Length)
+                    throw new ArgumentOutOfRangeException("inIndex");
+
+                m_Data[inIndex] = value;
+            }
+        }
+
+        #endif // EXPANDED_REFS
+
+        public bool IsValid(int inX, int inY)
+        {
+            return inX > 0 && inY > 0 && inX < m_Width && inY < m_Height;
         }
 
         public int TryGetValue(int inX, int inY, out T outData)
         {
-            if (inX < 0 || inX >= m_Width || inY < 0 || inY >= m_Height)
+            if (!IsValid(inX, inY))
             {
                 outData = default(T);
                 return -1;
@@ -103,12 +163,18 @@ namespace BeauUtil
 
         public void GetXY(int inIndex, out int outX, out int outY)
         {
+            if (inIndex < 0 || inIndex >= m_Data.Length)
+                throw new ArgumentOutOfRangeException("inIndex");
+            
             outX = inIndex % m_Width;
             outY = (int)(inIndex / m_Width);
         }
 
         public int GetIndex(int inX, int inY)
         {
+            if (!IsValid(inX, inY))
+                throw new ArgumentOutOfRangeException();
+            
             return inX + inY * m_Width;
         }
 
