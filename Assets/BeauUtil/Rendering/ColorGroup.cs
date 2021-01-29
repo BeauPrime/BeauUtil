@@ -491,6 +491,12 @@ namespace BeauUtil
             {
                 m_Renderer.gameObject.layer = m_ConcatenatedRaycast ? m_EnableRaycastLayer : m_DisableRaycastLayer;
             }
+
+            if (m_Children != null)
+            {
+                for (int i = m_Children.Count - 1; i >= 0; --i)
+                    m_Children[i].UpdateRaycast(m_ConcatenatedRaycast);
+            }
         }
 
         private bool CalculateConcatenatedVisibility()
