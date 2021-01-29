@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace BeauUtil.Services
 {
@@ -56,6 +57,12 @@ namespace BeauUtil.Services
             [MethodImpl(256)] public bool Has() { return m_First != null; }
             [MethodImpl(256)] public IService Get() { return m_First; }
             [MethodImpl(256)] public IReadOnlyList<IService> All() { return m_All; }
+
+            public IEnumerable<T> All<T>()
+            {
+                for(int i = 0, len = m_All.Count; i < len; ++i)
+                    yield return (T) m_All[i];
+            }
             
             public Type[] Dependencies() { return m_Dependencies; }
             public Type[] BaseCacheTypes() { return m_BaseCacheTypes; }
@@ -119,22 +126,6 @@ namespace BeauUtil.Services
 
             m_AddQueue.PushBack(inService);
             return true;
-        }
-
-        /// <summary>
-        /// Gathers and adds all active services from the given root.
-        /// </summary>
-        public int AddFromHierarchy(Transform inRoot)
-        {
-            int count = 0;
-
-            foreach(var service in inRoot.GetComponentsInChildren<IService>())
-            {
-                if (Add(service))
-                    ++count;
-            }
-
-            return count;
         }
 
         /// <summary>
@@ -227,10 +218,12 @@ namespace BeauUtil.Services
         /// <summary>
         /// Returns all services for the given type.
         /// </summary>
-        [MethodImpl(256)]
-        public IReadOnlyList<T> All<T>()
+        public IEnumerable<T> All<T>()
         {
-            return (IReadOnlyList<T>) All(typeof(T));
+            TypeCache cache;
+            if (m_ServiceLookup.TryGetValue(typeof(T), out cache))
+                return cache.All<T>();
+            return null;
         }
 
         #endregion // Access
@@ -352,6 +345,81 @@ namespace BeauUtil.Services
         }
 
         #endregion // Process
+
+        #region Unity
+
+        /// <summary>
+        /// Gathers and adds all active services from the given root.
+        /// </summary>
+        public int AddFromHierarchy(Transform inRoot)
+        {
+            int count = 0;
+
+            foreach(var service in inRoot.GetComponentsInChildren<IService>())
+            {
+                if (Add(service))
+                    ++count;
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Gathers and adds all active services from the given scene.
+        /// </summary>
+        public int AddFromScene(Scene inScene)
+        {
+            int count = 0;
+
+            GameObject[] roots = inScene.GetRootGameObjects();
+
+            foreach(var root in roots)
+            {
+                count += AddFromHierarchy(root.transform);
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Gathers and adds all active services from the given scene.
+        /// </summary>
+        public int RemoveFromScene(Scene inScene)
+        {
+            int count = 0;
+
+            foreach(var service in m_RegisteredServices)
+            {
+                if (FromScene(service, inScene))
+                {
+                    Remove(service);
+                    ++count;
+                }
+            }
+
+            for(int i = m_AddQueue.Count - 1; i >= 0; --i)
+            {
+                if (FromScene(m_AddQueue[i], inScene))
+                {
+                    m_AddQueue.FastRemoveAt(i);
+                }
+            }
+
+            return count;
+        }
+
+        static private bool FromScene(IService inService, Scene inScene)
+        {
+            MonoBehaviour behaviour = inService as MonoBehaviour;
+            if (behaviour != null)
+            {
+                return behaviour.gameObject.scene == inScene;
+            }
+
+            return false;
+        }
+
+        #endregion // Unity
 
         #region Register/Deregister
 
