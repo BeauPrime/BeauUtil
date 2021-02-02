@@ -77,6 +77,13 @@ namespace BeauUtil.Debugger
 
         static private void Appliation_logMessageReceived(string condition, string stackTrace, UnityEngine.LogType type)
         {
+            #if UNITY_EDITOR
+
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+                return;
+
+            #endif // UNITY_EDITOR
+
             switch(type)
             {
                 case UnityEngine.LogType.Exception:
@@ -217,13 +224,6 @@ namespace BeauUtil.Debugger
             StringHash64 locationHash = string.Format("{0}@{1}", inCondition, inLocation);
             if (s_IgnoredLocations.Contains(locationHash))
                 return;
-
-            #if UNITY_EDITOR
-
-            if (EditorApplication.isCompiling)
-                return;
-
-            #endif // UNITY_EDITOR
 
             StringBuilder builder = new StringBuilder();
             builder.Append("Location: ").Append(inLocation)
