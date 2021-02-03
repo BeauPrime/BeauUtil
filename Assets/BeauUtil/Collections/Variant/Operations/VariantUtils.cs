@@ -36,7 +36,7 @@ namespace BeauUtil.Variants
                 c = inSlice[i];
                 if (char.IsLetterOrDigit(c))
                     continue;
-                if (c == '_' || c == '.')
+                if (c == '_' || c == '.' || c == '-')
                     continue;
                 return false;
             }
