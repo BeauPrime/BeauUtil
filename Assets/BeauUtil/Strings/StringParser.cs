@@ -1165,6 +1165,9 @@ namespace BeauUtil
         /// </summary>
         static public bool CanConvertTo(Type inType)
         {
+            if (inType.IsEnum)
+                return true;
+
             TypeCode tc = Type.GetTypeCode(inType);
 
             if (tc == TypeCode.Object)

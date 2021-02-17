@@ -757,14 +757,14 @@ namespace BeauUtil
                     {
                         return !m_QuoteMode && m_GroupingDepth <= 0;
                     }
-                    else if (c == '(' || c == '[')
+                    else if (c == '(' || c == '[' || c == '<' || c == '{')
                     {
                         if (!m_QuoteMode)
                         {
                             ++m_GroupingDepth;
                         }
                     }
-                    else if (c == ')' || c == ']')
+                    else if (c == ')' || c == ']' || c == '>' || c == '}')
                     {
                         if (!m_QuoteMode)
                         {
@@ -828,15 +828,17 @@ namespace BeauUtil
 
                 public bool TryUnescape(char inCharacter, string inString, int inIndex, out int outAdvance, StringBuilder ioBuilder)
                 {
-                    if (inCharacter == '\\')
-                    {
-                        if (inIndex < inString.Length - 1 && inString[inIndex + 1] == '"')
-                        {
-                            ioBuilder.Append('"');
-                            outAdvance = 1;
-                            return true;
-                        }
-                    }
+                    // This is covered by the standard unescaper
+                    
+                    // if (inCharacter == '\\')
+                    // {
+                    //     if (inIndex < inString.Length - 1 && inString[inIndex + 1] == '"')
+                    //     {
+                    //         ioBuilder.Append('"');
+                    //         outAdvance = 1;
+                    //         return true;
+                    //     }
+                    // }
 
                     outAdvance = 0;
                     return false;

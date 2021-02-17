@@ -55,6 +55,20 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Creates a map out from a collection of key-value pairs.
+        /// </summary>
+        static public Dictionary<K, V> CreateMap<K, V>(this ICollection<V> inCollection)
+            where V : IKeyValuePair<K, V>
+        {
+            Dictionary<K, V> dict = new Dictionary<K, V>(inCollection.Count);
+            foreach (var entry in inCollection)
+            {
+                dict.Add(entry.Key, entry.Value);
+            }
+            return dict;
+        }
+
+        /// <summary>
         /// Creates a map out from an array of key-value pairs.
         /// </summary>
         static public Dictionary<K, V> CreateMap<K, V, T>(this T[] inCollection)
@@ -69,10 +83,44 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Creates a map out from an array of key-value pairs.
+        /// </summary>
+        static public Dictionary<K, V> CreateMap<K, V>(this V[] inCollection)
+            where V : IKeyValuePair<K, V>
+        {
+            Dictionary<K, V> dict = new Dictionary<K, V>(inCollection.Length);
+            foreach (var entry in inCollection)
+            {
+                dict.Add(entry.Key, entry.Value);
+            }
+            return dict;
+        }
+
+        /// <summary>
         /// Attempts to retrieve a value from a collection of key-value pairs.
         /// </summary>
         static public bool TryGetValue<K, V, T>(this ICollection<T> inCollection, K inKey, out V outValue)
             where T : IKeyValuePair<K, V>
+        {
+            var keyComparer = EqualityComparer<K>.Default;
+            foreach (var entry in inCollection)
+            {
+                if (keyComparer.Equals(entry.Key, inKey))
+                {
+                    outValue = entry.Value;
+                    return true;
+                }
+            }
+
+            outValue = default(V);
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve a value from a collection of key-value pairs.
+        /// </summary>
+        static public bool TryGetValue<K, V>(this ICollection<V> inCollection, K inKey, out V outValue)
+            where V : IKeyValuePair<K, V>
         {
             var keyComparer = EqualityComparer<K>.Default;
             foreach (var entry in inCollection)
@@ -109,10 +157,46 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Attempts to retrieve a value from an array of key-value pairs.
+        /// </summary>
+        static public bool TryGetValue<K, V>(this V[] inCollection, K inKey, out V outValue)
+            where V : IKeyValuePair<K, V>
+        {
+            var keyComparer = EqualityComparer<K>.Default;
+            foreach (var entry in inCollection)
+            {
+                if (keyComparer.Equals(entry.Key, inKey))
+                {
+                    outValue = entry.Value;
+                    return true;
+                }
+            }
+
+            outValue = default(V);
+            return false;
+        }
+
+        /// <summary>
         /// Validates that all keys in the given collection of key-value pairs are unique.
         /// </summary>
         static public bool ValidateKeys<K, V, T>(this ICollection<T> inCollection)
             where T : IKeyValuePair<K, V>
+        {
+            HashSet<K> keys = new HashSet<K>();
+            foreach (var entry in inCollection)
+            {
+                if (!keys.Add(entry.Key))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates that all keys in the given collection of key-value pairs are unique.
+        /// </summary>
+        static public bool ValidateKeys<K, V>(this ICollection<V> inCollection)
+            where V : IKeyValuePair<K, V>
         {
             HashSet<K> keys = new HashSet<K>();
             foreach (var entry in inCollection)
@@ -141,6 +225,22 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Validates that all keys in the given collection of key-value pairs are unique.
+        /// </summary>
+        static public bool ValidateKeys<K, V>(this V[] inCollection)
+            where V : IKeyValuePair<K, V>
+        {
+            HashSet<K> keys = new HashSet<K>();
+            foreach (var entry in inCollection)
+            {
+                if (!keys.Add(entry.Key))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Sorts the given array by key.
         /// </summary>
         static public void SortByKey<K, V, T>(this T[] inArray)
@@ -151,6 +251,16 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Sorts the given array by key.
+        /// </summary>
+        static public void SortByKey<K, V>(this V[] inArray)
+            where V : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            Array.Sort(inArray, KeySorter<K, V, V>.KeyComparer);
+        }
+
+        /// <summary>
         /// Sorts the given list by key.
         /// </summary>
         static public void SortByKey<K, V, T>(this List<T> inList)
@@ -158,6 +268,16 @@ namespace BeauUtil
             where K : IComparable<K>
         {
             inList.Sort(KeySorter<K, V, T>.KeyComparer);
+        }
+
+        /// <summary>
+        /// Sorts the given list by key.
+        /// </summary>
+        static public void SortByKey<K, V>(this List<V> inList)
+            where V : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            inList.Sort(KeySorter<K, V, V>.KeyComparer);
         }
 
         /// <summary>
@@ -191,6 +311,36 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the index at which a sorted list of key value pairs a certain key can be found.
+        /// </summary>
+        static public int BinarySearch<K, V>(this IReadOnlyList<V> inCollection, K inKey)
+            where V : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            if (inCollection.Count <= 0)
+                return -1;
+
+            int low = 0;
+            int high = inCollection.Count - 1;
+
+            Comparer<K> comparer = Comparer<K>.Default;
+
+            while(low <= high)
+            {
+                int med = low + ((high - low) >> 1);
+                int comp = comparer.Compare(inCollection[med].Key, inKey);
+                if (comp == 0)
+                    return med;
+                if (comp == -1)
+                    low = med + 1;
+                else
+                    high = med - 1;
+            }
+
+            return ~low;
+        }
+
+        /// <summary>
         /// Attempts to find the value associated with the given key, assuming the collection is sorted.
         /// </summary>
         static public bool TryBinarySearch<K, V, T>(this IReadOnlyList<T> inCollection, K inKey, out V outValue)
@@ -198,6 +348,24 @@ namespace BeauUtil
             where K : IComparable<K>
         {
             int idx = BinarySearch<K, V, T>(inCollection, inKey);
+            if (idx >= 0)
+            {
+                outValue = inCollection[idx].Value;
+                return true;
+            }
+
+            outValue = default(V);
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to find the value associated with the given key, assuming the collection is sorted.
+        /// </summary>
+        static public bool TryBinarySearch<K, V>(this IReadOnlyList<V> inCollection, K inKey, out V outValue)
+            where V : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            int idx = BinarySearch<K, V, V>(inCollection, inKey);
             if (idx >= 0)
             {
                 outValue = inCollection[idx].Value;
