@@ -157,26 +157,6 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Attempts to retrieve a value from an array of key-value pairs.
-        /// </summary>
-        static public bool TryGetValue<K, V>(this V[] inCollection, K inKey, out V outValue)
-            where V : IKeyValuePair<K, V>
-        {
-            var keyComparer = EqualityComparer<K>.Default;
-            foreach (var entry in inCollection)
-            {
-                if (keyComparer.Equals(entry.Key, inKey))
-                {
-                    outValue = entry.Value;
-                    return true;
-                }
-            }
-
-            outValue = default(V);
-            return false;
-        }
-
-        /// <summary>
         /// Validates that all keys in the given collection of key-value pairs are unique.
         /// </summary>
         static public bool ValidateKeys<K, V, T>(this ICollection<T> inCollection)
@@ -348,24 +328,6 @@ namespace BeauUtil
             where K : IComparable<K>
         {
             int idx = BinarySearch<K, V, T>(inCollection, inKey);
-            if (idx >= 0)
-            {
-                outValue = inCollection[idx].Value;
-                return true;
-            }
-
-            outValue = default(V);
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to find the value associated with the given key, assuming the collection is sorted.
-        /// </summary>
-        static public bool TryBinarySearch<K, V>(this IReadOnlyList<V> inCollection, K inKey, out V outValue)
-            where V : IKeyValuePair<K, V>
-            where K : IComparable<K>
-        {
-            int idx = BinarySearch<K, V, V>(inCollection, inKey);
             if (idx >= 0)
             {
                 outValue = inCollection[idx].Value;
