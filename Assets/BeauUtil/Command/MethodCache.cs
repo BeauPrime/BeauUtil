@@ -154,6 +154,9 @@ namespace BeauUtil
             {
                 if (inArguments.Count < m_RequiredParameterCount || inArguments.Count >= m_Parameters.Length)
                 {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Expected between {0} and {1} arguments to {2}::'{3}', got {4} instead",
+                        m_RequiredParameterCount, m_Parameters.Length, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
+                    
                     outReturnValue = null;
                     return false;
                 }
@@ -167,6 +170,7 @@ namespace BeauUtil
                     catch(Exception e)
                     {
                         UnityEngine.Debug.LogException(e);
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert object {0} to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
                         outReturnValue = null;
                         return false;
                     }
@@ -181,8 +185,11 @@ namespace BeauUtil
             public bool TryInvoke(object inTarget, TempList16<StringSlice> inArguments, IStringConverter inConverter, out object outReturnValue)
 #endif // EXPANDED_REFS
             {
-                if (inArguments.Count < m_RequiredParameterCount || inArguments.Count >= m_Parameters.Length)
+                if (inArguments.Count < m_RequiredParameterCount || inArguments.Count > m_Parameters.Length)
                 {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Expected between {0} and {1} arguments to {2}::'{3}', got {4} instead",
+                        m_RequiredParameterCount, m_Parameters.Length, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
+
                     outReturnValue = null;
                     return false;
                 }
@@ -191,6 +198,7 @@ namespace BeauUtil
                 {
                     if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i].ParameterType, out m_Arguments[i]))
                     {
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
                         outReturnValue = null;
                         return false;
                     }
@@ -203,6 +211,9 @@ namespace BeauUtil
             {
                 if (inArguments.Count < m_RequiredParameterCount || inArguments.Count >= m_Parameters.Length)
                 {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Expected between {0} and {1} arguments to {2}::'{3}', got {4} instead",
+                        m_RequiredParameterCount, m_Parameters.Length, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
+
                     outReturnValue = null;
                     return false;
                 }
@@ -211,6 +222,7 @@ namespace BeauUtil
                 {
                     if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i].ParameterType, out m_Arguments[i]))
                     {
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
                         outReturnValue = null;
                         return false;
                     }
