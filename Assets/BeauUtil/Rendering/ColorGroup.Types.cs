@@ -143,7 +143,12 @@ namespace BeauUtil
 
             public bool Enabled = true;
 
-            private int m_PropertyId;
+            [NonSerialized] private int m_PropertyId;
+
+            public void ClearCache()
+            {
+                m_PropertyId = 0;
+            }
 
             private int GetPropertyId()
             {
@@ -181,7 +186,7 @@ namespace BeauUtil
                 return new PropertyConfig()
                 {
                     Source = inChannel,
-                        Name = inPropertyName
+                    Name = inPropertyName
                 };
             }
         }
@@ -221,10 +226,23 @@ namespace BeauUtil
                 }
             }
 
+            public void ClearCache()
+            {
+                MainProperty.ClearCache();
+                if (AdditionalProperties != null)
+                {
+                    int numProps = AdditionalProperties.Length;
+                    for (int i = numProps - 1; i >= 0; --i)
+                        AdditionalProperties[i].ClearCache();
+                }
+            }
+
             public void ConfigureForMaterial(Material inMaterial)
             {
                 if (inMaterial.HasProperty("_BaseColor"))
                     MainProperty = PropertyConfig.Create(Channel.Main, "_BaseColor");
+                else if (inMaterial.HasProperty("_MainColor"))
+                    MainProperty = PropertyConfig.Create(Channel.Main, "_MainColor");
                 else if (inMaterial.HasProperty("_Color"))
                     MainProperty = PropertyConfig.Create(Channel.Main, "_Color");
 

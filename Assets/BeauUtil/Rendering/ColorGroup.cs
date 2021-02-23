@@ -244,6 +244,7 @@ namespace BeauUtil
                 return;
 
             m_RendererLocated = true;
+            m_EnableRaycastLayer = gameObject.layer;
 
             #endif // UNITY_EDITOR
 
@@ -551,6 +552,9 @@ namespace BeauUtil
 
             Initialize();
             FindRenderer(true);
+
+            if (m_MaterialConfig != null)
+                m_MaterialConfig.ClearCache();
 
             UpdateChildren();
             Refresh();
