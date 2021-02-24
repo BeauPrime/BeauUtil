@@ -20,6 +20,7 @@ namespace BeauUtil
     /// </summary>
     [ExecuteAlways, RequireComponent(typeof(Camera))]
     [AddComponentMenu("BeauUtil/Camera FOV Plane"), DisallowMultipleComponent]
+    [DefaultExecutionOrder(100000000)]
     public class CameraFOVPlane : MonoBehaviour
     {
         public struct CameraSettings
@@ -113,7 +114,13 @@ namespace BeauUtil
             outSettings = new CameraSettings(Height, Zoom, m_LastDistance, ZoomedHeight(), m_Camera.fieldOfView);
         }
 
-        private void OnPreCull()
+        private void LateUpdate()
+        {
+            if (m_Camera.enabled)
+                Apply();
+        }
+
+        private void Apply()
         {
             float newDist;
             bool bHit = m_Camera.TryGetDistanceToObjectPlane(m_Target, out newDist);
