@@ -227,7 +227,7 @@ namespace BeauUtil
             where T : IKeyValuePair<K, V>
             where K : IComparable<K>
         {
-            Array.Sort(inArray, KeySorter<K, V, T>.KeyComparer);
+            Array.Sort(inArray, KeySorter<K, V, T>.KeyComparison);
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace BeauUtil
             where V : IKeyValuePair<K, V>
             where K : IComparable<K>
         {
-            Array.Sort(inArray, KeySorter<K, V, V>.KeyComparer);
+            Array.Sort(inArray, KeySorter<K, V, V>.KeyComparison);
         }
 
         /// <summary>
@@ -247,13 +247,33 @@ namespace BeauUtil
             where T : IKeyValuePair<K, V>
             where K : IComparable<K>
         {
-            inList.Sort(KeySorter<K, V, T>.KeyComparer);
+            inList.Sort(KeySorter<K, V, T>.KeyComparison);
         }
 
         /// <summary>
         /// Sorts the given list by key.
         /// </summary>
         static public void SortByKey<K, V>(this List<V> inList)
+            where V : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            inList.Sort(KeySorter<K, V, V>.KeyComparison);
+        }
+
+        /// <summary>
+        /// Sorts the given buffer by key.
+        /// </summary>
+        static public void SortByKey<K, V, T>(this RingBuffer<T> inList)
+            where T : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            inList.Sort(KeySorter<K, V, T>.KeyComparer);
+        }
+
+        /// <summary>
+        /// Sorts the given buffer by key.
+        /// </summary>
+        static public void SortByKey<K, V>(this RingBuffer<V> inList)
             where V : IKeyValuePair<K, V>
             where K : IComparable<K>
         {
@@ -338,11 +358,27 @@ namespace BeauUtil
             return false;
         }
 
+        private class DelegateComparer<T> : IComparer<T>
+        {
+            private readonly Comparison<T> m_Comparison;
+
+            public DelegateComparer(Comparison<T> inComparison)
+            {
+                m_Comparison = inComparison;
+            }
+
+            public int Compare(T x, T y)
+            {
+                return m_Comparison(x, y);
+            }
+        }
+
         static private class KeySorter<K, V, T> where T : IKeyValuePair<K, V> where K : IComparable<K>
         {
             static private Comparison<T> s_CachedComparison;
+            static private IComparer<T> s_CachedComparer;
 
-            static internal Comparison<T> KeyComparer
+            static internal Comparison<T> KeyComparison
             {
                 get
                 {
@@ -359,6 +395,18 @@ namespace BeauUtil
                     }
 
                     return s_CachedComparison;
+                }
+            }
+
+            static internal IComparer<T> KeyComparer
+            {
+                get
+                {
+                    if (s_CachedComparer == null)
+                    {
+                        s_CachedComparer = new DelegateComparer<T>(KeyComparison);
+                    }
+                    return s_CachedComparer;
                 }
             }
 
