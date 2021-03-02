@@ -311,6 +311,36 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the index at which a sorted array of key value pairs a certain key can be found.
+        /// </summary>
+        static public int BinarySearch<K, V, T>(this T[] inArray, K inKey)
+            where T : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            if (inArray.Length <= 0)
+                return -1;
+
+            int low = 0;
+            int high = inArray.Length - 1;
+
+            Comparer<K> comparer = Comparer<K>.Default;
+
+            while(low <= high)
+            {
+                int med = low + ((high - low) >> 1);
+                int comp = comparer.Compare(inArray[med].Key, inKey);
+                if (comp == 0)
+                    return med;
+                if (comp == -1)
+                    low = med + 1;
+                else
+                    high = med - 1;
+            }
+
+            return ~low;
+        }
+
+        /// <summary>
         /// Returns the index at which a sorted list of key value pairs a certain key can be found.
         /// </summary>
         static public int BinarySearch<K, V>(this IReadOnlyList<V> inCollection, K inKey)
@@ -329,6 +359,36 @@ namespace BeauUtil
             {
                 int med = low + ((high - low) >> 1);
                 int comp = comparer.Compare(inCollection[med].Key, inKey);
+                if (comp == 0)
+                    return med;
+                if (comp == -1)
+                    low = med + 1;
+                else
+                    high = med - 1;
+            }
+
+            return ~low;
+        }
+
+        /// <summary>
+        /// Returns the index at which a sorted array of key value pairs a certain key can be found.
+        /// </summary>
+        static public int BinarySearch<K, V>(this V[] inArray, K inKey)
+            where V : IKeyValuePair<K, V>
+            where K : IComparable<K>
+        {
+            if (inArray.Length <= 0)
+                return -1;
+
+            int low = 0;
+            int high = inArray.Length - 1;
+
+            Comparer<K> comparer = Comparer<K>.Default;
+
+            while(low <= high)
+            {
+                int med = low + ((high - low) >> 1);
+                int comp = comparer.Compare(inArray[med].Key, inKey);
                 if (comp == 0)
                     return med;
                 if (comp == -1)
