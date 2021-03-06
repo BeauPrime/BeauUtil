@@ -18,10 +18,12 @@ namespace BeauUtil
     /// </summary>
     static public class ScoringUtils
     {
+        public delegate float ScoreFunction<T>(T inElement);
+
         /// <summary>
         /// Returns the minimum-scoring element from the given list.
         /// </summary>
-        static public T GetMinElement<T>(IEnumerable<T> inList, Func<T, float> inDelegate)
+        static public T GetMinElement<T>(IEnumerable<T> inList, ScoreFunction<T> inDelegate)
         {
             T minVal = default(T);
             float minScore = float.MaxValue;
@@ -43,7 +45,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the minimum-scoring element from the given list.
         /// </summary>
-        static public T GetMinElement<T>(ListSlice<T> inList, Func<T, float> inDelegate)
+        static public T GetMinElement<T>(ListSlice<T> inList, ScoreFunction<T> inDelegate)
         {
             T minVal = default(T);
             float minScore = float.MaxValue;
@@ -68,7 +70,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the minimum-scoring element from the given list.
         /// </summary>
-        static public T GetMinElement<T>(T[] inList, int inStartIndex, int inLength, Func<T, float> inDelegate)
+        static public T GetMinElement<T>(T[] inList, int inStartIndex, int inLength, ScoreFunction<T> inDelegate)
         {
             return GetMinElement(new ListSlice<T>(inList, inStartIndex, inLength), inDelegate);
         }
@@ -76,7 +78,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the maximum-scoring element from the given list.
         /// </summary>
-        static public T GetMaxElement<T>(IEnumerable<T> inList, Func<T, float> inDelegate)
+        static public T GetMaxElement<T>(IEnumerable<T> inList, ScoreFunction<T> inDelegate)
         {
             T maxVal = default(T);
             float maxScore = float.MinValue;
@@ -98,7 +100,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the maximum-scoring element from the given list.
         /// </summary>
-        static public T GetMaxElement<T>(ListSlice<T> inList, Func<T, float> inDelegate)
+        static public T GetMaxElement<T>(ListSlice<T> inList, ScoreFunction<T> inDelegate)
         {
             T maxVal = default(T);
             float maxScore = float.MinValue;
@@ -122,7 +124,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the maximum-scoring element from the given list.
         /// </summary>
-        static public T GetMaxElement<T>(T[] inList, int inStartIndex, int inLength, Func<T, float> inDelegate)
+        static public T GetMaxElement<T>(T[] inList, int inStartIndex, int inLength, ScoreFunction<T> inDelegate)
         {
             return GetMaxElement(new ListSlice<T>(inList, inStartIndex, inLength), inDelegate);
         }

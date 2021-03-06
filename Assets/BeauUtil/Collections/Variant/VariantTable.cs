@@ -318,7 +318,12 @@ namespace BeauUtil.Variants
         
         #region IEnumerable
 
-        public IEnumerator<NamedVariant> GetEnumerator()
+        public RingBuffer<NamedVariant>.Enumerator GetEnumerator()
+        {
+            return m_Values.GetEnumerator();
+        }
+
+        IEnumerator<NamedVariant> IEnumerable<NamedVariant>.GetEnumerator()
         {
             return m_Values.GetEnumerator();
         }

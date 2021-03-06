@@ -212,10 +212,14 @@ namespace BeauUtil
 
         #region IEnumerable
 
-        public IEnumerator<T> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            for (int i = 0; i < Length; ++i)
-                yield return m_Source[m_StartIndex + i];
+            return new Enumerator(this);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return new Enumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -224,6 +228,49 @@ namespace BeauUtil
         }
 
         #endregion // IEnumerable
+
+        #region Enumerator
+
+        public struct Enumerator : IEnumerator<T>, IDisposable
+        {
+            private IReadOnlyList<T> m_List;
+            private int m_Count;
+            private int m_Offset;
+            private int m_Index;
+
+            public Enumerator(ListSlice<T> inList)
+            {
+                m_List = inList.m_Source;
+                m_Count = inList.Length;
+                m_Offset = inList.m_StartIndex;
+                m_Index = -1;
+            }
+
+            #region IEnumerator
+
+            public T Current { get { return m_List[m_Offset + m_Index]; } }
+
+            object IEnumerator.Current { get { return Current; } }
+
+            public void Dispose()
+            {
+                m_List = null;
+            }
+
+            public bool MoveNext()
+            {
+                return ++m_Index < m_Count;
+            }
+
+            public void Reset()
+            {
+                m_Index = -1;
+            }
+
+            #endregion // IEnumerator
+        }
+
+        #endregion // Enumerator
 
         #region IEquatable
 

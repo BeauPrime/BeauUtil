@@ -127,6 +127,42 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void True(bool inbValue, string inFormat, object inParam0)
+        {
+            if (!inbValue)
+            {
+                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a condition is true.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void True(bool inbValue, string inFormat, object inParam0, object inParam1)
+        {
+            if (!inbValue)
+            {
+                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a condition is true.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void True(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
+        {
+            if (!inbValue)
+            {
+                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a condition is true.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
         static public void True(bool inbValue, string inFormat, params object[] inParams)
         {
             if (!inbValue)
@@ -167,6 +203,42 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void False(bool inbValue, string inFormat, object inParam0)
+        {
+            if (inbValue)
+            {
+                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a condition is true.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void False(bool inbValue, string inFormat, object inParam0, object inParam1)
+        {
+            if (inbValue)
+            {
+                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a condition is true.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void False(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
+        {
+            if (inbValue)
+            {
+                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a condition is true.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
         static public void False(bool inbValue, string inFormat, params object[] inParams)
         {
             if (inbValue)
@@ -200,6 +272,42 @@ namespace BeauUtil.Debugger
             if (inValue == null)
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), inMessage);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void NotNull<T>(T inValue, string inFormat, object inParam0) where T : class
+        {
+            if (inValue == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void NotNull<T>(T inValue, string inFormat, object inParam0, object inParam1) where T : class
+        {
+            if (inValue == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        static public void NotNull<T>(T inValue, string inFormat, object inParam0, object inParam1, object inParam2) where T : class
+        {
+            if (inValue == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParam0, inParam1, inParam2));
             }
         }
 

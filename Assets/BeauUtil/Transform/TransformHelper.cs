@@ -70,6 +70,10 @@ namespace BeauUtil
             return inTransform.GetComponentInParent<Canvas>();
         }
 
+        #endregion // RectTransform
+
+        #region Camera
+
         /// <summary>
         /// Attempts to get the default camera used to render this Transform.
         /// This will skip cameras that are currently inactive.
@@ -160,6 +164,6 @@ namespace BeauUtil
 
         static private readonly Camera[] s_CachedCameraArray = new Camera[64];
 
-        #endregion // RectTransform
+        #endregion // Camera
     }
 }

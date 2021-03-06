@@ -138,6 +138,73 @@ namespace BeauUtil
             ioCenter.y += bottomDist - topDist;
         }
 
+        /// <summary>
+        /// Expands the given rectangle to encompass the given point.
+        /// </summary>
+        static public Rect Encapsulate(Rect inRect, Vector2 inPosition)
+        {
+            Rect r = inRect;
+            Encapsulate(ref r, inPosition);
+            return r;
+        }
+
+        /// <summary>
+        /// Expands the given rectangle to encompass the given point.
+        /// </summary>
+        static public void Encapsulate(ref Rect ioRect, Vector2 inPosition)
+        {
+            float dx = inPosition.x - ioRect.x;
+            float dy = inPosition.y - ioRect.y;
+
+            if (dx > ioRect.width)
+                ioRect.width = dx;
+            else if (dx < 0)
+                ioRect.xMin += dx;
+
+            if (dy > ioRect.height)
+                ioRect.height = dy;
+            else if (dy < 0)
+                ioRect.yMin += dy;
+        }
+
+        /// <summary>
+        /// Expands the given rectangle to encompass the given rectangle.
+        /// </summary>
+        static public Rect Encapsulate(Rect inRect, Rect inTarget)
+        {
+            Rect r = inRect;
+            Encapsulate(ref r, inTarget);
+            return r;
+        }
+
+        /// <summary>
+        /// Expands the given rectangle to encompass the given rectangle.
+        /// </summary>
+        static public void Encapsulate(ref Rect ioRect, Rect inTarget)
+        {
+            float dx = inTarget.x - ioRect.x;
+            float dy = inTarget.y - ioRect.y;
+
+            if (dx < 0)
+            {
+                ioRect.xMin += dx;
+                dx = 0;
+            }
+            if (dy < 0)
+            {
+                ioRect.yMin += dy;
+                dy = 0;
+            }
+
+            dx += inTarget.width;
+            dy += inTarget.height;
+
+            if (dx > ioRect.width)
+                ioRect.width = dx;
+            if (dy > ioRect.height)
+                ioRect.height = dy;
+        }
+
         #endregion // Rectangle
 
         #region Normals

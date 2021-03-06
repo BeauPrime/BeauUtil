@@ -122,7 +122,8 @@ namespace BeauUtil
             var eq = EqualityComparer<T>.Default;
             int ptr = m_Head;
             int idx = 0;
-            while(ptr != m_Tail)
+            int count = m_Count;
+            while(idx < count)
             {
                 if (eq.Equals(m_Data[ptr], inItem))
                     return idx;
@@ -742,9 +743,14 @@ namespace BeauUtil
 
         #region Interfaces
 
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<T>) this).GetEnumerator();
+            return GetEnumerator();
         }
 
         bool ICollection.IsSynchronized { get { return false; } }
@@ -770,13 +776,56 @@ namespace BeauUtil
 
         #region Overrides
 
-        public IEnumerator<T> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            int head = m_Head;
-            for(int i = 0, length = m_Count; i < length; ++i)
-                yield return m_Data[(head + i) % m_Capacity];
+            return new Enumerator(this);
         }
 
         #endregion // Overrides
+
+        #region Enumerator
+
+        public struct Enumerator : IEnumerator<T>, IDisposable
+        {
+            private RingBuffer<T> m_Buffer;
+            private int m_Head;
+            private int m_Index;
+            private int m_Count;
+            private int m_Capacity;
+
+            public Enumerator(RingBuffer<T> inBuffer)
+            {
+                m_Buffer = inBuffer;
+                m_Head = inBuffer.m_Head;
+                m_Index = -1;
+                m_Count = inBuffer.m_Count;
+                m_Capacity = inBuffer.m_Capacity;
+            }
+
+            #region IEnumerator
+
+            public T Current { get { return m_Buffer.m_Data[(m_Head + m_Index) % m_Capacity]; } }
+
+            object IEnumerator.Current { get { return Current; } }
+
+            public void Dispose()
+            {
+                m_Buffer = null;
+            }
+
+            public bool MoveNext()
+            {
+                return ++m_Index < m_Count;
+            }
+
+            public void Reset()
+            {
+                m_Index = -1;
+            }
+
+            #endregion // IEnumerator
+        }
+
+        #endregion // Enumerator
     }
 }

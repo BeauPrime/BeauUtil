@@ -214,49 +214,6 @@ namespace BeauUtil
         static private List<Component> s_CachedComponentList;
 
         #endregion // GetComponentsInChildren
-        
-        #region Canvas
-
-        /// <summary>
-        /// Attempts to get the default camera used to render this canvas.
-        /// </summary>
-        static public bool TryGetCamera(this Canvas inCanvas, out Camera outCamera)
-        {
-            switch(inCanvas.renderMode)
-            {
-                case RenderMode.WorldSpace:
-                {
-                    outCamera = inCanvas.worldCamera;
-                    if (!outCamera)
-                    {
-                        return inCanvas.transform.TryGetCameraFromLayer(out outCamera);
-                    }
-
-                    return true;
-                }
-
-                case RenderMode.ScreenSpaceOverlay:
-                {
-                    outCamera = null;
-                    return true;
-                }
-
-                case RenderMode.ScreenSpaceCamera:
-                {
-                    outCamera = inCanvas.worldCamera;
-                    if (!outCamera)
-                    {
-                        outCamera = null;
-                    }
-                    return true;
-                }
-
-                default:
-                    throw new InvalidOperationException("Camera mode " + inCanvas.renderMode + " is not recognized");
-            }
-        }
-
-        #endregion // Canvas
     
         #region Components
 
@@ -271,6 +228,34 @@ namespace BeauUtil
         {
             if (object.ReferenceEquals(ioComponent, null))
                 ioComponent = inComponent.GetComponent<T>();
+            return ioComponent;
+        }
+
+        static public Transform CacheComponent(this GameObject inGameObject, ref Transform ioComponent)
+        {
+            if (object.ReferenceEquals(ioComponent, null))
+                ioComponent = inGameObject.transform;
+            return ioComponent;
+        }
+
+        static public Transform CacheComponent(this Component inComponent, ref Transform ioComponent)
+        {
+            if (object.ReferenceEquals(ioComponent, null))
+                ioComponent = inComponent.transform;
+            return ioComponent;
+        }
+
+        static public RectTransform CacheComponent(this GameObject inGameObject, ref RectTransform ioComponent)
+        {
+            if (object.ReferenceEquals(ioComponent, null))
+                ioComponent = inGameObject.transform as RectTransform;
+            return ioComponent;
+        }
+
+        static public RectTransform CacheComponent(this Component inComponent, ref RectTransform ioComponent)
+        {
+            if (object.ReferenceEquals(ioComponent, null))
+                ioComponent = inComponent.transform as RectTransform;
             return ioComponent;
         }
 

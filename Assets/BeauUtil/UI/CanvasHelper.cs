@@ -21,6 +21,45 @@ namespace BeauUtil
     static public class CanvasHelper
     {
         /// <summary>
+        /// Attempts to get the default camera used to render this canvas.
+        /// </summary>
+        static public bool TryGetCamera(this Canvas inCanvas, out Camera outCamera)
+        {
+            switch(inCanvas.renderMode)
+            {
+                case RenderMode.WorldSpace:
+                {
+                    outCamera = inCanvas.worldCamera;
+                    if (!outCamera)
+                    {
+                        return inCanvas.transform.TryGetCameraFromLayer(out outCamera);
+                    }
+
+                    return true;
+                }
+
+                case RenderMode.ScreenSpaceOverlay:
+                {
+                    outCamera = null;
+                    return true;
+                }
+
+                case RenderMode.ScreenSpaceCamera:
+                {
+                    outCamera = inCanvas.worldCamera;
+                    if (!outCamera)
+                    {
+                        outCamera = null;
+                    }
+                    return true;
+                }
+
+                default:
+                    throw new InvalidOperationException("Camera mode " + inCanvas.renderMode + " is not recognized");
+            }
+        }
+
+        /// <summary>
         /// Returns the first active toggle.
         /// </summary>
         static public Toggle ActiveToggle(this ToggleGroup inGroup)
@@ -63,5 +102,79 @@ namespace BeauUtil
         {
             LayoutRebuilder.MarkLayoutForRebuild((RectTransform) inLayoutGroup.transform);
         }
+
+        /// <summary>
+        /// Returns if objects at the given RectTransform are interactable.
+        /// This will check both for Raycasts and for Interactable on CanvasGroups.
+        /// </summary>
+        static public bool IsPointerInteractable(this RectTransform inRectTransform)
+        {
+            if (!inRectTransform.gameObject.activeInHierarchy)
+                return false;
+
+            Graphic graphic = inRectTransform.GetComponent<Graphic>();
+            if (!ReferenceEquals(graphic, null) && !graphic.raycastTarget)
+                return false;
+
+            List<Component> components = s_CachedComponentList ?? (s_CachedComponentList = new List<Component>(8));
+            Component c;
+
+            Transform t = inRectTransform;
+            bool bIgnoreParentGroups = false;
+            bool bRaycastValid = true;
+            bool bContinueTraversal = true;
+            while(t != null)
+            {
+                t.GetComponents(components);
+                for(int i = 0, len = components.Count; i < len; ++i)
+                {
+                    c = components[i];
+
+                    Canvas canvas = c as Canvas;
+                    if (!ReferenceEquals(canvas, null) && canvas.overrideSorting)
+                    {
+                        bRaycastValid = canvas.enabled;
+                        bContinueTraversal = false;
+                        continue;
+                    }
+
+                    GraphicRaycaster raycaster = c as GraphicRaycaster;
+                    if (!ReferenceEquals(raycaster, null) && !raycaster.enabled)
+                    {
+                        bContinueTraversal = false;
+                        bRaycastValid = false;
+                        break;
+                    }
+
+                    CanvasGroup group = c as CanvasGroup;
+                    if (!ReferenceEquals(group, null) && !bIgnoreParentGroups)
+                    {
+                        bIgnoreParentGroups = group.ignoreParentGroups;
+                        bRaycastValid = group.interactable && group.blocksRaycasts;
+                        if (!bRaycastValid)
+                        {
+                            bContinueTraversal = false;
+                            break;
+                        }
+                    }
+
+                    Selectable selectable = c as Selectable;
+                    if (!ReferenceEquals(selectable, null) && !selectable.interactable)
+                    {
+                        bRaycastValid = false;
+                        bContinueTraversal = false;
+                        break;
+                    }
+                }
+
+                t = bContinueTraversal ? t.parent : null;
+            }
+
+            components.Clear();
+            return bRaycastValid;
+        }
+
+        [ThreadStatic]
+        static private List<Component> s_CachedComponentList;
     }
 }

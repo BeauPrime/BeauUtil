@@ -638,6 +638,11 @@ namespace BeauUtil.Blocks
 
                 ioState.ContentBuilder.Length = 0;
             }
+            
+            IValidatable validatable = ioState.CurrentBlock as IValidatable;
+            if (validatable != null)
+                validatable.Validate();
+            
             ioState.Generator.CompleteBlock(ioState, ioState.Package, ioState.CurrentBlock, inEndData, ioState.BlockError);
         }
 
