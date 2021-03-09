@@ -261,23 +261,29 @@ namespace BeauUtil
 
         private readonly Dictionary<Type, TypeDescription> m_Types;
         private Dictionary<StringHash32, MethodDescription> m_StaticMethods;
+        private List<object> m_RelatedObjectCachedList;
+        private List<Component> m_RelatedComponentCachedList;
+        private Type m_ComponentType;
         
         public readonly IStringConverter StringConverter;
         public readonly StringUtils.ArgsList.Splitter StringSplitter;
 
         public MethodCache()
-            : this(DefaultStringConverter.Instance)
+            : this(typeof(MonoBehaviour), DefaultStringConverter.Instance)
         {
         }
 
-        public MethodCache(IStringConverter inConverter)
+        public MethodCache(Type inComponentType, IStringConverter inConverter)
         {
             if (inConverter == null)
                 throw new ArgumentNullException("inConverter");
+            if (inComponentType == null)
+                throw new ArgumentNullException("inComponentType");
             
             m_Types = new Dictionary<Type, TypeDescription>();
             StringConverter = inConverter;
             StringSplitter = new StringUtils.ArgsList.Splitter();
+            m_ComponentType = inComponentType;
         }
 
         #region Types
@@ -359,6 +365,46 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Locates a method for the given object and id.
+        /// Can redirect to related objects (i.e. components)
+        /// </summary>
+        public MethodDescription FindMethodWithRedirect(ref object ioTarget, StringHash32 inMethodId)
+        {
+            if (ioTarget == null)
+                return null;
+
+            MethodDescription desc = FindMethod(ioTarget, inMethodId);
+            if (desc != null)
+                return desc;
+
+            object toIgnore = ioTarget;
+            GameObject go = GetGameObject(ioTarget);
+            if (!go.IsReferenceNull())
+            {
+                GatherComponents(go, m_RelatedComponentCachedList ?? (m_RelatedComponentCachedList = new List<Component>(8)));
+                for(int i = 0, len = m_RelatedComponentCachedList.Count; i < len && desc == null; ++i)
+                {
+                    ioTarget = m_RelatedObjectCachedList[i];
+                    if (ioTarget != toIgnore)
+                        desc = FindMethod(ioTarget, inMethodId);
+                }
+                m_RelatedComponentCachedList.Clear();
+            }
+            else
+            {
+                GatherRelatedObjects(ioTarget, m_RelatedObjectCachedList ?? (m_RelatedObjectCachedList = new List<object>(8)));
+                for(int i = 0, len = m_RelatedObjectCachedList.Count; i < len && desc == null; ++i)
+                {
+                    ioTarget = m_RelatedObjectCachedList[i];
+                    if (ioTarget != toIgnore)
+                        desc = FindMethod(ioTarget, inMethodId);
+                }
+            }
+
+            return desc;
+        }
+
+        /// <summary>
         /// Locates the static method for the given id.
         /// </summary>
         public MethodDescription FindStaticMethod(StringHash32 inMethodId)
@@ -372,7 +418,35 @@ namespace BeauUtil
 
         static private bool ShouldCheck(Type inType)
         {
-            return inType != typeof(object);
+            return inType != typeof(object) && inType != typeof(MonoBehaviour) && inType != typeof(ScriptableObject);
+        }
+
+        private GameObject GetGameObject(object inObject)
+        {
+            GameObject go = inObject as GameObject;
+            if (go.IsReferenceNull())
+            {
+                Component c = inObject as Component;
+                if (!c.IsReferenceNull())
+                    go = c.gameObject;
+            }
+
+            return go;
+        }
+
+        /// <summary>
+        /// Gathers all related objects.
+        /// </summary>
+        protected virtual void GatherRelatedObjects(object inObject, List<object> outObjects)
+        {
+        }
+
+        /// <summary>
+        /// Gathers all components on the given GameObject.
+        /// </summary>
+        protected virtual void GatherComponents(GameObject inGameObject, List<Component> outObjects)
+        {
+            inGameObject.GetComponents(m_ComponentType, outObjects);
         }
 
         #endregion // Methods
@@ -401,7 +475,7 @@ namespace BeauUtil
         /// </summary>
         public bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, out object outResult)
         {
-            var method = FindMethod(inTarget, inId);
+            var method = FindMethodWithRedirect(ref inTarget, inId);
             if (method == null)
             {
                 outResult = null;

@@ -7,11 +7,19 @@
  * Purpose: Performance tracking object.
  */
 
+#if UNITY_2019_1_OR_NEWER
+#define USE_SRP
+#endif // UNITY_2019_1_OR_NEWER
+
 using System;
 using System.Diagnostics;
 using BeauUtil;
 using UnityEngine;
 using UnityEngine.Profiling;
+
+#if USE_SRP
+using UnityEngine.Rendering;
+#endif // UNITY_2019
 
 namespace BeauUtil.Debugger
 {
@@ -208,6 +216,12 @@ namespace BeauUtil.Debugger
             
             Camera.onPreRender += OnCameraPreRender;
             Camera.onPostRender += OnCameraPostRender;
+
+            #if USE_SRP
+            RenderPipelineManager.beginCameraRendering += OnRenderPipelineBeginCamera;
+            RenderPipelineManager.endCameraRendering += OnRenderPipelineEndCamera;
+            #endif // USE_SRP
+            
             m_CameraHooksRegistered = true;
         }
 
@@ -218,20 +232,60 @@ namespace BeauUtil.Debugger
             
             Camera.onPreRender -= OnCameraPreRender;
             Camera.onPostRender -= OnCameraPostRender;
+
+            #if USE_SRP
+            RenderPipelineManager.beginCameraRendering -= OnRenderPipelineBeginCamera;
+            RenderPipelineManager.endCameraRendering -= OnRenderPipelineEndCamera;
+            #endif // USE_SRP
+
             m_CameraHooksRegistered = false;
             m_CameraRenderDepth = 0;
         }
 
         private void OnCameraPreRender(Camera inCamera)
         {
+            RenderBegin();
+        }
+
+        private void OnCameraPostRender(Camera inCamera)
+        {
+            RenderEnd();
+        }
+
+        #if USE_SRP
+
+        private void OnRenderPipelineBeginCamera(ScriptableRenderContext context, Camera camera)
+        {
+            RenderBegin();
+        }
+
+        private void OnRenderPipelineEndCamera(ScriptableRenderContext context, Camera camera)
+        {
+            RenderEnd();
+        }
+
+        #endif // USE_SRP
+
+        /// <summary>
+        /// Marks the beginning of rendering.
+        /// </summary>
+        public void RenderBegin()
+        {
+            VerifyNotDisposed();
+
             if (++m_CameraRenderDepth == 1)
             {
                 m_RenderStopwatch.Start();
             }
         }
 
-        private void OnCameraPostRender(Camera inCamera)
+        /// <summary>
+        /// Marks the end of rendering.
+        /// </summary>
+        public void RenderEnd()
         {
+            VerifyNotDisposed();
+
             if (--m_CameraRenderDepth == 0)
             {
                 m_RenderStopwatch.Stop();

@@ -21,6 +21,7 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
+using System.IO;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -421,7 +422,34 @@ namespace BeauUtil.Debugger
 
         static private string GetLocationFromTrace(string inTrace)
         {
-            // TODO: Implement
+            foreach(var line in StringSlice.EnumeratedSplit(inTrace, StringUtils.DefaultNewLineChars, StringSplitOptions.RemoveEmptyEntries))
+            {
+                int atIndex = line.IndexOf(" (at ");
+                if (atIndex > 0)
+                {
+                    StringSlice method = line.Substring(0, atIndex).Trim();
+                    StringSlice location = line.Substring(atIndex + 5);
+                    location = location.Substring(0, location.Length - 1).Trim();
+
+                    int param = method.IndexOf('(');
+                    if (param > 0)
+                    {
+                        method = method.Substring(0, param).Trim();
+                    }
+
+                    int lineNum = 0;
+                    int colon = location.IndexOf(':');
+                    if (colon > 0)
+                    {
+                        StringSlice lineNumStr = location.Substring(colon + 1);
+                        lineNum = StringParser.ParseInt(lineNumStr);
+                        location = location.Substring(0, colon).Trim();
+                    }
+
+                    string fileName = Path.GetFileName(location.ToString());
+                    return string.Format("{0} @{1}:{2}", method, fileName, lineNum);
+                }
+            }
             return StackTraceDisabledMessage;
         }
 

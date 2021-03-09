@@ -879,5 +879,10 @@ namespace BeauUtil
             /// </summary>
             static public IReadOnlyList<string> RecognizedRichTags { get { return s_KnownRichTags; } }
         }
+
+        /// <summary>
+        /// Default newline characters
+        /// </summary>
+        static public readonly char[] DefaultNewLineChars = new char[] { '\n', '\r' };
     }
 }
