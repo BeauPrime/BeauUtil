@@ -223,6 +223,43 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Reverses the given array.
+        /// </summary>
+        static public void Reverse<T>(T[] ioArray)
+        {
+            if (ioArray != null)
+            {
+                Reverse<T>(ioArray, 0, ioArray.Length);
+            }
+        }
+
+        /// <summary>
+        /// Reverses the given array.
+        /// </summary>
+        static public void Reverse<T>(T[] ioArray, int inIndex, int inLength)
+        {
+            if (ioArray != null)
+            {
+                if (inLength < 0 || inLength > ioArray.Length)
+                    throw new ArgumentOutOfRangeException("inLength");
+                if (inIndex < 0 || inIndex + inLength > ioArray.Length)
+                    throw new ArgumentOutOfRangeException("inIndex");
+
+                int left = inIndex;
+                int right = inIndex + inLength - 1;
+                while(left < right)
+                {
+                    T leftVal = ioArray[left];
+                    ioArray[left] = ioArray[right];
+                    ioArray[right] = leftVal;
+
+                    left++;
+                    right--;
+                }
+            }
+        }
+
+        /// <summary>
         /// Clears all elements from the array and sets the reference to null.
         /// </summary>
         static public void Dispose<T>(ref T[] ioArray)

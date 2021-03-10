@@ -521,7 +521,7 @@ namespace BeauUtil
                 return;
 
             Compress(false);
-            Array.Reverse(m_Data, m_Head, m_Count);
+            ArrayUtils.Reverse(m_Data, m_Head, m_Count);
         }
 
         /// <summary>
