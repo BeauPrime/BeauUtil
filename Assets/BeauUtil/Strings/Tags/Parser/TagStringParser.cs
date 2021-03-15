@@ -142,7 +142,7 @@ namespace BeauUtil.Tags
                     {
                         state.RichStart = charIdx;
                     }
-                    else if (state.Input.AttemptMatch(charIdx, ">"))
+                    else if (state.RichStart >= 0 && state.Input.AttemptMatch(charIdx, ">"))
                     {
                         StringSlice richSlice = state.Input.Substring(state.RichStart, charIdx - state.RichStart + 1);
                         TagData richTag = TagData.Parse(richSlice, RichTextDelimiters);
@@ -212,7 +212,7 @@ namespace BeauUtil.Tags
                     {
                         state.TagStart = charIdx;
                     }
-                    else if (state.Input.AttemptMatch(charIdx, m_Delimiters.TagEndDelimiter))
+                    else if (state.TagStart >= 0 && state.Input.AttemptMatch(charIdx, m_Delimiters.TagEndDelimiter))
                     {
                         StringSlice tagSlice = state.Input.Substring(state.TagStart, charIdx - state.TagStart + 1);
                         TagData tag = TagData.Parse(tagSlice, m_Delimiters);

@@ -81,6 +81,7 @@ namespace BeauUtil.IO
                 m_Asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(m_AssetPath);
                 if (!m_Asset)
                     return HotReloadOperation.Deleted;
+                Id = IOHelper.GetAssetIdentifier(m_Asset);
             }
 
             long fsEditTime = IOHelper.GetAssetModifyTimestamp(m_Asset);

@@ -7,8 +7,6 @@
  * Purpose: Custom text asset.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Text;
@@ -17,7 +15,7 @@ using System;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
-#endif // UNITY_EDITOR
+#endif // UNITY_EDITOR  
 
 namespace BeauUtil.Blocks
 {
@@ -33,6 +31,12 @@ namespace BeauUtil.Blocks
         #endregion // Inspector
 
         [NonSerialized] private string m_CachedString = null;
+        [NonSerialized] private StringHash32 m_CachedNameHash = null;
+
+        /// <summary>
+        /// Hashed string name.
+        /// </summary>
+        public StringHash32 NameHash { get { return m_CachedNameHash.IsEmpty ? (m_CachedNameHash = name) : m_CachedNameHash; } }
 
         #region Data
 

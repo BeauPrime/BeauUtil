@@ -21,7 +21,6 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
-using System.IO;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -431,6 +430,10 @@ namespace BeauUtil.Debugger
                     StringSlice location = line.Substring(atIndex + 5);
                     location = location.Substring(0, location.Length - 1).Trim();
 
+                    // ignore locations with < or >, these are internal and not helpfuls
+                    if (location.Contains('<') || location.Contains('>'))
+                        continue;
+
                     int param = method.IndexOf('(');
                     if (param > 0)
                     {
@@ -446,8 +449,10 @@ namespace BeauUtil.Debugger
                         location = location.Substring(0, colon).Trim();
                     }
 
-                    string fileName = Path.GetFileName(location.ToString());
-                    return string.Format("{0} @{1}:{2}", method, fileName, lineNum);
+                    int lastSlash = location.LastIndexOf('/');
+                    if (lastSlash >= 0)
+                        location = location.Substring(lastSlash + 1);
+                    return string.Format("{0} @{1}:{2}", method, lastSlash, lineNum);
                 }
             }
             return StackTraceDisabledMessage;
