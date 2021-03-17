@@ -4,6 +4,8 @@ using BeauUtil;
 using BeauUtil.Graph;
 using UnityEngine;
 
+using Stopwatch = System.Diagnostics.Stopwatch;
+
 public class PathfindingTest : MonoBehaviour
 {
     [SerializeField] public Transform Actor;
@@ -36,7 +38,7 @@ public class PathfindingTest : MonoBehaviour
                 Vector3 center = (nodes[i].transform.position + connected.transform.position) / 2;
                 Vector3 vector = connected.transform.position - nodes[i].transform.position;
                 float distance = vector.magnitude;
-                m_NodeGraph.AddEdge(nodes[i].Id, connected.Id, distance);
+                ushort linkId = m_NodeGraph.AddEdge(nodes[i].Id, connected.Id, distance);
 
                 Transform link = Instantiate(LinkPrefab, center, Quaternion.identity, GraphRoot);
                 link.localEulerAngles = new Vector3(0, 0, Mathf.Rad2Deg * (float) Math.Atan2(vector.y, vector.x));
@@ -53,11 +55,29 @@ public class PathfindingTest : MonoBehaviour
         StartCoroutine(MoveActor(m_CurrentPath));
     }
 
+    private void LateUpdate()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            OnNodeClick((ushort) RNG.Instance.Next(m_NodeGraph.NodeCount()));
+        }
+    }
+
     private void OnNodeClick(ushort inNodeId)
     {
-        if (Pathfinder.AStar(m_NodeGraph, ref m_PathBuffer, m_CurrentNode, inNodeId, Pathfinder.DefaultDistanceHeuristic))
+        Stopwatch timer = Stopwatch.StartNew();
+        Pathfinder.AStar(m_NodeGraph, ref m_PathBuffer, m_CurrentNode, inNodeId, Pathfinder.ManhattanDistanceHeuristic, default, Pathfinder.Flags.ReturnClosestPath);
+        timer.Stop();
+        Debug.LogFormat("[PathfindingTest] Pathing from {0} to {1} took {2}ms", m_CurrentNode, inNodeId, (float) timer.ElapsedTicks / TimeSpan.TicksPerMillisecond);
+        m_PathBuffer.CopyTo(m_CurrentPath);
+
+        ushort id = m_CurrentNode;
+        ushort next;
+        for(int i = 0; i < m_PathBuffer.Length(); ++i)
         {
-            m_PathBuffer.CopyTo(m_CurrentPath);
+            next = m_PathBuffer.Traversal(i).NodeId;
+            Debug.DrawLine(m_NodeGraph.Node(id).Position, m_NodeGraph.Node(next).Position, Color.blue, 5);
+            id = next;
         }
     }
 
@@ -76,13 +96,15 @@ public class PathfindingTest : MonoBehaviour
                 if (traversal.IsTraversal())
                 {
                     var edge = m_NodeGraph.Edge(traversal.EdgeId);
-                    ushort nextNode = edge.EndIndex;
+                    ushort nextNode = traversal.NodeId;
                     if (!edge.Enabled || !m_NodeGraph.GetNodeEnabled(nextNode))
                     {
                         inPath.Reset();
                     }
                     else
                     {
+                        Debug.LogFormat("[PathfindingTest] Moving to node {0} along edge {1}", nextNode, traversal.EdgeId);
+
                         m_CurrentNode = nextNode;
                         Vector3 targetPosition = m_NodeGraph.Node(nextNode).Position;
                         float distance = Vector3.Distance(Actor.position, targetPosition);

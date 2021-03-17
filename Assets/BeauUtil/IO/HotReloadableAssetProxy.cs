@@ -28,6 +28,7 @@ namespace BeauUtil.IO
         private long m_LastEditTime;
         private string m_AssetPath;
         private HotReloadAssetDelegate<T> m_OnReload;
+        private HotReloadAssetRemapArgs<T> m_QueuedRemapArgs;
 
         public HotReloadableAssetProxy(T inAsset, HotReloadAssetDelegate<T> inReload)
             : this(inAsset, TypeTag, inReload)
@@ -53,7 +54,9 @@ namespace BeauUtil.IO
                 return;
 
             if (m_OnReload != null)
-                m_OnReload.Invoke(m_Asset, inOperation);
+                m_OnReload.Invoke(m_Asset, m_QueuedRemapArgs, inOperation);
+            
+            m_QueuedRemapArgs = default(HotReloadAssetRemapArgs<T>);
 
             switch(inOperation)
             {
@@ -78,6 +81,7 @@ namespace BeauUtil.IO
 
             if (m_Asset.IsReferenceDestroyed())
             {
+                m_QueuedRemapArgs.DestroyedAssetReference = m_Asset;
                 m_Asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(m_AssetPath);
                 if (!m_Asset)
                     return HotReloadOperation.Deleted;
@@ -132,5 +136,15 @@ namespace BeauUtil.IO
         #endif // UNITY_EDITOR
     }
 
-    public delegate void HotReloadAssetDelegate<T>(T inAsset, HotReloadOperation inReloadType) where T : UnityEngine.Object;
+    /// <summary>
+    /// Arguments for a remap that results in reloading the asset.
+    /// This can recreate objects, in the case of ScriptedImporters.
+    /// This is provided to be able to unhook the old version of the asset.
+    /// </summary>
+    public struct HotReloadAssetRemapArgs<T> where T : UnityEngine.Object
+    {
+        public T DestroyedAssetReference;
+    }
+
+    public delegate void HotReloadAssetDelegate<T>(T inAsset, HotReloadAssetRemapArgs<T> inRemapArgs, HotReloadOperation inReloadType) where T : UnityEngine.Object;
 }

@@ -27,14 +27,6 @@ namespace BeauUtil
             s_IntegerTable = new string[INTEGER_MAX - INTEGER_MIN + 1];
             for (int i = 0; i < s_IntegerTable.Length; ++i)
                 s_IntegerTable[i] = (i + INTEGER_MIN).ToString();
-
-            for(int i = 2; i <= 9; ++i)
-            {
-                for(int j = 1; j <= 9; ++j)
-                {
-                    s_IntegerWordTable[i * 10 + j] = s_IntegerWordTable[i * 10] + "-" + s_IntegerWordTable[j];
-                }
-            }
         }
 
         /// <summary>
@@ -48,32 +40,5 @@ namespace BeauUtil
                 return s_IntegerTable[inValue - INTEGER_MIN];
             return inValue.ToString();
         }
-
-        /// <summary>
-        /// Retrieves a cached version of the string
-        /// representation of this integer value.
-        /// Range: [0, 100]
-        /// </summary>
-        static public string ToStringEnglish(this int inValue)
-        {
-            if (inValue >= 0 && inValue < s_IntegerWordTable.Length)
-                return s_IntegerWordTable[inValue];
-            return inValue.ToString();
-        }
-
-        static private string[] s_IntegerWordTable = new string[101]
-        {
-            "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-            "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
-            "twenty", null, null, null, null, null, null, null, null, null,
-            "thirty", null, null, null, null, null, null, null, null, null,
-            "forty", null, null, null, null, null, null, null, null, null,
-            "fifty", null, null, null, null, null, null, null, null, null,
-            "sixty", null, null, null, null, null, null, null, null, null,
-            "seventy", null, null, null, null, null, null, null, null, null,
-            "eighty", null, null, null, null, null, null, null, null, null,
-            "ninety", null, null, null, null, null, null, null, null, null,
-            "one-hundred"
-        };
     }
 }

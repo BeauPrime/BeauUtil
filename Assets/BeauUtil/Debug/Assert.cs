@@ -408,7 +408,7 @@ namespace BeauUtil.Debugger
                         }
                         else
                         {
-                            return string.Format("{0}::{1} @0x{2:X}", method.DeclaringType.Name, method.Name, frame.GetILOffset());
+                            return string.Format("{0}::{1} @IL0x{2:X}", method.DeclaringType.Name, method.Name, frame.GetILOffset());
                         }
                     }
                 }

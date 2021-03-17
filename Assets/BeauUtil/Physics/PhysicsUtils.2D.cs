@@ -27,8 +27,6 @@ namespace BeauUtil
         static private Collider2D[] s_CachedCollider2DArray = new Collider2D[DefaultMaxBufferSize];
         static private RaycastHit2D[] s_CachedRaycast2DArray = new RaycastHit2D[DefaultMaxBufferSize];
 
-        static private readonly ContactFilter2D s_DefaultContactFilter2d = default(ContactFilter2D);
-
         #endregion // Cached Buffers
 
         #region Filtering
@@ -287,7 +285,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers)
         {
-            return IsOverlapping(inRigidbody, inLayers, s_DefaultContactFilter2d);
+            return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D));
         }
 
         /// <summary>
@@ -308,7 +306,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers)
         {
-            return IsOverlapping(inCollider, inLayers, s_DefaultContactFilter2d);
+            return IsOverlapping(inCollider, inLayers, default(ContactFilter2D));
         }
 
         /// <summary>
@@ -331,7 +329,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset)
         {
-            return IsOverlapping(inRigidbody, inLayers, s_DefaultContactFilter2d, inOffset);
+            return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D), inOffset);
         }
 
         /// <summary>
@@ -356,7 +354,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset)
         {
-            return IsOverlapping(inCollider, inLayers, s_DefaultContactFilter2d, inOffset);
+            return IsOverlapping(inCollider, inLayers, default(ContactFilter2D), inOffset);
         }
 
         /// <summary>
@@ -383,7 +381,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset)
         {
-            return IsCastOverlapping(inRigidbody, inLayers, inOffset, s_DefaultContactFilter2d);
+            return IsCastOverlapping(inRigidbody, inLayers, inOffset, default(ContactFilter2D));
         }
 
         /// <summary>
@@ -397,9 +395,11 @@ namespace BeauUtil
             inOffset.x /= dist;
             inOffset.y /= dist;
 
-            int count = inRigidbody.Cast(inOffset, inContactFilter, s_TinyRaycast2DArray, dist);
-            ClearBuffer(s_TinyRaycast2DArray, count);
-            return count > 0;
+            var buffer = s_CachedRaycast2DArray;
+            int count = inRigidbody.Cast(inOffset, inContactFilter, buffer, dist);
+            bool bOverlapping = ClosestHit(buffer, count);
+            ClearBuffer(buffer, count);
+            return bOverlapping;
         }
 
         /// <summary>
@@ -408,7 +408,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset)
         {
-            return IsCastOverlapping(inCollider, inLayers, inOffset, s_DefaultContactFilter2d);
+            return IsCastOverlapping(inCollider, inLayers, inOffset, default(ContactFilter2D));
         }
 
         /// <summary>
@@ -422,9 +422,11 @@ namespace BeauUtil
             inOffset.x /= dist;
             inOffset.y /= dist;
 
-            int count = inCollider.Cast(inOffset, inContactFilter, s_TinyRaycast2DArray, dist);
-            ClearBuffer(s_TinyRaycast2DArray, count);
-            return count > 0;
+            var buffer = s_CachedRaycast2DArray;
+            int count = inCollider.Cast(inOffset, inContactFilter, buffer, dist);
+            bool bOverlapping = ClosestHit(buffer, count);
+            ClearBuffer(buffer, count);
+            return bOverlapping;
         }
 
         #endregion // Check
@@ -436,144 +438,44 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given Rigidbody2D is colliding with a given layer at its current position.
         /// </summary>
-        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, out Collider2D outCollider)
+        [MethodImpl(256)]
+        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
-
-            int count = inRigidbody.OverlapCollider(filter, s_TinyCollider2DArray);
-            outCollider = count > 0 ? s_TinyCollider2DArray[0] : null;
-            ClearBuffer(s_TinyCollider2DArray, count);
-            return count > 0;
+            return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D), out outFirst);
         }
-
-        /// <summary>
-        /// Returns if the given Collider2D is colliding with a given layer at its current position.
-        /// </summary>
-        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, out Collider2D outCollider)
-        {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
-
-            int count = inCollider.OverlapCollider(filter, s_TinyCollider2DArray);
-            outCollider = count > 0 ? s_TinyCollider2DArray[0] : null;
-            ClearBuffer(s_TinyCollider2DArray, count);
-            return count > 0;
-        }
-
-        // OFFSET
-
-        /// <summary>
-        /// Returns if a given Rigidbody2D is colliding with a given layer offset from its current position.
-        /// </summary>
-        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out Collider2D outCollider)
-        {
-            using(new Rigidbody2DOffsetScope(inRigidbody))
-            {
-                inRigidbody.position += inOffset;
-                return IsOverlapping(inRigidbody, inLayers, out outCollider);
-            }
-        }
-
-        /// <summary>
-        /// Returns if a given Collider2D is colliding with a given layer offset from its current position.
-        /// </summary>
-        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out Collider2D outCollider)
-        {
-            using(new Collider2DOffsetScope(inCollider))
-            {
-                inCollider.transform.position += new Vector3(inOffset.x, inOffset.y);
-                return IsOverlapping(inCollider, inLayers, out outCollider);
-            }
-        }
-
-        // CAST
-
-        /// <summary>
-        /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
-        /// </summary>
-        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out Collider2D outCollider)
-        {
-            RaycastHit2D raycast;
-            bool bHit = IsCastOverlapping(inRigidbody, inLayers, inOffset, out raycast);
-            outCollider = raycast.collider;
-            return bHit;
-        }
-
-        /// <summary>
-        /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
-        /// </summary>
-        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out RaycastHit2D outRaycast)
-        {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
-
-            float dist = inOffset.magnitude;
-            inOffset.x /= dist;
-            inOffset.y /= dist;
-
-            int count = inRigidbody.Cast(inOffset, filter, s_CachedRaycast2DArray, dist);
-            outRaycast = ClosestHit(s_CachedRaycast2DArray, count);
-            ClearBuffer(s_CachedRaycast2DArray, count);
-            return count > 0;
-        }
-
-        /// <summary>
-        /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
-        /// </summary>
-        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out Collider2D outCollider)
-        {
-            RaycastHit2D raycast;
-            bool bHit = IsCastOverlapping(inCollider, inLayers, inOffset, out raycast);
-            outCollider = raycast.collider;
-            return bHit;
-        }
-
-        /// <summary>
-        /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
-        /// </summary>
-        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out RaycastHit2D outRaycast)
-        {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
-
-            float dist = inOffset.magnitude;
-            inOffset.x /= dist;
-            inOffset.y /= dist;
-
-            int count = inCollider.Cast(inOffset, filter, s_CachedRaycast2DArray, dist);
-            outRaycast = ClosestHit(s_CachedRaycast2DArray, count);
-            ClearBuffer(s_CachedRaycast2DArray, count);
-            return count > 0;
-        }
-
-        #endregion // First
-
-        #region All
-
-        // HERE
 
         /// <summary>
         /// Returns if the given Rigidbody2D is colliding with a given layer at its current position.
         /// </summary>
-        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, List<Collider2D> outColliders)
+        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, ContactFilter2D inContactFilter, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
+            inContactFilter.SetLayerMask(inLayers | inContactFilter.layerMask);
 
-            int count = inRigidbody.OverlapCollider(filter, outColliders);
+            int count = inRigidbody.OverlapCollider(inContactFilter, s_TinyCollider2DArray);
+            outFirst = s_TinyCollider2DArray[0];
+            ClearBuffer(s_TinyCollider2DArray, count);
             return count > 0;
         }
 
         /// <summary>
         /// Returns if the given Collider2D is colliding with a given layer at its current position.
         /// </summary>
-        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, List<Collider2D> outColliders)
+        [MethodImpl(256)]
+        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
+            return IsOverlapping(inCollider, inLayers, default(ContactFilter2D), out outFirst);
+        }
 
-            int count = inCollider.OverlapCollider(filter, outColliders);
+        /// <summary>
+        /// Returns if the given Collider2D is colliding with a given layer at its current position.
+        /// </summary>
+        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, ContactFilter2D inContactFilter, out Collider2D outFirst)
+        {
+            inContactFilter.SetLayerMask(inLayers | inContactFilter.layerMask);
+
+            int count = inCollider.OverlapCollider(inContactFilter, s_TinyCollider2DArray);
+            outFirst = s_TinyCollider2DArray[0];
+            ClearBuffer(s_TinyCollider2DArray, count);
             return count > 0;
         }
 
@@ -582,24 +484,50 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer offset from its current position.
         /// </summary>
-        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, List<Collider2D> outColliders)
+        [MethodImpl(256)]
+        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out Collider2D outFIrst)
+        {
+            return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D), inOffset, out outFIrst);
+        }
+
+        /// <summary>
+        /// Returns if a given Rigidbody2D is colliding with a given layer offset from its current position.
+        /// </summary>
+#if EXPANDED_REFS
+        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, in ContactFilter2D inContactFilter, in Vector2 inOffset, out Collider2D outFirst)
+#else
+        static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, ContactFilter2D inContactFilter, Vector2 inOffset, out Collider2D outFirst)
+#endif // EXPANDED_REFS
         {
             using(new Rigidbody2DOffsetScope(inRigidbody))
             {
                 inRigidbody.position += inOffset;
-                return IsOverlapping(inRigidbody, inLayers, outColliders);
+                return IsOverlapping(inRigidbody, inLayers, inContactFilter, out outFirst);
             }
         }
 
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer offset from its current position.
         /// </summary>
-        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, List<Collider2D> outColliders)
+        [MethodImpl(256)]
+        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out Collider2D outFirst)
+        {
+            return IsOverlapping(inCollider, inLayers, default(ContactFilter2D), inOffset, out outFirst);
+        }
+
+        /// <summary>
+        /// Returns if a given Collider2D is colliding with a given layer offset from its current position.
+        /// </summary>
+#if EXPANDED_REFS
+        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, in ContactFilter2D inContactFilter, in Vector2 inOffset, out Collider2D outFirst)
+#else
+        static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, ContactFilter2D inContactFilter, Vector2 inOffset, out Collider2D outFirst)
+#endif // EXPANDED_REFS
         {
             using(new Collider2DOffsetScope(inCollider))
             {
-                inCollider.transform.position += new Vector3(inOffset.x, inOffset.y);
-                return IsOverlapping(inCollider, inLayers, outColliders);
+                inCollider.offset += (Vector2) inCollider.transform.InverseTransformVector(inOffset.x, inOffset.y, 0);
+                return IsOverlapping(inCollider, inLayers, inContactFilter, out outFirst);
             }
         }
 
@@ -608,72 +536,112 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
         /// </summary>
-        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, List<Collider2D> outColliders)
+        [MethodImpl(256)]
+        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
-
-            float dist = inOffset.magnitude;
-            inOffset.x /= dist;
-            inOffset.y /= dist;
-
-            int count = inRigidbody.Cast(inOffset, filter, s_CachedRaycast2DArray, dist);
-            CopyBuffer(s_CachedRaycast2DArray, count, outColliders);
-            ClearBuffer(s_CachedRaycast2DArray, count);
-            return count > 0;
+            return IsCastOverlapping(inRigidbody, inLayers, inOffset, default(ContactFilter2D), out outFirst);
         }
 
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
         /// </summary>
-        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, List<RaycastHit2D> outRaycasts)
+        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, ContactFilter2D inContactFilter, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
+            inContactFilter.SetLayerMask(inLayers | inContactFilter.layerMask);
 
             float dist = inOffset.magnitude;
             inOffset.x /= dist;
             inOffset.y /= dist;
 
-            int count = inRigidbody.Cast(inOffset, filter, outRaycasts, dist);
-            return count > 0;
+            var buffer = s_CachedRaycast2DArray;
+            int count = inRigidbody.Cast(inOffset, inContactFilter, buffer, dist);
+            outFirst = count > 0 ? PhysicsUtils.ClosestHit(buffer, count).collider : null;
+            ClearBuffer(buffer, count);
+            return !ReferenceEquals(outFirst, null);
+        }
+
+        /// <summary>
+        /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out RaycastHit2D outFirst)
+        {
+            return IsCastOverlapping(inRigidbody, inLayers, inOffset, default(ContactFilter2D), out outFirst);
+        }
+
+        /// <summary>
+        /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
+        /// </summary>
+        static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, ContactFilter2D inContactFilter, out RaycastHit2D outFirst)
+        {
+            inContactFilter.SetLayerMask(inLayers | inContactFilter.layerMask);
+
+            float dist = inOffset.magnitude;
+            inOffset.x /= dist;
+            inOffset.y /= dist;
+
+            var buffer = s_CachedRaycast2DArray;
+            int count = inRigidbody.Cast(inOffset, inContactFilter, buffer, dist);
+            outFirst = count > 0 ? PhysicsUtils.ClosestHit(buffer, count) : default(RaycastHit2D);
+            ClearBuffer(buffer, count);
+            return outFirst;
         }
 
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
         /// </summary>
-        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, List<Collider2D> outColliders)
+        [MethodImpl(256)]
+        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
-
-            float dist = inOffset.magnitude;
-            inOffset.x /= dist;
-            inOffset.y /= dist;
-
-            int count = inCollider.Cast(inOffset, filter, s_CachedRaycast2DArray, dist);
-            CopyBuffer(s_CachedRaycast2DArray, count, outColliders);
-            ClearBuffer(s_CachedRaycast2DArray, count);
-            return count > 0;
+            return IsCastOverlapping(inCollider, inLayers, inOffset, default(ContactFilter2D), out outFirst);
         }
 
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
         /// </summary>
-        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, List<RaycastHit2D> outRaycasts)
+        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, ContactFilter2D inContactFilter, out Collider2D outFirst)
         {
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(inLayers);
+            inContactFilter.SetLayerMask(inLayers | inContactFilter.layerMask);
 
             float dist = inOffset.magnitude;
             inOffset.x /= dist;
             inOffset.y /= dist;
 
-            int count = inCollider.Cast(inOffset, filter, outRaycasts, dist);
-            return count > 0;
+            var buffer = s_CachedRaycast2DArray;
+            int count = inCollider.Cast(inOffset, inContactFilter, buffer, dist);
+            outFirst = count > 0 ? ClosestHit(buffer, count).collider : null;
+            ClearBuffer(buffer, count);
+            return !ReferenceEquals(outFirst, null);
         }
 
-        #endregion // All
+        /// <summary>
+        /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out RaycastHit2D outFirst)
+        {
+            return IsCastOverlapping(inCollider, inLayers, inOffset, default(ContactFilter2D), out outFirst);
+        }
+
+        /// <summary>
+        /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
+        /// </summary>
+        static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, ContactFilter2D inContactFilter, out RaycastHit2D outFirst)
+        {
+            inContactFilter.SetLayerMask(inLayers | inContactFilter.layerMask);
+
+            float dist = inOffset.magnitude;
+            inOffset.x /= dist;
+            inOffset.y /= dist;
+
+            var buffer = s_CachedRaycast2DArray;
+            int count = inCollider.Cast(inOffset, inContactFilter, buffer, dist);
+            outFirst = count > 0 ? ClosestHit(buffer, count) : default(RaycastHit2D);
+            ClearBuffer(buffer, count);
+            return outFirst;
+        }
+
+        #endregion // First
 
         #endregion // Colliding vs LayerMask
     }

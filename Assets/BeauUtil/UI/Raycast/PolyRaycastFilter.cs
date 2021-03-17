@@ -36,12 +36,13 @@ namespace BeauUtil.UI
             Vector2 localPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(Rect, sp, eventCamera, out localPos);
 
+            List<Vector2> cornerList = s_CornerList;
             int shapeCount = GetShapeCount();
             for (int shapeIdx = 0; shapeIdx < shapeCount; ++shapeIdx)
             {
-                s_CornerList.Clear();
-                GetCorners(shapeIdx, s_CornerList);
-                if (Geom.PointInPolygon(localPos, s_CornerList))
+                cornerList.Clear();
+                GetCorners(shapeIdx, cornerList);
+                if (Geom.PointInPolygon(localPos, cornerList))
                     return true;
             }
 
@@ -62,19 +63,20 @@ namespace BeauUtil.UI
 
         private void OnDrawGizmosSelected()
         {
+            List<Vector2> cornerList = s_CornerList;
             int shapeCount = GetShapeCount();
             for (int shapeIdx = 0; shapeIdx < shapeCount; ++shapeIdx)
             {
-                s_CornerList.Clear();
-                GetCorners(shapeIdx, s_CornerList);
+                cornerList.Clear();
+                GetCorners(shapeIdx, cornerList);
 
                 Gizmos.color = Color.red;
 
                 int i, j;
-                for (i = 0; i < s_CornerList.Count; ++i)
+                for (i = 0; i < cornerList.Count; ++i)
                 {
-                    j = (i + 1) % s_CornerList.Count;
-                    DrawLine(s_CornerList[i], s_CornerList[j]);
+                    j = (i + 1) % cornerList.Count;
+                    DrawLine(cornerList[i], cornerList[j]);
                 }
             }
         }

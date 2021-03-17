@@ -226,7 +226,7 @@ namespace BeauUtil
 
         private void FindRenderer(bool inbConfigure)
         {
-            Initialize();
+            StaticInitialize();
 
             #if UNITY_EDITOR
 
@@ -285,14 +285,16 @@ namespace BeauUtil
                     }
                     else if (m_Renderer.sharedMaterial)
                     {
-                        m_Renderer.GetPropertyBlock(s_SharedPropertyBlock);
+                        MaterialPropertyBlock propBlock = GetSharedBlock();
+                        m_Renderer.GetPropertyBlock(propBlock);
                         m_MaterialConfig.ConfigureForMaterial(m_Renderer.sharedMaterial);
-                        m_Colors.Main = m_MaterialConfig.MainProperty.Retrieve(s_SharedPropertyBlock);
+                        m_Colors.Main = m_MaterialConfig.MainProperty.Retrieve(propBlock);
                     }
                     else
                     {
-                        m_Renderer.GetPropertyBlock(s_SharedPropertyBlock);
-                        m_Colors.Main = m_MaterialConfig.MainProperty.Retrieve(s_SharedPropertyBlock);
+                        MaterialPropertyBlock propBlock = GetSharedBlock();
+                        m_Renderer.GetPropertyBlock(propBlock);
+                        m_Colors.Main = m_MaterialConfig.MainProperty.Retrieve(propBlock);
                     }
 
                     if (m_Colors.Main == Color.clear)
@@ -320,13 +322,12 @@ namespace BeauUtil
 
         private void UpdateChildren()
         {
-            if (s_CachedChildSet == null)
-                s_CachedChildSet = new HashSet<ColorGroup>();
+            HashSet<ColorGroup> childSet = s_CachedChildSet ?? (s_CachedChildSet = new HashSet<ColorGroup>());
 
             if (m_Children != null)
             {
                 for (int i = m_Children.Count - 1; i >= 0; --i)
-                    s_CachedChildSet.Add(m_Children[i]);
+                    childSet.Add(m_Children[i]);
 
                 m_Children.Clear();
             }
@@ -340,20 +341,20 @@ namespace BeauUtil
                     ColorGroup child = m_Children[i];
 
                     // if this wasn't previously attached
-                    if (!s_CachedChildSet.Remove(child))
+                    if (!childSet.Remove(child))
                     {
                         child.Refresh();
                     }
                 }
             }
 
-            foreach (var child in s_CachedChildSet)
+            foreach (var child in childSet)
             {
                 child.m_Parent = null;
                 child.Refresh();
             }
 
-            s_CachedChildSet.Clear();
+            childSet.Clear();
         }
 
         private void SearchForChildren(Transform inTransform, bool inbOnSelf = true)
@@ -451,10 +452,10 @@ namespace BeauUtil
 
                 if (m_MaterialConfig.ShouldAppply())
                 {
-                    Initialize();
-                    m_Renderer.GetPropertyBlock(s_SharedPropertyBlock);
-                    m_MaterialConfig.Apply(s_SharedPropertyBlock, ref m_ConcatenatedColorBlock);
-                    m_Renderer.SetPropertyBlock(s_SharedPropertyBlock);
+                    MaterialPropertyBlock propBlock = GetSharedBlock();
+                    m_Renderer.GetPropertyBlock(propBlock);
+                    m_MaterialConfig.Apply(propBlock, ref m_ConcatenatedColorBlock);
+                    m_Renderer.SetPropertyBlock(propBlock);
                 }
             }
 
@@ -550,7 +551,7 @@ namespace BeauUtil
             if (!this || !m_ValidateQueued)
                 return;
 
-            Initialize();
+            StaticInitialize();
             FindRenderer(true);
 
             if (m_MaterialConfig != null)
@@ -608,13 +609,19 @@ namespace BeauUtil
         static private bool s_Initialized;
         static private MaterialPropertyBlock s_SharedPropertyBlock;
 
-        static private void Initialize()
+        static private void StaticInitialize()
         {
             if (s_Initialized)
                 return;
 
             s_SharedPropertyBlock = new MaterialPropertyBlock();
             s_Initialized = true;
+        }
+
+        public MaterialPropertyBlock GetSharedBlock()
+        {
+            StaticInitialize();
+            return s_SharedPropertyBlock;
         }
 
         #endregion // Static

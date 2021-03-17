@@ -24,7 +24,7 @@ namespace BeauUtil
     {
         #region Cached Buffers
 
-        private const int DefaultMaxBufferSize = 64;
+        private const int DefaultMaxBufferSize = 32;
 
         static private int s_CurrentBufferSize3d = DefaultMaxBufferSize;
         static private int s_CurrentBufferSize2d = DefaultMaxBufferSize;
@@ -126,6 +126,27 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the closest hit from the given raycast array, ignoring any with 0 or less distance.
+        /// </summary>
+        static public RaycastHit ClosestHitNonZero(RaycastHit[] inArray, int inLength)
+        {
+            float minDist = float.MaxValue;
+            RaycastHit closest = default(RaycastHit);
+            RaycastHit checking;
+            for(int i = 0; i < inLength; ++i)
+            {
+                checking = inArray[i];
+                if (checking.distance > 0 && checking.distance < minDist)
+                {
+                    minDist = checking.distance;
+                    closest = checking;
+                }
+            }
+
+            return closest;
+        }
+
+        /// <summary>
         /// Returns the closest hit from the given raycast list.
         /// </summary>
         static public RaycastHit ClosestHit(ListSlice<RaycastHit> inList)
@@ -137,6 +158,27 @@ namespace BeauUtil
             {
                 checking = inList[i];
                 if (checking.distance < minDist)
+                {
+                    minDist = checking.distance;
+                    closest = checking;
+                }
+            }
+
+            return closest;
+        }
+
+        /// <summary>
+        /// Returns the closest hit from the given raycast list, ignoring any with 0 or less distance.
+        /// </summary>
+        static public RaycastHit ClosestHitNonZero(ListSlice<RaycastHit> inList)
+        {
+            float minDist = float.MaxValue;
+            RaycastHit closest = default(RaycastHit);
+            RaycastHit checking;
+            for(int i = 0, length = inList.Length; i < length; ++i)
+            {
+                checking = inList[i];
+                if (checking.distance > 0 && checking.distance < minDist)
                 {
                     minDist = checking.distance;
                     closest = checking;
@@ -168,13 +210,30 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the closest hit from the given raycast array, ignoring any with 0 or less distance.
+        /// </summary>
+        static public RaycastHit2D ClosestHitNonZero(RaycastHit2D[] inArray, int inLength)
+        {
+            float minDist = float.MaxValue;
+            RaycastHit2D closest = default(RaycastHit2D);
+            RaycastHit2D checking;
+            for(int i = 0; i < inLength; ++i)
+            {
+                checking = inArray[i];
+                if (checking.distance > 0 && checking.distance < minDist)
+                {
+                    minDist = checking.distance;
+                    closest = checking;
+                }
+            }
+
+            return closest;
+        }
+
+        /// <summary>
         /// Returns the closest hit from the given raycast list.
         /// </summary>
-#if EXPANDED_REFS
-        static public RaycastHit2D ClosestHit(in ListSlice<RaycastHit2D> inList)
-#else
         static public RaycastHit2D ClosestHit(ListSlice<RaycastHit2D> inList)
-#endif // EXPANDED_REFS
         {
             float minDist = float.MaxValue;
             RaycastHit2D closest = default(RaycastHit2D);
@@ -183,6 +242,27 @@ namespace BeauUtil
             {
                 checking = inList[i];
                 if (checking.distance < minDist)
+                {
+                    minDist = checking.distance;
+                    closest = checking;
+                }
+            }
+
+            return closest;
+        }
+
+        /// <summary>
+        /// Returns the closest hit from the given raycast list, ignoring any with 0 or less distance.
+        /// </summary>
+        static public RaycastHit2D ClosestHitNonZero(ListSlice<RaycastHit2D> inList)
+        {
+            float minDist = float.MaxValue;
+            RaycastHit2D closest = default(RaycastHit2D);
+            RaycastHit2D checking;
+            for(int i = 0, length = inList.Length; i < length; ++i)
+            {
+                checking = inList[i];
+                if (checking.distance > 0 && checking.distance < minDist)
                 {
                     minDist = checking.distance;
                     closest = checking;

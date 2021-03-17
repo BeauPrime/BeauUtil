@@ -1,11 +1,11 @@
- /*
- * Copyright (C) 2017-2021. Autumn Beauchesne. All rights reserved.
- * Author:  Autumn Beauchesne
- * Date:    9 March 2021
- * 
- * File:    Pathfinder.cs
- * Purpose: Pathfinding algorithms.
- */
+/*
+* Copyright (C) 2017-2021. Autumn Beauchesne. All rights reserved.
+* Author:  Autumn Beauchesne
+* Date:    9 March 2021
+* 
+* File:    Pathfinder.cs
+* Purpose: Pathfinding algorithms.
+*/
 
 #if CSHARP_7_3_OR_NEWER
 #define EXPANDED_REFS
@@ -24,7 +24,7 @@ namespace BeauUtil.Graph
         #region Types
 
         /// <summary>
-        /// Filter for 
+        /// Filter for nodes/edges.
         /// </summary>
         public struct PathFilter
         {
@@ -37,6 +37,7 @@ namespace BeauUtil.Graph
         /// </summary>
         private unsafe struct StaticGraphInfo
         {
+            public NodeGraph Graph;
             public ReadOnlyNodeData* StaticNodeInfo;
             public ushort NodeCount;
             public ReadOnlyEdgeData* StaticEdgeInfo;
@@ -60,7 +61,7 @@ namespace BeauUtil.Graph
         private struct NodeCostData
         {
             public NodeState State;
-            public NodeTraversal PrevTraversal;
+            public NodeTraversal PrevTraversal; // stored in reverse order - we traverse the path back in reverse
             public float Cost;
             public float EstimatedCost;
         }
@@ -90,16 +91,28 @@ namespace BeauUtil.Graph
         /// </summary>
         public delegate float Heuristic(NodeGraph inGraph, ushort inStartId, ushort inEndId);
 
+        /// <summary>
+        /// Execution flags.
+        /// </summary>
+        public enum Flags : byte
+        {
+            ReturnClosestPath = 0x01,
+            DontPrecalculateHeuristics = 0x02,
+        }
+
         #endregion // Types
 
         /// <summary>
         /// Attempts to find a path from the starting node to the ending node.
         /// </summary>
-        static public bool AStar(NodeGraph inGraph, ref NodePath ioPath, ushort inStartId, ushort inEndId, Heuristic inHeuristic = null, PathFilter inFilter = default(PathFilter))
+        static public bool AStar(NodeGraph inGraph, ref NodePath ioPath, ushort inStartId, ushort inEndId, Heuristic inHeuristic = null, PathFilter inFilter = default(PathFilter), Flags inFlags = 0)
         {
+            if (inGraph == null)
+                throw new ArgumentNullException("inGraph");
+
             ioPath = ioPath ?? new NodePath();
 
-            if (inStartId == NodeGraph.InvalidId || inEndId == NodeGraph.InvalidId)
+            if (inStartId == NodeGraph.InvalidId || inStartId >= inGraph.NodeCount() || inEndId == NodeGraph.InvalidId || inEndId >= inGraph.NodeCount())
             {
                 ioPath.Reset();
                 return false;
@@ -116,6 +129,8 @@ namespace BeauUtil.Graph
             {
                 StaticGraphInfo graphInfo;
 
+                graphInfo.Graph = inGraph;
+
                 ushort nodeCount = graphInfo.NodeCount = inGraph.NodeCount();
                 ushort edgeCount = graphInfo.EdgeCount = inGraph.EdgeCount();
 
@@ -125,78 +140,95 @@ namespace BeauUtil.Graph
                 graphInfo.StaticNodeInfo = staticNodeInfo;
                 graphInfo.StaticEdgeInfo = staticEdgeInfo;
 
-                for(ushort nodeIdx = 0; nodeIdx < nodeCount; ++nodeIdx)
+                bool bPrecacheHeuristics = (inFlags & Flags.DontPrecalculateHeuristics) == 0;
+
+                for (ushort nodeIdx = 0; nodeIdx < nodeCount; ++nodeIdx)
                 {
                     ReadOnlyNodeData* nodeData = &staticNodeInfo[nodeIdx];
 
-                    #if EXPANDED_REFS
+#if EXPANDED_REFS
                     ref var srcNodeData = ref inGraph.Node(nodeIdx);
-                    #else
+#else
                     var srcNodeData = inGraph.Node(nodeIdx);
-                    #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
 
                     nodeData->Traversable = srcNodeData.Enabled && FilterNode(inGraph, nodeIdx, inFilter);
-                    nodeData->Heuristic = nodeData->Traversable && inHeuristic != null ? inHeuristic(inGraph, nodeIdx, inEndId) : 0;
+                    nodeData->Heuristic = bPrecacheHeuristics && nodeData->Traversable && inHeuristic != null ? inHeuristic(inGraph, nodeIdx, inEndId) : 0;
                     nodeData->EdgeStartIndex = srcNodeData.EdgeStartIndex;
                     nodeData->EdgeCount = srcNodeData.EdgeCount;
                 }
 
-                for(ushort edgeIdx = 0; edgeIdx < edgeCount; ++edgeIdx)
+                for (ushort edgeIdx = 0; edgeIdx < edgeCount; ++edgeIdx)
                 {
                     ReadOnlyEdgeData* edgeData = &staticEdgeInfo[edgeIdx];
-                    #if EXPANDED_REFS
+#if EXPANDED_REFS
                     ref var srcEdgeData = ref inGraph.Edge(edgeIdx);
-                    #else
+#else
                     var srcEdgeData = inGraph.Edge(inEdgeId);
-                    #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
 
                     edgeData->Traversable = srcEdgeData.Enabled && FilterEdge(inGraph, edgeIdx, inFilter);
                     edgeData->Cost = srcEdgeData.Cost;
                     edgeData->TargetId = srcEdgeData.EndIndex;
                 }
 
-                return AStar(ioPath, inStartId, inEndId, graphInfo);
+                return UnsafeAStar(ioPath, inStartId, inEndId, graphInfo, inHeuristic, inFlags);
             }
         }
 
         #region Internal
 
-        #if EXPANDED_REFS
+#if EXPANDED_REFS
         static private bool FilterNode(NodeGraph inGraph, ushort inNodeId, in PathFilter inFilter)
-        #else
+#else
         static private bool FilterNode(NodeGraph inGraph, ushort inNodeId, PathFilter inFilter)
-        #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
         {
             return inFilter.Mask == 0 || (inGraph.Node(inNodeId).Mask & inFilter.Mask) != 0;
         }
 
-        #if EXPANDED_REFS
+#if EXPANDED_REFS
         static private bool FilterEdge(NodeGraph inGraph, ushort inEdgeId, in PathFilter inFilter)
-        #else
+#else
         static private bool FilterEdge(NodeGraph inGraph, ushort inEdgeId, PathFilter inFilter)
-        #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
         {
-            #if EXPANDED_REFS
+#if EXPANDED_REFS
             ref var edgeData = ref inGraph.Edge(inEdgeId);
-            #else
+#else
             var edgeData = inGraph.Edge(inEdgeId);
-            #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
             return (inFilter.Mask == 0 || (edgeData.Mask & inFilter.Mask) != 0)
                 && (inFilter.EdgeCostThreshold <= 0 || edgeData.EndIndex < inFilter.EdgeCostThreshold);
         }
 
-        static private unsafe bool AStar(NodePath ioPath, ushort inStartId, ushort inEndId, StaticGraphInfo inGraphInfo)
+        static private unsafe bool UnsafeAStar(NodePath ioPath, ushort inStartId, ushort inEndId, StaticGraphInfo inGraphInfo, Heuristic inHeuristic, Flags inFlags)
         {
             NodeCostData* nodeCosts = stackalloc NodeCostData[inGraphInfo.NodeCount];
+            for (ushort i = 0, len = inGraphInfo.NodeCount; i < len; ++i)
+                nodeCosts[i].PrevTraversal = NodeTraversal.Invalid;
 
-            ushort maxOpenListSize = inGraphInfo.NodeCount >= 16 ? (ushort) (12 + inGraphInfo.NodeCount / 4) : inGraphInfo.NodeCount;
+            ushort maxOpenListSize = inGraphInfo.NodeCount >= 16 ? (ushort)(12 + inGraphInfo.NodeCount / 4) : inGraphInfo.NodeCount;
             ushort* openList = stackalloc ushort[maxOpenListSize];
             ushort openListLength = 0;
 
             AddToOpenList(inStartId, openList, ref openListLength);
-            
+
+            bool bRecalculateHeuristics = (inFlags & Flags.DontPrecalculateHeuristics) != 0 && inHeuristic != null;
+
             ushort currentNodeId = inStartId;
-            while(openListLength > 0)
+
+            // initialize the first node info
+            {
+                NodeCostData* startNodeData = &nodeCosts[currentNodeId];
+                ReadOnlyNodeData* startNodeStaticInfo = &inGraphInfo.StaticNodeInfo[currentNodeId];
+                float heuristic = startNodeStaticInfo->Heuristic;
+                if (bRecalculateHeuristics)
+                    heuristic = startNodeStaticInfo->Heuristic = inHeuristic(inGraphInfo.Graph, currentNodeId, inEndId);
+                startNodeData->EstimatedCost = heuristic;
+            }
+
+            while (openListLength > 0)
             {
                 currentNodeId = PopLowestCostRecord(openList, ref openListLength, nodeCosts);
                 if (currentNodeId == inEndId)
@@ -206,64 +238,70 @@ namespace BeauUtil.Graph
                 nodeData->State = NodeState.Closed;
 
                 ushort edgeStartIdx = inGraphInfo.StaticNodeInfo[currentNodeId].EdgeStartIndex;
-                ushort edgeUpper = (ushort) (edgeStartIdx + inGraphInfo.StaticNodeInfo[currentNodeId].EdgeCount);
+                ushort edgeUpper = (ushort)(edgeStartIdx + inGraphInfo.StaticNodeInfo[currentNodeId].EdgeCount);
 
-                for(ushort edgeIdx = edgeStartIdx; edgeIdx < edgeUpper; ++edgeIdx)
+                for (ushort edgeIdx = edgeStartIdx; edgeIdx < edgeUpper; edgeIdx++)
                 {
                     ReadOnlyEdgeData* edgeData = &inGraphInfo.StaticEdgeInfo[edgeIdx];
                     if (!edgeData->Traversable)
                         continue;
-                    
+
                     float fullCost = nodeData->Cost + edgeData->Cost;
 
                     ushort nextNodeId = edgeData->TargetId;
-                    ReadOnlyNodeData* nextNodeData = &inGraphInfo.StaticNodeInfo[nextNodeId];
+                    ReadOnlyNodeData* nextNodeStaticInfo = &inGraphInfo.StaticNodeInfo[nextNodeId];
 
-                    if (!nextNodeData->Traversable)
+                    if (!nextNodeStaticInfo->Traversable)
                         continue;
 
-                    NodeCostData* nextNodeCost = &nodeCosts[nextNodeId];
-                    switch(nextNodeCost->State)
+                    NodeCostData* nextNodeData = &nodeCosts[nextNodeId];
+                    switch (nextNodeData->State)
                     {
                         case NodeState.Unvisited:
                             {
-                                nextNodeCost->State = NodeState.Open;
+                                nextNodeData->State = NodeState.Open;
 
                                 if (openListLength >= maxOpenListSize)
                                     throw new Exception("Heuristic for open list size was wrong, more entries required");
                                 AddToOpenList(nextNodeId, openList, ref openListLength);
 
-                                nextNodeCost->Cost = fullCost;
-                                nextNodeCost->EstimatedCost = fullCost + nextNodeData->Heuristic;
-                                nextNodeCost->PrevTraversal = new NodeTraversal(currentNodeId, edgeIdx);
+                                // if we aren't precalculating heuristics, calculate it here instead
+                                if (bRecalculateHeuristics)
+                                {
+                                    nextNodeStaticInfo->Heuristic = inHeuristic(inGraphInfo.Graph, nextNodeId, inEndId);
+                                }
+
+                                nextNodeData->Cost = fullCost;
+                                nextNodeData->EstimatedCost = fullCost + nextNodeStaticInfo->Heuristic;
+                                nextNodeData->PrevTraversal = new NodeTraversal(currentNodeId, edgeIdx); // stored in reverse order
                                 break;
                             }
 
                         case NodeState.Open:
                             {
-                                if (nextNodeCost->Cost <= fullCost)
+                                if (nextNodeData->Cost <= fullCost)
                                     break;
 
-                                nextNodeCost->Cost = fullCost;
-                                nextNodeCost->EstimatedCost = fullCost + nextNodeData->Heuristic;
-                                nextNodeCost->PrevTraversal = new NodeTraversal(currentNodeId, edgeIdx);
+                                nextNodeData->Cost = fullCost;
+                                nextNodeData->EstimatedCost = fullCost + nextNodeStaticInfo->Heuristic;
+                                nextNodeData->PrevTraversal = new NodeTraversal(currentNodeId, edgeIdx); // stored in reverse order
                                 break;
                             }
 
                         case NodeState.Closed:
                             {
-                                if (nextNodeCost->Cost <= fullCost)
+                                if (nextNodeData->Cost <= fullCost)
                                     break;
 
-                                nextNodeCost->State = NodeState.Open;
+                                nextNodeData->State = NodeState.Open;
 
                                 if (openListLength >= maxOpenListSize)
                                     throw new Exception("Heuristic for open list size was wrong, more entries required");
                                 AddToOpenList(nextNodeId, openList, ref openListLength);
 
-                                nextNodeCost->Cost = fullCost;
-                                nextNodeCost->EstimatedCost = fullCost + nextNodeData->Heuristic;
-                                nextNodeCost->PrevTraversal = new NodeTraversal(currentNodeId, edgeIdx);
+                                nextNodeData->Cost = fullCost;
+                                nextNodeData->EstimatedCost = fullCost + nextNodeStaticInfo->Heuristic;
+                                nextNodeData->PrevTraversal = new NodeTraversal(currentNodeId, edgeIdx); // stored in reverse order
                                 break;
                             }
                     }
@@ -271,19 +309,31 @@ namespace BeauUtil.Graph
             }
 
             // if we reached the end, let's construct the path
-            if (currentNodeId == inEndId)
+            bool bReachedEnd = currentNodeId == inEndId;
+            bool bGeneratePath = bReachedEnd;
+            if (!bReachedEnd && (inFlags & Flags.ReturnClosestPath) != 0)
+            {
+                if (inHeuristic == null)
+                    throw new InvalidOperationException("Cannot make incomplete path to closest point when no heuristic is provided");
+
+                currentNodeId = FindLowestHeuristicVisitedNode(nodeCosts, inGraphInfo.StaticNodeInfo, inGraphInfo.NodeCount);
+                bGeneratePath = currentNodeId != NodeGraph.InvalidId;
+            }
+
+            if (bGeneratePath)
             {
                 ioPath.Reset();
 
-                NodeTraversal traversal = new NodeTraversal(currentNodeId);
-                while(traversal.NodeId != inStartId)
+                NodeTraversal traversal;
+                while (currentNodeId != inStartId && currentNodeId != NodeGraph.InvalidId)
                 {
-                    ioPath.AddTraversal(traversal);
-                    traversal = nodeCosts[traversal.NodeId].PrevTraversal;
+                    traversal = nodeCosts[currentNodeId].PrevTraversal;
+                    // we have to reverse the edge/node order here, since it was recorded in reverse
+                    ioPath.AddTraversal(new NodeTraversal(currentNodeId, traversal.EdgeId));
+                    currentNodeId = traversal.NodeId;
                 }
-                ioPath.AddTraversal(traversal);
-                ioPath.FinishTraversals();
-                return true;
+
+                return bReachedEnd;
             }
 
             ioPath.Reset();
@@ -291,6 +341,8 @@ namespace BeauUtil.Graph
         }
 
         #region OpenList
+
+        // custom list management code
 
         static private unsafe void AddToOpenList(ushort inId, ushort* ioOpenList, ref ushort ioLength)
         {
@@ -300,7 +352,7 @@ namespace BeauUtil.Graph
         static private unsafe bool RemoveFromOpenList(ushort inId, ushort* ioOpenList, ref ushort ioLength)
         {
             int end = ioLength - 1;
-            for(int i = 0; i < ioLength; ++i)
+            for (int i = 0; i < ioLength; ++i)
             {
                 if (ioOpenList[i] == inId)
                 {
@@ -321,7 +373,7 @@ namespace BeauUtil.Graph
 
             ushort id;
             float cost;
-            for(int i = 1; i < ioOpenListLength; ++i)
+            for (int i = 1; i < ioOpenListLength; ++i)
             {
                 id = ioOpenList[i];
                 cost = inCostData[id].EstimatedCost;
@@ -340,16 +392,44 @@ namespace BeauUtil.Graph
 
             return lowestCostId;
         }
-    
+
+        static private unsafe ushort FindLowestHeuristicVisitedNode(NodeCostData* inCosts, ReadOnlyNodeData* inStaticNodeInfo, ushort inNodeCount)
+        {
+            ushort lowestId = NodeGraph.InvalidId;
+            float lowestCost = float.MaxValue;
+            for (ushort i = 0; i < inNodeCount; i++)
+            {
+                NodeCostData* cost = &inCosts[i];
+                ReadOnlyNodeData* node = &inStaticNodeInfo[i];
+
+                if (cost->State > NodeState.Unvisited && node->Heuristic < lowestCost)
+                {
+                    lowestId = i;
+                    lowestCost = node->Heuristic;
+                }
+            }
+            return lowestId;
+        }
+
         #endregion // OpenList
 
         #endregion // Internal
 
         /// <summary>
-        /// Default distance heuristic. Generates heuristic based on node 
+        /// Default distance heuristic. Generates heuristic based on node distance.
         /// </summary>
-        static public readonly Heuristic DefaultDistanceHeuristic = (graph, inStartId, inEndId) => {
+        static public readonly Heuristic DefaultDistanceHeuristic = (graph, inStartId, inEndId) =>
+        {
             return Vector3.Distance(graph.Node(inStartId).Position, graph.Node(inEndId).Position);
+        };
+
+        /// <summary>
+        /// Manhattan distance heuristic. Generates heuristic based on node distance.
+        /// </summary>
+        static public readonly Heuristic ManhattanDistanceHeuristic = (graph, inStartId, inEndId) =>
+        {
+            Vector3 start = graph.Node(inStartId).Position, end = graph.Node(inEndId).Position;
+            return Math.Abs(start.x - end.x) + Math.Abs(start.y - end.y) - Math.Abs(start.z - end.z);
         };
     }
 }

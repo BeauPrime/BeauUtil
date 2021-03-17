@@ -142,7 +142,5 @@ namespace BeauUtil
                 m_OnFOVChanged.Invoke(new CameraSettings(Height, Zoom, newDist, height, fov));
             }
         }
-
-        static private readonly Vector3 s_CenterViewportPoint = new Vector3(0.5f, 0.5f, 1);
     }
 }

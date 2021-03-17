@@ -191,14 +191,13 @@ namespace BeauUtil
 
             if (inbIncludeSelf)
             {
-                if (s_CachedComponentList == null)
-                    s_CachedComponentList = new List<Component>();
-                inTransform.GetComponents(typeof(T), s_CachedComponentList);
-                if (s_CachedComponentList.Count > 0)
+                List<Component> components = s_CachedComponentList ?? (s_CachedComponentList = new List<Component>());
+                inTransform.GetComponents(typeof(T), components);
+                if (components.Count > 0)
                 {
-                    for (int i = 0; i < s_CachedComponentList.Count; ++i)
-                        outComponents.Add((T) s_CachedComponentList[i]);
-                    s_CachedComponentList.Clear();
+                    for (int i = 0; i < components.Count; ++i)
+                        outComponents.Add((T) components[i]);
+                    components.Clear();
                     return;
                 }
             }
@@ -210,8 +209,7 @@ namespace BeauUtil
             }
         }
 
-        [ThreadStatic]
-        static private List<Component> s_CachedComponentList;
+        static private List<Component> s_CachedComponentList; // all operations involving this are locked to main thread
 
         #endregion // GetComponentsInChildren
     
@@ -311,6 +309,24 @@ namespace BeauUtil
         static public T GetComponent<T>(this Component inComponent, ComponentLookupDirection inDirection, bool inbIncludeInactive = false)
         {
             return GetComponent<T>(inComponent.gameObject, inDirection, inbIncludeInactive);
+        }
+
+        static public int ComponentCount(this GameObject inGameObject)
+        {
+            List<Component> components = s_CachedComponentList ?? (s_CachedComponentList = new List<Component>());
+            inGameObject.GetComponents(typeof(Component), components);
+            int count = components.Count;
+            components.Clear();
+            return count;
+        }
+
+        static public int ComponentCount(this Component inComponent)
+        {
+            List<Component> components = s_CachedComponentList ?? (s_CachedComponentList = new List<Component>());
+            inComponent.GetComponents(typeof(Component), components);
+            int count = components.Count;
+            components.Clear();
+            return count;
         }
 
         #endregion // Components

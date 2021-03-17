@@ -102,15 +102,14 @@ namespace BeauUtil.UI
 
                 if (m_CachedShapeCount > 0)
                 {
-                    if (s_PooledList == null)
-                        s_PooledList = new List<Vector2>(64);
-
+                    List<Vector2> list = s_PooledList ?? (s_PooledList = new List<Vector2>(64));
+                    
                     for (int shapeIdx = 0; shapeIdx < m_CachedShapeCount; ++shapeIdx)
                     {
-                        s_PooledList.Clear();
-                        int pointCount = m_Sprite.GetPhysicsShape(shapeIdx, s_PooledList);
+                        list.Clear();
+                        int pointCount = m_Sprite.GetPhysicsShape(shapeIdx, list);
 
-                        m_CachedShapes[shapeIdx] = s_PooledList.ToArray();
+                        m_CachedShapes[shapeIdx] = list.ToArray();
                     }
                 }
 

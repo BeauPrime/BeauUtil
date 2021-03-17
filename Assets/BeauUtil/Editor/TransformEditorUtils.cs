@@ -19,7 +19,7 @@ namespace BeauUtil.Editor
         /// <summary>
         /// Flattens the hierarchy at this transform. Children will become siblings.
         /// </summary>
-        static public void FlattenChildren(Transform inTransform, bool inbRecursive = false)
+        static public void FlattenHierarchy(Transform inTransform, bool inbRecursive = false)
         {
             if (inbRecursive)
             {
@@ -65,14 +65,14 @@ namespace BeauUtil.Editor
         static private void FlattenHierarchyNonRecursive()
         {
             foreach(var gameObject in Selection.gameObjects)
-                FlattenChildren(gameObject.transform, false);
+                FlattenHierarchy(gameObject.transform, false);
         }
 
         [MenuItem("GameObject/Flatten Hierarchy (Deep) %#W")]
         static private void FlattenHierarchyRecursive()
         {
             foreach(var gameObject in Selection.gameObjects)
-                FlattenChildren(gameObject.transform, true);
+                FlattenHierarchy(gameObject.transform, true);
         }
     }
 }

@@ -15,6 +15,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -206,7 +207,7 @@ namespace BeauUtil
 
         static private int GetDesiredCapacity(int inCurrentCapacity)
         {
-            int newCapacity = inCurrentCapacity * 2;
+            int newCapacity = Mathf.NextPowerOfTwo(inCurrentCapacity);
             if (newCapacity > 0 && newCapacity < 4)
                 newCapacity = 4;
             return newCapacity;
@@ -617,7 +618,10 @@ namespace BeauUtil
                 throw new ArgumentNullException("ioDest");
 
             if (m_Count <= 0)
+            {
+                ioDest.Clear();
                 return 0;
+            }
 
             if (ioDest.m_Capacity == m_Capacity)
             {
@@ -644,6 +648,7 @@ namespace BeauUtil
                 ioDest.m_Head = 0;
                 ioDest.m_Tail = m_Count;
                 ioDest.m_Count = m_Count;
+                ioDest.m_Capacity = m_Capacity;
                 return copied;
             }
         }

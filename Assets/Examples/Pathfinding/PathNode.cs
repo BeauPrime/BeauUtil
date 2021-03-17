@@ -7,8 +7,8 @@ using UnityEngine.EventSystems;
 public class PathNode : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] public PathNode[] ConnectedNodes;
-
-    [NonSerialized] public ushort Id;
+    public ushort Id;
+    
     [NonSerialized] public Action<ushort, bool> OnEnableOrDisable;
     [NonSerialized] public Action<ushort> OnClick;
 

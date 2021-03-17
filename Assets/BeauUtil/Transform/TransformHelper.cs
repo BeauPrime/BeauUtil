@@ -132,7 +132,8 @@ namespace BeauUtil
 
             layer = 1 << layer;
 
-            int cameraCount = Camera.GetAllCameras(s_CachedCameraArray);
+            Camera[] cameraArray = s_CachedCameraArray;
+            int cameraCount = Camera.GetAllCameras(cameraArray);
             
             // find the camera with the most specific rendering mask that includes this layer
             Camera found = null;
@@ -140,7 +141,7 @@ namespace BeauUtil
             
             for(int i = 0; i < cameraCount; ++i)
             {
-                Camera cam = s_CachedCameraArray[i];
+                Camera cam = cameraArray[i];
                 if (!inbIncludeInactive && !cam.isActiveAndEnabled)
                     continue;
 
@@ -157,7 +158,7 @@ namespace BeauUtil
                 }
             }
 
-            Array.Clear(s_CachedCameraArray, 0, cameraCount);
+            Array.Clear(cameraArray, 0, cameraCount);
             outCamera = found;
             return found;
         }
@@ -171,7 +172,7 @@ namespace BeauUtil
         /// <summary>
         /// Flattens the hierarchy at this transform. Children will become siblings.
         /// </summary>
-        static public void FlattenChildren(this Transform inTransform, bool inbRecursive = false)
+        static public void FlattenHierarchy(this Transform inTransform, bool inbRecursive = false)
         {
             if (inbRecursive)
             {

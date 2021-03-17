@@ -93,14 +93,15 @@ namespace BeauUtil.UI
                 }
                 else
                 {
-                    GetComponents<ILayoutElement>(s_CachedLayoutList);
-                    s_CachedLayoutList.Remove(this);
-                    if (s_CachedLayoutList.Count > 0)
+                    List<ILayoutElement> layoutList = s_CachedLayoutList;
+                    GetComponents<ILayoutElement>(layoutList);
+                    layoutList.Remove(this);
+                    if (layoutList.Count > 0)
                     {
-                        m_LayoutSource = s_CachedLayoutList[0];
+                        m_LayoutSource = layoutList[0];
                         m_SerializedLayoutComponent = (Component) m_LayoutSource;
                     }
-                    s_CachedLayoutList.Clear();
+                    layoutList.Clear();
                 }
             }
 
