@@ -395,9 +395,9 @@ namespace BeauUtil
             inOffset.x /= dist;
             inOffset.y /= dist;
 
-            var buffer = s_CachedRaycast2DArray;
+            var buffer = s_TinyRaycast2DArray;
             int count = inRigidbody.Cast(inOffset, inContactFilter, buffer, dist);
-            bool bOverlapping = ClosestHit(buffer, count);
+            bool bOverlapping = buffer[0];
             ClearBuffer(buffer, count);
             return bOverlapping;
         }
@@ -422,9 +422,9 @@ namespace BeauUtil
             inOffset.x /= dist;
             inOffset.y /= dist;
 
-            var buffer = s_CachedRaycast2DArray;
+            var buffer = s_TinyRaycast2DArray;
             int count = inCollider.Cast(inOffset, inContactFilter, buffer, dist);
-            bool bOverlapping = ClosestHit(buffer, count);
+            bool bOverlapping = buffer[0];
             ClearBuffer(buffer, count);
             return bOverlapping;
         }

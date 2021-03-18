@@ -104,7 +104,7 @@ namespace BeauUtil
         public bool Remove(T inItem)
         {
             int itemIndex = IndexOf(inItem);
-            if (itemIndex <= 0)
+            if (itemIndex < 0)
                 return false;
 
             --m_InternalCount;
