@@ -301,7 +301,7 @@ namespace BeauUtil.Blocks
                     return true;
 
                 default:
-                    return ioState.Rules.AllowPackageMetaInBlock;
+                    return ioState.Rules.PackageMetaMode > PackageMetaMode.DisallowInBlock;
             }
         }
 
@@ -585,22 +585,53 @@ namespace BeauUtil.Blocks
         {
             TagData data = TagData.Parse(inLine, ioState.TagDelimiters);
 
-            switch (ioState.CurrentState)
+            if (ioState.Rules.PackageMetaMode == PackageMetaMode.DisallowInBlock)
             {
-                case BlockState.NotStarted:
-                case BlockState.BlockDone:
-                    break;
+                if (ioState.CurrentState != BlockState.NotStarted && ioState.CurrentState != BlockState.BlockDone)
+                {
+                    BlockParser.LogError(ioState.Position, "Cannot set package metadata '{0}', currently in a block", inLine);
+                    return false;
+                }
+            }
 
-                default:
+            if (ioState.Rules.PackageMetaMode == PackageMetaMode.ImplicitCloseBlock)
+            {
+                switch (ioState.CurrentState)
+                {
+                    case BlockState.NotStarted:
+                    case BlockState.BlockDone:
+                        break;
+
+                    case BlockState.InHeader:
                     {
-                        if (!ioState.Rules.AllowPackageMetaInBlock)
+                        if (ioState.Rules.RequireExplicitBlockEnd || ioState.Rules.RequireExplicitBlockHeaderEnd)
                         {
-                            BlockParser.LogError(ioState.Position, "Cannot set package metadata '{0}', currently in a block", inLine);
+                            BlockParser.LogError(ioState.Position, "Cannot close a block with meta command '{0}' before previous block is closed", inLine);
                             return false;
                         }
 
+                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                        FlushBlock(ref ioState, TagData.Empty);
                         break;
                     }
+
+                case BlockState.BlockStarted:
+                case BlockState.InData:
+                    {
+                        if (ioState.Rules.RequireExplicitBlockHeaderEnd)
+                        {
+                            BlockParser.LogError(ioState.Position, "Cannot close a block with meta command '{0}' before previous block is closed", inLine);
+                            return false;
+                        }
+
+                        if (ioState.CurrentState == BlockState.BlockStarted)
+                        {
+                            ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                        }
+                        FlushBlock(ref ioState, TagData.Empty);
+                        break;
+                    }
+                }   
             }
 
             if (!data.IsEmpty())

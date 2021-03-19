@@ -84,9 +84,30 @@ namespace BeauUtil.Blocks
         bool RequireExplicitBlockEnd { get; }
 
         /// <summary>
-        /// Indicates if package metas are allowed
-        /// while within an unclosed block.
+        /// Indicates how package metas affect
+        /// any unclosed blocks.
         /// </summary>
-        bool AllowPackageMetaInBlock { get; }
+        PackageMetaMode PackageMetaMode { get; }
+    }
+
+    /// <summary>
+    /// Behavior when encountering a package meta command.
+    /// </summary>
+    public enum PackageMetaMode
+    {
+        /// <summary>
+        /// Package meta commands are not allowed within a block.
+        /// </summary>
+        DisallowInBlock,
+
+        /// <summary>
+        /// Package meta commands are allowed within a block.
+        /// </summary>
+        AllowInBlock,
+
+        /// <summary>
+        /// Package meta commands will close the current block.
+        /// </summary>
+        ImplicitCloseBlock
     }
 }

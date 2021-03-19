@@ -44,7 +44,7 @@ namespace BeauUtil.Blocks
 
             public bool RequireExplicitBlockContent { get { return false; } }
 
-            public bool AllowPackageMetaInBlock { get { return false; } }
+            public PackageMetaMode PackageMetaMode { get { return PackageMetaMode.ImplicitCloseBlock; } }
         }
 
         static internal readonly char[] NewlineDelim = new char[]
@@ -54,7 +54,7 @@ namespace BeauUtil.Blocks
 
         static internal readonly char[] TagDataDelims = new char[]
         {
-            ':', '=', ' '
+            ':', '=', ' ', '\t'
         };
     }
 }

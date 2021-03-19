@@ -346,7 +346,10 @@ namespace BeauUtil.Debugger
 
             UnityEngine.Debug.LogAssertion(fullMessage);
 
+            bool bPrevCursorState = Cursor.visible;
+            Cursor.visible = true;
             ErrorResult result = ShowErrorMessage(fullMessage);
+            Cursor.visible = bPrevCursorState;
 
             if (result == ErrorResult.IgnoreAll)
             {
