@@ -7,9 +7,9 @@
  * Purpose: Profiling blocks.
  */
 
-#if UNITY_EDITOR || UNITY_DEVELOPMENT
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
 #define DEVELOPMENT
-#endif // UNITY_EDITOR || UNITY_DEVELOPMENT
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
 using System;
 using System.Diagnostics;

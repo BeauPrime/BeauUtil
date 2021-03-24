@@ -7,9 +7,9 @@
  * Purpose: Conditionally-compiled assertions.
  */
 
-#if UNITY_EDITOR || UNITY_DEVELOPMENT
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
 #define DEVELOPMENT
-#endif // UNITY_EDITOR || UNITY_DEVELOPMENT
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
 #if UNITY_WEBGL && !UNITY_EDITOR
 #define DISABLE_STACK_TRACE
@@ -102,7 +102,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void True(bool inbValue)
         {
             if (!inbValue)
@@ -114,7 +114,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void True(bool inbValue, string inMessage)
         {
             if (!inbValue)
@@ -126,7 +126,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void True(bool inbValue, string inFormat, object inParam0)
         {
             if (!inbValue)
@@ -138,7 +138,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void True(bool inbValue, string inFormat, object inParam0, object inParam1)
         {
             if (!inbValue)
@@ -150,7 +150,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void True(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
         {
             if (!inbValue)
@@ -162,7 +162,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void True(bool inbValue, string inFormat, params object[] inParams)
         {
             if (!inbValue)
@@ -178,7 +178,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue)
         {
             if (inbValue)
@@ -190,7 +190,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inMessage)
         {
             if (inbValue)
@@ -202,7 +202,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, object inParam0)
         {
             if (inbValue)
@@ -214,7 +214,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, object inParam0, object inParam1)
         {
             if (inbValue)
@@ -226,7 +226,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
         {
             if (inbValue)
@@ -238,7 +238,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a condition is true.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, params object[] inParams)
         {
             if (inbValue)
@@ -254,7 +254,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a value is not null.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue) where T : class
         {
             if (inValue == null)
@@ -266,7 +266,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a value is not null.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inMessage) where T : class
         {
             if (inValue == null)
@@ -278,7 +278,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a value is not null.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inFormat, object inParam0) where T : class
         {
             if (inValue == null)
@@ -290,7 +290,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a value is not null.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inFormat, object inParam0, object inParam1) where T : class
         {
             if (inValue == null)
@@ -302,7 +302,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a value is not null.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inFormat, object inParam0, object inParam1, object inParam2) where T : class
         {
             if (inValue == null)
@@ -314,7 +314,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Asserts that a value is not null.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("UNITY_DEVELOPMENT")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inFormat, params object[] inParams) where T : class
         {
             if (inValue == null)

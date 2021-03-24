@@ -103,17 +103,27 @@ namespace BeauUtil.Tags
                 return;
 
             m_RichBuilder.Length = 0;
-            ProcessInput(inInput, outTarget, inContext);
-            outTarget.RichText = m_RichBuilder.Flush();
-            outTarget.VisibleText = m_StrippedBuilder.Flush();
+            bool bModified;
+            ProcessInput(inInput, outTarget, inContext, out bModified);
+            if (bModified)
+            {
+                outTarget.RichText = m_RichBuilder.Flush();
+                outTarget.VisibleText = m_StrippedBuilder.Flush();
+            }
+            else
+            {
+                string originalString = inInput.ToString();
+                outTarget.RichText = outTarget.VisibleText = originalString;
+            }
         }
 
         #endregion // Public API
 
         #region Processing
 
-        protected void ProcessInput(StringSlice inInput, TagString outTarget, object inContext)
+        protected void ProcessInput(StringSlice inInput, TagString outTarget, object inContext, out bool outbModified)
         {
+            bool bModified = false;
             bool bTrackRichText = m_Delimiters.RichText;
             bool bTrackTags = !bTrackRichText || !HasSameDelims(m_Delimiters, RichTextDelimiters);
 
@@ -121,8 +131,7 @@ namespace BeauUtil.Tags
             {
                 // if we're not considering rich text, and we have no processors, there's nothing to do here
                 outTarget.AddNode(TagNodeData.TextNode((uint) inInput.Length));
-                inInput.AppendTo(m_RichBuilder);
-                inInput.AppendTo(m_StrippedBuilder);
+                outbModified = false;
                 return;
             }
 
@@ -199,6 +208,10 @@ namespace BeauUtil.Tags
                             Debug.LogWarningFormat("[TagStringParser] Unrecognized text tag '{0}' in source '{1}'", richSlice, inInput);
                             CopyNonRichText(ref state, charIdx + 1);
                         }
+                        else
+                        {
+                            bModified = true;
+                        }
 
                         state.RichStart = -1;
                         state.TagStart = -1;
@@ -257,6 +270,10 @@ namespace BeauUtil.Tags
                             Debug.LogWarningFormat("[TagStringParser] Unrecognized text tag '{0}' in source '{1}'", tagSlice, inInput);
                             CopyNonRichText(ref state, charIdx + 1);
                         }
+                        else
+                        {
+                            bModified = true;
+                        }
 
                         state.TagStart = -1;
                         state.RichStart = -1;
@@ -268,6 +285,7 @@ namespace BeauUtil.Tags
             }
 
             CopyNonRichText(ref state, length);
+            outbModified = bModified;
         }
 
         static protected void SkipText(ref ParseState ioState, int inIdx)
