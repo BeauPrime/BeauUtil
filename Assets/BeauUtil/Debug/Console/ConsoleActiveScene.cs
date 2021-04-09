@@ -7,9 +7,7 @@
  * Purpose: Displays active scene.
  */
 
-using System;
 using UnityEngine;
-using BeauUtil;
 using TMPro;
 using UnityEngine.SceneManagement;
 

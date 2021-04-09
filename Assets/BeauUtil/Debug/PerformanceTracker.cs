@@ -13,7 +13,6 @@
 
 using System;
 using System.Diagnostics;
-using BeauUtil;
 using UnityEngine;
 using UnityEngine.Profiling;
 

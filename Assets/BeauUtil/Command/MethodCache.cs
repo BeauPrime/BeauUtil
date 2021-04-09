@@ -310,13 +310,15 @@ namespace BeauUtil
             return desc;
         }
 
-        private void CacheStatic()
+        private void CacheStatic(IEnumerable<Assembly> inAssemblies)
         {
             if (m_StaticMethods != null)
                 return;
 
             m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
-            foreach(var attrPair in Reflect.FindMethods<TAttr>(Reflect.FindAllUserAssemblies(), StaticAttributeSearch, false))
+            inAssemblies = inAssemblies ?? Reflect.FindAllUserAssemblies();
+
+            foreach(var attrPair in Reflect.FindMethods<TAttr>(inAssemblies, StaticAttributeSearch, false))
             {
                 attrPair.Attribute.AssignId(attrPair.Info);
 
@@ -409,7 +411,7 @@ namespace BeauUtil
         /// </summary>
         public MethodDescription FindStaticMethod(StringHash32 inMethodId)
         {
-            CacheStatic();
+            CacheStatic(null);
 
             MethodDescription description;
             m_StaticMethods.TryGetValue(inMethodId, out description);
@@ -507,14 +509,28 @@ namespace BeauUtil
 
         IStringConverter IMethodCache.StringConverter { get { return StringConverter; } }
 
+        /// <summary>
+        /// Loads info for the given type.
+        /// </summary>
         public void Load(Type inType)
         {
             Cache(inType);
         }
 
+        /// <summary>
+        /// Loads info for static methods from default assemblies.
+        /// </summary>
         public void LoadStatic()
         {
-            CacheStatic();
+            CacheStatic(null);
+        }
+
+        /// <summary>
+        /// Loads info for static methods from the given assemblies.
+        /// </summary>
+        public void LoadStatic(IEnumerable<Assembly> inAssemblies)
+        {
+            CacheStatic(inAssemblies);
         }
 
         #endregion // IMethodCache

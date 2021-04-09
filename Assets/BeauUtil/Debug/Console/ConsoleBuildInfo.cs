@@ -9,7 +9,6 @@
 
 using System;
 using UnityEngine;
-using BeauUtil;
 using TMPro;
 
 namespace BeauUtil.Debugger
