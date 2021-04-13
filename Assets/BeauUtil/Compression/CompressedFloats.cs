@@ -8,6 +8,7 @@
  */
 
 using UnityEngine;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System;
 #if UNITY_EDITOR
@@ -20,7 +21,7 @@ namespace BeauUtil
     /// Compressed float, with a range of [0, 1].
     /// Single byte.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 1), Serializable]
+    [StructLayout(LayoutKind.Sequential, Size = 1), Serializable, DebuggerDisplay("{Value}")]
     public struct Fraction8 : IEquatable<Fraction8>
     {
         private const byte MaxValue = 1 << 7;
@@ -112,7 +113,7 @@ namespace BeauUtil
     /// Compressed float, with a range of [0, 1].
     /// Two bytes.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 2), Serializable]
+    [StructLayout(LayoutKind.Sequential, Size = 2), Serializable, DebuggerDisplay("{Value}")]
     public struct Fraction16 : IEquatable<Fraction16>
     {
         private const ushort MaxValue = 1 << 15;
@@ -204,7 +205,7 @@ namespace BeauUtil
     /// Compressed float, with a range of [-1, 1].
     /// Single byte.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 1), Serializable]
+    [StructLayout(LayoutKind.Sequential, Size = 1), Serializable, DebuggerDisplay("{Value}")]
     public struct Normal8 : IEquatable<Normal8>
     {
         private const sbyte MaxValue = 1 << 6;
@@ -296,7 +297,7 @@ namespace BeauUtil
     /// Compressed float, with a range of [-1, 1].
     /// Two bytes.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 2), Serializable]
+    [StructLayout(LayoutKind.Sequential, Size = 2), Serializable, DebuggerDisplay("{Value}")]
     public struct Normal16 : IEquatable<Normal16>
     {
         private const short MaxValue = 1 << 14;

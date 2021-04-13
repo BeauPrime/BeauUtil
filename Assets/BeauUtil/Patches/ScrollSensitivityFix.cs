@@ -1,12 +1,13 @@
 /*
  * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
- * Date:    4 April 2019
+ * Date:    5 Oct 2020
  * 
- * File:    NestedCanvasSortOrderFix.cs
- * Purpose: Fixes canvas sorting order for nested canvases.
+ * File:    ScrollSensitivityFix.cs
+ * Purpose: Fixes scroll speed on windows devices.
  */
 
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -63,8 +64,17 @@ namespace BeauUtil
                 case RuntimePlatform.WindowsPlayer:
                     return true;
 
+                case RuntimePlatform.WebGLPlayer:
                 default:
-                    return false;
+                    try
+                    {
+                        return SystemInfo.operatingSystemFamily == OperatingSystemFamily.Windows;
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.LogException(e);
+                        return false;
+                    }
             }
         }
 
