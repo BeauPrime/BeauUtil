@@ -386,7 +386,7 @@ namespace BeauUtil
                 GatherComponents(go, m_RelatedComponentCachedList ?? (m_RelatedComponentCachedList = new List<Component>(8)));
                 for(int i = 0, len = m_RelatedComponentCachedList.Count; i < len && desc == null; ++i)
                 {
-                    ioTarget = m_RelatedObjectCachedList[i];
+                    ioTarget = m_RelatedComponentCachedList[i];
                     if (ioTarget != toIgnore)
                         desc = FindMethod(ioTarget, inMethodId);
                 }
