@@ -64,6 +64,14 @@ namespace BeauUtil
                 case RuntimePlatform.WindowsPlayer:
                     return true;
 
+                case RuntimePlatform.OSXEditor:
+                case RuntimePlatform.OSXPlayer:
+                case RuntimePlatform.IPhonePlayer:
+                case RuntimePlatform.Android:
+                case RuntimePlatform.LinuxPlayer:
+                case RuntimePlatform.LinuxEditor:
+                    return false;
+
                 case RuntimePlatform.WebGLPlayer:
                 default:
                     try
