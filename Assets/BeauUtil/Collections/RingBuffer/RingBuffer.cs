@@ -514,6 +514,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Sorts the buffer using the given comparer.
+        /// </summary>
+        public void Sort(Comparison<T> inComparer)
+        {
+            if (m_Count <= 1)
+                return;
+
+            Compress(false);
+            Array.Sort(m_Data, m_Head, m_Count, ArrayUtils.WrapComparison(inComparer));
+        }
+
+        /// <summary>
         /// Reverses element order in the buffer.
         /// </summary>
         public void Reverse()

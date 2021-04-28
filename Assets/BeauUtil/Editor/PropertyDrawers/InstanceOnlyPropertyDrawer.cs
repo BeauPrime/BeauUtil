@@ -35,7 +35,7 @@ namespace BeauUtil.Editor
             InstanceOnlyAttribute attr = (InstanceOnlyAttribute) attribute;
             if (attr.Hide && !IsInstance(property))
             {
-                return 0;
+                return -EditorGUIUtility.standardVerticalSpacing;
             }
 
             return EditorGUI.GetPropertyHeight(property, label, true);

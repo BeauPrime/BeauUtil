@@ -44,11 +44,38 @@ namespace BeauUtil
             m_Hash = inHash.HashValue;
         }
 
+        public bool IsEmpty
+        {
+            get { return m_Hash == 0; }
+        }
+
         public StringHash32 Hash()
         {
-            if (m_Source != null && m_Source.Length > 0 && m_Hash == 0)
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+            if (!string.IsNullOrEmpty(m_Source))
+                return new StringHash32(m_Source);
+            return new StringHash32(m_Hash);
+            #else
+            if (m_Hash == 0 && m_Source != null && m_Source.Length > 0)
                 m_Hash = new StringHash32(m_Source).HashValue;
             return new StringHash32(m_Hash);
+            #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+        }
+
+        public string ToDebugString()
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+            if (!string.IsNullOrEmpty(m_Source))
+                return m_Source;
+            return new StringHash32(m_Hash).ToDebugString();
+            #else
+            return Hash().ToDebugString();
+            #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+        }
+
+        public override string ToString()
+        {
+            return Hash().ToString();
         }
 
         static public implicit operator SerializedHash32(string inString)

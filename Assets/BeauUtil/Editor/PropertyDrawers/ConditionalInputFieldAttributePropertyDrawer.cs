@@ -21,37 +21,7 @@ namespace BeauUtil.Editor
         {
             ConditionalInputFieldAttribute attr = (ConditionalInputFieldAttribute) attribute;
             string propName = attr.PropertyName;
-            SerializedProperty conditionalProp = property.FindPropertySibling(propName);
-            if (conditionalProp == null)
-            {
-                Debug.LogError("No property with name '" + propName + " located");
-                return false;
-            }
-
-            if (conditionalProp.hasMultipleDifferentValues)
-            {
-                return false;
-            }
-
-            bool bBool;
-
-            switch(conditionalProp.propertyType)
-            {
-                case SerializedPropertyType.Boolean:
-                default:
-                    bBool = conditionalProp.boolValue;
-                    break;
-
-                case SerializedPropertyType.String:
-                    bBool = !string.IsNullOrEmpty(conditionalProp.stringValue);
-                    break;
-
-                case SerializedPropertyType.ObjectReference:
-                    bBool = conditionalProp.objectReferenceValue != null;
-                    break;
-            }
-
-            return bBool == attr.DesiredValue;
+            return property.EvaluateSiblingCondition(propName) == attr.DesiredValue;
         }
     }
 }

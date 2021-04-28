@@ -35,7 +35,7 @@ namespace BeauUtil.Editor
             EditModeOnlyAttribute attr = (EditModeOnlyAttribute) attribute;
             if (attr.Hide && !EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                return 0;
+                return -EditorGUIUtility.standardVerticalSpacing;
             }
 
             return EditorGUI.GetPropertyHeight(property, label, true);

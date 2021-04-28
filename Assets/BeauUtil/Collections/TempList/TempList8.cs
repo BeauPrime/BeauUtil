@@ -34,6 +34,7 @@ namespace BeauUtil
             if (inSource.Count > 8)
                 throw new ArgumentException("Source list has more than 8 elements");
                 
+            m_Count = (byte) inSource.Count;
             for(int i = 0; i < inSource.Count; ++i)
             {
                 SetSlow(i, inSource[i]);

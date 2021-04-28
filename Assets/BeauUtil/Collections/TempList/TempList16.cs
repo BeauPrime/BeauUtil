@@ -46,6 +46,7 @@ namespace BeauUtil
             if (inSource.Count > 16)
                 throw new ArgumentException("Source list has more than 16 elements");
 
+            m_Count = (byte) inSource.Count;
             for(int i = 0; i < inSource.Count; ++i)
             {
                 SetSlow(i, inSource[i]);
@@ -59,6 +60,7 @@ namespace BeauUtil
         #endif // EXPANDED_REFS
             : this()
         {
+            m_Count = (byte) inSource.Count;
             for(int i = 0; i < inSource.Count; ++i)
             {
                 SetSlow(i, inSource[i]);

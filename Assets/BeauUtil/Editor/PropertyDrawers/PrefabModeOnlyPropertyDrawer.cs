@@ -35,7 +35,7 @@ namespace BeauUtil.Editor
             PrefabModeOnlyAttribute attr = (PrefabModeOnlyAttribute) attribute;
             if (attr.Hide && !IsPrefab(property))
             {
-                return 0;
+                return -EditorGUIUtility.standardVerticalSpacing;
             }
 
             return EditorGUI.GetPropertyHeight(property, label, true);

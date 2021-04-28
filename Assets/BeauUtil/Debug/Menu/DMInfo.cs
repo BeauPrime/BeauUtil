@@ -23,39 +23,66 @@ namespace BeauUtil.Debugger
             Elements = new RingBuffer<DMElementInfo>(inCapacity, RingBufferMode.Expand);
         }
 
+        /// <summary>
+        /// Adds a divider element to the menu.
+        /// </summary>
         public DMInfo AddDivider()
         {
             Elements.PushBack(DMElementInfo.CreateDivider());
             return this;
         }
 
+        /// <summary>
+        /// Adds a button element to the menu.
+        /// </summary>
         public DMInfo AddButton(string inLabel, DMBUttonCallback inCallback, DMPredicate inPredicate = null, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateButton(inLabel, inCallback, inPredicate, inIndent));
             return this;
         }
 
+        /// <summary>
+        /// Adds a toggle element to the menu.
+        /// </summary>
         public DMInfo AddToggle(string inLabel, DMPredicate inGetter, DMToggleCallback inSetter, DMPredicate inPredicate = null, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateToggle(inLabel, inGetter, inSetter, inPredicate, inIndent));
             return this;
         }
 
+        /// <summary>
+        /// Adds a submenu element to the menu.
+        /// </summary>
         public DMInfo AddSubmenu(DMInfo inSubmenu, DMPredicate inPredicate = null, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateSubmenu(inSubmenu.Header.Label + " >", inSubmenu, inPredicate));
             return this;
         }
 
+        /// <summary>
+        /// Adds a submenu element to the menu.
+        /// </summary>
         public DMInfo AddSubmenu(string inLabel, DMInfo inSubmenu, DMPredicate inPredicate = null, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateSubmenu(inLabel, inSubmenu, inPredicate));
             return this;
         }
 
+        /// <summary>
+        /// Adds a text element to the menu.
+        /// </summary>
         public DMInfo AddText(string inLabel, DMTextDelegate inGetter, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateText(inLabel, inGetter, inIndent));
+            return this;
+        }
+
+        /// <summary>
+        /// Clears all elements.
+        /// </summary>
+        public DMInfo Clear()
+        {
+            Elements.Clear();
             return this;
         }
     

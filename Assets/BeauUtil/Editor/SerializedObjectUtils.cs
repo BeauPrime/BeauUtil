@@ -32,7 +32,7 @@ namespace BeauUtil.Editor
         /// </summary>
         static public SerializedProperty FindPropertyParent(this SerializedProperty inProperty)
         {
-            StringSlice path = inProperty.propertyPath;
+            StringSlice path = inProperty.propertyPath.Replace("Array.data", "");
             int lastDot = path.LastIndexOf('.');
             if (lastDot < 0)
                 return null;
@@ -51,6 +51,65 @@ namespace BeauUtil.Editor
                 return inProperty.serializedObject.FindProperty(inSiblingPath);
 
             return parentProp.FindPropertyRelative(inSiblingPath);
+        }
+
+        /// <summary>
+        /// Evaluates a sibling property.
+        /// </summary>
+        static public bool EvaluateSiblingCondition(this SerializedProperty inProperty, string inSiblingPath)
+        {
+            SerializedProperty siblingProp = FindPropertySibling(inProperty, inSiblingPath);
+            if (siblingProp != null)
+            {
+                if (siblingProp.hasMultipleDifferentValues)
+                    return false;
+
+                switch(siblingProp.propertyType)
+                {
+                    case SerializedPropertyType.Boolean:
+                    default:
+                        return siblingProp.boolValue;
+
+                    case SerializedPropertyType.String:
+                        return !string.IsNullOrEmpty(siblingProp.stringValue);
+
+                    case SerializedPropertyType.ObjectReference:
+                        return siblingProp.objectReferenceValue != null;
+                }
+            }
+
+            SerializedProperty immediateParent = inProperty.FindPropertyParent();
+            SerializedObject parent = inProperty.serializedObject;
+            string methodName = inSiblingPath;
+            int lastDot = methodName.IndexOf('.');
+            if (lastDot >= 0)
+            {
+                string relativePath = methodName.Substring(0, lastDot);
+                methodName = methodName.Substring(lastDot + 1);
+                immediateParent = immediateParent == null ? parent.FindProperty(relativePath) : immediateParent.FindPropertyRelative(relativePath);
+            }
+
+            if (immediateParent == null)
+                return false;
+
+            object parentObj = FindObject(immediateParent);
+            if (parentObj == null)
+                return false;
+
+            Type parentType = parentObj.GetType();
+            MethodInfo method = parentType.GetMethod(methodName, InstanceBindingFlags);
+            if (method == null || method.GetParameters().Length > 0)
+                return false;
+
+            object result = method.Invoke(parentObj, Array.Empty<object>());
+            if (result == null)
+                return false;
+            if (result is bool)
+                return (bool) result;
+            if (result is string)
+                return !string.IsNullOrEmpty((string) result);
+            
+            return false;
         }
 
         #endregion // Relative Properties
@@ -281,7 +340,12 @@ namespace BeauUtil.Editor
                 case SerializedPropertyType.Gradient:
                 case SerializedPropertyType.LayerMask:
                 default:
+                    Undo.RecordObject(inProperty.serializedObject.targetObject, string.Format("Set '{0}'", inProperty.name));
+
                     SetReflectedObject(inProperty.serializedObject.targetObject, inProperty.propertyPath, inValue);
+                    
+                    EditorUtility.SetDirty(inProperty.serializedObject.targetObject);
+                    inProperty.serializedObject.ApplyModifiedProperties();
                     break;
             }
         }
@@ -290,6 +354,8 @@ namespace BeauUtil.Editor
         {
             if (string.IsNullOrEmpty(inPath))
                 return inRoot;
+
+            inPath = inPath.Replace("Array.data", "");
 
             object obj = inRoot;
             foreach(var pathSegment in StringSlice.EnumeratedSplit(inPath, PathSplitChars, StringSplitOptions.None))
@@ -340,6 +406,8 @@ namespace BeauUtil.Editor
         {
             if (string.IsNullOrEmpty(inPath))
                 return inRoot.GetType();
+
+            inPath = inPath.Replace("Array.data", "");
 
             object obj = inRoot;
             Type type = inRoot.GetType();
@@ -393,10 +461,50 @@ namespace BeauUtil.Editor
             return obj != null ? obj.GetType() : type;
         }
 
-        static private void SetReflectedObject(UnityEngine.Object inRoot, string inPath, object inObject)
+        static private void SetReflectedObject(UnityEngine.Object inRoot, string inPath, object inValue)
         {
-            // TODO: Implement
-            throw new NotImplementedException();
+            inPath = inPath.Replace("Array.data", "");
+
+            // locate the parent object
+            StringSlice path = inPath;
+            int lastDot = path.LastIndexOf('.');
+            if (lastDot < 0)
+                return;
+
+            StringSlice parentPath = path.Substring(0, lastDot);
+            StringSlice fieldName = path.Substring(lastDot + 1);
+            object parentObject = LocateReflectedObject(inRoot, parentPath.ToString());
+            if (parentObject == null)
+                return;
+
+            Type objType = parentObject.GetType();
+            int arrayIdx = -1;
+
+            // capture array
+            if (fieldName.EndsWith(']'))
+            {
+                int elementIndexStart = fieldName.IndexOf('[');
+                int length = fieldName.Length - elementIndexStart - 1;
+                StringSlice elementIndexSlice = fieldName.Substring(elementIndexStart + 1, length);
+                arrayIdx = Convert.ToInt32(elementIndexSlice.ToString());
+                fieldName = fieldName.Substring(0, elementIndexStart);
+            }
+
+            FieldInfo field = objType.GetField(fieldName.ToString(), InstanceBindingFlags);
+            if (field == null)
+                return;
+            
+            if (arrayIdx >= 0)
+            {
+                IList list = field.GetValue(parentObject) as IList;
+                if (list != null)
+                {
+                    list[arrayIdx] = inValue;
+                }
+                return;
+            }
+
+            field.SetValue(parentObject, inValue);
         }
 
         static private readonly BindingFlags InstanceBindingFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;

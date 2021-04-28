@@ -294,5 +294,29 @@ namespace BeauUtil
 
             return true;
         }
+
+        #region Sorting
+
+        static public ComparisonSorter<T> WrapComparison<T>(Comparison<T> inComparison)
+        {
+            return new ComparisonSorter<T>(inComparison);
+        }
+
+        public struct ComparisonSorter<T> : IComparer<T>
+        {
+            public Comparison<T> Delegate;
+
+            public ComparisonSorter(Comparison<T> inComparison)
+            {
+                Delegate = inComparison;
+            }
+
+            public int Compare(T x, T y)
+            {
+                return Delegate(x, y);
+            }
+        }
+
+        #endregion // Sorting
     }
 }

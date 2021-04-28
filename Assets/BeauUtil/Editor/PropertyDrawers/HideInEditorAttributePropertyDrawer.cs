@@ -14,7 +14,7 @@ namespace BeauUtil.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return 0;
+            return -EditorGUIUtility.standardVerticalSpacing;;
         }
     }
 }

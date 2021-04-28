@@ -24,13 +24,23 @@ namespace BeauUtil.Variants
     public struct Variant : IEquatable<Variant>, IComparable<Variant>
     {
         [FieldOffset(0)] private readonly VariantType m_Type;
+        
         [FieldOffset(4)] private readonly bool m_BoolValue;
         [FieldOffset(4)] private readonly int m_IntValue;
         [FieldOffset(4)] private readonly uint m_UIntValue;
         [FieldOffset(4)] private readonly float m_FloatValue;
         [FieldOffset(4)] private readonly StringHash32 m_StringHashValue;
 
+        [FieldOffset(4)] internal readonly uint RawValue;
+
         #region Constructors
+
+        internal Variant(VariantType inType, uint inRaw)
+            : this()
+        {
+            m_Type = inType;
+            RawValue = inRaw;
+        }
 
         public Variant(bool inbValue)
             : this()
@@ -283,7 +293,7 @@ namespace BeauUtil.Variants
 
         public bool StrictEquals(Variant inOther)
         {
-            return m_Type == inOther.m_Type && m_UIntValue == inOther.m_UIntValue;
+            return m_Type == inOther.m_Type && RawValue == inOther.RawValue;
         }
 
         #endregion // IEquatable
@@ -380,7 +390,7 @@ namespace BeauUtil.Variants
 
         public override int GetHashCode()
         {
-            return (m_Type.GetHashCode() << 5) ^ m_UIntValue.GetHashCode();
+            return (m_Type.GetHashCode() << 5) ^ RawValue.GetHashCode();
         }
 
         public override string ToString()
