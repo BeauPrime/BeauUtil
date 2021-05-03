@@ -74,17 +74,48 @@ namespace BeauUtil
         /// <summary>
         /// Forces this layout group to rebuild itself.
         /// </summary>
-        static public void ForceRebuild(this LayoutGroup inLayoutGroup)
+        static public void ForceRebuild(this LayoutGroup inLayoutGroup, bool inbRecursive = true)
         {
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform) inLayoutGroup.transform);
+            if (inbRecursive)
+            {
+                RecursiveLayoutRebuild((RectTransform) inLayoutGroup.transform);
+            }
+            else
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform) inLayoutGroup.transform);
+            }
         }
 
         /// <summary>
         /// Forces this layout group to rebuild itself.
         /// </summary>
-        static public void ForceRebuild<T>(this T inLayoutGroup) where T : Component, ILayoutGroup
+        static public void ForceRebuild<T>(this T inLayoutGroup, bool inbRecursive = true) where T : Component, ILayoutGroup
         {
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform) inLayoutGroup.transform);
+            if (inbRecursive)
+            {
+                RecursiveLayoutRebuild((RectTransform) inLayoutGroup.transform);
+            }
+            else
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform) inLayoutGroup.transform);
+            }
+        }
+
+        /// <summary>
+        /// Recursivelye rebuilds layout
+        /// </summary>
+        static private void RecursiveLayoutRebuild(RectTransform inTransform)
+        {
+            for(int i = 0, count = inTransform.childCount; i < count; i++)
+            {
+                RectTransform r = inTransform.GetChild(i) as RectTransform;
+                if (r != null)
+                    RecursiveLayoutRebuild(r);
+            }
+
+            ILayoutGroup group = inTransform.GetComponent<ILayoutGroup>();
+            if (group != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(inTransform);
         }
 
         /// <summary>
