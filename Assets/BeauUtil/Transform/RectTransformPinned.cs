@@ -168,7 +168,7 @@ namespace BeauUtil
             {
                 TryUnpin(true);
             }
-            else
+            else if (!m_AppliedPinTarget.IsReferenceNull())
             {
                 bool bNowOnScreen = RecalculatePosition();
                 if (bNowOnScreen != m_PinOnScreen)
