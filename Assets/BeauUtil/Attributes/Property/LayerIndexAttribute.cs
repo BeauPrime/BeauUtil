@@ -18,15 +18,15 @@ namespace BeauUtil
     {
         #if UNITY_EDITOR
 
-        [UnityEditor.CustomPropertyDrawer(typeof(LayerIndexAttribute))]
+        [UnityEditor.CustomPropertyDrawer(typeof(LayerIndexAttribute)), UnityEditor.CanEditMultipleObjects]
         private class Drawer : UnityEditor.PropertyDrawer
         {
             public override void OnGUI(Rect position, UnityEditor.SerializedProperty property, GUIContent label)
             {
                 label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
                 UnityEditor.EditorGUI.BeginChangeCheck();
-                int nextVal = UnityEditor.EditorGUI.LayerField(position, label, property.intValue);
-                if (UnityEditor.EditorGUI.EndChangeCheck())
+                int nextVal = UnityEditor.EditorGUI.LayerField(position, label, property.hasMultipleDifferentValues ? -1 : property.intValue);
+                if (UnityEditor.EditorGUI.EndChangeCheck() && nextVal >= 0)
                     property.intValue = nextVal;
                 UnityEditor.EditorGUI.EndProperty();
             }

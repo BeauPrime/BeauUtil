@@ -19,7 +19,7 @@ namespace BeauUtil
     {
         #if UNITY_EDITOR
 
-        [UnityEditor.CustomPropertyDrawer(typeof(SortingLayerAttribute))]
+        [UnityEditor.CustomPropertyDrawer(typeof(SortingLayerAttribute)), UnityEditor.CanEditMultipleObjects]
         private class Drawer : UnityEditor.PropertyDrawer
         {
             static private GUIContent[] s_LayerContent;

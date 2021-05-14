@@ -35,7 +35,7 @@ namespace BeauUtil
 
         #if UNITY_EDITOR
 
-        [UnityEditor.CustomPropertyDrawer(typeof(InlineAttribute))]
+        [UnityEditor.CustomPropertyDrawer(typeof(InlineAttribute)), UnityEditor.CanEditMultipleObjects]
         private class Drawer : UnityEditor.PropertyDrawer
         {
             public override void OnGUI(Rect position, UnityEditor.SerializedProperty property, GUIContent label)
