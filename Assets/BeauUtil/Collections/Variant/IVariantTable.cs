@@ -34,6 +34,8 @@ namespace BeauUtil.Variants
         void Clear();
         void Reset();
         
+        event Action<NamedVariant> OnUpdated;
+        
         Variant this[StringHash32 inId] { get; set; }
         
         bool TryLookup(StringHash32 inId, out Variant outValue);

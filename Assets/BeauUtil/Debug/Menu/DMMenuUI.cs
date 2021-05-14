@@ -293,7 +293,7 @@ namespace BeauUtil.Debugger
         /// </summary>
         public void PopMenu()
         {
-            if (m_MenuStack.Count > 0)
+            if (m_MenuStack.Count > 1)
             {
                 m_MenuStack.PopBack();
                 DMInfo prevMenu;
@@ -302,8 +302,25 @@ namespace BeauUtil.Debugger
             }
             else
             {
-                throw new InvalidOperationException("Cannot pop from an empty menu stack");
+                throw new InvalidOperationException("Cannot pop from an root menu stack");
             }
+        }
+
+        /// <summary>
+        /// Attempts to return to the previous menu
+        /// </summary>
+        public bool TryPopMenu()
+        {
+            if (m_MenuStack.Count > 1)
+            {
+                m_MenuStack.PopBack();
+                DMInfo prevMenu;
+                m_MenuStack.TryPeekBack(out prevMenu);
+                PopulateMenu(prevMenu);
+                return true;
+            }
+
+            return false;
         }
 
         #endregion // Menu Management

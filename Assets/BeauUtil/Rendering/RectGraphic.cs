@@ -21,7 +21,7 @@ namespace BeauUtil
     /// Plain rectangle graphic.
     /// </summary>
     [AddComponentMenu("BeauUtil/Rendering/Rect Graphic")]
-    public class RectGraphic : Graphic
+    public class RectGraphic : MaskableGraphic
     {
         protected override void OnPopulateMesh(VertexHelper vh)
         {

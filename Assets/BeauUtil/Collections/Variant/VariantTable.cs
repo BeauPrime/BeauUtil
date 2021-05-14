@@ -72,6 +72,11 @@ namespace BeauUtil.Variants
         }
 
         /// <summary>
+        /// Executed when a variant is updated.
+        /// </summary>
+        public event Action<NamedVariant> OnUpdated;
+
+        /// <summary>
         /// Retrieves the value at the given index.
         /// </summary>
         public NamedVariant this[int index]
@@ -122,6 +127,7 @@ namespace BeauUtil.Variants
             if (idx >= 0)
             {
                 m_Values.FastRemoveAt(idx);
+                OnUpdated?.Invoke(new NamedVariant(inId, null));
                 m_Optimized = false;
                 return true;
             }
@@ -289,16 +295,21 @@ namespace BeauUtil.Variants
             {
                 #if EXPANDED_REFS
                 m_Values[inIdx].Value = inValue;
+                OnUpdated?.Invoke(m_Values[inIdx]);
                 #else
                 NamedVariant val = m_Values[inIdx];
                 val.Value = inValue;
                 m_Values[inIdx] = val;
+                OnUpdated?.Invoke(val);
                 #endif // EXPANDED_VALUES
                 return;
             }
 
-            m_Values.PushBack(new NamedVariant(inId, inValue));
+            NamedVariant newValue = new NamedVariant(inId, inValue);
+            m_Values.PushBack(newValue);
             m_Optimized = false;
+
+            OnUpdated?.Invoke(newValue);
         }
 
         #region Output

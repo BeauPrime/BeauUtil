@@ -21,7 +21,7 @@ namespace BeauUtil
     /// Gradient rectangle graphic.
     /// </summary>
     [AddComponentMenu("BeauUtil/Rendering/Gradient Rect Graphic")]
-    public class GradientRectGraphic : Graphic
+    public class GradientRectGraphic : MaskableGraphic
     {
         private enum CornerMode
         {
