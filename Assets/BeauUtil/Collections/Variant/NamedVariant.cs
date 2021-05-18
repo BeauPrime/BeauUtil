@@ -18,6 +18,9 @@ namespace BeauUtil.Variants
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
     public struct NamedVariant : IKeyValuePair<StringHash32, Variant>
+        #if USING_BEAUDATA
+        , BeauData.ISerializedObject
+        #endif // USING_BEAUDATA
     {
         public StringHash32 Id;
         public Variant Value;
@@ -49,5 +52,19 @@ namespace BeauUtil.Variants
         Variant IKeyValuePair<StringHash32, Variant>.Value { get { return Value; } }
 
         #endregion // IKeyValuePair
+
+        #region ISerializedObject
+
+        #if USING_BEAUDATA
+
+        public void Serialize(BeauData.Serializer ioSerializer)
+        {
+            ioSerializer.UInt32Proxy("id", ref Id);
+            Value.Serialize(ioSerializer);
+        }
+
+        #endif // USING_BEAUDATA
+
+        #endregion // ISerializedObject
     }
 }

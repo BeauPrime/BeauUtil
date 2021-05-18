@@ -27,6 +27,9 @@ namespace BeauUtil
     [StructLayout(LayoutKind.Sequential, Size=4)]
     [Serializable]
     public struct StringHash32 : IEquatable<StringHash32>, IComparable<StringHash32>
+        #if USING_BEAUDATA
+        , BeauData.ISerializedProxy<uint>
+        #endif // USING_BEAUDATA
     {
         [SerializeField, HideInInspector] private uint m_HashValue;
 
@@ -190,5 +193,23 @@ namespace BeauUtil
         }
 
         #endregion // Parse
+    
+        #region ISerializedProxy
+
+        #if USING_BEAUDATA
+
+        public uint GetProxyValue(BeauData.ISerializerContext unused)
+        {
+            return m_HashValue;
+        }
+
+        public void SetProxyValue(uint inValue, BeauData.ISerializerContext unused)
+        {
+            m_HashValue = inValue;
+        }
+
+        #endif // USING_BEAUDATA
+
+        #endregion // ISerializedProxy
     }
 }

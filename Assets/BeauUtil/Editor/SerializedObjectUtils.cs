@@ -89,10 +89,7 @@ namespace BeauUtil.Editor
                 immediateParent = immediateParent == null ? parent.FindProperty(relativePath) : immediateParent.FindPropertyRelative(relativePath);
             }
 
-            if (immediateParent == null)
-                return false;
-
-            object parentObj = FindObject(immediateParent);
+            object parentObj = immediateParent == null ? parent.targetObject : FindObject(immediateParent);
             if (parentObj == null)
                 return false;
 

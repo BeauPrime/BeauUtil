@@ -1,7 +1,8 @@
 {
     "name": "BeauUtil",
     "references": [
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "BeauData"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -10,6 +11,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.beauprime.beaudata",
+            "expression": "0.3.0",
+            "define": "USING_BEAUDATA"
+        }
+    ],
     "noEngineReferences": false
 }

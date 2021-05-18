@@ -22,6 +22,9 @@ namespace BeauUtil.Variants
     /// Collection of named variant values.
     /// </summary>
     public class VariantTable : IVariantTable
+        #if USING_BEAUDATA
+        , BeauData.ISerializedObject
+        #endif // USING_BEAUDATA
     {
         private StringHash32 m_Name;
         private RingBuffer<NamedVariant> m_Values;
@@ -376,5 +379,34 @@ namespace BeauUtil.Variants
         };
 
         #endregion // Binary Search
+
+        #region ISerializedObject
+
+        #if USING_BEAUDATA
+
+        public void Serialize(BeauData.Serializer ioSerializer)
+        {
+            ioSerializer.UInt32Proxy("name", ref m_Name);
+
+            NamedVariant[] variantArray = null;
+            if (ioSerializer.IsWriting)
+            {
+                variantArray = m_Values.ToArray();
+            }
+
+            ioSerializer.ObjectArray("values", ref variantArray);
+
+            if (ioSerializer.IsReading)
+            {
+                m_Values.Clear();
+                for(int i = 0; i < variantArray.Length; i++)
+                    m_Values.PushBack(variantArray[i]);
+                m_Optimized = false;
+            }
+        }
+
+        #endif // USING_BEAUDATA
+
+        #endregion // ISerializedObject
     }
 }

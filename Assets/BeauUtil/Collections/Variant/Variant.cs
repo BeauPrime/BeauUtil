@@ -22,14 +22,17 @@ namespace BeauUtil.Variants
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Explicit, Size = 8)]
     public struct Variant : IEquatable<Variant>, IComparable<Variant>
+        #if USING_BEAUDATA
+        , BeauData.ISerializedObject
+        #endif // USING_BEAUDATA
     {
-        [FieldOffset(0)] private readonly VariantType m_Type;
+        [FieldOffset(0)] private VariantType m_Type;
         
-        [FieldOffset(4)] private readonly bool m_BoolValue;
-        [FieldOffset(4)] private readonly int m_IntValue;
-        [FieldOffset(4)] private readonly uint m_UIntValue;
-        [FieldOffset(4)] private readonly float m_FloatValue;
-        [FieldOffset(4)] private readonly StringHash32 m_StringHashValue;
+        [FieldOffset(4)] private bool m_BoolValue;
+        [FieldOffset(4)] private int m_IntValue;
+        [FieldOffset(4)] private uint m_UIntValue;
+        [FieldOffset(4)] private float m_FloatValue;
+        [FieldOffset(4)] private StringHash32 m_StringHashValue;
 
         [FieldOffset(4)] internal readonly uint RawValue;
 
@@ -683,6 +686,52 @@ namespace BeauUtil.Variants
         }
 
         #endregion // Utilities
+
+        #region ISerializedObject
+
+        #if USING_BEAUDATA
+
+        public void Serialize(BeauData.Serializer ioSerializer)
+        {
+            ioSerializer.Enum("type", ref m_Type);
+
+            switch(m_Type)
+            {
+                case VariantType.Bool:
+                    {
+                        ioSerializer.Serialize("value", ref m_BoolValue);
+                        break;
+                    }
+
+                case VariantType.Float:
+                    {
+                        ioSerializer.Serialize("value", ref m_FloatValue);
+                        break;
+                    }
+
+                case VariantType.Int:
+                    {
+                        ioSerializer.Serialize("value", ref m_IntValue);
+                        break;
+                    }
+
+                case VariantType.UInt:
+                    {
+                        ioSerializer.Serialize("value", ref m_UIntValue);
+                        break;
+                    }
+
+                case VariantType.StringHash:
+                    {
+                        ioSerializer.UInt32Proxy("value", ref m_StringHashValue);
+                        break;
+                    }
+            }
+        }
+
+        #endif // USING_BEAUDATA
+
+        #endregion // ISerializedObject
     }
 
     /// <summary>
