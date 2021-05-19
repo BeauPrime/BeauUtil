@@ -297,13 +297,20 @@ namespace BeauUtil.Variants
             if (inIdx >= 0)
             {
                 #if EXPANDED_REFS
-                m_Values[inIdx].Value = inValue;
-                OnUpdated?.Invoke(m_Values[inIdx]);
+                ref NamedVariant val = ref m_Values[inIdx];
+                if (!val.Value.StrictEquals(inValue))
+                {
+                    val.Value = inValue;
+                    OnUpdated?.Invoke(val);
+                }
                 #else
                 NamedVariant val = m_Values[inIdx];
-                val.Value = inValue;
-                m_Values[inIdx] = val;
-                OnUpdated?.Invoke(val);
+                if (!val.Value.StrictEquals(inValue))
+                {
+                    val.Value = inValue;
+                    OnUpdated?.Invoke(val);
+                    m_Values[inIdx] = val;
+                }
                 #endif // EXPANDED_VALUES
                 return;
             }
