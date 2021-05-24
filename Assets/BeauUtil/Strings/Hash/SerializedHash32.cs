@@ -23,7 +23,7 @@ namespace BeauUtil
     /// Serializable hashed string.
     /// </summary>
     [Serializable]
-    public struct SerializedHash32
+    public struct SerializedHash32 : IDebugString
     {
         #region Inspector
 

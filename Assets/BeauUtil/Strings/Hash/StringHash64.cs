@@ -26,7 +26,7 @@ namespace BeauUtil
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Sequential, Size=8)]
     [Serializable]
-    public struct StringHash64 : IEquatable<StringHash64>, IComparable<StringHash64>
+    public struct StringHash64 : IEquatable<StringHash64>, IComparable<StringHash64>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedProxy<ulong>
         #endif // USING_BEAUDATA

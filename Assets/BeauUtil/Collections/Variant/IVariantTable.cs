@@ -17,7 +17,7 @@ namespace BeauUtil.Variants
     /// <summary>
     /// Collection of named variant values.
     /// </summary>
-    public interface IVariantTable : IDisposable, IEnumerable<NamedVariant>, IReadOnlyList<NamedVariant>
+    public interface IVariantTable : IDisposable, IEnumerable<NamedVariant>, IReadOnlyList<NamedVariant>, IDebugString
     {
         StringHash32 Name { get; set; }
         IVariantTable Base { get; set; }
@@ -40,7 +40,5 @@ namespace BeauUtil.Variants
         
         bool TryLookup(StringHash32 inId, out Variant outValue);
         void Modify(StringHash32 inId, VariantModifyOperator inOperator, Variant inOperand);
-        
-        string ToDebugString();
     }
 }

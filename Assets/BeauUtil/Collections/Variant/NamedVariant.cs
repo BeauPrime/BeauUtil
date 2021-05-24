@@ -17,7 +17,7 @@ namespace BeauUtil.Variants
     /// Data variant with a name.
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
-    public struct NamedVariant : IKeyValuePair<StringHash32, Variant>
+    public struct NamedVariant : IKeyValuePair<StringHash32, Variant>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedObject
         #endif // USING_BEAUDATA

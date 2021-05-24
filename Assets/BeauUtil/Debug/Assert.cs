@@ -131,7 +131,7 @@ namespace BeauUtil.Debugger
         {
             if (!inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParam0));
+                OnFail(GetLocationFromStack(1), "Value is true", Log.Format(inFormat, inParam0));
             }
         }
 
@@ -143,7 +143,7 @@ namespace BeauUtil.Debugger
         {
             if (!inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParam0, inParam1));
+                OnFail(GetLocationFromStack(1), "Value is true", Log.Format(inFormat, inParam0, inParam1));
             }
         }
 
@@ -155,7 +155,7 @@ namespace BeauUtil.Debugger
         {
             if (!inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParam0, inParam1, inParam2));
+                OnFail(GetLocationFromStack(1), "Value is true", Log.Format(inFormat, inParam0, inParam1, inParam2));
             }
         }
 
@@ -167,7 +167,7 @@ namespace BeauUtil.Debugger
         {
             if (!inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is true", string.Format(inFormat, inParams));
+                OnFail(GetLocationFromStack(1), "Value is true", Log.Format(inFormat, inParams));
             }
         }
 
@@ -207,7 +207,7 @@ namespace BeauUtil.Debugger
         {
             if (inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParam0));
+                OnFail(GetLocationFromStack(1), "Value is false", Log.Format(inFormat, inParam0));
             }
         }
 
@@ -219,7 +219,7 @@ namespace BeauUtil.Debugger
         {
             if (inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParam0, inParam1));
+                OnFail(GetLocationFromStack(1), "Value is false", Log.Format(inFormat, inParam0, inParam1));
             }
         }
 
@@ -231,7 +231,7 @@ namespace BeauUtil.Debugger
         {
             if (inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParam0, inParam1, inParam2));
+                OnFail(GetLocationFromStack(1), "Value is false", Log.Format(inFormat, inParam0, inParam1, inParam2));
             }
         }
 
@@ -243,7 +243,7 @@ namespace BeauUtil.Debugger
         {
             if (inbValue)
             {
-                OnFail(GetLocationFromStack(1), "Value is false", string.Format(inFormat, inParams));
+                OnFail(GetLocationFromStack(1), "Value is false", Log.Format(inFormat, inParams));
             }
         }
 
@@ -283,7 +283,7 @@ namespace BeauUtil.Debugger
         {
             if (inValue == null)
             {
-                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParam0));
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0));
             }
         }
 
@@ -295,7 +295,7 @@ namespace BeauUtil.Debugger
         {
             if (inValue == null)
             {
-                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParam0, inParam1));
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1));
             }
         }
 
@@ -307,7 +307,7 @@ namespace BeauUtil.Debugger
         {
             if (inValue == null)
             {
-                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParam0, inParam1, inParam2));
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1, inParam2));
             }
         }
 
@@ -319,7 +319,7 @@ namespace BeauUtil.Debugger
         {
             if (inValue == null)
             {
-                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), string.Format(inFormat, inParams));
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParams));
             }
         }
 
@@ -383,7 +383,7 @@ namespace BeauUtil.Debugger
             return ErrorResult.Break;
         }
 
-        static private string GetLocationFromStack(int inDepth)
+        static internal string GetLocationFromStack(int inDepth)
         {
             #if !DISABLE_STACK_TRACE
 

@@ -18,7 +18,7 @@ namespace BeauUtil.Variants
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Explicit)]
-    public struct VariantOperand : IEquatable<VariantOperand>
+    public struct VariantOperand : IEquatable<VariantOperand>, IDebugString
     {
         #region Types
 

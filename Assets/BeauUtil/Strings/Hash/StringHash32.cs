@@ -26,7 +26,7 @@ namespace BeauUtil
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Sequential, Size=4)]
     [Serializable]
-    public struct StringHash32 : IEquatable<StringHash32>, IComparable<StringHash32>
+    public struct StringHash32 : IEquatable<StringHash32>, IComparable<StringHash32>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedProxy<uint>
         #endif // USING_BEAUDATA

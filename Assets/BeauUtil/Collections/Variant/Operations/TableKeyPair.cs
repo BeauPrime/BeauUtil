@@ -18,7 +18,7 @@ namespace BeauUtil.Variants
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct TableKeyPair : IEquatable<TableKeyPair>
+    public struct TableKeyPair : IEquatable<TableKeyPair>, IDebugString
     {
         static public readonly string TableOperator = ":";
         static private readonly string StringFormat = "{0}" + TableOperator + "{1}";

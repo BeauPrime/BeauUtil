@@ -21,7 +21,7 @@ namespace BeauUtil.Variants
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Explicit, Size = 8)]
-    public struct Variant : IEquatable<Variant>, IComparable<Variant>
+    public struct Variant : IEquatable<Variant>, IComparable<Variant>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedObject
         #endif // USING_BEAUDATA

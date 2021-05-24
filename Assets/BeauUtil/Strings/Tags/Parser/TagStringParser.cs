@@ -126,6 +126,7 @@ namespace BeauUtil.Tags
             bool bModified = false;
             bool bTrackRichText = m_Delimiters.RichText;
             bool bTrackTags = !bTrackRichText || !HasSameDelims(m_Delimiters, RichTextDelimiters);
+            bool bIsCurlyBrace = HasSameDelims(m_Delimiters, CurlyBraceDelimiters);
 
             if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
             {
@@ -234,7 +235,17 @@ namespace BeauUtil.Tags
 
                         bool bTagHandled = false;
 
-                        if (m_ReplaceProcessor != null)
+                        if (bIsCurlyBrace && tag.Data.IsEmpty)
+                        {
+                            int argIndex;
+                            if (StringParser.TryParseInt(tag.Id, out argIndex))
+                            {
+                                CopyNonRichText(ref state, charIdx + 1);
+                                bTagHandled = true;
+                            }
+                        }
+
+                        if (!bTagHandled && m_ReplaceProcessor != null)
                         {
                             string replace;
                             if (m_ReplaceProcessor.TryReplace(tag, state.Context, out replace))
