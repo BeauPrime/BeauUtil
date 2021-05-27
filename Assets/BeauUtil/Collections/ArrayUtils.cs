@@ -274,7 +274,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if two arrays have the same content.
         /// </summary>
-        static public bool ContentEquals<T>(T[] inA, T[] inB) where T : IEquatable<T>
+        static public bool ContentEquals<T>(T[] inA, T[] inB)
         {
             if (inA == null)
                 return inB == null;

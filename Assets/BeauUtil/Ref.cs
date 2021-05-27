@@ -127,6 +127,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Replaces a reference to one object with a reference to another.
+        /// </summary>
+        static public bool CompareExchange<T>(ref T ioObject, T inExpected, T inReplace)
+        {
+            if (!EqualityComparer<T>.Default.Equals(ioObject, inExpected))
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
         /// Swaps two references.
         /// </summary>
         static public void Swap<T>(ref T ioA, ref T ioB)

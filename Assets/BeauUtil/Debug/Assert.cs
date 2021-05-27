@@ -97,6 +97,64 @@ namespace BeauUtil.Debugger
             }
         }
 
+        #region Fail
+
+        /// <summary>
+        /// Immediately fails.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Fail()
+        {
+            OnFail(GetLocationFromStack(1), "Assert Fail", null);
+        }
+
+        /// <summary>
+        /// Immediately fails.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Fail(bool inbValue, string inMessage)
+        {
+            OnFail(GetLocationFromStack(1), "Assert Fail", inMessage);
+        }
+
+        /// <summary>
+        /// Immediately fails.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Fail(bool inbValue, string inFormat, object inParam0)
+        {
+            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0));
+        }
+
+        /// <summary>
+        /// Immediately fails.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Fail(bool inbValue, string inFormat, object inParam0, object inParam1)
+        {
+            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1));
+        }
+
+        /// <summary>
+        /// Immediately fails.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Fail(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
+        {
+           OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1, inParam2));
+        }
+
+        /// <summary>
+        /// Immediately fails.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Fail(bool inbValue, string inFormat, params object[] inParams)
+        {
+            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParams));
+        }
+
+        #endregion // Fail
+
         #region True
 
         /// <summary>
@@ -176,7 +234,7 @@ namespace BeauUtil.Debugger
         #region False
 
         /// <summary>
-        /// Asserts that a condition is true.
+        /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue)
@@ -188,7 +246,7 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
-        /// Asserts that a condition is true.
+        /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inMessage)
@@ -200,7 +258,7 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
-        /// Asserts that a condition is true.
+        /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, object inParam0)
@@ -212,7 +270,7 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
-        /// Asserts that a condition is true.
+        /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, object inParam0, object inParam1)
@@ -224,7 +282,7 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
-        /// Asserts that a condition is true.
+        /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
@@ -236,7 +294,7 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
-        /// Asserts that a condition is true.
+        /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void False(bool inbValue, string inFormat, params object[] inParams)
