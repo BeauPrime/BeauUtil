@@ -687,6 +687,11 @@ namespace BeauUtil.Variants
 
         public bool TryGetTable(object inContext, StringHash32 inTableId, out VariantTable outTable)
         {
+            return InternalTryGetTable(inContext, inTableId, out outTable, true);
+        }
+
+        private bool InternalTryGetTable(object inContext, StringHash32 inTableId, out VariantTable outTable, bool inbCheckBase)
+        {
             if (inTableId.IsEmpty && m_DefaultTable != null && m_DefaultTable.IsActive())
             {
                 outTable = m_DefaultTable.Resolve(inContext);
@@ -717,9 +722,12 @@ namespace BeauUtil.Variants
                     return true;
             }
 
-            if (m_Base != null)
+            if (inbCheckBase)
             {
-                return m_Base.TryGetTable(inContext, inTableId, out outTable);
+                if (m_Base != null)
+                {
+                    return m_Base.TryGetTable(inContext, inTableId, out outTable);
+                }
             }
 
             outTable = null;
@@ -764,7 +772,7 @@ namespace BeauUtil.Variants
             }
 
             VariantTable table;
-            if (TryGetTable(inContext, inKey.TableId, out table))
+            if (InternalTryGetTable(inContext, inKey.TableId, out table, false))
             {
                 return table.TryLookup(inKey.VariableId, out outVariant);
             }
