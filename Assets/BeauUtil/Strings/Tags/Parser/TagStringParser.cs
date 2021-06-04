@@ -114,6 +114,8 @@ namespace BeauUtil.Tags
             {
                 string originalString = inInput.ToString();
                 outTarget.RichText = outTarget.VisibleText = originalString;
+                m_RichBuilder.Length = 0;
+                m_StrippedBuilder.Length = 0;
             }
         }
 
