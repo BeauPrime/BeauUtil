@@ -692,34 +692,39 @@ namespace BeauUtil.Variants
 
         private bool InternalTryGetTable(object inContext, StringHash32 inTableId, out VariantTable outTable, bool inbCheckBase)
         {
-            if (inTableId.IsEmpty && m_DefaultTable != null && m_DefaultTable.IsActive())
+            if (inTableId.IsEmpty)
             {
-                outTable = m_DefaultTable.Resolve(inContext);
-                return true;
-            }
-
-            if (m_TableLookup != null)
-            {
-                TableRule tableRule;
-                if (m_TableLookup.TryGetValue(inTableId, out tableRule))
+                if (m_DefaultTable != null && m_DefaultTable.IsActive())
                 {
-                    outTable = tableRule.Resolve(inContext);
+                    outTable = m_DefaultTable.Resolve(inContext);
                     return true;
                 }
             }
-
-            if (m_GetTableWithContextFallback != null)
+            else
             {
-                outTable = m_GetTableWithContextFallback(inTableId, inContext);
-                if (outTable != null)
-                    return true;
-            }
+                if (m_TableLookup != null)
+                {
+                    TableRule tableRule;
+                    if (m_TableLookup.TryGetValue(inTableId, out tableRule))
+                    {
+                        outTable = tableRule.Resolve(inContext);
+                        return true;
+                    }
+                }
 
-            if (m_GetTableFallback != null)
-            {
-                outTable = m_GetTableFallback(inTableId);
-                if (outTable != null)
-                    return true;
+                if (m_GetTableWithContextFallback != null)
+                {
+                    outTable = m_GetTableWithContextFallback(inTableId, inContext);
+                    if (outTable != null)
+                        return true;
+                }
+
+                if (m_GetTableFallback != null)
+                {
+                    outTable = m_GetTableFallback(inTableId);
+                    if (outTable != null)
+                        return true;
+                }
             }
 
             if (inbCheckBase)
