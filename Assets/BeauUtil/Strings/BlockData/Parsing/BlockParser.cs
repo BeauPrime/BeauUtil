@@ -35,7 +35,11 @@ namespace BeauUtil.Blocks
         {
             IEnumerator parser;
             TPackage package = ParseAsync(inFileName, inFile, inRules, inGenerator, inCache, out parser);
-            while (parser.MoveNext()) ;
+            if (parser != null)
+            {
+                while (parser.MoveNext()) ;
+            }
+
             return package;
         }
 
@@ -48,7 +52,10 @@ namespace BeauUtil.Blocks
             where TPackage : class, IDataBlockPackage<TBlock>
         {
             IEnumerator parser = ParseAsync(ref ioPackage, inFileName, inFile, inRules, inGenerator, inCache);
-            while (parser.MoveNext()) ;
+            if (parser != null)
+            {
+                while (parser.MoveNext()) ;
+            }
         }
 
         /// <summary>

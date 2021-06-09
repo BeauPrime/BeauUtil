@@ -26,6 +26,16 @@ namespace BeauUtil.Blocks
 
         #region Parse
 
+        public void Parse<TPackage>(IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TPackage : ScriptableDataBlockPackage<TBlock>
+        {
+            if (m_Parsed)
+                return;
+
+            TPackage self = (TPackage) this;
+            BlockParser.Parse(ref self, name, Source(), BlockParsingRules.Default, inGenerator, inCache);
+        }
+
         public void Parse<TPackage>(IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TPackage : ScriptableDataBlockPackage<TBlock>
         {
@@ -34,6 +44,16 @@ namespace BeauUtil.Blocks
 
             TPackage self = (TPackage) this;
             BlockParser.Parse(ref self, name, Source(), inRules, inGenerator, inCache);
+        }
+
+        public IEnumerator ParseAsync<TPackage>(IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TPackage : ScriptableDataBlockPackage<TBlock>
+        {
+            if (m_Parsed)
+                return null;
+            
+            TPackage self = (TPackage) this;
+            return BlockParser.ParseAsync(ref self, name, Source(), BlockParsingRules.Default, inGenerator, inCache);
         }
 
         public IEnumerator ParseAsync<TPackage>(IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
