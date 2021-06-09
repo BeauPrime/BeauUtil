@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace BeauUtil.Blocks
 {
-    public interface IDataBlockPackage<T> : IReadOnlyCollection<T>
+    public interface IDataBlockPackage<out T> : IReadOnlyCollection<T>
         where T : class, IDataBlock
     {
     }
