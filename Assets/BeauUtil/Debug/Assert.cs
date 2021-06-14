@@ -112,7 +112,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        static public void Fail(bool inbValue, string inMessage)
+        static public void Fail(string inMessage)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", inMessage);
         }
@@ -121,7 +121,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        static public void Fail(bool inbValue, string inFormat, object inParam0)
+        static public void Fail(string inFormat, object inParam0)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0));
         }
@@ -130,7 +130,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        static public void Fail(bool inbValue, string inFormat, object inParam0, object inParam1)
+        static public void Fail(string inFormat, object inParam0, object inParam1)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1));
         }
@@ -139,7 +139,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        static public void Fail(bool inbValue, string inFormat, object inParam0, object inParam1, object inParam2)
+        static public void Fail(string inFormat, object inParam0, object inParam1, object inParam2)
         {
            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1, inParam2));
         }
@@ -148,7 +148,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        static public void Fail(bool inbValue, string inFormat, params object[] inParams)
+        static public void Fail(string inFormat, params object[] inParams)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParams));
         }

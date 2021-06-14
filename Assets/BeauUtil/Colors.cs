@@ -198,5 +198,26 @@ namespace BeauUtil
                 return a == b;
             }
         }
+
+        /// <summary>
+        /// Multiplies two Color32s together.
+        /// </summary>
+        static public Color32 Multiply(Color32 inA, Color32 inB)
+        {
+            Color32 result = default(Color32);
+            result.r = (byte) (inA.r * inB.r / 255f);
+            result.g = (byte) (inA.g * inB.g / 255f);
+            result.b = (byte) (inA.b * inB.b / 255f);
+            result.a = (byte) (inA.a * inB.a / 255f);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns if the Color32 is different from its maximum value.
+        /// </summary>
+        static public bool IsNotWhite(this Color32 inColor32)
+        {
+            return inColor32.r < 255 || inColor32.g < 255 || inColor32.b < 255 || inColor32.a < 255;
+        }
     }
 }
