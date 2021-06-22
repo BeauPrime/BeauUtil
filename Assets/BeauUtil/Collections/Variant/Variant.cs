@@ -86,6 +86,8 @@ namespace BeauUtil.Variants
 
         public VariantType Type { get { return m_Type; } }
 
+        public bool IsNull() { return m_Type == VariantType.Null; }
+
         public bool AsBool()
         {
             switch(m_Type)
@@ -683,6 +685,98 @@ namespace BeauUtil.Variants
         static internal bool CanBeTreatedAsNumber(VariantType inType)
         {
             return inType <= VariantType.Float;
+        }
+
+        /// <summary>
+        /// Attempts to convert from an object to a Variant.
+        /// </summary>
+        static public bool TryConvertFrom(object inObject, out Variant outVariant)
+        {
+            if (inObject == null)
+            {
+                outVariant = Null;
+                return true;
+            }
+
+            if (inObject is Variant)
+            {
+                outVariant = (Variant) inObject;
+                return true;
+            }
+
+            if (inObject is StringHash32)
+            {
+                outVariant = new Variant((StringHash32) inObject);
+                return true;
+            }
+
+            TypeCode code = System.Type.GetTypeCode(inObject.GetType());
+
+            switch(code)
+            {
+                case TypeCode.String:
+                    {
+                        outVariant = new Variant((string) inObject);
+                        return true;
+                    }
+
+                case TypeCode.Boolean:
+                    {
+                        outVariant = new Variant((bool) inObject);
+                        return true;
+                    }
+
+                case TypeCode.Byte:
+                    {
+                        outVariant = new Variant((uint) (byte) inObject);
+                        return true;
+                    }
+
+                case TypeCode.Char:
+                    {
+                        outVariant = new Variant((char) inObject);
+                        return true;
+                    }
+
+                case TypeCode.Int16:
+                    {
+                        outVariant = new Variant((short) inObject);
+                        return true;
+                    }
+
+                case TypeCode.Int32:
+                    {
+                        outVariant = new Variant((int) inObject);
+                        return true;
+                    }
+
+                case TypeCode.SByte:
+                    {
+                        outVariant = new Variant((sbyte) inObject);
+                        return true;
+                    }
+
+                case TypeCode.Single:
+                    {
+                        outVariant = new Variant((float) inObject);
+                        return true;
+                    }
+
+                case TypeCode.UInt16:
+                    {
+                        outVariant = new Variant((uint) (ushort) inObject);
+                        return true;
+                    }
+
+                case TypeCode.UInt32:
+                    {
+                        outVariant = new Variant((uint) inObject);
+                        return true;
+                    }
+            }
+
+            outVariant = default(Variant);
+            return false;
         }
 
         #endregion // Utilities

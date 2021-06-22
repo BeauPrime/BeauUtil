@@ -21,10 +21,10 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Executes this modification.
         /// </summary>
-        public bool Execute(IVariantResolver inResolver, object inContext = null)
+        public bool Execute(IVariantResolver inResolver, object inContext = null, IMethodCache inInvoker = null)
         {
             Variant operandValue;
-            if (Operand.TryResolve(inResolver, inContext, out operandValue))
+            if (Operand.TryResolve(inResolver, inContext, out operandValue, inInvoker))
             {
                 return inResolver.TryModify(inContext, VariableKey, Operator, operandValue);
             }

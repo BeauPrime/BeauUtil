@@ -17,7 +17,6 @@ namespace BeauUtil.Variants
     /// Operand for a variant operation.
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
-    [StructLayout(LayoutKind.Explicit)]
     public struct VariantOperand : IEquatable<VariantOperand>, IDebugString
     {
         #region Types
@@ -26,19 +25,22 @@ namespace BeauUtil.Variants
         {
             Variant,
             TableKey,
+            Method
         }
 
         #endregion // Types
 
-        [FieldOffset(0)] private readonly VariantOperandType m_Type;
-        [FieldOffset(8)] private readonly Variant m_Value;
-        [FieldOffset(8)] private readonly TableKeyPair m_TableKey;
+        private readonly VariantOperandType m_Type;
+        private readonly Variant m_Value;
+        private readonly TableKeyPair m_TableKey;
+        private readonly MethodCall m_MethodCall;
 
         private VariantOperand(VariantOperandType inType)
         {
             m_Type = inType;
             m_Value = default(Variant);
             m_TableKey = default(TableKeyPair);
+            m_MethodCall = default(MethodCall);
         }
 
         public VariantOperand(Variant inValue)
@@ -53,10 +55,16 @@ namespace BeauUtil.Variants
             m_TableKey = inKey;
         }
 
+        public VariantOperand(MethodCall inMethodCall)
+            : this(VariantOperandType.Method)
+        {
+            m_MethodCall = inMethodCall;
+        }
+
         /// <summary>
         /// Attempts to resolve the value.
         /// </summary>
-        public bool TryResolve(IVariantResolver inResolver, object inContext, out Variant outValue)
+        public bool TryResolve(IVariantResolver inResolver, object inContext, out Variant outValue, IMethodCache inInvoker = null)
         {
             switch(m_Type)
             {
@@ -68,6 +76,21 @@ namespace BeauUtil.Variants
                 case VariantOperandType.Variant:
                     {
                         outValue = m_Value;
+                        return true;
+                    }
+
+                case VariantOperandType.Method:
+                    {
+                        if (inInvoker == null)
+                            throw new ArgumentNullException("inInvoker", "No IMethodCache provided - cannot invoke a method call operand");
+                        
+                        object obj;
+                        if (!inInvoker.TryStaticInvoke(m_MethodCall, out obj) || !Variant.TryConvertFrom(obj, out outValue))
+                        {
+                            outValue = default(Variant);
+                            return false;
+                        }
+
                         return true;
                     }
 
@@ -134,6 +157,9 @@ namespace BeauUtil.Variants
                 case VariantOperandType.TableKey:
                     return m_TableKey.ToString();
 
+                case VariantOperandType.Method:
+                    return m_MethodCall.ToString();
+
                 default:
                     throw new InvalidOperationException("Unknown variant operand type " + m_Type.ToString());
             }
@@ -148,6 +174,9 @@ namespace BeauUtil.Variants
 
                 case VariantOperandType.TableKey:
                     return m_TableKey.ToDebugString();
+
+                case VariantOperandType.Method:
+                    return m_MethodCall.ToDebugString();
 
                 default:
                     throw new InvalidOperationException("Unknown variant operand type " + m_Type.ToString());
@@ -174,6 +203,13 @@ namespace BeauUtil.Variants
             if (TableKeyPair.TryParse(inData, out tableKey))
             {
                 outOperand = new VariantOperand(tableKey);
+                return true;
+            }
+
+            MethodCall call;
+            if (MethodCall.TryParse(inData, out call))
+            {
+                outOperand = new VariantOperand(call);
                 return true;
             }
 

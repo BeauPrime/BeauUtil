@@ -97,6 +97,72 @@ namespace BeauUtil.Tags
         #endregion // Constructors
 
         /// <summary>
+        /// Returns the first float argument.
+        /// </summary>
+        public float GetFloat()
+        {
+            return Argument0.AsFloat();
+        }
+
+        /// <summary>
+        /// Sets the first float argument.
+        /// </summary>
+        public void SetFloat(float inValue)
+        {
+            Argument0 = inValue;
+        }
+
+        /// <summary>
+        /// Returns the first bool argument.
+        /// </summary>
+        public bool GetBool()
+        {
+            return Argument0.AsBool();
+        }
+
+        /// <summary>
+        /// Sets the first bool argument.
+        /// </summary>
+        public void SetBool(bool inbValue)
+        {
+            Argument0 = inbValue;
+        }
+
+        /// <summary>
+        /// Returns the first StringHash32 argument.
+        /// </summary>
+        public StringHash32 GetStringHash()
+        {
+            return Argument0.AsStringHash();
+        }
+
+        /// <summary>
+        /// Sets the first StringHash32 argument.
+        /// </summary>
+        public void SetStringHash(StringHash32 inValue)
+        {
+            Argument0 = inValue;
+        }
+
+        /// <summary>
+        /// Sets the argument string.
+        /// </summary>
+        public void SetCommaSeparatedArgs(StringSlice inString)
+        {
+            StringArgument = inString;
+        }
+
+        /// <summary>
+        /// Extracts comma-separated string arguments from the StringArgument.
+        /// </summary>
+        public TempList8<StringSlice> ExtractStringArgs()
+        {
+            TempList8<StringSlice> args = default(TempList8<StringSlice>);
+            StringArgument.Split(s_CommaSplitter ?? (s_CommaSplitter = new StringUtils.ArgsList.Splitter()), StringSplitOptions.None, ref args);
+            return args;
+        }
+
+        /// <summary>
         /// Resets arguments.
         /// </summary>
         public void Reset()
@@ -108,5 +174,7 @@ namespace BeauUtil.Tags
             Argument1 = Variant.Null;
             AdditionalData = null;
         }
+
+        [ThreadStatic] static private StringUtils.ArgsList.Splitter s_CommaSplitter;
     }
 }

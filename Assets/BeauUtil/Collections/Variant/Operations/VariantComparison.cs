@@ -16,42 +16,42 @@ namespace BeauUtil.Variants
     /// </summary>
     public struct VariantComparison
     {
-        public TableKeyPair VariableKey;
+        public VariantOperand Left;
         public VariantCompareOperator Operator;
-        public VariantOperand Operand;
+        public VariantOperand Right;
 
         /// <summary>
         /// Evaluates this comparison.
         /// </summary>
-        public bool Evaluate(IVariantResolver inResolver, object inContext = null)
+        public bool Evaluate(IVariantResolver inResolver, object inContext = null, IMethodCache inInvoker = null)
         {
-            Variant variableValue, operandValue;
-            bool bRetrievedVariable = inResolver.TryResolve(inContext, VariableKey, out variableValue);
-            bool bRetrievedOperand = Operand.TryResolve(inResolver, inContext, out operandValue);
+            Variant leftValue, rightValue;
+            bool bRetrievedLeft = Left.TryResolve(inResolver, inContext, out leftValue, inInvoker);
+            bool bRetrievedRight = Right.TryResolve(inResolver, inContext, out rightValue, inInvoker);
 
             switch(Operator)
             {
                 case VariantCompareOperator.LessThan:
-                    return variableValue < operandValue;
+                    return leftValue < rightValue;
                 case VariantCompareOperator.LessThanOrEqualTo:
-                    return variableValue <= operandValue;
+                    return leftValue <= rightValue;
                 case VariantCompareOperator.EqualTo:
-                    return variableValue == operandValue;
+                    return leftValue == rightValue;
                 case VariantCompareOperator.NotEqualTo:
-                    return variableValue != operandValue;
+                    return leftValue != rightValue;
                 case VariantCompareOperator.GreaterThanOrEqualTo:
-                    return variableValue >= operandValue;
+                    return leftValue >= rightValue;
                 case VariantCompareOperator.GreaterThan:
-                    return variableValue > operandValue;
+                    return leftValue > rightValue;
 
                 case VariantCompareOperator.Exists:
-                    return bRetrievedVariable;
+                    return bRetrievedLeft;
                 case VariantCompareOperator.DoesNotExist:
-                    return !bRetrievedVariable;
+                    return !bRetrievedLeft;
                 case VariantCompareOperator.True:
-                    return variableValue.AsBool();
+                    return leftValue.AsBool();
                 case VariantCompareOperator.False:
-                    return !variableValue.AsBool();
+                    return !leftValue.AsBool();
 
                 default:
                     throw new InvalidOperationException("Unknown operator " + Operator.ToString());
@@ -129,7 +129,7 @@ namespace BeauUtil.Variants
                     }
             }
 
-            if (!TableKeyPair.TryParse(idSlice, out outComparison.VariableKey))
+            if (!VariantOperand.TryParse(idSlice, out outComparison.Left))
             {
                 outComparison = default(VariantComparison);
                 return false;
@@ -137,11 +137,11 @@ namespace BeauUtil.Variants
 
             if (!bRequiresOperand)
             {
-                outComparison.Operand = default(VariantOperand);
+                outComparison.Right = default(VariantOperand);
                 return true;
             }
 
-            return VariantOperand.TryParse(operandSlice, out outComparison.Operand);
+            return VariantOperand.TryParse(operandSlice, out outComparison.Right);
         }
 
         private const string EqualsOperator = "==";

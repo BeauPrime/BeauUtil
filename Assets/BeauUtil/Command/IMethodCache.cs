@@ -33,6 +33,16 @@ namespace BeauUtil
     /// </summary>
     static public class MethodCacheExtensions
     {
+        static public bool TryStaticInvoke(this IMethodCache inCache, MethodCall inCall, out object outResult)
+        {
+            return inCache.TryStaticInvoke(inCall.Id, inCall.Args, out outResult);
+        }
+
+        static public bool TryInvoke(this IMethodCache inCache, object inTarget, MethodCall inCall, out object outResult)
+        {
+            return inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, out outResult);
+        }
+
         static public object StaticInvoke(this IMethodCache inCache, StringHash32 inId, StringSlice inArguments)
         {
             object result;
@@ -44,6 +54,20 @@ namespace BeauUtil
         {
             object result;
             inCache.TryInvoke(inTarget, inId, inArguments, out result);
+            return result;
+        }
+
+        static public object StaticInvoke(this IMethodCache inCache, MethodCall inCall)
+        {
+            object result;
+            inCache.TryStaticInvoke(inCall.Id, inCall.Args, out result);
+            return result;
+        }
+
+        static public object Invoke(this IMethodCache inCache, object inTarget, MethodCall inCall)
+        {
+            object result;
+            inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, out result);
             return result;
         }
     }

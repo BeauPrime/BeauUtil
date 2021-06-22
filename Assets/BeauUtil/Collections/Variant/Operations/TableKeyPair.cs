@@ -61,7 +61,6 @@ namespace BeauUtil.Variants
         /// <list type="bullet">
         /// <item>variableId</item>
         /// <item>tableId:variableId</item>
-        /// <item>tableId[variableId]</item>
         /// </list>
         /// </summary>
         static public bool TryParse(StringSlice inSource, out TableKeyPair outKey)
@@ -73,32 +72,6 @@ namespace BeauUtil.Variants
             }
 
             inSource = inSource.Trim();
-
-            int lBracketIdx = inSource.IndexOf('[');
-            int rBracketIdx = inSource.IndexOf(']');
-
-            if (lBracketIdx >= 0 && rBracketIdx >= 0)
-            {
-                if (rBracketIdx < lBracketIdx || lBracketIdx == 0)
-                {
-                    outKey = default(TableKeyPair);
-                    return false;
-                }
-
-                int length = rBracketIdx - lBracketIdx;
-                
-                StringSlice tableId = inSource.Substring(0, lBracketIdx).TrimEnd();
-                StringSlice variantId = inSource.Substring(lBracketIdx + 1, length).Trim();
-
-                if (!VariantUtils.IsValidIdentifier(tableId) || !VariantUtils.IsValidIdentifier(variantId))
-                {
-                    outKey = default(TableKeyPair);
-                    return false;
-                }
-
-                outKey = new TableKeyPair(tableId, variantId);
-                return true;
-            }
 
             int operatorIdx = inSource.IndexOf(TableOperator);
             if (operatorIdx >= 0)
