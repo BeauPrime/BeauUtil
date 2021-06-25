@@ -389,6 +389,24 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Removes the given element from the buffer.
+        /// Preserves element order at the cost of speed.
+        /// </summary>
+#if EXPANDED_REFS
+        public bool Remove(in T inValue)
+#else
+        public bool Remove(T inValue)
+#endif // EXPANDED_REFS
+        {
+            int idx = IndexOf(inValue);
+            if (idx < 0)
+                return false;
+
+            RemoveAt(idx);
+            return true;
+        }
+
+        /// <summary>
         /// Removes the given element from the buffer by swapping.
         /// Does not preserve element order.
         /// </summary>
@@ -404,6 +422,41 @@ namespace BeauUtil
 
             FastRemoveAt(idx);
             return true;
+        }
+
+        /// <summary>
+        /// Removes the entry at the given index.
+        /// Preserves element order at the cost of speed.
+        /// </summary>
+        public void RemoveAt(int inIndex)
+        {
+            if (inIndex < 0 || inIndex >= m_Count)
+                throw new ArgumentOutOfRangeException("inIndex");
+
+            int entryIdx = (m_Head + inIndex) % m_Capacity;
+            int tailIdx = (m_Tail + m_Capacity - 1) % m_Capacity;
+
+            if (entryIdx != tailIdx)
+            {
+                int remainder = m_Count - inIndex - 1;
+            
+                if (m_Head < m_Tail)
+                {
+                    Array.Copy(m_Data, entryIdx + 1, m_Data, entryIdx, remainder);
+                }
+                else
+                {
+                    // TODO: Do this in blocks with Array.Copy
+                    for(int i = 0; i < remainder; i++)
+                    {
+                        m_Data[(entryIdx + i) % m_Capacity] = m_Data[(entryIdx + i + 1) % m_Capacity];
+                    }
+                }
+            }
+
+            m_Data[tailIdx] = default(T);
+            m_Tail = tailIdx;
+            --m_Count;
         }
 
         /// <summary>

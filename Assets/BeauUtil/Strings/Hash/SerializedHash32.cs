@@ -23,7 +23,7 @@ namespace BeauUtil
     /// Serializable hashed string.
     /// </summary>
     [Serializable]
-    public struct SerializedHash32 : IDebugString
+    public struct SerializedHash32 : IEquatable<SerializedHash32>, IDebugString
     {
         #region Inspector
 
@@ -47,6 +47,16 @@ namespace BeauUtil
         public bool IsEmpty
         {
             get { return m_Hash == 0; }
+        }
+
+        public bool Equals(SerializedHash32 other)
+        {
+            return m_Hash == other.m_Hash;
+        }
+
+        public string Source()
+        {
+            return m_Source;
         }
 
         public StringHash32 Hash()
@@ -76,6 +86,21 @@ namespace BeauUtil
         public override string ToString()
         {
             return Hash().ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SerializedHash32)
+                return Equals((SerializedHash32) obj);
+            if (obj is StringHash32)
+                return m_Hash == ((StringHash32) obj).HashValue;
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return m_Hash.GetHashCode();
         }
 
         static public implicit operator SerializedHash32(string inString)

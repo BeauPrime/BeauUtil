@@ -9,9 +9,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using BeauUtil.Variants;
-using UnityEngine;
 
 namespace BeauUtil.Tags
 {
@@ -21,6 +19,7 @@ namespace BeauUtil.Tags
     public class CustomTagParserConfig : IReplaceProcessor, IEventProcessor
     {
         private readonly MatchRuleSet<ReplaceRule> m_ReplaceRules = new MatchRuleSet<ReplaceRule>(16);
+        private readonly Dictionary<int, string> m_CharReplace = new Dictionary<int, string>(4);
         private readonly IReplaceProcessor m_ReplaceInheritFrom;
 
         private readonly MatchRuleSet<EventRule> m_EventRules = new MatchRuleSet<EventRule>(16);
@@ -280,6 +279,16 @@ namespace BeauUtil.Tags
             return rule;
         }
 
+        /// <summary>
+        /// Adds a new replace rule for a single character expansion.
+        /// </summary>
+        public void AddReplace(char inCharacter, string inReplace)
+        {
+            CheckLocked();
+
+            m_CharReplace[inCharacter] = inReplace;
+        }
+
         public bool TryReplace(TagData inData, object inContext, out string outReplace)
         {
             ReplaceRule rule = m_ReplaceRules.FindMatch(inData.Id);
@@ -289,6 +298,20 @@ namespace BeauUtil.Tags
             if (m_ReplaceInheritFrom != null)
             {
                 return m_ReplaceInheritFrom.TryReplace(inData, inContext, out outReplace);
+            }
+
+            outReplace = null;
+            return false;
+        }
+
+        public bool TryReplace(char inCharacter, object inContext, out string outReplace)
+        {
+            if (m_CharReplace.TryGetValue(inCharacter, out outReplace))
+                return true;
+            
+            if (m_ReplaceInheritFrom != null)
+            {
+                return m_ReplaceInheritFrom.TryReplace(inCharacter, inContext, out outReplace);
             }
 
             outReplace = null;

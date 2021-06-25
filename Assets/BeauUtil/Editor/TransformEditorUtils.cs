@@ -61,14 +61,14 @@ namespace BeauUtil.Editor
             }
         }
 
-        [MenuItem("GameObject/Flatten Hierarchy (Shallow) %#Q")]
+        [MenuItem("GameObject/Flatten Hierarchy (Shallow) %#Q", false, 2000)]
         static private void FlattenHierarchyNonRecursive()
         {
             foreach(var gameObject in Selection.gameObjects)
                 FlattenHierarchy(gameObject.transform, false);
         }
 
-        [MenuItem("GameObject/Flatten Hierarchy (Deep) %#W")]
+        [MenuItem("GameObject/Flatten Hierarchy (Deep) %#W", false, 2001)]
         static private void FlattenHierarchyRecursive()
         {
             foreach(var gameObject in Selection.gameObjects)

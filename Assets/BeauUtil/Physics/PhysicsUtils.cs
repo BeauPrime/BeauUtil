@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using BeauUtil.Debugger;
 using UnityEngine;
 
 namespace BeauUtil
@@ -292,5 +293,119 @@ namespace BeauUtil
         }
 
         #endregion // Private Filters
+
+        #region Uniform Scaling
+
+        /// <summary>
+        /// Ensures scaling is uniform for this transform and its colliders.
+        /// </summary>
+        static public bool EnsureUniformScale(Transform inTransform, bool inbForceToIdentity = false)
+        {
+            // if scaling is uniform, then we don't have to do anything
+            Vector3 scale = inTransform.localScale;
+            
+            if (inbForceToIdentity)
+            {
+                if (scale.x == 1 && scale.y == 1 && scale.z == 1)
+                    return false;
+            }
+            else
+            {
+                if (scale.x == scale.y && scale.y == scale.z)
+                    return false;
+            }
+
+            Collider2D[] collider2ds = inTransform.GetComponents<Collider2D>();
+            foreach(var collider2d in collider2ds)
+            {
+                ApplyScale(collider2d, scale);
+            }
+
+            Collider[] colliders = inTransform.GetComponents<Collider>();
+            foreach(var collider in colliders)
+            {
+                ApplyScale(collider, scale);
+            }
+
+            inTransform.localScale = Vector3.one;
+            return true;
+        }
+
+        /// <summary>
+        /// Adjusts the given collider for a given scale.
+        /// </summary>
+        static public bool ApplyScale(Collider inCollider, Vector3 inScale)
+        {
+            BoxCollider box = inCollider as BoxCollider;
+            if (box != null)
+            {
+                box.center = Vec3Mult(box.center, inScale);
+
+                Vec3Abs(ref inScale);
+                box.size = Vec3Mult(box.size, inScale);
+                return true;
+            }
+
+            SphereCollider sphere = inCollider as SphereCollider;
+            if (sphere != null)
+            {
+                sphere.center = Vec3Mult(sphere.center, inScale);
+
+                Vec3Abs(ref inScale);
+                sphere.radius *= Math.Max(Math.Max(inScale.x, inScale.y), inScale.z);
+                return true;
+            }
+
+            CapsuleCollider capsule = inCollider as CapsuleCollider;
+            if (capsule != null)
+            {
+                capsule.center = Vec3Mult(capsule.center, inScale);
+                
+                Vec3Abs(ref inScale);
+                switch(capsule.direction)
+                {
+                    case 0:
+                        capsule.height *= inScale.x;
+                        capsule.radius *= Math.Max(inScale.y, inScale.z);
+                        break;
+
+                    case 1:
+                        capsule.height *= inScale.y;
+                        capsule.radius *= Math.Max(inScale.x, inScale.z);
+                        break;
+
+                    case 2:
+                        capsule.height *= inScale.z;
+                        capsule.radius *= Math.Max(inScale.x, inScale.y);
+                        break;
+                }
+                return true;
+            }
+
+            Log.Warn("[PhysicsUtils] Unable to adjust scaling on a collider of type '{0}'", inCollider.GetType().Name);
+            return false;
+        }
+
+        #endregion // Scaling
+
+        #region Math
+        
+        static private void Vec3Abs(ref Vector3 inVec)
+        {
+            inVec.x = Math.Abs(inVec.x);
+            inVec.y = Math.Abs(inVec.y);
+            inVec.z = Math.Abs(inVec.z);
+        }
+
+        static private Vector3 Vec3Mult(Vector3 inA, Vector3 inB)
+        {
+            Vector3 result;
+            result.x = inA.x * inB.x;
+            result.y = inA.y * inB.y;
+            result.z = inA.z * inB.z;
+            return result;
+        }
+
+        #endregion // Math
     }
 }

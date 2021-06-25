@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using BeauUtil.Debugger;
 using UnityEngine;
 
 namespace BeauUtil
@@ -644,5 +645,64 @@ namespace BeauUtil
         #endregion // First
 
         #endregion // Colliding vs LayerMask
+    
+        #region Uniform Scaling
+
+        /// <summary>
+        /// Adjusts the given collider for a given scale.
+        /// </summary>
+        static public bool ApplyScale(Collider2D inCollider, Vector3 inScale)
+        {
+            inCollider.offset *= inScale;
+            
+            BoxCollider2D box = inCollider as BoxCollider2D;
+            if (box != null)
+            {
+                Vec3Abs(ref inScale);
+                box.size *= inScale;
+                return true;
+            }
+
+            CircleCollider2D circle = inCollider as CircleCollider2D;
+            if (circle != null)
+            {
+                Vec3Abs(ref inScale);
+                circle.radius *= Math.Max(inScale.x, inScale.y);
+                return true;
+            }
+
+            EdgeCollider2D edge = inCollider as EdgeCollider2D;
+            if (edge != null)
+            {
+                Vector2[] points = edge.points;
+                for(int i = 0, count = points.Length; i < count; i++)
+                    points[i] *= inScale;
+                edge.points = points;
+                return true;
+            }
+
+            CapsuleCollider2D capsule = inCollider as CapsuleCollider2D;
+            if (capsule != null)
+            {
+                Vec3Abs(ref inScale);
+                capsule.size *= inScale;
+                return true;
+            }
+
+            PolygonCollider2D poly = inCollider as PolygonCollider2D;
+            if (poly != null)
+            {
+                Vector2[] points = poly.points;
+                for(int i = 0, count = points.Length; i < count; i++)
+                    points[i] *= inScale;
+                poly.points = points;
+                return false;
+            }
+
+            Log.Warn("[PhysicsUtils] Unable to adjust scaling on a collider of type '{0}'", inCollider.GetType().Name);
+            return false;
+        }
+
+        #endregion // Uniform Scaling
     }
 }

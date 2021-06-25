@@ -294,6 +294,26 @@ namespace BeauUtil.Tags
                     }
                 }
 
+                if (!bHandled && state.TagStart == -1 && state.RichStart == -1 && m_ReplaceProcessor != null)
+                {
+                    string charCodeReplace;
+                    if (m_ReplaceProcessor.TryReplace(state.Input[charIdx], inContext, out charCodeReplace))
+                    {
+                        CopyNonRichText(ref state, charIdx);
+                        if (ContainsPotentialTags(charCodeReplace, m_Delimiters))
+                        {
+                            RestartString(ref state, charCodeReplace, charIdx + 1);
+                            charIdx = -1;
+                            length = state.Input.Length;
+                        }
+                        else
+                        {
+                            SkipText(ref state, charIdx + 1);
+                            AddNonRichText(ref state, charCodeReplace);
+                        }
+                    }
+                }
+
                 ++charIdx;
             }
 

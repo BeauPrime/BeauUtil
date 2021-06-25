@@ -7,9 +7,6 @@
  * Purpose: Replace processor.
  */
 
-using System;
-using System.Collections.Generic;
-
 namespace BeauUtil.Tags
 {
     /// <summary>
@@ -18,5 +15,6 @@ namespace BeauUtil.Tags
     public interface IReplaceProcessor
     {
         bool TryReplace(TagData inData, object inContext, out string outReplace);
+        bool TryReplace(char inCode, object inContext, out string outReplace);
     }
 }

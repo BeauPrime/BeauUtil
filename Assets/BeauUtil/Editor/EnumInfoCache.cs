@@ -250,7 +250,7 @@ namespace BeauUtil.Editor
                 {
                     Enum val = inLabeledList.Get(i);
                     int input = Convert.ToInt32(val);
-                    int output = 1 << i;
+                    int output = 1 << mappings.Count;
 
                     if (Mathf.IsPowerOfTwo(input))
                     {
@@ -289,7 +289,7 @@ namespace BeauUtil.Editor
                     }
 
                     int input = Convert.ToInt32(val);
-                    int output = 1 << i;
+                    int output = 1 << mappings.Count;
 
                     if (Mathf.IsPowerOfTwo(input))
                     {
