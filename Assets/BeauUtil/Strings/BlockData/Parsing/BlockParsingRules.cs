@@ -24,7 +24,7 @@ namespace BeauUtil.Blocks
 
             public string BlockHeaderEndPrefix { get { return "---"; } }
 
-            public string BlockContentPrefix { get { return "\\"; } }
+            public string BlockContentPrefix { get { return null; } }
 
             public string BlockEndPrefix { get { return "==="; } }
 

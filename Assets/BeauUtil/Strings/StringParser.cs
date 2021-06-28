@@ -11,6 +11,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using BeauUtil.Variants;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -893,6 +894,82 @@ namespace BeauUtil
 
         #endregion // Float
 
+        #region Colors
+
+        /// <summary>
+        /// Attempts to parse the string slice into a color.
+        /// </summary>
+        static public bool TryParseColor(StringSlice inSlice, out Color outColor)
+        {
+            StringSlice colorData = inSlice;
+            StringSlice alphaData = StringSlice.Empty;
+
+            int dotIdx = inSlice.IndexOf('.');
+            if (dotIdx >= 0)
+            {
+                colorData = inSlice.Substring(0, dotIdx);
+                alphaData = inSlice.Substring(dotIdx + 1);
+            }
+
+            Color color = default(Color);
+            bool bParsed = false;
+
+            if (colorData.StartsWith('#'))
+            {
+                ulong hex;
+                StringSlice hexString = colorData.Substring(1);
+                if (hexString.Length <= 6 && TryParseHex(colorData, 6, out hex))
+                {
+                    color = Colors.RGBA((uint) hex << 8);
+                    bParsed = true;
+                }
+                else if (TryParseHex(colorData, 8, out hex))
+                {
+                    color = Colors.RGBA((uint) hex);
+                    bParsed = true;
+                }
+            }
+
+            if (!bParsed)
+            {
+                bParsed = ColorUtility.TryParseHtmlString(colorData.ToString(), out color);
+                if (!bParsed)
+                {
+                    outColor = default(Color);
+                    return false;
+                }
+            }
+
+            if (!alphaData.IsEmpty)
+            {
+                float alphaMult;
+                if (!TryParseFloat(alphaData, out alphaMult))
+                {
+                    outColor = default(Color);
+                    return false;
+                }
+
+                color.a *= alphaMult / 100f;
+            }
+
+            outColor = color;
+            return bParsed;
+        }
+
+        /// <summary>
+        /// Parses a string slice into a color.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public Color ParseColor(StringSlice inSlice, Color inDefault = default(Color))
+        {
+            Color result;
+            if (TryParseColor(inSlice, out result))
+                result = inDefault;
+            return result;
+        }
+
+        #endregion // Colors
+
         #region Convert
 
         /// <summary>
@@ -1171,9 +1248,9 @@ namespace BeauUtil
             TypeCode tc = Type.GetTypeCode(inType);
 
             if (tc == TypeCode.Object)
-                return inType == typeof(object) || inType == typeof(StringSlice) || inType == typeof(StringHash32) || inType == typeof(Variant);
+                return Array.IndexOf(ValidConversionTypes, inType) >= 0;
 
-            return Array.IndexOf(ValidConversionTypes, tc) >= 0;
+            return Array.IndexOf(ValidConversionTypeCodes, tc) >= 0;
         }
 
         /// <summary>
@@ -1184,11 +1261,16 @@ namespace BeauUtil
             return CanConvertTo(typeof(T));
         }
 
-        static private readonly TypeCode[] ValidConversionTypes = new TypeCode[]
+        static private readonly TypeCode[] ValidConversionTypeCodes = new TypeCode[]
         {
             TypeCode.Boolean, TypeCode.Byte, TypeCode.Char, TypeCode.DateTime, TypeCode.Decimal, TypeCode.Double,
             TypeCode.Int16, TypeCode.Int32, TypeCode.Int64, TypeCode.SByte, TypeCode.Single, TypeCode.String,
             TypeCode.UInt16, TypeCode.UInt32, TypeCode.UInt64
+        };
+
+        static private readonly Type[] ValidConversionTypes = new Type[]
+        {
+            typeof(object), typeof(StringSlice), typeof(StringHash32), typeof(Variant), typeof(UnityEngine.Color)
         };
 
         #endregion // Convert

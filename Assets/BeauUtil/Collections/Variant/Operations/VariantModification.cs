@@ -7,12 +7,15 @@
  * Purpose: Basic modification of a variant in a table
  */
 
+using System;
+using BeauUtil.Debugger;
+
 namespace BeauUtil.Variants
 {
     /// <summary>
     /// Modification of a variant in a table
     /// </summary>
-    public struct VariantModification
+    public struct VariantModification : IDebugString
     {
         public TableKeyPair VariableKey;
         public VariantModifyOperator Operator;
@@ -30,6 +33,30 @@ namespace BeauUtil.Variants
             }
             
             return false;
+        }
+
+        public string ToDebugString()
+        {
+            switch(Operator)
+            {
+                case VariantModifyOperator.Set:
+                    return Log.Format("{0} = {1}", VariableKey, Operand);
+
+                case VariantModifyOperator.Add:
+                    return Log.Format("{0} + {1}", VariableKey, Operand);
+
+                case VariantModifyOperator.Subtract:
+                    return Log.Format("{0} - {1}", VariableKey, Operand);
+
+                case VariantModifyOperator.Multiply:
+                    return Log.Format("{0} * {1}", VariableKey, Operand);
+
+                case VariantModifyOperator.Divide:
+                    return Log.Format("{0} / {1}", VariableKey, Operand);
+                
+                default:
+                    throw new InvalidOperationException("Unknown operator " + Operator.ToString());
+            }
         }
 
         /// <summary>

@@ -24,8 +24,8 @@ namespace BeauUtil
         void Load(Type inType);
         void LoadStatic();
 
-        bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, out object outResult);
-        bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, out object outResult);
+        bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, object inContext, out object outResult);
+        bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, object inContext, out object outResult);
     }
 
     /// <summary>
@@ -33,41 +33,41 @@ namespace BeauUtil
     /// </summary>
     static public class MethodCacheExtensions
     {
-        static public bool TryStaticInvoke(this IMethodCache inCache, MethodCall inCall, out object outResult)
+        static public bool TryStaticInvoke(this IMethodCache inCache, MethodCall inCall, object inContext, out object outResult)
         {
-            return inCache.TryStaticInvoke(inCall.Id, inCall.Args, out outResult);
+            return inCache.TryStaticInvoke(inCall.Id, inCall.Args, inContext, out outResult);
         }
 
-        static public bool TryInvoke(this IMethodCache inCache, object inTarget, MethodCall inCall, out object outResult)
+        static public bool TryInvoke(this IMethodCache inCache, object inTarget, MethodCall inCall, object inContext, out object outResult)
         {
-            return inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, out outResult);
+            return inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, inContext, out outResult);
         }
 
-        static public object StaticInvoke(this IMethodCache inCache, StringHash32 inId, StringSlice inArguments)
+        static public object StaticInvoke(this IMethodCache inCache, StringHash32 inId, StringSlice inArguments, object inContext)
         {
             object result;
-            inCache.TryStaticInvoke(inId, inArguments, out result);
+            inCache.TryStaticInvoke(inId, inArguments, inContext, out result);
             return result;
         }
 
-        static public object Invoke(this IMethodCache inCache, object inTarget, StringHash32 inId, StringSlice inArguments)
+        static public object Invoke(this IMethodCache inCache, object inTarget, StringHash32 inId, StringSlice inArguments, object inContext)
         {
             object result;
-            inCache.TryInvoke(inTarget, inId, inArguments, out result);
+            inCache.TryInvoke(inTarget, inId, inArguments, inContext, out result);
             return result;
         }
 
-        static public object StaticInvoke(this IMethodCache inCache, MethodCall inCall)
+        static public object StaticInvoke(this IMethodCache inCache, MethodCall inCall, object inContext)
         {
             object result;
-            inCache.TryStaticInvoke(inCall.Id, inCall.Args, out result);
+            inCache.TryStaticInvoke(inCall.Id, inCall.Args, inContext, out result);
             return result;
         }
 
-        static public object Invoke(this IMethodCache inCache, object inTarget, MethodCall inCall)
+        static public object Invoke(this IMethodCache inCache, object inTarget, MethodCall inCall, object inContext)
         {
             object result;
-            inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, out result);
+            inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, inContext, out result);
             return result;
         }
     }

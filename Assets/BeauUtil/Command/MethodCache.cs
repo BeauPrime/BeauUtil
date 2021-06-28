@@ -91,6 +91,9 @@ namespace BeauUtil
             protected object[] m_DefaultArguments;
             protected int m_RequiredParameterCount;
 
+            private BindContextAttribute m_ContextBind;
+            private int m_ContextOffset;
+
             public MethodDescription(TAttr inAttribute, MethodInfo inInfo)
             {
                 Id = inAttribute.Id;
@@ -120,7 +123,7 @@ namespace BeauUtil
 
                 m_Arguments = new object[m_Parameters.Length];
 
-                return ParseParameters(inParent.StringConverter);
+                return ParseParameters(inParent.m_StringConverter);
             }
 
             protected bool ParseParameters(IStringConverter inConverter)
@@ -128,6 +131,17 @@ namespace BeauUtil
                 for(int i = 0; i < m_Parameters.Length; ++i)
                 {
                     ParameterInfo info = m_Parameters[i];
+
+                    if (i == 0)
+                    {
+                        m_ContextBind = info.GetCustomAttribute<BindContextAttribute>();
+                        if (m_ContextBind != null)
+                        {
+                            m_ContextOffset = 1;
+                        }
+                        continue;
+                    }
+                    
                     Type paramType = info.ParameterType;
 
                     if (!inConverter.CanConvertTo(paramType))
@@ -150,22 +164,22 @@ namespace BeauUtil
                 return true;
             }
 
-            public bool TryInvoke(object inTarget, IReadOnlyList<object> inArguments, out object outReturnValue)
+            public bool TryInvoke(object inTarget, IReadOnlyList<object> inArguments, object inContext, out object outReturnValue)
             {
                 if (inArguments.Count < m_RequiredParameterCount || inArguments.Count >= m_Parameters.Length)
                 {
                     UnityEngine.Debug.LogErrorFormat("[MethodCache] Expected between {0} and {1} arguments to {2}::'{3}', got {4} instead",
-                        m_RequiredParameterCount, m_Parameters.Length, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
+                        m_RequiredParameterCount, m_Parameters.Length - m_ContextOffset, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
                     
                     outReturnValue = null;
                     return false;
                 }
-
+                
                 for(int i = 0; i < inArguments.Count; ++i)
                 {
                     try
                     {
-                        m_Arguments[i] = Convert.ChangeType(inArguments[i], m_Parameters[i].ParameterType);
+                        m_Arguments[i + m_ContextOffset] = Convert.ChangeType(inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType);
                     }
                     catch(Exception e)
                     {
@@ -176,19 +190,19 @@ namespace BeauUtil
                     }
                 }
 
-                return DoInvoke(inTarget, inArguments.Count, out outReturnValue);
+                return DoInvoke(inTarget, inArguments.Count + m_ContextOffset, inContext, out outReturnValue);
             }
 
 #if EXPANDED_REFS
-            public bool TryInvoke(object inTarget, in TempList16<StringSlice> inArguments, IStringConverter inConverter, out object outReturnValue)
+            public bool TryInvoke(object inTarget, in TempList16<StringSlice> inArguments, object inContext, IStringConverter inConverter, out object outReturnValue)
 #else
-            public bool TryInvoke(object inTarget, TempList16<StringSlice> inArguments, IStringConverter inConverter, out object outReturnValue)
+            public bool TryInvoke(object inTarget, TempList16<StringSlice> inArguments, object inContext, IStringConverter inConverter, out object outReturnValue)
 #endif // EXPANDED_REFS
             {
                 if (inArguments.Count < m_RequiredParameterCount || inArguments.Count > m_Parameters.Length)
                 {
                     UnityEngine.Debug.LogErrorFormat("[MethodCache] Expected between {0} and {1} arguments to {2}::'{3}', got {4} instead",
-                        m_RequiredParameterCount, m_Parameters.Length, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
+                        m_RequiredParameterCount, m_Parameters.Length - m_ContextOffset, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
 
                     outReturnValue = null;
                     return false;
@@ -196,7 +210,7 @@ namespace BeauUtil
 
                 for(int i = 0; i < inArguments.Count; ++i)
                 {
-                    if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i].ParameterType, out m_Arguments[i]))
+                    if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType, inContext, out m_Arguments[i + m_ContextOffset]))
                     {
                         UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
                         outReturnValue = null;
@@ -204,15 +218,15 @@ namespace BeauUtil
                     }
                 }
 
-                return DoInvoke(inTarget, inArguments.Count, out outReturnValue);
+                return DoInvoke(inTarget, inArguments.Count + m_ContextOffset, inContext, out outReturnValue);
             }
 
-            public bool TryInvoke(object inTarget, IReadOnlyList<StringSlice> inArguments, IStringConverter inConverter, out object outReturnValue)
+            public bool TryInvoke(object inTarget, IReadOnlyList<StringSlice> inArguments, object inContext, IStringConverter inConverter, out object outReturnValue)
             {
                 if (inArguments.Count < m_RequiredParameterCount || inArguments.Count >= m_Parameters.Length)
                 {
                     UnityEngine.Debug.LogErrorFormat("[MethodCache] Expected between {0} and {1} arguments to {2}::'{3}', got {4} instead",
-                        m_RequiredParameterCount, m_Parameters.Length, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
+                        m_RequiredParameterCount, m_Parameters.Length - m_ContextOffset, Method.DeclaringType.Name, Id.ToDebugString(), inArguments.Count);
 
                     outReturnValue = null;
                     return false;
@@ -220,7 +234,7 @@ namespace BeauUtil
 
                 for(int i = 0; i < inArguments.Count; ++i)
                 {
-                    if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i].ParameterType, out m_Arguments[i]))
+                    if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType, inContext, out m_Arguments[i + m_ContextOffset]))
                     {
                         UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
                         outReturnValue = null;
@@ -228,16 +242,19 @@ namespace BeauUtil
                     }
                 }
 
-                return DoInvoke(inTarget, inArguments.Count, out outReturnValue);
+                return DoInvoke(inTarget, inArguments.Count + m_ContextOffset, inContext, out outReturnValue);
             }
 
-            private bool DoInvoke(object inTarget, int inFillDefaultsFrom, out object outReturnValue)
+            private bool DoInvoke(object inTarget, int inFillDefaultsFrom, object inContext, out object outReturnValue)
             {
                 if (m_DefaultArguments != null)
                 {
                     for(int i = inFillDefaultsFrom; i < m_DefaultArguments.Length; ++i)
                         m_Arguments[i] = m_DefaultArguments[i];
                 }
+
+                if (m_ContextOffset > 0)
+                    m_Arguments[0] = m_ContextBind.Bind(inContext);
 
                 try
                 {
@@ -264,9 +281,9 @@ namespace BeauUtil
         private List<object> m_RelatedObjectCachedList;
         private List<Component> m_RelatedComponentCachedList;
         private Type m_ComponentType;
+        private IStringConverter m_StringConverter;
         
-        public readonly IStringConverter StringConverter;
-        public readonly StringUtils.ArgsList.Splitter StringSplitter;
+        private readonly StringUtils.ArgsList.Splitter m_StringSplitter;
 
         public MethodCache()
             : this(typeof(MonoBehaviour), DefaultStringConverter.Instance)
@@ -281,9 +298,25 @@ namespace BeauUtil
                 throw new ArgumentNullException("inComponentType");
             
             m_Types = new Dictionary<Type, TypeDescription>();
-            StringConverter = inConverter;
-            StringSplitter = new StringUtils.ArgsList.Splitter();
+            m_StringConverter = inConverter;
+
+            m_StringSplitter = new StringUtils.ArgsList.Splitter();
             m_ComponentType = inComponentType;
+        }
+
+        /// <summary>
+        /// The string converter.
+        /// </summary>
+        public IStringConverter StringConverter
+        {
+            get { return m_StringConverter; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+
+                m_StringConverter = value;
+            }
         }
 
         #region Types
@@ -458,7 +491,7 @@ namespace BeauUtil
         /// <summary>
         /// Attempts to invoke a static method.
         /// </summary>
-        public bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, out object outResult)
+        public bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, object inContext, out object outResult)
         {
             var method = FindStaticMethod(inId);
             if (method == null)
@@ -468,14 +501,14 @@ namespace BeauUtil
             }
 
             TempList16<StringSlice> args = default(TempList16<StringSlice>);
-            inArguments.Split(StringSplitter, StringSplitOptions.None, ref args);
-            return method.TryInvoke(null, args, StringConverter, out outResult);
+            inArguments.Split(m_StringSplitter, StringSplitOptions.None, ref args);
+            return method.TryInvoke(null, args, inContext, m_StringConverter, out outResult);
         }
 
         /// <summary>
         /// Attempts to invoke an instance method.
         /// </summary>
-        public bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, out object outResult)
+        public bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, object inContext, out object outResult)
         {
             var method = FindMethodWithRedirect(ref inTarget, inId);
             if (method == null)
@@ -485,8 +518,8 @@ namespace BeauUtil
             }
 
             TempList16<StringSlice> args = default(TempList16<StringSlice>);
-            inArguments.Split(StringSplitter, StringSplitOptions.None, ref args);
-            return method.TryInvoke(inTarget, args, StringConverter, out outResult);
+            inArguments.Split(m_StringSplitter, StringSplitOptions.None, ref args);
+            return method.TryInvoke(inTarget, args, inContext, m_StringConverter, out outResult);
         }
 
         #endregion // Invoke
@@ -507,7 +540,7 @@ namespace BeauUtil
 
         #region IMethodCache
 
-        IStringConverter IMethodCache.StringConverter { get { return StringConverter; } }
+        IStringConverter IMethodCache.StringConverter { get { return m_StringConverter; } }
 
         /// <summary>
         /// Loads info for the given type.

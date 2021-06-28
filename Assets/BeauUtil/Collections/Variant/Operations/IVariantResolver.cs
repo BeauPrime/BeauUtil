@@ -83,24 +83,16 @@ namespace BeauUtil.Variants
             if (inModifyData.IsWhitespace)
                 return true;
             
-            if (inModifyData.Contains(','))
+            StringSlice.ISplitter splitter = QuoteAwareSplitter ?? (QuoteAwareSplitter = new StringUtils.ArgsList.Splitter(false));
+            bool bSuccess = true;
+            VariantModification mod;
+            foreach(var group in inModifyData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
             {
-                StringSlice.ISplitter splitter = QuoteAwareSplitter ?? (QuoteAwareSplitter = new StringUtils.ArgsList.Splitter(false));
-                bool bSuccess = true;
-                VariantModification mod;
-                foreach(var group in inModifyData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (!VariantModification.TryParse(group, out mod) || !mod.Execute(inResolver, inContext, inInvoker))
-                        bSuccess = false;
-                }
+                if (!VariantModification.TryParse(group, out mod) || !mod.Execute(inResolver, inContext, inInvoker))
+                    bSuccess = false;
+            }
 
-                return bSuccess;
-            }
-            else
-            {
-                VariantModification mod;
-                return VariantModification.TryParse(inModifyData, out mod) && mod.Execute(inResolver, inContext, inInvoker);
-            }
+            return bSuccess;
         }
 
         /// <summary>
@@ -111,27 +103,15 @@ namespace BeauUtil.Variants
             if (inEvalData.IsWhitespace)
                 return true;
             
-            if (inEvalData.Contains(','))
-            {
-                StringSlice.ISplitter splitter = QuoteAwareSplitter ?? (QuoteAwareSplitter = new StringUtils.ArgsList.Splitter(false));
-                foreach(var group in inEvalData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (!TryEvaluateChunk(inResolver, inContext, group, inInvoker))
-                        return false;
-                }
-
-                return true;
-            }
-            else
-            {
-                return TryEvaluateChunk(inResolver, inContext, inEvalData, inInvoker);
-            }
-        }
-
-        static private bool TryEvaluateChunk(IVariantResolver inResolver, object inContext, StringSlice inEvalData, IMethodCache inInvoker)
-        {
+            StringSlice.ISplitter splitter = QuoteAwareSplitter ?? (QuoteAwareSplitter = new StringUtils.ArgsList.Splitter(false));
             VariantComparison comp;
-            return VariantComparison.TryParse(inEvalData, out comp) && comp.Evaluate(inResolver, inContext, inInvoker);
+            foreach(var group in inEvalData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (!VariantComparison.TryParse(inEvalData, out comp) || !comp.Evaluate(inResolver, inContext, inInvoker))
+                    return false;
+            }
+
+            return true;
         }
 
         [ThreadStatic] static private StringUtils.ArgsList.Splitter QuoteAwareSplitter;

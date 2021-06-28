@@ -731,6 +731,68 @@ namespace BeauUtil
         static public class ArgsList
         {
             /// <summary>
+            /// Returns if the given string contains at least two comma-separated arguments.
+            /// </summary>
+            static public bool IsList(StringSlice inString)
+            {
+                bool quote = false;
+                int group = 0;
+
+                char c;
+                for(int i = 0; i < inString.Length; i++)
+                {
+                    c = inString[i];
+
+                    switch(c)
+                    {
+                        case ',':
+                            if (!quote && group <= 0)
+                                return true;
+                            break;
+
+                        case '(':
+                        case '[':
+                        case '<':
+                        case '{':
+                            if (!quote)
+                            {
+                                group++;
+                            }
+                            break;
+
+                        case ')':
+                        case ']':
+                        case '>':
+                        case '}':
+                            if (!quote)
+                            {
+                                --group;
+                            }
+                            break;
+
+                        case '"':
+                            if (quote)
+                            {
+                                if (i > 0 && inString[i - 1] == '\\')
+                                {
+                                    i++;
+                                }
+                                else
+                                {
+                                    quote = !quote;
+                                }
+                            }
+                            else
+                            {
+                                quote = true;
+                            }
+                            break;
+                    }
+                }
+                return false;
+            }
+
+            /// <summary>
             /// String splitter for arg lists.
             /// </summary>
             public sealed class Splitter : StringSlice.ISplitter
@@ -753,41 +815,49 @@ namespace BeauUtil
                 {
                     outAdvance = 0;
                     char c = inString[inIndex];
-                    if (c == ',')
+
+                    switch(c)
                     {
-                        return !m_QuoteMode && m_GroupingDepth <= 0;
-                    }
-                    else if (c == '(' || c == '[' || c == '<' || c == '{')
-                    {
-                        if (!m_QuoteMode)
-                        {
-                            ++m_GroupingDepth;
-                        }
-                    }
-                    else if (c == ')' || c == ']' || c == '>' || c == '}')
-                    {
-                        if (!m_QuoteMode)
-                        {
-                            --m_GroupingDepth;
-                        }
-                    }
-                    else if (c == '"')
-                    {
-                        if (m_QuoteMode)
-                        {
-                            if (inIndex > 0 && inString[inIndex - 1] == '\\')
+                        case ',':
+                            return !m_QuoteMode && m_GroupingDepth <= 0;
+
+                        case '(':
+                        case '[':
+                        case '<':
+                        case '{':
+                            if (!m_QuoteMode)
                             {
-                                outAdvance = 1;
+                                m_GroupingDepth++;
+                            }
+                            break;
+
+                        case ')':
+                        case ']':
+                        case '>':
+                        case '}':
+                            if (!m_QuoteMode)
+                            {
+                                --m_GroupingDepth;
+                            }
+                            break;
+
+                        case '"':
+                            if (m_QuoteMode)
+                            {
+                                if (inIndex > 0 && inString[inIndex - 1] == '\\')
+                                {
+                                    outAdvance = 1;
+                                }
+                                else
+                                {
+                                    m_QuoteMode = !m_QuoteMode;
+                                }
                             }
                             else
                             {
-                                m_QuoteMode = !m_QuoteMode;
+                                m_QuoteMode = true;
                             }
-                        }
-                        else
-                        {
-                            m_QuoteMode = true;
-                        }
+                            break;
                     }
 
                     return false;

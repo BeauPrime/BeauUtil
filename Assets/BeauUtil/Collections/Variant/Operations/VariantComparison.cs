@@ -8,13 +8,14 @@
  */
 
 using System;
+using BeauUtil.Debugger;
 
 namespace BeauUtil.Variants
 {
     /// <summary>
     /// Comparison between a variable and a value.
     /// </summary>
-    public struct VariantComparison
+    public struct VariantComparison : IDebugString
     {
         public VariantOperand Left;
         public VariantCompareOperator Operator;
@@ -53,6 +54,36 @@ namespace BeauUtil.Variants
                 case VariantCompareOperator.False:
                     return !leftValue.AsBool();
 
+                default:
+                    throw new InvalidOperationException("Unknown operator " + Operator.ToString());
+            }
+        }
+
+        public string ToDebugString()
+        {
+            switch(Operator)
+            {
+                case VariantCompareOperator.LessThan:
+                    return Log.Format("{0} < {1}", Left, Right);
+                case VariantCompareOperator.LessThanOrEqualTo:
+                    return Log.Format("{0} <= {1}", Left, Right);
+                case VariantCompareOperator.EqualTo:
+                    return Log.Format("{0} == {1}", Left, Right);
+                case VariantCompareOperator.NotEqualTo:
+                    return Log.Format("{0} != {1}", Left, Right);
+                case VariantCompareOperator.GreaterThanOrEqualTo:
+                    return Log.Format("{0} >+ {1}", Left, Right);
+                case VariantCompareOperator.GreaterThan:
+                    return Log.Format("{0} > {1}", Left, Right);
+                case VariantCompareOperator.Exists:
+                    return Log.Format("{0} exists", Left);
+                case VariantCompareOperator.DoesNotExist:
+                    return Log.Format("{0} does not exist", Left);
+                case VariantCompareOperator.True:
+                    return Log.Format("{0} is true", Left);
+                case VariantCompareOperator.False:
+                    return Log.Format("{0} is false", Left);
+                
                 default:
                     throw new InvalidOperationException("Unknown operator " + Operator.ToString());
             }

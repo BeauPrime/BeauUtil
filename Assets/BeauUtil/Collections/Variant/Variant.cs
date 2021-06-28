@@ -579,6 +579,11 @@ namespace BeauUtil.Variants
             return new Variant(inValue);
         }
 
+        static public implicit operator Variant(SerializedHash32 inValue)
+        {
+            return new Variant(inValue.Hash());
+        }
+
         #endregion // Operators
 
         #region Parse
@@ -701,6 +706,12 @@ namespace BeauUtil.Variants
             if (inObject is Variant)
             {
                 outVariant = (Variant) inObject;
+                return true;
+            }
+
+            if (inObject is SerializedHash32)
+            {
+                outVariant = new Variant(((SerializedHash32) inObject).Hash());
                 return true;
             }
 

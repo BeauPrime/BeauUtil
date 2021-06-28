@@ -19,7 +19,7 @@ namespace BeauUtil
     public interface IStringConverter
     {
         bool CanConvertTo(Type inType);
-        bool TryConvertTo(StringSlice inData, Type inType, out object outObject);
+        bool TryConvertTo(StringSlice inData, Type inType, object inContext, out object outObject);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ namespace BeauUtil
             return StringParser.CanConvertTo(inType);
         }
 
-        public bool TryConvertTo(StringSlice inData, Type inType, out object outObject)
+        public bool TryConvertTo(StringSlice inData, Type inType, object inContext, out object outObject)
         {
             return StringParser.TryConvertTo(inData, inType, out outObject);
         }
