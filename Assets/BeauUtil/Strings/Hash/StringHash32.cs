@@ -64,6 +64,14 @@ namespace BeauUtil
             get { return m_HashValue == 0; }
         }
 
+        /// <summary>
+        /// Concats a string to this hash value.
+        /// </summary>
+        public StringHash32 Concat(StringSlice inSlice)
+        {
+            return new StringHash32(inSlice.AppendHash32(m_HashValue));
+        }
+
         static public readonly StringHash32 Null = new StringHash32();
 
         #region IEquatable

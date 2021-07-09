@@ -24,6 +24,9 @@ namespace BeauUtil
     /// </summary>
     [Serializable]
     public struct SerializedHash32 : IEquatable<SerializedHash32>, IDebugString
+#if UNITY_EDITOR
+        , ISerializationCallbackReceiver
+#endif // UNITY_EDITOR
     {
         #region Inspector
 
@@ -49,11 +52,6 @@ namespace BeauUtil
             get { return m_Hash == 0; }
         }
 
-        public bool Equals(SerializedHash32 other)
-        {
-            return m_Hash == other.m_Hash;
-        }
-
         public string Source()
         {
             return m_Source;
@@ -66,8 +64,6 @@ namespace BeauUtil
                 return new StringHash32(m_Source);
             return new StringHash32(m_Hash);
             #else
-            if (m_Hash == 0 && m_Source != null && m_Source.Length > 0)
-                m_Hash = new StringHash32(m_Source).HashValue;
             return new StringHash32(m_Hash);
             #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
         }
@@ -88,6 +84,11 @@ namespace BeauUtil
             return Hash().ToString();
         }
 
+        public bool Equals(SerializedHash32 other)
+        {
+            return m_Hash == other.m_Hash;
+        }
+
         public override bool Equals(object obj)
         {
             if (obj is SerializedHash32)
@@ -103,7 +104,7 @@ namespace BeauUtil
             return m_Hash.GetHashCode();
         }
 
-        static public implicit operator SerializedHash32(string inString)
+		static public implicit operator SerializedHash32(string inString)
         {
             return new SerializedHash32(inString);
         }
@@ -123,6 +124,23 @@ namespace BeauUtil
         }
 
         #if UNITY_EDITOR
+
+        public void OnBeforeSerialize()
+		{
+            m_Hash = m_Source == null ? 0 : StringHashing.Hash32(m_Source, 0, m_Source.Length);
+
+            #if !DEVELOPMENT_BUILD && !DEVELOPMENT
+
+            // TODO: Figure out a way of selectively stripping strings from the non-debug builds
+            // if (!BuildPipeline.isBuildingPlayer)
+            //     return;
+            
+			// m_Source = string.Empty;
+
+            #endif // !DEVELOPMENT_BUILD && !DEVELOPMENT
+		}
+
+		public void OnAfterDeserialize() { }
 
         [CustomPropertyDrawer(typeof(SerializedHash32))]
         private class Drawer : PropertyDrawer

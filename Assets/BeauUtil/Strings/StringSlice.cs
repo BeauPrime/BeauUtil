@@ -859,9 +859,19 @@ namespace BeauUtil
             return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
+        internal uint AppendHash32(uint inHash)
+        {
+            return StringHashing.AppendHash32(inHash, m_Source, m_StartIndex, Length);
+        }
+
         internal ulong CalculateHash64()
         {
             return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong AppendHash64(ulong inHash)
+        {
+            return StringHashing.AppendHash64(inHash, m_Source, m_StartIndex, Length);
         }
 
         static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)

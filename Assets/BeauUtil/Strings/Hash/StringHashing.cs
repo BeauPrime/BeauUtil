@@ -34,27 +34,6 @@ namespace BeauUtil
 
         #region Hash Algorithms
 
-        static unsafe internal ushort Hash16(string inString, int inOffset, int inLength)
-        {
-            if (inLength <= 0)
-                return 0;
-            
-            // fnv-1a
-            uint hash = 2166136261;
-            
-            // unsafe method
-            fixed(char* ptr = inString)
-            {
-                char* inc = ptr + inOffset;
-                while(--inLength >= 0)
-                {
-                    hash = (hash ^ *inc++) * 16777619;
-                }
-            }
-            
-            return (ushort) ((hash >> 16) ^ (hash & 0xFFFF));
-        }
-
         static unsafe internal uint Hash32(string inString, int inOffset, int inLength)
         {
             if (inLength <= 0)
@@ -76,6 +55,27 @@ namespace BeauUtil
             return hash;
         }
 
+        static unsafe internal uint Hash32Append(uint inHash, string inString, int inOffset, int inLength)
+        {
+            if (inLength <= 0)
+                return inHash;
+
+            // fnv-1a
+            uint hash = inHash;
+            
+            // unsafe method
+            fixed(char* ptr = inString)
+            {
+                char* inc = ptr + inOffset;
+                while(--inLength >= 0)
+                {
+                    hash = (hash ^ *inc++) * 16777619;
+                }
+            }
+            
+            return hash;
+        }
+
         static unsafe internal ulong Hash64(string inString, int inOffset, int inLength)
         {
             if (inLength <= 0)
@@ -83,6 +83,27 @@ namespace BeauUtil
             
             // fnv-1a
             ulong hash = 14695981039346656037;
+            
+            // unsafe method
+            fixed(char* ptr = inString)
+            {
+                char* inc = ptr + inOffset;
+                while(--inLength >= 0)
+                {
+                    hash = (hash ^ *inc++) * 1099511628211;
+                }
+            }
+            
+            return hash;
+        }
+
+        static unsafe internal ulong Hash64Append(ulong inHash, string inString, int inOffset, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            ulong hash = inHash;
             
             // unsafe method
             fixed(char* ptr = inString)
@@ -236,6 +257,45 @@ namespace BeauUtil
             return hash;
         }
 
+        static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength)
+        {
+            uint hash = Hash32Append(inHash, inString, inOffset, inLength);
+            if (inLength > 0 && s_ReverseLookupEnabled)
+            {
+                StringSlice current = new StringSlice(inString, inOffset, inLength);
+                if (inHash != 0)
+                {
+                    string root;
+                    if (s_ReverseLookup32.TryGetValue(inHash, out root))
+                    {
+                        current = string.Concat(root, current.ToString());
+                    }
+                    else
+                    {
+                        UnityEngine.Debug.LogErrorFormat("[StringHashing] Unknown 32-bit hash {0}, cannot create reverse lookup for appending '{1}'", inHash.ToString("X8"), current);
+                        return hash;
+                    }
+                }
+
+                string existing;
+                if (s_ReverseLookup32.TryGetValue(hash, out existing))
+                {
+                    if (current != existing)
+                    {
+                        if (s_OnCollison != null)
+                            s_OnCollison(existing, current, 32, hash);
+                        else
+                            UnityEngine.Debug.LogErrorFormat("[StringHashing] 32-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X8"));
+                    }
+                }
+                else
+                {
+                    s_ReverseLookup32.Add(hash, current.ToString());
+                }
+            }
+            return hash;
+        }
+
         static internal string ReverseLookup32(uint inHash)
         {
             if (inHash == 0)
@@ -257,6 +317,45 @@ namespace BeauUtil
             if (inLength > 0 && s_ReverseLookupEnabled)
             {
                 StringSlice current = new StringSlice(inString, inOffset, inLength);
+
+                string existing;
+                if (s_ReverseLookup64.TryGetValue(hash, out existing))
+                {
+                    if (current != existing)
+                    {
+                        if (s_OnCollison != null)
+                            s_OnCollison(existing, current, 64, hash);
+                        else
+                            UnityEngine.Debug.LogErrorFormat("[StringHashing] 64-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X16"));
+                    }
+                }
+                else
+                {
+                    s_ReverseLookup64.Add(hash, current.ToString());
+                }
+            }
+            return hash;
+        }
+
+        static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength)
+        {
+            ulong hash = Hash64Append(inHash, inString, inOffset, inLength);
+            if (inLength > 0 && s_ReverseLookupEnabled)
+            {
+                StringSlice current = new StringSlice(inString, inOffset, inLength);
+                if (inHash != 0)
+                {
+                    string root;
+                    if (s_ReverseLookup64.TryGetValue(inHash, out root))
+                    {
+                        current = string.Concat(root, current.ToString());
+                    }
+                    else
+                    {
+                        UnityEngine.Debug.LogErrorFormat("[StringHashing] Unknown 64-bit hash {0}, cannot create reverse lookup for appending '{1}'", inHash.ToString("X8"), current);
+                        return hash;
+                    }
+                }
 
                 string existing;
                 if (s_ReverseLookup64.TryGetValue(hash, out existing))
@@ -301,6 +400,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(256)]
+        static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength)
+        {
+            return Hash32Append(inHash, inString, inOffset, inLength);
+        }
+
+        [MethodImpl(256)]
         static internal string ReverseLookup32(uint inHash)
         {
             return inHash == 0 ? string.Empty : ReverseLookupUnavailable;
@@ -310,6 +415,12 @@ namespace BeauUtil
         static internal ulong StoreHash64(string inString, int inOffset, int inLength)
         {
             return Hash64(inString, inOffset, inLength);
+        }
+
+        [MethodImpl(256)]
+        static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength)
+        {
+            return Hash64Append(inHash, inString, inOffset, inLength);
         }
 
         [MethodImpl(256)]
