@@ -55,6 +55,10 @@ namespace BeauUtil.Debugger
         private const string AssertConditionPrefix = "AssertException: " + AssertExceptionPrefix;
         private const string StackTraceDisabledMessage = "[Stack Trace Disabled]";
 
+        #if DEVELOPMENT
+        static private bool s_RegisteredLogHook;
+        #endif // DEVELOPMENT
+
         static private bool s_Broken;
         static private readonly HashSet<StringHash64> s_IgnoredLocations = new HashSet<StringHash64>();
 
@@ -62,7 +66,8 @@ namespace BeauUtil.Debugger
         static private void Initialize()
         {
             #if DEVELOPMENT
-            UnityEngine.Application.logMessageReceived += Appliation_logMessageReceived;
+            UnityEngine.Application.logMessageReceived += Application_logMessageReceived;
+            s_RegisteredLogHook = true;
             #endif // DEVELOPMENT
 
             #if UNITY_EDITOR
@@ -75,7 +80,7 @@ namespace BeauUtil.Debugger
             #endif // UNITY_EDITOR
         }
 
-        static private void Appliation_logMessageReceived(string condition, string stackTrace, UnityEngine.LogType type)
+        static private void Application_logMessageReceived(string condition, string stackTrace, UnityEngine.LogType type)
         {
             #if UNITY_EDITOR
 
@@ -95,6 +100,30 @@ namespace BeauUtil.Debugger
                         break;
                     }
             }
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void RegisterLogHook()
+        {
+            #if DEVELOPMENT
+            if (!s_RegisteredLogHook)
+            {
+                s_RegisteredLogHook = true;
+                UnityEngine.Application.logMessageReceived += Application_logMessageReceived;
+            }
+            #endif // DEVELOPMENT
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void DeregisterLogHook()
+        {
+            #if DEVELOPMENT
+            if (s_RegisteredLogHook)
+            {
+                s_RegisteredLogHook = false;
+                UnityEngine.Application.logMessageReceived -= Application_logMessageReceived;
+            }
+            #endif // DEVELOPMENT
         }
 
         #region Fail
@@ -387,6 +416,9 @@ namespace BeauUtil.Debugger
 
         static private void OnFail(string inLocation, string inCondition, string inMessage)
         {
+            if (s_Broken)
+                return;
+            
             StringHash64 locationHash = string.Format("{0}@{1}", inCondition, inLocation);
             if (s_IgnoredLocations.Contains(locationHash))
                 return;

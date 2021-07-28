@@ -45,6 +45,8 @@ namespace BeauUtil.UI
         [NonSerialized] private uint m_EnteredMask;
         [NonSerialized] private uint m_DownMask;
 
+        public object UserData;
+
         public PointerEvent onPointerEnter { get { return m_OnPointerEnter; } }
         public PointerEvent onPointerExit { get { return m_OnPointerExit; } }
         public PointerEvent onPointerDown { get { return m_OnPointerDown; } }
@@ -107,5 +109,55 @@ namespace BeauUtil.UI
         }
 
         #endregion // Handlers
+
+        /// <summary>
+        /// Attempts to retrieve the userdata from the PointerListener
+        /// attached to the given PointerEventData's game object.
+        /// </summary>
+        static public bool TryGetUserData<T>(PointerEventData inEventData, out T outValue)
+        {
+            GameObject go = inEventData.pointerCurrentRaycast.gameObject;
+            PointerListener listener = go.GetComponent<PointerListener>();
+            if (listener != null)
+            {
+                if (listener.UserData is T)
+                {
+                    outValue = (T) listener.UserData;
+                    return true;
+                }
+            }
+
+            outValue = default(T);
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the component userdata from the PointerListener
+        /// attached to the given PointerEventData's game object.
+        /// Will also search the game object for the given component.
+        /// </summary>
+        static public bool TryGetComponentUserData<T>(PointerEventData inEventData, out T outValue) where T : UnityEngine.Component
+        {
+            GameObject go = inEventData.pointerCurrentRaycast.gameObject;
+            T component = go.GetComponent<T>();
+            if (component != null)
+            {
+                outValue = component;
+                return true;
+            }
+
+            PointerListener listener = go.GetComponent<PointerListener>();
+            if (listener != null)
+            {
+                if (listener.UserData is T)
+                {
+                    outValue = (T) listener.UserData;
+                    return true;
+                }
+            }
+
+            outValue = default(T);
+            return false;
+        }
     }
 }

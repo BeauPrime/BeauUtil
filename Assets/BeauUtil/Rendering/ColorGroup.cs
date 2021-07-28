@@ -67,7 +67,9 @@ namespace BeauUtil
 
         [NonSerialized] private ColorBlock m_ConcatenatedColorBlock = ColorBlock.Default;
 
+        #if UNITY_EDITOR
         [NonSerialized] private bool m_ValidateQueued = false;
+        #endif // UNITY_EDITOR
 
         #region Properties
 
