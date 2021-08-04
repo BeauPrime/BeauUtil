@@ -48,6 +48,7 @@ namespace BeauUtil.Editor
         #endregion // Types
 
         private readonly List<Entry> m_Entries;
+        private readonly IEqualityComparer<T> m_Comparer;
 
         private GUIContent[] m_GUIContent = null;
         private string[] m_StringContent = null;
@@ -68,16 +69,19 @@ namespace BeauUtil.Editor
         public NamedItemList()
         {
            m_Entries = new List<Entry>();
+           m_Comparer = EqualityComparer<T>.Default;
         }
 
         public NamedItemList(NamedItemList<T> inSource)
         {
             m_Entries = new List<Entry>(inSource.m_Entries);
+            m_Comparer = EqualityComparer<T>.Default;
         }
 
         public NamedItemList(int inCapacity)
         {
             m_Entries = new List<Entry>(inCapacity);
+            m_Comparer = EqualityComparer<T>.Default;
         }
 
         #region Modifications
@@ -129,7 +133,7 @@ namespace BeauUtil.Editor
 
             for (int i = 0; i < m_Entries.Count; ++i)
             {
-                if (m_Entries[i].Value.Equals(inElement))
+                if (m_Comparer.Equals(m_Entries[i].Value, inElement))
                     return i;
             }
 
