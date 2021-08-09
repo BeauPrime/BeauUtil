@@ -329,6 +329,38 @@ namespace BeauUtil
             return count;
         }
 
+        static public T GetComponentInParent<T>(this GameObject inGameObject, bool inbIncludeInactive)
+        {
+            if (!inbIncludeInactive)
+                return inGameObject.GetComponentInParent<T>();
+
+            Transform transform = inGameObject.transform;
+            T component = default(T);
+            while(transform != null && component == null)
+            {
+                component = transform.GetComponent<T>();
+                transform = transform.parent;
+            }
+
+            return component;
+        }
+
+        static public T GetComponentInParent<T>(this Component inComponent, bool inbIncludeInactive)
+        {
+            if (!inbIncludeInactive)
+                return inComponent.GetComponentInParent<T>();
+
+            Transform transform = inComponent.transform;
+            T component = default(T);
+            while(transform != null && component == null)
+            {
+                component = transform.GetComponent<T>();
+                transform = transform.parent;
+            }
+
+            return component;
+        }
+
         #endregion // Components
     
         #region Path
