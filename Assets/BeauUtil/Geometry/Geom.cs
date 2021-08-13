@@ -415,5 +415,114 @@ namespace BeauUtil
         }
 
         #endregion // Polygon Test
+    
+        #region Bounds
+
+        /// <summary>
+        /// Creates a Rect from the given bounds.
+        /// </summary>
+        static public Rect BoundsToRect(Bounds inBounds)
+        {
+            Vector3 min = inBounds.min, max = inBounds.max;
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+        }
+
+        /// <summary>
+        /// Generates the minimum AABB for the given series of points.
+        /// </summary>
+        static public Bounds MinAABB(Vector3[] inPoints)
+        {
+            if (inPoints.Length == 0)
+                return default(Bounds);
+
+            Vector3 min = inPoints[0], max = min, point;
+            for(int i = 1, len = inPoints.Length; i < len; i++)
+            {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                min.z = Mathf.Min(min.z, point.z);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+                max.z = Mathf.Max(max.z, point.z);
+            }
+
+            Vector3 size = max - min;
+            Vector3 center = min + size * 0.5f;
+            return new Bounds(center, size);
+        }
+
+        /// <summary>
+        /// Generates the minimum AABB for the given series of points.
+        /// </summary>
+        static public Bounds MinAABB(Vector2[] inPoints)
+        {
+            if (inPoints.Length == 0)
+                return default(Bounds);
+                
+            Vector3 min = inPoints[0], max = min, point;
+            for(int i = 1, len = inPoints.Length; i < len; i++)
+            {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+            }
+
+            Vector3 size = max - min;
+            Vector3 center = min + size * 0.5f;
+            return new Bounds(center, size);
+        }
+
+        /// <summary>
+        /// Generates the minimum AABB for the given series of points.
+        /// </summary>
+        static public Bounds MinAABB(IReadOnlyList<Vector3> inPoints)
+        {
+            if (inPoints.Count == 0)
+                return default(Bounds);
+                
+            Vector3 min = inPoints[0], max = min, point;
+            for(int i = 1, len = inPoints.Count; i < len; i++)
+            {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                min.z = Mathf.Min(min.z, point.z);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+                max.z = Mathf.Max(max.z, point.z);
+            }
+
+            Vector3 size = max - min;
+            Vector3 center = min + size * 0.5f;
+            return new Bounds(center, size);
+        }
+
+        /// <summary>
+        /// Generates the minimum AABB for the given series of points.
+        /// </summary>
+        static public Bounds MinAABB(IReadOnlyList<Vector2> inPoints)
+        {
+            if (inPoints.Count == 0)
+                return default(Bounds);
+                
+            Vector3 min = inPoints[0], max = min, point;
+            for(int i = 1, len = inPoints.Count; i < len; i++)
+            {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+            }
+
+            Vector3 size = max - min;
+            Vector3 center = min + size * 0.5f;
+            return new Bounds(center, size);
+        }
+
+        #endregion // Bounds
     }
 }

@@ -645,6 +645,69 @@ namespace BeauUtil
         #endregion // First
 
         #endregion // Colliding vs LayerMask
+
+        #region Sizing
+
+        /// <summary>
+        /// Returns the local bounds of the given collider.
+        /// </summary>
+        static public Bounds GetLocalBounds(Collider2D inCollider)
+        {
+            Vector2 center = inCollider.offset;
+
+            BoxCollider2D box = inCollider as BoxCollider2D;
+            if (box != null)
+            {
+                return new Bounds(center, box.size);
+            }
+
+            CircleCollider2D circle = inCollider as CircleCollider2D;
+            if (circle != null)
+            {
+                float diameter = circle.radius * 2;
+                return new Bounds(center, new Vector3(diameter, diameter));
+            }
+
+            EdgeCollider2D edge = inCollider as EdgeCollider2D;
+            if (edge != null)
+            {
+                Vector2[] points = edge.points;
+                Bounds b = Geom.MinAABB(points);
+                b.center += (Vector3) center;
+                return b;
+            }
+
+            CapsuleCollider2D capsule = inCollider as CapsuleCollider2D;
+            if (capsule != null)
+            {
+                Vector2 size = capsule.size;
+                switch(capsule.direction)
+                {
+                    case CapsuleDirection2D.Horizontal:
+                        size.x *= 2;
+                        break;
+
+                    case CapsuleDirection2D.Vertical:
+                        size.y *= 2;
+                        break;
+                }
+                return new Bounds(center, size);
+            }
+
+            PolygonCollider2D poly = inCollider as PolygonCollider2D;
+            if (poly != null)
+            {
+                Vector2[] points = edge.points;
+                Bounds b = Geom.MinAABB(points);
+                b.center += (Vector3) center;
+                return b;
+            }
+
+            Log.Warn("[PhysicsUtils] Unable to get local bounds of a collider of type '{0}'", inCollider.GetType().Name);
+            return default(Bounds);
+        }
+
+        #endregion // Sizing
     
         #region Uniform Scaling
 
