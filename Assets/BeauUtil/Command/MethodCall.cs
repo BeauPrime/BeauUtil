@@ -9,6 +9,7 @@
 
 using System;
 using System.Diagnostics;
+using BeauUtil.Variants;
 
 namespace BeauUtil
 {
@@ -72,7 +73,7 @@ namespace BeauUtil
             }
 
             StringSlice methodSlice = inData.Substring(0, openParenIdx).TrimEnd();
-            if (methodSlice.Length == 0)
+            if (!VariantUtils.IsValidIdentifier(methodSlice))
             {
                 outMethodCall = default(MethodCall);
                 return false;
@@ -89,6 +90,7 @@ namespace BeauUtil
 
             outMethodCall.Id = methodSlice.Hash32();
             outMethodCall.Args = inData.Substring(openParenIdx + 1, argsLength).Trim();
+
             return true;
         }
     }

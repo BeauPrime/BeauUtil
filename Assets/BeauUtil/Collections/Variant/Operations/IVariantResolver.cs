@@ -107,7 +107,7 @@ namespace BeauUtil.Variants
             VariantComparison comp;
             foreach(var group in inEvalData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (!VariantComparison.TryParse(inEvalData, out comp) || !comp.Evaluate(inResolver, inContext, inInvoker))
+                if (!VariantComparison.TryParse(group, out comp) || !comp.Evaluate(inResolver, inContext, inInvoker))
                     return false;
             }
 

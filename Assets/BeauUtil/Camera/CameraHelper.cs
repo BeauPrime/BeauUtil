@@ -129,5 +129,29 @@ namespace BeauUtil
         }
 
         static private readonly Vector3 s_CenterViewportPoint = new Vector3(0.5f, 0.5f, 1);
+
+        /// <summary>
+        /// Returns the FOV (in degrees) required for a camera to have a frustrum height at a specific distance from the camera.
+        /// </summary>
+        static public float FOVForHeightAndDistance(float inHeight, float inDistance)
+        {
+            return 2.0f * Mathf.Atan(inHeight * 0.5f / inDistance) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>
+        /// Returns the distance from the camera of a specific frustrum height.
+        /// </summary>
+        static public float DistanceForHeightAndFOV(float inHeight, float inFOV)
+        {
+            return (float) (inHeight * 0.5f / Math.Tan(inFOV / 2 * Mathf.Deg2Rad));
+        }
+
+        /// <summary>
+        /// Returns the distance from the camera of a specific frustrum height.
+        /// </summary>
+        static public float HeightForDistanceAndFOV(float inDistance, float inFOV)
+        {
+            return (float) (2f * Math.Tan(inFOV / 2 * Mathf.Deg2Rad) / inDistance);
+        }
     }
 }

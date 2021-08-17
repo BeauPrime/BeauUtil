@@ -107,6 +107,23 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Sets the current target while preserving the current field of view.
+        /// </summary>
+        public void SetTargetPreserveFOV(Transform inTarget)
+        {
+            if (inTarget == null)
+            {
+                m_Target = null;
+                return;
+            }
+
+            m_Target = inTarget;
+            float newDist;
+            m_Camera.TryGetDistanceToObjectPlane(inTarget, out newDist);
+            m_Zoom = m_Zoom * m_LastDistance / newDist;
+        }
+
+        /// <summary>
         /// Returns the current settings.
         /// </summary>
         public void GetSettings(out CameraSettings outSettings)

@@ -138,8 +138,8 @@ namespace BeauUtil
                         if (m_ContextBind != null)
                         {
                             m_ContextOffset = 1;
+                            continue;
                         }
-                        continue;
                     }
                     
                     Type paramType = info.ParameterType;
@@ -157,7 +157,7 @@ namespace BeauUtil
                     }
                     else
                     {
-                        ++m_RequiredParameterCount;
+                        m_RequiredParameterCount++;
                     }
                 }
 
@@ -364,7 +364,7 @@ namespace BeauUtil
                 MethodDescription desc = CreateDescription(attrPair.Attribute, attrPair.Info);
                 if (!desc.TryProcess(this))
                 {
-                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id, desc.Method.DeclaringType.FullName);
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
                     continue;
                 }
 
