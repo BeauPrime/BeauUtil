@@ -10,6 +10,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using BeauUtil.Debugger;
 
 namespace BeauUtil.Variants
 {
@@ -85,8 +86,16 @@ namespace BeauUtil.Variants
                             throw new ArgumentNullException("inInvoker", "No IMethodCache provided - cannot invoke a method call operand");
                         
                         object obj;
-                        if (!inInvoker.TryStaticInvoke(MethodCall, inContext, out obj) || !Variant.TryConvertFrom(obj, out outValue))
+                        if (!inInvoker.TryStaticInvoke(MethodCall, inContext, out obj))
                         {
+                            Log.Error("[VariantOperand] Unable to execute {0}", MethodCall);
+                            outValue = default(Variant);
+                            return false;
+                        }
+
+                        if (!Variant.TryConvertFrom(obj, out outValue))
+                        {
+                            Log.Error("[VariantOperand] Unable to convert result of {0} ({1}) to Variant", MethodCall, obj);
                             outValue = default(Variant);
                             return false;
                         }
