@@ -14,9 +14,22 @@ namespace BeauUtil.Debugger
 {
     public class DMMenuUI : MonoBehaviour
     {
+        private struct MenuStackItem
+        {
+            public DMInfo Menu;
+            public int PageIndex;
+
+            public MenuStackItem(DMInfo inMenu, int inPageIndex)
+            {
+                Menu = inMenu;
+                PageIndex = inPageIndex;
+            }
+        }
+
         #region Inspector
 
         [SerializeField] private DMHeaderUI m_Header = null;
+        [SerializeField] private DMPageUI m_Page = null;
 
         [Header("Prefabs")]
         [SerializeField] private RectTransform m_DividerPrefab = null;
@@ -29,13 +42,14 @@ namespace BeauUtil.Debugger
 
         [Header("Settings")]
         [SerializeField] private int m_IndentSpacing = 16;
+        [SerializeField] private int m_MaxElementsPerPage = 20;
         
         #endregion // Inspector
 
         [NonSerialized] private bool m_Initialized;
 
-        private RingBuffer<DMInfo> m_MenuStack = new RingBuffer<DMInfo>(4, RingBufferMode.Expand);
-        private DMInfo m_CurrentMenu;
+        private RingBuffer<MenuStackItem> m_MenuStack = new RingBuffer<MenuStackItem>(4, RingBufferMode.Expand);
+        private MenuStackItem m_CurrentMenu;
 
         private RingBuffer<RectTransform> m_InactiveDividers = new RingBuffer<RectTransform>();
         private RingBuffer<DMButtonUI> m_InactiveButtons = new RingBuffer<DMButtonUI>();
@@ -61,24 +75,32 @@ namespace BeauUtil.Debugger
             m_SiblingIndexStart = m_ElementRoot.childCount;
             m_CachedButtonOnClick = m_CachedButtonOnClick ?? OnButtonClicked;
             m_Header.SetBackCallback(OnBackClicked);
+            m_Page.SetPageCallback(OnPageChanged);
             m_Initialized = true;
         }
 
         #region Population
 
-        private void PopulateMenu(DMInfo inMenu)
+        private void PopulateMenu(DMInfo inMenu, int inPageIndex)
         {
             EnsureInitialized();
 
-            if (m_CurrentMenu == inMenu)
+            if (m_CurrentMenu.Menu == inMenu && m_CurrentMenu.PageIndex == inPageIndex)
                 return;
 
-            m_CurrentMenu = inMenu;
+            m_CurrentMenu.Menu = inMenu;
+
             if (inMenu == null)
             {
                 Clear();
                 return;
             }
+
+            int elementsPerPage, maxPages;
+            GetPageSettings(inMenu, out maxPages, out elementsPerPage);
+
+            m_CurrentMenu.PageIndex = Mathf.Clamp(inPageIndex, 0, maxPages - 1);
+            m_MenuStack[m_MenuStack.Count - 1] = m_CurrentMenu;
 
             m_Header.Init(inMenu.Header, m_MenuStack.Count > 1);
 
@@ -87,10 +109,14 @@ namespace BeauUtil.Debugger
             int usedDividers = 0;
             int siblingIndex = m_SiblingIndexStart;
 
-            int elementCount = inMenu.Elements.Count;
-            for(int i = 0; i < elementCount; ++i)
+            int elementOffset = m_CurrentMenu.PageIndex * elementsPerPage;
+            int elementCount = Math.Min(elementsPerPage, inMenu.Elements.Count - elementOffset);
+            int elementIndex;
+            for(int i = 0; i < elementCount; i++)
             {
-                DMElementInfo info = inMenu.Elements[i];
+                elementIndex = i + elementOffset;
+
+                DMElementInfo info = inMenu.Elements[elementIndex];
                 switch(info.Type)
                 {
                     case DMElementType.Divider:
@@ -122,7 +148,7 @@ namespace BeauUtil.Debugger
                             {
                                 button = m_ActiveButtons[usedButtons];
                             }
-                            button.Initialize(i, info, m_CachedButtonOnClick, m_IndentSpacing * info.Indent);
+                            button.Initialize(elementIndex, info, m_CachedButtonOnClick, m_IndentSpacing * info.Indent);
                             button.transform.SetSiblingIndex(siblingIndex++);
                             usedButtons++;
                             break;
@@ -139,7 +165,7 @@ namespace BeauUtil.Debugger
                             {
                                 text = m_ActiveTexts[usedTexts];
                             }
-                            text.Initialize(i, info, m_IndentSpacing * info.Indent);
+                            text.Initialize(elementIndex, info, m_IndentSpacing * info.Indent);
                             text.transform.SetSiblingIndex(siblingIndex++);
                             usedTexts++;
                             break;
@@ -173,6 +199,17 @@ namespace BeauUtil.Debugger
                 m_InactiveDividers.PushBack(divider);
                 dividersToRemove--;
             }
+
+            if (maxPages > 1)
+            {
+                m_Page.gameObject.SetActive(true);
+                m_Page.transform.SetSiblingIndex(siblingIndex++);
+                m_Page.UpdatePage(m_CurrentMenu.PageIndex, maxPages);
+            }
+            else
+            {
+                m_Page.gameObject.SetActive(false);
+            }
         }
 
         /// <summary>
@@ -182,7 +219,7 @@ namespace BeauUtil.Debugger
         {
             EnsureInitialized();
 
-            m_CurrentMenu = null;
+            m_CurrentMenu = default(MenuStackItem);
             m_MenuStack.Clear();
 
             foreach(var button in m_ActiveButtons)
@@ -255,6 +292,20 @@ namespace BeauUtil.Debugger
             return text;
         }
 
+        private void GetPageSettings(DMInfo inMenu, out int outMaxPages, out int outElementsPerPage)
+        {
+            if (m_MaxElementsPerPage <= 0)
+            {
+                outMaxPages = 1;
+                outElementsPerPage = inMenu.Elements.Count;
+            }
+            else
+            {
+                outMaxPages = (int) Math.Ceiling((float) inMenu.Elements.Count / m_MaxElementsPerPage);
+                outElementsPerPage = m_MaxElementsPerPage;
+            }
+        }
+
         #endregion // Population
 
         #region Menu Management
@@ -273,7 +324,7 @@ namespace BeauUtil.Debugger
         /// </summary>
         public void PushMenu(DMInfo inMenu)
         {
-            int existingIndex = m_MenuStack.IndexOf(inMenu);
+            int existingIndex = IndexOfMenu(inMenu);
             if (existingIndex >= 0)
             {
                 int removeCount = m_MenuStack.Count - 1 - existingIndex;
@@ -282,10 +333,10 @@ namespace BeauUtil.Debugger
             }
             else
             {
-                m_MenuStack.PushBack(inMenu);
+                m_MenuStack.PushBack(new MenuStackItem(inMenu, 0));
             }
             
-            PopulateMenu(inMenu);
+            PopulateMenu(inMenu, 0);
         }
 
         /// <summary>
@@ -296,9 +347,9 @@ namespace BeauUtil.Debugger
             if (m_MenuStack.Count > 1)
             {
                 m_MenuStack.PopBack();
-                DMInfo prevMenu;
+                MenuStackItem prevMenu;
                 m_MenuStack.TryPeekBack(out prevMenu);
-                PopulateMenu(prevMenu);
+                PopulateMenu(prevMenu.Menu, prevMenu.PageIndex);
             }
             else
             {
@@ -314,13 +365,24 @@ namespace BeauUtil.Debugger
             if (m_MenuStack.Count > 1)
             {
                 m_MenuStack.PopBack();
-                DMInfo prevMenu;
+                MenuStackItem prevMenu;
                 m_MenuStack.TryPeekBack(out prevMenu);
-                PopulateMenu(prevMenu);
+                PopulateMenu(prevMenu.Menu, prevMenu.PageIndex);
                 return true;
             }
 
             return false;
+        }
+
+        private int IndexOfMenu(DMInfo inMenu)
+        {
+            for(int i = 0, len = m_MenuStack.Count; i < len; i++)
+            {
+                if (m_MenuStack[i].Menu == inMenu)
+                    return i;
+            }
+
+            return -1;
         }
 
         #endregion // Menu Management
@@ -334,7 +396,7 @@ namespace BeauUtil.Debugger
         {
             foreach(var button in m_ActiveButtons)
             {
-                DMElementInfo info = m_CurrentMenu.Elements[button.ElementIndex];
+                DMElementInfo info = m_CurrentMenu.Menu.Elements[button.ElementIndex];
                 button.UpdateInteractive(DMInfo.EvaluateOptionalPredicate(info.Predicate));
                 switch(info.Type)
                 {
@@ -348,7 +410,7 @@ namespace BeauUtil.Debugger
 
             foreach(var text in m_ActiveTexts)
             {
-                DMTextInfo textInfo = m_CurrentMenu.Elements[text.ElementIndex].Text;
+                DMTextInfo textInfo = m_CurrentMenu.Menu.Elements[text.ElementIndex].Text;
                 text.UpdateValue(textInfo.Getter());
             }
         }
@@ -360,7 +422,7 @@ namespace BeauUtil.Debugger
         private void OnButtonClicked(DMButtonUI inButton)
         {
             int index = inButton.ElementIndex;
-            DMElementInfo info = m_CurrentMenu.Elements[index];
+            DMElementInfo info = m_CurrentMenu.Menu.Elements[index];
             switch(info.Type)
             {
                 case DMElementType.Button:
@@ -385,6 +447,11 @@ namespace BeauUtil.Debugger
                         break;
                     }
             }
+        }
+
+        private void OnPageChanged(int inPageIndex)
+        {
+            PopulateMenu(m_CurrentMenu.Menu, inPageIndex);
         }
 
         private void OnBackClicked()
