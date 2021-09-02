@@ -62,7 +62,7 @@ namespace BeauUtil.Debugger
         static private bool s_Broken;
         static private readonly HashSet<StringHash64> s_IgnoredLocations = new HashSet<StringHash64>();
 
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static private void Initialize()
         {
             #if DEVELOPMENT

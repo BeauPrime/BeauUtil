@@ -294,7 +294,7 @@ namespace BeauUtil.Debugger
 
         private void GetPageSettings(DMInfo inMenu, out int outMaxPages, out int outElementsPerPage)
         {
-            if (m_MaxElementsPerPage <= 0)
+            if (m_MaxElementsPerPage <= 0 || inMenu.Elements.Count <= 0)
             {
                 outMaxPages = 1;
                 outElementsPerPage = inMenu.Elements.Count;
