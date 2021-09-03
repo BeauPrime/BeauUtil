@@ -14,7 +14,7 @@ namespace BeauUtil.Tags
     /// </summary>
     public interface IReplaceProcessor
     {
-        bool TryReplace(TagData inData, object inContext, out string outReplace);
+        bool TryReplace(TagData inData, StringSlice inSource, object inContext, out string outReplace);
         bool TryReplace(char inCode, object inContext, out string outReplace);
     }
 }

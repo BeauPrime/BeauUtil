@@ -72,7 +72,7 @@ namespace BeauUtil
                 return false;
             }
 
-            StringSlice methodSlice = inData.Substring(0, openParenIdx).TrimEnd();
+            StringSlice methodSlice = inData.Substring(0, openParenIdx).Trim();
             if (!VariantUtils.IsValidIdentifier(methodSlice))
             {
                 outMethodCall = default(MethodCall);

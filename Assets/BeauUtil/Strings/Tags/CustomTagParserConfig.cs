@@ -47,6 +47,7 @@ namespace BeauUtil.Tags
 
         public delegate string ReplaceDelegate();
         public delegate string ReplaceWithContextDelegate(TagData inTag, object inContext);
+        public delegate string ReplaceSourceContextDelegate(StringSlice inSource, object inContext);
         public delegate bool TryReplaceDelegate(TagData inTag, object inContext, out string outReplace);
 
         public delegate void EventDelegate(TagData inTag, object inContext, ref TagEventData ioData);
@@ -70,6 +71,9 @@ namespace BeauUtil.Tags
             private ReplaceWithContextDelegate m_ReplaceWithContextCallback;
             private ReplaceWithContextDelegate m_ReplaceWithContextClosingCallback;
 
+            private ReplaceSourceContextDelegate m_ReplaceSourceContextCallback;
+            private ReplaceSourceContextDelegate m_ReplaceSourceContextClosingCallback;
+
             private TryReplaceDelegate m_TryReplaceCallback;
 
             #region Builder
@@ -90,6 +94,8 @@ namespace BeauUtil.Tags
                 m_ReplaceClosingCallback = null;
                 m_ReplaceWithContextCallback = null;
                 m_ReplaceWithContextClosingCallback = null;
+                m_ReplaceSourceContextCallback = null;
+                m_ReplaceSourceContextClosingCallback = null;
                 m_TryReplaceCallback = inTryReplace;
                 m_HandleClosing = false;
                 return this;
@@ -103,6 +109,7 @@ namespace BeauUtil.Tags
                 m_ConstantText = inText;
                 m_ReplaceCallback = null;
                 m_ReplaceWithContextCallback = null;
+                m_ReplaceSourceContextCallback = null;
                 m_TryReplaceCallback = null;
                 return this;
             }
@@ -115,6 +122,7 @@ namespace BeauUtil.Tags
                 m_ConstantText = null;
                 m_ReplaceCallback = inDelegate;
                 m_ReplaceWithContextCallback = null;
+                m_ReplaceSourceContextCallback = null;
                 m_TryReplaceCallback = null;
                 return this;
             }
@@ -127,6 +135,20 @@ namespace BeauUtil.Tags
                 m_ConstantText = null;
                 m_ReplaceCallback = null;
                 m_ReplaceWithContextCallback = inContextDelegate;
+                m_ReplaceSourceContextCallback = null;
+                m_TryReplaceCallback = null;
+                return this;
+            }
+
+            /// <summary>
+            /// Tags will be replaced with the result of the given string.
+            /// </summary>
+            public ReplaceRule ReplaceWith(ReplaceSourceContextDelegate inSourceContextDelegate)
+            {
+                m_ConstantText = null;
+                m_ReplaceCallback = null;
+                m_ReplaceWithContextCallback = null;
+                m_ReplaceSourceContextCallback = inSourceContextDelegate;
                 m_TryReplaceCallback = null;
                 return this;
             }
@@ -139,6 +161,7 @@ namespace BeauUtil.Tags
                 m_ConstantClosingText = inText;
                 m_ReplaceClosingCallback = null;
                 m_ReplaceWithContextClosingCallback = null;
+                m_ReplaceSourceContextClosingCallback = null;
                 m_TryReplaceCallback = null;
                 m_HandleClosing = true;
                 return this;
@@ -152,6 +175,7 @@ namespace BeauUtil.Tags
                 m_ConstantClosingText = null;
                 m_ReplaceClosingCallback = inDelegate;
                 m_ReplaceWithContextClosingCallback = null;
+                m_ReplaceSourceContextClosingCallback = null;
                 m_TryReplaceCallback = null;
                 m_HandleClosing = true;
                 return this;
@@ -165,6 +189,21 @@ namespace BeauUtil.Tags
                 m_ConstantClosingText = null;
                 m_ReplaceClosingCallback = null;
                 m_ReplaceWithContextClosingCallback = inContextDelegate;
+                m_ReplaceSourceContextClosingCallback = null;
+                m_TryReplaceCallback = null;
+                m_HandleClosing = true;
+                return this;
+            }
+
+            /// <summary>
+            /// Closing tags will be replaced with the result of the given string.
+            /// </summary>
+            public ReplaceRule CloseWith(ReplaceSourceContextDelegate inContextSourceDelegate)
+            {
+                m_ConstantClosingText = null;
+                m_ReplaceClosingCallback = null;
+                m_ReplaceWithContextClosingCallback = null;
+                m_ReplaceSourceContextClosingCallback = inContextSourceDelegate;
                 m_TryReplaceCallback = null;
                 m_HandleClosing = true;
                 return this;
@@ -172,7 +211,7 @@ namespace BeauUtil.Tags
 
             #endregion // Builder
 
-            internal bool Evaluate(TagData inTag, object inContext, out string outReplace)
+            internal bool Evaluate(TagData inTag, StringSlice inSource, object inContext, out string outReplace)
             {
                 if (m_TryReplaceCallback != null)
                     return m_TryReplaceCallback(inTag, inContext, out outReplace);
@@ -196,6 +235,11 @@ namespace BeauUtil.Tags
                         outReplace = m_ReplaceWithContextClosingCallback(inTag, inContext);
                         return true;
                     }
+
+                    if (m_ReplaceSourceContextClosingCallback != null)
+                    {
+                        outReplace = m_ReplaceSourceContextClosingCallback(inSource, inContext);
+                    }
                 }
 
                 if (m_ReplaceCallback != null)
@@ -207,6 +251,12 @@ namespace BeauUtil.Tags
                 if (m_ReplaceWithContextCallback != null)
                 {
                     outReplace = m_ReplaceWithContextCallback(inTag, inContext);
+                    return true;
+                }
+
+                if (m_ReplaceSourceContextCallback != null)
+                {
+                    outReplace = m_ReplaceSourceContextCallback(inSource, inContext);
                     return true;
                 }
 
@@ -222,8 +272,7 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            ReplaceRule rule = new ReplaceRule(inId);
-            m_ReplaceRules.Add(rule);
+            ReplaceRule rule = FindOrCreateReplaceRule(inId);
             return rule;
         }
 
@@ -234,8 +283,7 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            ReplaceRule rule = new ReplaceRule(inId);
-            m_ReplaceRules.Add(rule);
+            ReplaceRule rule = FindOrCreateReplaceRule(inId);
             rule.ReplaceWith(inReplaceWith);
             return rule;
         }
@@ -247,8 +295,7 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            ReplaceRule rule = new ReplaceRule(inId);
-            m_ReplaceRules.Add(rule);
+            ReplaceRule rule = FindOrCreateReplaceRule(inId);
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -260,8 +307,19 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            ReplaceRule rule = new ReplaceRule(inId);
-            m_ReplaceRules.Add(rule);
+            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            rule.ReplaceWith(inReplace);
+            return rule;
+        }
+
+        /// <summary>
+        /// Adds a new replace rule that replaces with the result of the given callback.
+        /// </summary>
+        public ReplaceRule AddReplace(string inId, ReplaceSourceContextDelegate inReplace)
+        {
+            CheckLocked();
+
+            ReplaceRule rule = FindOrCreateReplaceRule(inId);
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -273,8 +331,7 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            ReplaceRule rule = new ReplaceRule(inId);
-            m_ReplaceRules.Add(rule);
+            ReplaceRule rule = FindOrCreateReplaceRule(inId);
             rule.TryReplaceWith(inReplace);
             return rule;
         }
@@ -289,15 +346,15 @@ namespace BeauUtil.Tags
             m_CharReplace[inCharacter] = inReplace;
         }
 
-        public bool TryReplace(TagData inData, object inContext, out string outReplace)
+        public bool TryReplace(TagData inData, StringSlice inSource, object inContext, out string outReplace)
         {
             ReplaceRule rule = m_ReplaceRules.FindMatch(inData.Id);
             if (rule != null)
-                return rule.Evaluate(inData, inContext, out outReplace);
+                return rule.Evaluate(inData, inSource, inContext, out outReplace);
 
             if (m_ReplaceInheritFrom != null)
             {
-                return m_ReplaceInheritFrom.TryReplace(inData, inContext, out outReplace);
+                return m_ReplaceInheritFrom.TryReplace(inData, inSource, inContext, out outReplace);
             }
 
             outReplace = null;
@@ -316,6 +373,19 @@ namespace BeauUtil.Tags
 
             outReplace = null;
             return false;
+        }
+
+        private ReplaceRule FindOrCreateReplaceRule(string inPattern)
+        {
+            foreach(var rule in m_ReplaceRules)
+            {
+                if (rule.Id() == inPattern)
+                    return rule;
+            }
+
+            ReplaceRule newRule = new ReplaceRule(inPattern);
+            m_ReplaceRules.Add(newRule);
+            return newRule;
         }
 
         #endregion // Text Replace
@@ -530,8 +600,7 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            EventRule rule = new EventRule(inId);
-            m_EventRules.Add(rule);
+            EventRule rule = FindOrCreateEventRule(inId);
             return rule;
         }
 
@@ -542,8 +611,7 @@ namespace BeauUtil.Tags
         {
             CheckLocked();
 
-            EventRule rule = new EventRule(inId);
-            m_EventRules.Add(rule);
+            EventRule rule = FindOrCreateEventRule(inId);
 
             rule.ProcessWith(inEventId);
             return rule;
@@ -557,7 +625,6 @@ namespace BeauUtil.Tags
             CheckLocked();
 
             EventRule rule = new EventRule(inId);
-            m_EventRules.Add(rule);
             rule.ProcessWith(inDelegate);
             return rule;
         }
@@ -570,7 +637,6 @@ namespace BeauUtil.Tags
             CheckLocked();
 
             EventRule rule = new EventRule(inId);
-            m_EventRules.Add(rule);
             rule.ProcessWith(inEventId, inDelegate);
             return rule;
         }
@@ -588,6 +654,19 @@ namespace BeauUtil.Tags
 
             outEvent = default(TagEventData);
             return false;
+        }
+
+        private EventRule FindOrCreateEventRule(string inPattern)
+        {
+            foreach(var rule in m_EventRules)
+            {
+                if (rule.Id() == inPattern)
+                    return rule;
+            }
+
+            EventRule newRule = new EventRule(inPattern);
+            m_EventRules.Add(newRule);
+            return newRule;
         }
 
         #endregion // Event

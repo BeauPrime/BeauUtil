@@ -749,6 +749,12 @@ namespace BeauUtil.Variants
                         return true;
                     }
 
+                case TypeCode.Double:
+                    {
+                        outVariant = new Variant((float) (double) inObject);
+                        return true;
+                    }
+
                 case TypeCode.Int16:
                     {
                         outVariant = new Variant((short) inObject);
@@ -787,6 +793,110 @@ namespace BeauUtil.Variants
             }
 
             outVariant = default(Variant);
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to convert from a Variant to an object.
+        /// </summary>
+        static public bool TryConvertTo(Variant inVariant, Type inType, out object outObject)
+        {
+            if (inType == typeof(Variant))
+            {
+                outObject = inVariant;
+                return true;
+            }
+
+            if (inType == typeof(SerializedHash32))
+            {
+                outObject = (SerializedHash32) inVariant.AsStringHash();
+                return true;
+            }
+
+            if (inType == typeof(StringHash32))
+            {
+                outObject = inVariant.AsStringHash();
+                return true;
+            }
+
+            if (inVariant == null)
+            {
+                outObject = Null;
+                return true;
+            }
+
+            TypeCode code = System.Type.GetTypeCode(inType);
+
+            switch(code)
+            {
+                case TypeCode.String:
+                    {
+                        outObject = inVariant.ToString();
+                        return true;
+                    }
+
+                case TypeCode.Boolean:
+                    {
+                        outObject = inVariant.AsBool();
+                        return true;
+                    }
+
+                case TypeCode.Byte:
+                    {
+                        outObject = (byte) inVariant.AsUInt();
+                        return true;
+                    }
+
+                case TypeCode.Char:
+                    {
+                        outObject = (char) inVariant.AsInt();
+                        return true;
+                    }
+
+                case TypeCode.Double:
+                    {
+                        outObject  = (double) inVariant.AsFloat();
+                        return true;
+                    }
+
+                case TypeCode.Int16:
+                    {
+                        outObject = (UInt16) inVariant.AsInt();;
+                        return true;
+                    }
+
+                case TypeCode.Int32:
+                    {
+                        outObject = inVariant.AsInt();
+                        return true;
+                    }
+
+                case TypeCode.SByte:
+                    {
+                        outObject = (sbyte) inVariant.AsInt();
+                        return true;
+                    }
+
+                case TypeCode.Single:
+                    {
+                        outObject = (float) inVariant.AsFloat();
+                        return true;
+                    }
+
+                case TypeCode.UInt16:
+                    {
+                        outObject = (ushort) inVariant.AsUInt();
+                        return true;
+                    }
+
+                case TypeCode.UInt32:
+                    {
+                        outObject = inVariant.AsUInt();
+                        return true;
+                    }
+            }
+
+            outObject = null;
             return false;
         }
 

@@ -34,6 +34,8 @@ namespace BeauUtil
 
         #region Modifiers
 
+        public string Id() { return m_IdMatch; }
+
         protected void SetId(string inId)
         {
             if (m_IdMatch != inId)

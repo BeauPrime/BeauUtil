@@ -451,8 +451,10 @@ namespace BeauUtil.Debugger
                 #if UNITY_EDITOR
                 if (EditorApplication.isPlaying)
                     UnityEngine.Debug.Break();
+                else
+                    throw new AssertException(fullMessage);
                 #else
-                // TODO: Crash screen?
+                throw new AssertException(fullMessage);
                 #endif // UNITY_EDITOR
             }
         }

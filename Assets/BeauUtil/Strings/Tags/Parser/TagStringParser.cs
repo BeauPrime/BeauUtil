@@ -156,7 +156,7 @@ namespace BeauUtil.Tags
                     }
                     else if (state.RichStart >= 0 && state.Input.AttemptMatch(charIdx, ">"))
                     {
-                        StringSlice richSlice = state.Input.Substring(state.RichStart, charIdx - state.RichStart + 1);
+                        StringSlice richSlice = state.Input.Substring(state.RichStart + 1, charIdx - state.RichStart - 1);
                         TagData richTag = TagData.Parse(richSlice, RichTextDelimiters);
 
                         CopyNonRichText(ref state, state.RichStart);
@@ -177,7 +177,7 @@ namespace BeauUtil.Tags
                             if (m_ReplaceProcessor != null)
                             {
                                 string replace;
-                                if (m_ReplaceProcessor.TryReplace(richTag, state.Context, out replace))
+                                if (m_ReplaceProcessor.TryReplace(richTag, richSlice, state.Context, out replace))
                                 {
                                     if (ContainsPotentialTags(replace, m_Delimiters))
                                     {
@@ -230,7 +230,7 @@ namespace BeauUtil.Tags
                     }
                     else if (state.TagStart >= 0 && state.Input.AttemptMatch(charIdx, m_Delimiters.TagEndDelimiter))
                     {
-                        StringSlice tagSlice = state.Input.Substring(state.TagStart, charIdx - state.TagStart + 1);
+                        StringSlice tagSlice = state.Input.Substring(state.TagStart + m_Delimiters.TagStartDelimiter.Length, charIdx - state.TagStart + 1 - m_Delimiters.TagEndDelimiter.Length - m_Delimiters.TagStartDelimiter.Length);
                         TagData tag = TagData.Parse(tagSlice, m_Delimiters);
 
                         CopyNonRichText(ref state, state.TagStart);
@@ -250,7 +250,7 @@ namespace BeauUtil.Tags
                         if (!bTagHandled && m_ReplaceProcessor != null)
                         {
                             string replace;
-                            if (m_ReplaceProcessor.TryReplace(tag, state.Context, out replace))
+                            if (m_ReplaceProcessor.TryReplace(tag, tagSlice, state.Context, out replace))
                             {
                                 if (ContainsPotentialTags(replace, m_Delimiters))
                                 {
