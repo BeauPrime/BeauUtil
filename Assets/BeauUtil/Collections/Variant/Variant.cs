@@ -610,7 +610,7 @@ namespace BeauUtil.Variants
             }
 
             if (inSlice.StartsWith(StringHashing.CustomHashPrefix) || inSlice.StartsWith(StringHashing.StringPrefix)
-                || (inSlice.StartsWith('"') && inSlice.EndsWith('"')))
+                || (inSlice.Length >= 2 && inSlice.StartsWith('"') && inSlice.EndsWith('"')))
             {
                 StringHash32 hash;
                 if (StringHash32.TryParse(inSlice, out hash))

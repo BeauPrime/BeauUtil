@@ -300,7 +300,7 @@ namespace BeauUtil
             m_Types = new Dictionary<Type, TypeDescription>();
             m_StringConverter = inConverter;
 
-            m_StringSplitter = new StringUtils.ArgsList.Splitter();
+            m_StringSplitter = new StringUtils.ArgsList.Splitter(true);
             m_ComponentType = inComponentType;
         }
 

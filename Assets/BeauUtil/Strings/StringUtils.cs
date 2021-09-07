@@ -867,6 +867,11 @@ namespace BeauUtil
                 {
                     StringSlice slice = inSlice.Trim();
 
+                    if (slice.Length >= 2 && slice.StartsWith('"') && slice.EndsWith('"'))
+                    {
+                        slice = slice.Substring(1, slice.Length - 2);
+                    }
+
                     // if this contains escaped CSV sequences, unescape it here
                     if (m_Unescape && (slice.Contains("\\") || slice.Contains("\\\"")))
                     {
