@@ -50,6 +50,7 @@ namespace BeauUtil.Debugger
 
         private RingBuffer<MenuStackItem> m_MenuStack = new RingBuffer<MenuStackItem>(4, RingBufferMode.Expand);
         private MenuStackItem m_CurrentMenu;
+        [NonSerialized] private int m_CurrentPageCount = 1;
 
         private RingBuffer<RectTransform> m_InactiveDividers = new RingBuffer<RectTransform>();
         private RingBuffer<DMButtonUI> m_InactiveButtons = new RingBuffer<DMButtonUI>();
@@ -58,7 +59,7 @@ namespace BeauUtil.Debugger
         private RingBuffer<RectTransform> m_ActiveDividers = new RingBuffer<RectTransform>();
         private RingBuffer<DMButtonUI> m_ActiveButtons = new RingBuffer<DMButtonUI>();
         private RingBuffer<DMTextUI> m_ActiveTexts = new RingBuffer<DMTextUI>();
-        private int m_SiblingIndexStart;
+        [NonSerialized] private int m_SiblingIndexStart;
 
         private Action<DMButtonUI> m_CachedButtonOnClick;
 
@@ -101,6 +102,7 @@ namespace BeauUtil.Debugger
 
             m_CurrentMenu.PageIndex = Mathf.Clamp(inPageIndex, 0, maxPages - 1);
             m_MenuStack[m_MenuStack.Count - 1] = m_CurrentMenu;
+            m_CurrentPageCount = maxPages;
 
             m_Header.Init(inMenu.Header, m_MenuStack.Count > 1);
 
@@ -372,6 +374,30 @@ namespace BeauUtil.Debugger
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Attempts to move to the next page.
+        /// </summary>
+        public bool TryNextPage()
+        {
+            if (m_MenuStack.Count <= 0 || m_CurrentPageCount <= 1 || m_CurrentMenu.PageIndex >= m_CurrentPageCount - 1)
+                return false;
+
+            PopulateMenu(m_CurrentMenu.Menu, m_CurrentMenu.PageIndex + 1);
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to move to the previous page.
+        /// </summary>
+        public bool TryPreviousPage()
+        {
+            if (m_MenuStack.Count <= 0 || m_CurrentPageCount <= 1 || m_CurrentMenu.PageIndex <= 0)
+                return false;
+
+            PopulateMenu(m_CurrentMenu.Menu, m_CurrentMenu.PageIndex - 1);
+            return true;
         }
 
         private int IndexOfMenu(DMInfo inMenu)

@@ -29,7 +29,7 @@ namespace BeauUtil.Debugger
         [SerializeField] private TMP_Text m_FrameMSText = null;
         [SerializeField] private TMP_Text m_CameraMSText = null;
         [SerializeField] private TMP_Text m_MemoryText = null;
-        [SerializeField] private string m_UnavaialbleTextString = "---";
+        [SerializeField] private string m_UnavailableTextString = "---";
 
         #endregion // Inspector
 
@@ -93,7 +93,7 @@ namespace BeauUtil.Debugger
             {
                 if (!bAvailable || frame.Framerate < 0)
                 {
-                    m_FramerateText.SetText(m_UnavaialbleTextString);
+                    m_FramerateText.SetText(m_UnavailableTextString);
                 }
                 else 
                 {
@@ -105,7 +105,7 @@ namespace BeauUtil.Debugger
             {
                 if (!bAvailable || frame.AvgFrameMS < 0)
                 {
-                    m_FrameMSText.SetText(m_UnavaialbleTextString);
+                    m_FrameMSText.SetText(m_UnavailableTextString);
                 }
                 else
                 {
@@ -117,7 +117,7 @@ namespace BeauUtil.Debugger
             {
                 if (!bAvailable || frame.AvgRenderMS < 0)
                 {
-                    m_CameraMSText.SetText(m_UnavaialbleTextString);
+                    m_CameraMSText.SetText(m_UnavailableTextString);
                 }
                 else
                 {
@@ -129,7 +129,7 @@ namespace BeauUtil.Debugger
             {
                 if (!bAvailable || frame.MemoryUsageMB < 0)
                 {
-                    m_MemoryText.SetText(m_UnavaialbleTextString);
+                    m_MemoryText.SetText(m_UnavailableTextString);
                 }
                 else
                 {
