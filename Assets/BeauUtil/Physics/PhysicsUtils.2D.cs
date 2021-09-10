@@ -707,6 +707,124 @@ namespace BeauUtil
             return default(Bounds);
         }
 
+        /// <summary>
+        /// Returns the radius of the given 2d collider.
+        /// </summary>
+        static public float GetRadius(Collider2D inCollider)
+        {
+            CircleCollider2D circle = inCollider as CircleCollider2D;
+            if (circle != null)
+            {
+                return circle.radius;
+            }
+
+            BoxCollider2D box = inCollider as BoxCollider2D;
+            if (box != null)
+            {
+                Vector2 halfSize = box.size;
+                halfSize.x *= 0.5f;
+                halfSize.y *= 0.5f;
+
+                return Mathf.Sqrt(halfSize.x * halfSize.x + halfSize.y * halfSize.y) + box.edgeRadius;
+            }
+
+            EdgeCollider2D edge = inCollider as EdgeCollider2D;
+            if (edge != null)
+            {
+                Vector2[] points = edge.points;
+                Bounds b = Geom.MinAABB(points);
+                Vector2 halfSize = b.extents;
+                return Mathf.Sqrt(halfSize.x * halfSize.x + halfSize.y * halfSize.y) + edge.edgeRadius;
+            }
+
+            CapsuleCollider2D capsule = inCollider as CapsuleCollider2D;
+            if (capsule != null)
+            {
+                Vector2 size = capsule.size;
+                switch(capsule.direction)
+                {
+                    case CapsuleDirection2D.Horizontal:
+                        return size.x;
+
+                    case CapsuleDirection2D.Vertical:
+                        return size.y;
+                }
+            }
+
+            PolygonCollider2D poly = inCollider as PolygonCollider2D;
+            if (poly != null)
+            {
+                Vector2[] points = edge.points;
+                Bounds b = Geom.MinAABB(points);
+                Vector2 halfSize = b.extents;
+                return Mathf.Sqrt(halfSize.x * halfSize.x + halfSize.y * halfSize.y) + edge.edgeRadius;
+            }
+
+            Log.Warn("[PhysicsUtils] Unable to get radius of a collider of type '{0}'", inCollider.GetType().Name);
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the radius of the given 2d collider.
+        /// </summary>
+        static public float GetRadius(Collider2D inCollider, out Vector2 outLocalCenter)
+        {
+            outLocalCenter = inCollider.offset;
+
+            CircleCollider2D circle = inCollider as CircleCollider2D;
+            if (circle != null)
+            {
+                return circle.radius;
+            }
+
+            BoxCollider2D box = inCollider as BoxCollider2D;
+            if (box != null)
+            {
+                Vector2 halfSize = box.size;
+                halfSize.x *= 0.5f;
+                halfSize.y *= 0.5f;
+
+                return Mathf.Sqrt(halfSize.x * halfSize.x + halfSize.y * halfSize.y) + box.edgeRadius;
+            }
+
+            EdgeCollider2D edge = inCollider as EdgeCollider2D;
+            if (edge != null)
+            {
+                Vector2[] points = edge.points;
+                Bounds b = Geom.MinAABB(points);
+                Vector2 halfSize = b.extents;
+                outLocalCenter += (Vector2) b.center;
+                return Mathf.Sqrt(halfSize.x * halfSize.x + halfSize.y * halfSize.y) + edge.edgeRadius;
+            }
+
+            CapsuleCollider2D capsule = inCollider as CapsuleCollider2D;
+            if (capsule != null)
+            {
+                Vector2 size = capsule.size;
+                switch(capsule.direction)
+                {
+                    case CapsuleDirection2D.Horizontal:
+                        return size.x;
+
+                    case CapsuleDirection2D.Vertical:
+                        return size.y;
+                }
+            }
+
+            PolygonCollider2D poly = inCollider as PolygonCollider2D;
+            if (poly != null)
+            {
+                Vector2[] points = edge.points;
+                Bounds b = Geom.MinAABB(points);
+                Vector2 halfSize = b.extents;
+                outLocalCenter += (Vector2) b.center;
+                return Mathf.Sqrt(halfSize.x * halfSize.x + halfSize.y * halfSize.y) + edge.edgeRadius;
+            }
+
+            Log.Warn("[PhysicsUtils] Unable to get radius of a collider of type '{0}'", inCollider.GetType().Name);
+            return -1;
+        }
+
         #endregion // Sizing
     
         #region Uniform Scaling
