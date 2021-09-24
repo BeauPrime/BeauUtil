@@ -89,7 +89,7 @@ namespace BeauUtil
         /// <summary>
         /// Forces this layout group to rebuild itself.
         /// </summary>
-        static public void ForceRebuild<T>(this T inLayoutGroup, bool inbRecursive = true) where T : Component, ILayoutGroup
+        static public void ForceRebuild<T>(this T inLayoutGroup, bool inbRecursive = true) where T : Component, ILayoutController
         {
             if (inbRecursive)
             {
@@ -113,25 +113,56 @@ namespace BeauUtil
                     RecursiveLayoutRebuild(r);
             }
 
-            ILayoutGroup group = inTransform.GetComponent<ILayoutGroup>();
-            if (group != null)
+            ILayoutController controller = inTransform.GetComponent<ILayoutController>();
+            if (controller != null)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(inTransform);
         }
 
         /// <summary>
         /// Marks this layout group to be rebuilt.
         /// </summary>
-        static public void MarkForRebuild(this LayoutGroup inLayoutGroup)
+        static public void MarkForRebuild(this LayoutGroup inLayoutGroup, bool inbRecursive = true)
         {
-            LayoutRebuilder.MarkLayoutForRebuild((RectTransform) inLayoutGroup.transform);
+            if (inbRecursive)
+            {
+                RecursiveMarkForRebuild((RectTransform) inLayoutGroup.transform);
+            }
+            else
+            {
+                LayoutRebuilder.MarkLayoutForRebuild((RectTransform) inLayoutGroup.transform);
+            }
         }
 
         /// <summary>
         /// Marks this layout group to be rebuilt.
         /// </summary>
-        static public void MarkForRebuild<T>(this T inLayoutGroup) where T : Component, ILayoutGroup
+        static public void MarkForRebuild<T>(this T inLayoutGroup, bool inbRecursive = true) where T : Component, ILayoutController
         {
-            LayoutRebuilder.MarkLayoutForRebuild((RectTransform) inLayoutGroup.transform);
+            if (inbRecursive)
+            {
+                RecursiveMarkForRebuild((RectTransform) inLayoutGroup.transform);
+            }
+            else
+            {
+                LayoutRebuilder.MarkLayoutForRebuild((RectTransform) inLayoutGroup.transform);
+            }
+        }
+
+        /// <summary>
+        /// Recursivelye rebuilds layout
+        /// </summary>
+        static private void RecursiveMarkForRebuild(RectTransform inTransform)
+        {
+            for(int i = 0, count = inTransform.childCount; i < count; i++)
+            {
+                RectTransform r = inTransform.GetChild(i) as RectTransform;
+                if (r != null)
+                    RecursiveMarkForRebuild(r);
+            }
+
+            ILayoutController controller = inTransform.GetComponent<ILayoutController>();
+            if (controller != null)
+                LayoutRebuilder.MarkLayoutForRebuild(inTransform);
         }
 
         /// <summary>

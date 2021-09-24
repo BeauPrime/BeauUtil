@@ -268,6 +268,7 @@ namespace BeauUtil
                 if (inbConfigure)
                 {
                     m_Colors.Main = m_Graphic.color;
+                    m_BlocksRaycasts = m_Graphic.raycastTarget;
                 }
 
                 return;
@@ -297,6 +298,26 @@ namespace BeauUtil
                         MaterialPropertyBlock propBlock = GetSharedBlock();
                         m_Renderer.GetPropertyBlock(propBlock);
                         m_Colors.Main = m_MaterialConfig.MainProperty.Retrieve(propBlock);
+                    }
+
+                    bool bRaycastable = false;
+                    var eventSystemHandler = GetComponent<UnityEngine.EventSystems.IEventSystemHandler>();
+                    if (eventSystemHandler != null)
+                    {
+                        Behaviour behavior = eventSystemHandler as Behaviour;
+                        if (behavior != null)
+                            bRaycastable = behavior.enabled;
+                    }
+
+                    if (bRaycastable)
+                    {
+                        m_BlocksRaycasts = true;
+                        m_EnableRaycastLayer = gameObject.layer;
+                    }
+                    else
+                    {
+                        m_BlocksRaycasts = false;
+                        m_DisableRaycastLayer = gameObject.layer;
                     }
 
                     if (m_Colors.Main == Color.clear)
@@ -535,6 +556,11 @@ namespace BeauUtil
 
         private void Reset()
         {
+            m_RendererLocated = false;
+            m_Graphic = null;
+            m_Renderer = null;
+            m_RendererAsSpriteRenderer = null;
+
             FindRenderer(true);
             Refresh();
         }
