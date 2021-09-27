@@ -127,7 +127,8 @@ namespace BeauUtil
 
         public void OnBeforeSerialize()
 		{
-            m_Hash = m_Source == null ? 0 : StringHashing.Hash32(m_Source, 0, m_Source.Length);
+            if (m_Hash == 0 && !string.IsNullOrEmpty(m_Source))
+                m_Hash = StringHashing.Hash32(m_Source, 0, m_Source.Length);
 
             #if !DEVELOPMENT_BUILD && !DEVELOPMENT
 
