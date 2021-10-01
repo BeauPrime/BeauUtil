@@ -56,7 +56,17 @@ namespace BeauUtil
 
         public void Rebuild()
         {
+            #if UNITY_EDITOR
+            if (!Application.IsPlaying(this))
+            {
+                CanvasHelper.ForceRebuild(m_LayoutGroup, true);
+                return;
+            }
+            #endif // UNITY_EDITOR
+
+            m_LayoutGroup.enabled = true;
             CanvasHelper.ForceRebuild(m_LayoutGroup, true);
+            m_LayoutGroup.enabled = false;
         }
         
         #if UNITY_EDITOR

@@ -184,7 +184,7 @@ namespace BeauUtil
                     catch(Exception e)
                     {
                         UnityEngine.Debug.LogException(e);
-                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert object {0} to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert object {0} to expected type {1}", inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType.Name);
                         outReturnValue = null;
                         return false;
                     }
@@ -212,7 +212,7 @@ namespace BeauUtil
                 {
                     if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType, inContext, out m_Arguments[i + m_ContextOffset]))
                     {
-                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType.Name);
                         outReturnValue = null;
                         return false;
                     }
@@ -236,7 +236,7 @@ namespace BeauUtil
                 {
                     if (!inConverter.TryConvertTo(inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType, inContext, out m_Arguments[i + m_ContextOffset]))
                     {
-                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i].ParameterType.Name);
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Unable to convert string '{0}' to expected type {1}", inArguments[i], m_Parameters[i + m_ContextOffset].ParameterType.Name);
                         outReturnValue = null;
                         return false;
                     }
