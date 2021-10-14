@@ -9,6 +9,7 @@
 
 using System;
 using UnityEngine;
+using System.Diagnostics;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -19,12 +20,21 @@ namespace BeauUtil
     /// Scene reference object.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("{Path}")]
     public struct SceneReference
+#if UNITY_EDITOR
+        : ISerializationCallbackReceiver
+#endif // UNITY_EDITOR
     {
         [SerializeField] private string m_ScenePath;
         #if UNITY_EDITOR
         [SerializeField] private string m_GUID;
         #endif // UNITY_EDITOR
+
+        public string Name
+        {
+            get { return System.IO.Path.GetFileNameWithoutExtension(m_ScenePath); }
+        }
 
         public string Path
         {
@@ -37,6 +47,20 @@ namespace BeauUtil
         }
 
         #if UNITY_EDITOR
+
+        public void OnAfterDeserialize()
+        {
+        }
+
+        public void OnBeforeSerialize()
+        {
+            if (!string.IsNullOrEmpty(m_GUID)) {
+                string path = AssetDatabase.GUIDToAssetPath(m_GUID);
+                if (m_ScenePath != path) {
+                    m_ScenePath = path;
+                }
+            }
+        }
 
         [CustomPropertyDrawer(typeof(SceneReference)), CanEditMultipleObjects]
         private class Inspector : PropertyDrawer

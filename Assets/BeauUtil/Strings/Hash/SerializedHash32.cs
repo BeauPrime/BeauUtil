@@ -15,6 +15,7 @@ using System;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
+using System.Diagnostics;
 #endif // UNITY_EDITOR
 
 namespace BeauUtil
@@ -23,6 +24,7 @@ namespace BeauUtil
     /// Serializable hashed string.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("{ToDebugString()}")]
     public struct SerializedHash32 : IEquatable<SerializedHash32>, IDebugString
 #if UNITY_EDITOR
         , ISerializationCallbackReceiver

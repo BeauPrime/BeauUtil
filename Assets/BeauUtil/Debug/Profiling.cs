@@ -3,7 +3,7 @@
  * Author:  Autumn Beauchesne
  * Date:    2 Sept 2020
  * 
- * File:    Profile.cs
+ * File:    Profiling.cs
  * Purpose: Profiling blocks.
  */
 
@@ -53,7 +53,7 @@ namespace BeauUtil.Debugger
                 m_Stopwatch.Stop();
                 double durationMS = (double) m_Stopwatch.ElapsedTicks / Stopwatch.Frequency * 1000;
                 int durationFrames = UnityEngine.Time.frameCount - m_FrameStart;
-                UnityEngine.Debug.Log(string.Format("[Profile] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
+                UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
             }
         }
 

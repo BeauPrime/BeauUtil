@@ -53,17 +53,18 @@ namespace BeauUtil
                 if (GUI.Button(buttonRect, "..."))
                 {
                     string streamingAssetsPath = Path.GetFullPath(Application.streamingAssetsPath).Replace("\\", "/");
+                    string startFrom = string.IsNullOrEmpty(property.stringValue) ? streamingAssetsPath : streamingAssetsPath + property.stringValue;
 
                     string nextPath;
                     if (string.IsNullOrEmpty(attr.Filter))
                     {
-                        nextPath = UnityEditor.EditorUtility.OpenFilePanel("Select File in StreamingAssets", streamingAssetsPath, "*");
+                        nextPath = UnityEditor.EditorUtility.OpenFilePanel("Select File in StreamingAssets", startFrom, "*");
                     }
                     else
                     {
                         CachedFilters[0] = attr.Filter;
                         CachedFilters[1] = attr.Filter;
-                        nextPath = UnityEditor.EditorUtility.OpenFilePanelWithFilters("Select File in StreamingAssets", streamingAssetsPath, CachedFilters);
+                        nextPath = UnityEditor.EditorUtility.OpenFilePanelWithFilters("Select File in StreamingAssets", startFrom, CachedFilters);
                     }
 
                     nextPath = nextPath.Replace("\\", "/");
