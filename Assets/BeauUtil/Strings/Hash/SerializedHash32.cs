@@ -13,9 +13,9 @@
 
 using System;
 using UnityEngine;
+using System.Diagnostics;
 #if UNITY_EDITOR
 using UnityEditor;
-using System.Diagnostics;
 #endif // UNITY_EDITOR
 
 namespace BeauUtil
