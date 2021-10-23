@@ -34,7 +34,7 @@ namespace BeauUtil
             private readonly string[] CachedFilters = new string[2];
             private readonly GUIContent CachedContent = new GUIContent();
 
-            private const float ButtonDisplayWidth = 32;
+            private const float ButtonDisplayWidth = 24;
 
             public override void OnGUI(Rect position, UnityEditor.SerializedProperty property, GUIContent label)
             {
@@ -42,15 +42,16 @@ namespace BeauUtil
                 label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
 
                 Rect propRect = position;
-                propRect.width -= ButtonDisplayWidth + 4;
+                propRect.width -= ButtonDisplayWidth * 2 + 8;
 
-                Rect buttonRect = new Rect(propRect.xMax + 4, propRect.y, ButtonDisplayWidth, propRect.height);
+                Rect selectButtonRect = new Rect(propRect.xMax + 4, propRect.y, ButtonDisplayWidth, propRect.height);
+                Rect clearButtonRect = new Rect(selectButtonRect.xMax + 4, propRect.y, ButtonDisplayWidth, propRect.height);
 
                 CachedContent.text = string.IsNullOrEmpty(property.stringValue) ? "(No Path Specified)" : property.stringValue;
                 CachedContent.tooltip = property.stringValue;
                 UnityEditor.EditorGUI.LabelField(propRect, label, CachedContent);
 
-                if (GUI.Button(buttonRect, "..."))
+                if (GUI.Button(selectButtonRect, "..."))
                 {
                     string streamingAssetsPath = Path.GetFullPath(Application.streamingAssetsPath).Replace("\\", "/");
                     string startFrom = string.IsNullOrEmpty(property.stringValue) ? streamingAssetsPath : streamingAssetsPath + property.stringValue;
@@ -82,6 +83,13 @@ namespace BeauUtil
                                 strippedPath = strippedPath.Substring(1);
                             property.stringValue = strippedPath;
                         }
+                    }
+                }
+
+                using(new UnityEditor.EditorGUI.DisabledScope(!property.hasMultipleDifferentValues && string.IsNullOrEmpty(property.stringValue))) {
+                    if (GUI.Button(clearButtonRect, "X"))
+                    {
+                        property.stringValue = string.Empty;
                     }
                 }
 
