@@ -166,6 +166,7 @@ namespace BeauUtil.Variants
                 throw new ArgumentException("Invalid copy target", "inTarget");
 
             m_Values.CopyTo(validTarget.m_Values);
+            validTarget.m_Optimized = m_Optimized;
         }
 
         /// <summary>
