@@ -1375,9 +1375,6 @@ namespace BeauUtil
             if (inSlice.StartsWith("0x"))
                 return ReadAsInteger;
 
-            if (TooLong(inSlice, MaxDigits32))
-                return ReadAsSystemFloat;
-
             bool bHasDot = false;
             bool bHasE = false;
 
@@ -1417,6 +1414,9 @@ namespace BeauUtil
             }
 
             if (bHasE)
+                return ReadAsSystemFloat;
+
+            if (TooLong(inSlice, MaxDigits32))
                 return ReadAsSystemFloat;
 
             return bHasDot ? ReadAsDecimalPlace : ReadAsInteger;

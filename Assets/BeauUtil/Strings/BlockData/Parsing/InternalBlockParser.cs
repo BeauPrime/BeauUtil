@@ -122,12 +122,13 @@ namespace BeauUtil.Blocks
 
             using(var disposeRef = state)
             {
+                uint lineNumber = 0;
+                state.Position = new BlockFilePosition(inFileName, lineNumber);
                 inGenerator.OnStart(state, state.Package);
 
-                uint lineNumber = 0;
                 foreach (var rawLine in SplitIntoLines(inRules, inFile))
                 {
-                    ++lineNumber;
+                    lineNumber++;
                     state.Position = new BlockFilePosition(inFileName, lineNumber);
 
                     LineResult result = ParseLine(ref state, rawLine);

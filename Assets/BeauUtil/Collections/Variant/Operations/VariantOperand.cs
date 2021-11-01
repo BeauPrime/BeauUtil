@@ -29,38 +29,49 @@ namespace BeauUtil.Variants
             Method
         }
 
+        [StructLayout(LayoutKind.Explicit)]
+        private struct DataUnion
+        {
+            [FieldOffset(0)] public Variant Value;
+            [FieldOffset(0)] public TableKeyPair TableKey;
+            [FieldOffset(0)] public StringHash32 MethodCallId;
+        }
+
         #endregion // Types
 
         public readonly Mode Type;
-        public readonly Variant Value;
-        public readonly TableKeyPair TableKey;
-        public readonly MethodCall MethodCall;
+        private readonly DataUnion m_Data;
+        private readonly string m_MethodCallArgs;
 
         private VariantOperand(Mode inType)
         {
             Type = inType;
-            Value = default(Variant);
-            TableKey = default(TableKeyPair);
-            MethodCall = default(MethodCall);
+            m_Data = default(DataUnion);
+            m_MethodCallArgs = null;
         }
 
         public VariantOperand(Variant inValue)
             : this(Mode.Variant)
         {
-            Value = inValue;
+            m_Data.Value = inValue;
         }
 
         public VariantOperand(TableKeyPair inKey)
             : this(Mode.TableKey)
         {
-            TableKey = inKey;
+            m_Data.TableKey = inKey;
         }
 
         public VariantOperand(MethodCall inMethodCall)
             : this(Mode.Method)
         {
-            MethodCall = inMethodCall;
+            m_Data.MethodCallId = inMethodCall.Id;
+            m_MethodCallArgs = inMethodCall.Args.ToString();
         }
+
+        public Variant Value { get { return m_Data.Value; } }
+        public TableKeyPair TableKey { get { return m_Data.TableKey; } }
+        public MethodCall MethodCall { get { return new MethodCall(m_Data.MethodCallId, m_MethodCallArgs); } }
 
         /// <summary>
         /// Attempts to resolve the value.

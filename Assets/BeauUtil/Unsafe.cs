@@ -9,6 +9,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace BeauUtil
 {
@@ -20,6 +21,39 @@ namespace BeauUtil
         static public void Prefetch(void* inData)
         {
             char c = *((char*) inData);
+        }
+
+        static public int SizeOf<T>()
+            where T : struct
+        {
+            return Marshal.SizeOf<T>();
+        }
+
+        static public void* Alloc(int inLength)
+        {
+            return (void*) Marshal.AllocHGlobal(inLength);
+        }
+        
+        static public void* AllocArray<T>(int inLength)
+            where T : struct
+        {
+            return (void*) Marshal.AllocHGlobal(inLength * SizeOf<T>());
+        }
+
+        static public void* Realloc(void* inPtr, int inLength)
+        {
+            return (void*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) inLength);
+        }
+
+        static public void* ReallocArray<T>(void* inPtr, int inLength)
+            where T : struct
+        {
+            return (void*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) (inLength * SizeOf<T>()));
+        }
+
+        static public void Free(void* inPtr)
+        {
+            Marshal.FreeHGlobal((IntPtr) inPtr);
         }
     }
 }

@@ -900,6 +900,22 @@ namespace BeauUtil.Variants
             return false;
         }
 
+        /// <summary>
+        /// Creates a new variant from the raw data.
+        /// </summary>
+        static public Variant FromRaw(VariantType inType, uint inRaw)
+        {
+            return new Variant(inType, inRaw);
+        }
+
+        /// <summary>
+        /// Gets the raw data for a given variant.
+        /// </summary>
+        static public uint ToRaw(Variant inVariant)
+        {
+            return inVariant.RawValue;
+        }
+
         #endregion // Utilities
 
         #region ISerializedObject

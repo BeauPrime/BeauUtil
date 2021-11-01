@@ -22,6 +22,12 @@ namespace BeauUtil
         public StringHash32 Id;
         public StringSlice Args;
 
+        public MethodCall(StringHash32 inId, StringSlice inArgs = default)
+        {
+            Id = inId;
+            Args = inArgs;
+        }
+
         #region Interfaces
 
         public bool Equals(MethodCall other)

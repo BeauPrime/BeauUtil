@@ -72,7 +72,7 @@ namespace BeauUtil.Variants
                 case VariantCompareOperator.NotEqualTo:
                     return Log.Format("{0} != {1}", Left, Right);
                 case VariantCompareOperator.GreaterThanOrEqualTo:
-                    return Log.Format("{0} >+ {1}", Left, Right);
+                    return Log.Format("{0} >= {1}", Left, Right);
                 case VariantCompareOperator.GreaterThan:
                     return Log.Format("{0} > {1}", Left, Right);
                 case VariantCompareOperator.Exists:

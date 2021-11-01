@@ -1,6 +1,8 @@
 {
-	"name": "com.beauprime.beauutil",
-	"displayName": "BeauUtil",
-	"version": "0.6.2",
-	"unity": "2018.3"
+  "name": "com.beauprime.beauutil",
+  "displayName": "BeauUtil",
+  "version": "0.6.3",
+  "unity": "2018.3",
+  "type": "library",
+  "description": "Utility library for Unity3d."
 }
