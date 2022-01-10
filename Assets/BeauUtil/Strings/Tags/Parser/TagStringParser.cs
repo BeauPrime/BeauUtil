@@ -547,7 +547,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Returns if the given string contains any text or rich text tags.
         /// </summary>
-        static public bool ContainsText(StringSlice inString, IDelimiterRules inDelimiters, IEnumerable<string> inReplaceTagSet = null)
+        static public bool ContainsText(StringSlice inString, IDelimiterRules inDelimiters, IEnumerable<string> inTextTags = null)
         {
             bool bTrackRichText = inDelimiters.RichText;
             bool bTrackTags = !bTrackRichText || !HasSameDelims(inDelimiters, RichTextDelimiters);
@@ -584,10 +584,10 @@ namespace BeauUtil.Tags
                         if (!check.IsWhitespace)
                             return true;
 
-                        if (inReplaceTagSet != null)
+                        if (inTextTags != null)
                         {
                             TagData data = TagData.Parse(inString.Substring(tagStart, charIdx - tagStart + 1), inDelimiters);
-                            foreach(var tag in inReplaceTagSet)
+                            foreach(var tag in inTextTags)
                             {
                                 if (data.Id == tag)
                                     return true;

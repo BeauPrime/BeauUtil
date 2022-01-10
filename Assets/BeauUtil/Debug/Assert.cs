@@ -42,6 +42,12 @@ namespace BeauUtil.Debugger
             IgnoreAll
         }
 
+        public enum FailureMode
+        {
+            User,
+            Automatic,
+        }
+
         private class AssertException : Exception
         {
             public AssertException(string inMessage)
@@ -57,6 +63,7 @@ namespace BeauUtil.Debugger
 
         #if DEVELOPMENT
         static private bool s_RegisteredLogHook;
+        static private FailureMode s_FailureMode;
         #endif // DEVELOPMENT
 
         static private bool s_Broken;
@@ -123,6 +130,14 @@ namespace BeauUtil.Debugger
                 s_RegisteredLogHook = false;
                 UnityEngine.Application.logMessageReceived -= Application_logMessageReceived;
             }
+            #endif // DEVELOPMENT
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void SetFailureMode(FailureMode inMode)
+        {
+            #if DEVELOPMENT
+            s_FailureMode = inMode;
             #endif // DEVELOPMENT
         }
 
@@ -462,7 +477,7 @@ namespace BeauUtil.Debugger
         static private ErrorResult ShowErrorMessage(string inMessage)
         {
             #if UNITY_EDITOR
-            if (EditorApplication.isPlaying && !s_Broken)
+            if (EditorApplication.isPlaying && !s_Broken && s_FailureMode == FailureMode.User)
             {
                 int result = EditorUtility.DisplayDialogComplex("Assert Failed", inMessage, "Ignore", "Ignore All", "Break");
                 if (result == 0)

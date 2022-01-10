@@ -566,6 +566,38 @@ namespace BeauUtil
             CacheStatic(inAssemblies);
         }
 
+        /// <summary>
+        /// Returns if the given method exists, either static or instance.
+        /// </summary>
+        public bool Has(StringHash32 inId)
+        {
+            return HasStatic(inId) || HasInstance(inId);
+        }
+
+        /// <summary>
+        /// Returns if a given static method exists.
+        /// </summary>
+        public bool HasStatic(StringHash32 inId)
+        {
+            return m_StaticMethods.ContainsKey(inId);
+        }
+
+        /// <summary>
+        /// Returns if the given instance method exists.
+        /// </summary>
+        public bool HasInstance(StringHash32 inId)
+        {
+            foreach(var info in m_Types.Values)
+            {
+                if (info.TryGetMethod(inId, out MethodDescription _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         #endregion // IMethodCache
     }
 }

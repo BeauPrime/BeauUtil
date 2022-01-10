@@ -24,6 +24,10 @@ namespace BeauUtil
         void Load(Type inType);
         void LoadStatic();
 
+        bool Has(StringHash32 inId);
+        bool HasStatic(StringHash32 inId);
+        bool HasInstance(StringHash32 inId);
+
         bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, object inContext, out object outResult);
         bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, object inContext, out object outResult);
     }
