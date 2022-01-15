@@ -116,6 +116,12 @@ namespace BeauUtil.Editor
                 inType = null;
             }
 
+            if (inType == typeof(UnityEditor.SceneAsset))
+            {
+                outResults.Add((T) (object) AssetDatabase.LoadAssetAtPath<SceneAsset>(inPath));
+                return;
+            }
+
             string lowerSearch = inName?.ToLowerInvariant();
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
             {
@@ -134,6 +140,11 @@ namespace BeauUtil.Editor
             if (inType == typeof(UnityEngine.Object))
             {
                 inType = null;
+            }
+
+            if (inType == typeof(UnityEditor.SceneAsset))
+            {
+                return ((T) (object) AssetDatabase.LoadAssetAtPath<SceneAsset>(inPath));
             }
 
             string lowerSearch = inName?.ToLowerInvariant();

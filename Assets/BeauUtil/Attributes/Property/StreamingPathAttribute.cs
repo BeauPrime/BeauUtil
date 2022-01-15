@@ -16,7 +16,7 @@ namespace BeauUtil
     /// <summary>
     /// Marks a string property as a path relative to streaming assets.
     /// </summary>
-    public sealed class StreamingPathAttribute : PropertyAttribute
+    public class StreamingPathAttribute : PropertyAttribute
     {
         public string Filter { get; set; }
 
@@ -28,7 +28,7 @@ namespace BeauUtil
 
         #if UNITY_EDITOR
 
-        [UnityEditor.CustomPropertyDrawer(typeof(StreamingPathAttribute))]
+        [UnityEditor.CustomPropertyDrawer(typeof(StreamingPathAttribute), true)]
         private class Drawer : UnityEditor.PropertyDrawer
         {
             private readonly string[] CachedFilters = new string[2];
