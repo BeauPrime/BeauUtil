@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BeauUtil
 {
@@ -31,7 +32,7 @@ namespace BeauUtil
         , BeauData.ISerializedProxy<uint>
         #endif // USING_BEAUDATA
     {
-        [SerializeField, HideInInspector] private uint m_HashValue;
+        [SerializeField, FormerlySerializedAs("m_Hash"), HideInInspector] private uint m_HashValue;
 
         public StringHash32(string inString)
         {

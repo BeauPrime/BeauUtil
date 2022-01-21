@@ -14,6 +14,7 @@
 using System;
 using UnityEngine;
 using System.Diagnostics;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -33,25 +34,25 @@ namespace BeauUtil
         #region Inspector
 
         [SerializeField] private string m_Source;
-        [SerializeField] private uint m_Hash;
+        [SerializeField, FormerlySerializedAs("m_Hash")] private uint m_HashValue;
 
         #endregion // Inspector
 
         public SerializedHash32(string inSource)
         {
             m_Source = inSource;
-            m_Hash = new StringHash32(inSource).HashValue;
+            m_HashValue = new StringHash32(inSource).HashValue;
         }
 
         public SerializedHash32(StringHash32 inHash)
         {
             m_Source = null;
-            m_Hash = inHash.HashValue;
+            m_HashValue = inHash.HashValue;
         }
 
         public bool IsEmpty
         {
-            get { return m_Hash == 0; }
+            get { return m_HashValue == 0; }
         }
 
         public string Source()
@@ -64,9 +65,9 @@ namespace BeauUtil
             #if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
             if (!string.IsNullOrEmpty(m_Source))
                 return new StringHash32(m_Source);
-            return new StringHash32(m_Hash);
+            return new StringHash32(m_HashValue);
             #else
-            return new StringHash32(m_Hash);
+            return new StringHash32(m_HashValue);
             #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
         }
 
@@ -75,7 +76,7 @@ namespace BeauUtil
             #if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
             if (!string.IsNullOrEmpty(m_Source))
                 return m_Source;
-            return new StringHash32(m_Hash).ToDebugString();
+            return new StringHash32(m_HashValue).ToDebugString();
             #else
             return Hash().ToDebugString();
             #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
@@ -88,7 +89,7 @@ namespace BeauUtil
 
         public bool Equals(SerializedHash32 other)
         {
-            return m_Hash == other.m_Hash;
+            return m_HashValue == other.m_HashValue;
         }
 
         public override bool Equals(object obj)
@@ -96,14 +97,14 @@ namespace BeauUtil
             if (obj is SerializedHash32)
                 return Equals((SerializedHash32) obj);
             if (obj is StringHash32)
-                return m_Hash == ((StringHash32) obj).HashValue;
+                return m_HashValue == ((StringHash32) obj).HashValue;
 
             return false;
         }
 
         public override int GetHashCode()
         {
-            return m_Hash.GetHashCode();
+            return m_HashValue.GetHashCode();
         }
 
 		static public implicit operator SerializedHash32(string inString)
@@ -129,8 +130,8 @@ namespace BeauUtil
 
         public void OnBeforeSerialize()
 		{
-            if (m_Hash == 0 && !string.IsNullOrEmpty(m_Source))
-                m_Hash = StringHashing.Hash32(m_Source, 0, m_Source.Length);
+            if (m_HashValue == 0 && !string.IsNullOrEmpty(m_Source))
+                m_HashValue = StringHashing.Hash32(m_Source, 0, m_Source.Length);
 
             #if !DEVELOPMENT_BUILD && !DEVELOPMENT
 
@@ -167,7 +168,7 @@ namespace BeauUtil
                 
                 EditorGUI.BeginChangeCheck();
                 var stringProp = property.FindPropertyRelative("m_Source");
-                var hashProp = property.FindPropertyRelative("m_Hash");
+                var hashProp = property.FindPropertyRelative("m_HashValue");
                 EditorGUI.PropertyField(propRect, stringProp, label);
                 if (UnityEditor.EditorGUI.EndChangeCheck()
                     || (!stringProp.hasMultipleDifferentValues && !string.IsNullOrEmpty(stringProp.stringValue) && hashProp.longValue == 0))
