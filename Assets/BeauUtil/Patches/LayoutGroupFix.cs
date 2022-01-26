@@ -20,6 +20,7 @@ namespace BeauUtil
     public sealed class LayoutGroupFix : MonoBehaviour
     {
         [SerializeField, HideInInspector] private LayoutGroup m_LayoutGroup = null;
+        [SerializeField, HideInInspector] private ContentSizeFitter m_ContentSizer = null;
 
         [NonSerialized] private readonly Canvas.WillRenderCanvases m_Callback;
         [NonSerialized] private bool m_RebuildQueued;
@@ -33,7 +34,10 @@ namespace BeauUtil
         {
             #if UNITY_EDITOR
             if (!Application.IsPlaying(this))
+            {
                 this.CacheComponent(ref m_LayoutGroup);
+                this.CacheComponent(ref m_ContentSizer);
+            }
             #endif // UNITY_EDITOR
 
             m_RebuildQueued = true;
@@ -65,8 +69,14 @@ namespace BeauUtil
             #endif // UNITY_EDITOR
 
             m_LayoutGroup.enabled = true;
+            if (m_ContentSizer != null)
+                m_ContentSizer.enabled = true;
+            
             CanvasHelper.ForceRebuild(m_LayoutGroup, true);
+            
             m_LayoutGroup.enabled = false;
+            if (m_ContentSizer != null)
+                m_ContentSizer.enabled = false;
         }
         
         #if UNITY_EDITOR
@@ -74,11 +84,13 @@ namespace BeauUtil
         private void Reset()
         {
             this.CacheComponent(ref m_LayoutGroup);
+            this.CacheComponent(ref m_ContentSizer);
         }
 
         private void OnValidate()
         {
             this.CacheComponent(ref m_LayoutGroup);
+            this.CacheComponent(ref m_ContentSizer);
         }
 
         #endif // UNITY_EDITOR
