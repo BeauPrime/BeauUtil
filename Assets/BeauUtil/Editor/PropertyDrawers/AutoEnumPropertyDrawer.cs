@@ -25,7 +25,7 @@ namespace BeauUtil.Editor
                 return;
             }
 
-            int val = property.hasMultipleDifferentValues ? int.MinValue : property.intValue;
+            int val = property.hasMultipleDifferentValues ? 0 : property.intValue;
             Enum enumVal = (Enum) Enum.ToObject(enumType, val);
 
             label = UnityEditor.EditorGUI.BeginProperty(position, label, property);
