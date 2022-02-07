@@ -387,7 +387,6 @@ namespace BeauUtil
         /// <summary>
         /// Returns the number of free bytes in the given arena.
         /// </summary>
-        /// <param name="inArena"></param>
         /// <returns></returns>
         static public int ArenaFreeBytes(ArenaHandle inArena)
         {

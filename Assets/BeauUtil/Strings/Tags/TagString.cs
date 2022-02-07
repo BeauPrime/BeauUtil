@@ -139,6 +139,26 @@ namespace BeauUtil.Tags
             }
         }
 
+        /// <summary>
+        /// Attempts to locate an event with the given id.
+        /// </summary>
+        public bool TryFindEvent(StringHash32 inEventId, out TagEventData outEventData)
+        {
+            var nodes = Nodes;
+            for(int i = 0; i < nodes.Length; i++)
+            {
+                TagNodeData node = nodes[i];
+                if (node.Type == TagNodeType.Event && node.Event.Type == inEventId)
+                {
+                    outEventData = node.Event;
+                    return true;
+                }
+            }
+
+            outEventData = default;
+            return false;
+        }
+
         // Destroys node structure
         private void DestroyNodes()
         {
