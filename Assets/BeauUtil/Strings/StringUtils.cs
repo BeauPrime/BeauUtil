@@ -752,7 +752,6 @@ namespace BeauUtil
 
                         case '(':
                         case '[':
-                        case '<':
                         case '{':
                             if (!quote)
                             {
@@ -762,7 +761,6 @@ namespace BeauUtil
 
                         case ')':
                         case ']':
-                        case '>':
                         case '}':
                             if (!quote)
                             {
@@ -823,7 +821,6 @@ namespace BeauUtil
 
                         case '(':
                         case '[':
-                        case '<':
                         case '{':
                             if (!m_QuoteMode)
                             {
@@ -833,7 +830,6 @@ namespace BeauUtil
 
                         case ')':
                         case ']':
-                        case '>':
                         case '}':
                             if (!m_QuoteMode)
                             {
