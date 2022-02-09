@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
 
 namespace BeauUtil
 {
@@ -181,6 +184,15 @@ namespace BeauUtil
                 return;
             }
 
+            #if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(inTransform);
+                if (root != null)
+                    PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            }
+            #endif // UNITY_EDITOR
+
             Transform transform = inTransform;
             Transform parent = transform.parent;
             Transform child;
@@ -196,6 +208,15 @@ namespace BeauUtil
 
         static private void FlattenHierarchyRecursive(Transform inTransform, Transform inParent, ref int ioSiblingIndex)
         {
+            #if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(inTransform);
+                if (root != null)
+                    PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            }
+            #endif // UNITY_EDITOR
+
             Transform transform = inTransform;
             Transform child;
             int childCount = transform.childCount;
