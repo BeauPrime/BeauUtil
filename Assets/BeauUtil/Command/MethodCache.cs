@@ -90,6 +90,7 @@ namespace BeauUtil
             protected object[] m_Arguments;
             protected object[] m_DefaultArguments;
             protected int m_RequiredParameterCount;
+            protected bool m_SplitArguments;
 
             private BindContextAttribute m_ContextBind;
             private int m_ContextOffset;
@@ -111,6 +112,11 @@ namespace BeauUtil
                         Id = fullName;
                     }
                 }
+            }
+
+            public bool ShouldSplitArguments()
+            {
+                return m_SplitArguments;
             }
 
             public virtual bool TryProcess(MethodCache<TAttr> inParent)
@@ -160,6 +166,8 @@ namespace BeauUtil
                         m_RequiredParameterCount++;
                     }
                 }
+
+                m_SplitArguments = (m_Parameters.Length - m_ContextOffset) > 1 || m_RequiredParameterCount != 1;
 
                 return true;
             }
@@ -501,7 +509,14 @@ namespace BeauUtil
             }
 
             TempList16<StringSlice> args = default(TempList16<StringSlice>);
-            inArguments.Split(m_StringSplitter, StringSplitOptions.None, ref args);
+            if (method.ShouldSplitArguments())
+            {
+                inArguments.Split(m_StringSplitter, StringSplitOptions.None, ref args);
+            }
+            else
+            {
+                args.Add(inArguments);
+            }
             return method.TryInvoke(null, args, inContext, m_StringConverter, out outResult);
         }
 
@@ -518,7 +533,14 @@ namespace BeauUtil
             }
 
             TempList16<StringSlice> args = default(TempList16<StringSlice>);
-            inArguments.Split(m_StringSplitter, StringSplitOptions.None, ref args);
+            if (method.ShouldSplitArguments())
+            {
+                inArguments.Split(m_StringSplitter, StringSplitOptions.None, ref args);
+            }
+            else
+            {
+                args.Add(inArguments);
+            }
             return method.TryInvoke(inTarget, args, inContext, m_StringConverter, out outResult);
         }
 
