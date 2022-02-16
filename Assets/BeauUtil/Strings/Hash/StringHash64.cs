@@ -69,7 +69,17 @@ namespace BeauUtil
         /// </summary>
         public StringHash64 Concat(StringSlice inSlice)
         {
-            return new StringHash64(inSlice.AppendHash64(m_HashValue));
+            return new StringHash64(inSlice.AppendHash64(m_HashValue, true));
+        }
+
+        /// <summary>
+        /// Concats a string to this hash value.
+        /// This will not record the concatenated string to the Reverse Lookup.
+        /// In non-debug builds this is functionally identical to Concat.
+        /// </summary>
+        public StringHash64 FastConcat(StringSlice inSlice)
+        {
+            return new StringHash64(inSlice.AppendHash64(m_HashValue, false));
         }
 
         static public readonly StringHash64 Null = new StringHash64();

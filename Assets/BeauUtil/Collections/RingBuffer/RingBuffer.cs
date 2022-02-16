@@ -23,7 +23,7 @@ namespace BeauUtil
     /// Double-ended queue.
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
-    public class RingBuffer<T> : IRingBuffer<T>
+    public class RingBuffer<T> : IRingBuffer<T>, IList<T>
     {
         static private readonly T[] s_EmptyArray = new T[0];
 
@@ -827,6 +827,12 @@ namespace BeauUtil
 
         object ICollection.SyncRoot { get { return null; } }
 
+        int ICollection<T>.Count { get { return m_Count; } }
+
+        bool ICollection<T>.IsReadOnly { get { return false; } }
+
+        T IList<T>.this[int index] { get { return this[index]; } set { this[index] = value; } }
+
         void ICollection.CopyTo(Array array, int index)
         {
             CopyTo(0, (T[]) array, index, m_Count);
@@ -840,6 +846,38 @@ namespace BeauUtil
                     throw new ArgumentOutOfRangeException("inIndex");
                 return m_Data[(m_Head + inIndex) % m_Capacity];
             }
+        }
+
+        int IList<T>.IndexOf(T item) {
+            return IndexOf(item);
+        }
+
+        void IList<T>.Insert(int index, T item) {
+            throw new NotSupportedException();
+        }
+
+        void IList<T>.RemoveAt(int index) {
+            RemoveAt(index);
+        }
+
+        void ICollection<T>.Add(T item) {
+            PushBack(item);
+        }
+
+        void ICollection<T>.Clear() {
+            Clear();
+        }
+
+        bool ICollection<T>.Contains(T item) {
+            return Contains(item);
+        }
+
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex) {
+            CopyTo(0, array, arrayIndex, array.Length - arrayIndex);
+        }
+
+        bool ICollection<T>.Remove(T item) {
+            return Remove(item);
         }
 
         #endregion // Interfaces

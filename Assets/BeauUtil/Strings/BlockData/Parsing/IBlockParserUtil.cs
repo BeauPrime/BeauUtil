@@ -20,5 +20,9 @@ namespace BeauUtil.Blocks
 
         StringBuilder TempBuilder { get; }
         uint TempFlags { get; set; }
+
+        char[] LineBreakCharacters { get; }
+        void InsertText(StringSlice inText);
+        void InsertText(string inFileName, StringSlice inContents);
     }
 }

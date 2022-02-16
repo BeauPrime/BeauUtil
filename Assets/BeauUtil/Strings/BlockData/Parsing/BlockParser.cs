@@ -17,12 +17,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using BeauUtil.Tags;
+using UnityEngine;
+using LineBuffer = BeauUtil.RingBuffer<BeauUtil.StringSlice>;
 
 namespace BeauUtil.Blocks
 {
-    static public class BlockParser
+    public class BlockParser
     {
         static public readonly string NullFilename = "<anonymous>";
+
+        protected BlockParser() {
+            throw new NotImplementedException();
+        }
 
         #region Parse
 
@@ -37,7 +43,10 @@ namespace BeauUtil.Blocks
             TPackage package = ParseAsync(inFileName, inFile, inRules, inGenerator, inCache, out parser);
             if (parser != null)
             {
-                while (parser.MoveNext()) ;
+                using(parser as IDisposable)
+                {
+                    while (parser.MoveNext()) ;
+                }
             }
 
             return package;
@@ -54,7 +63,10 @@ namespace BeauUtil.Blocks
             IEnumerator parser = ParseAsync(ref ioPackage, inFileName, inFile, inRules, inGenerator, inCache);
             if (parser != null)
             {
-                while (parser.MoveNext()) ;
+                using(parser as IDisposable)
+                {
+                    while (parser.MoveNext()) ;
+                }
             }
         }
 
@@ -123,38 +135,89 @@ namespace BeauUtil.Blocks
 
         #endregion // Parse
 
+        #region Cache
+
+        /// <summary>
+        /// Clears cached data.
+        /// </summary>
+        static public void ClearCache()
+        {
+            BlockMetaCache.Default.ClearCache();
+            if (s_PrefixPriorityCache != null)
+            {
+                s_PrefixPriorityCache.Clear();
+                s_PrefixPriorityCache = null;
+            }
+        }
+
+        #endregion // Cache
+
         #region Logging
 
         [Conditional("DEVELOPMENT")]
-        static internal void LogError(BlockFilePosition inPosition, string inContent)
+        static protected void LogError(BlockFilePosition inPosition, string inContent)
         {
-            UnityEngine.Debug.LogErrorFormat("[BlockSetParser] Parsing Error at {0}: {1}", inPosition, inContent);
+            UnityEngine.Debug.LogErrorFormat("[BlockParser] Parsing Error at {0}: {1}", inPosition, inContent);
         }
 
         [Conditional("DEVELOPMENT")]
-        static internal void LogError(BlockFilePosition inPosition, string inContent, object inParam)
+        static protected void LogError(BlockFilePosition inPosition, string inContent, object inParam)
         {
-            UnityEngine.Debug.LogErrorFormat("[BlockSetParser] Parsing Error at {0}: {1}", inPosition, string.Format(inContent, inParam));
+            UnityEngine.Debug.LogErrorFormat("[BlockParser] Parsing Error at {0}: {1}", inPosition, string.Format(inContent, inParam));
         }
 
         [Conditional("DEVELOPMENT")]
-        static internal void LogError(BlockFilePosition inPosition, string inContent, params object[] inParams)
+        static protected void LogError(BlockFilePosition inPosition, string inContent, params object[] inParams)
         {
-            UnityEngine.Debug.LogErrorFormat("[BlockSetParser] Parsing Error at {0}: {1}", inPosition, string.Format(inContent, inParams));
+            UnityEngine.Debug.LogErrorFormat("[BlockParser] Parsing Error at {0}: {1}", inPosition, string.Format(inContent, inParams));
         }
 
         #endregion // Logging
 
         #region Delimiters
 
-        internal class BlockTagDelimiters : IDelimiterRules
-        {
-            private IBlockParsingRules m_BlockParser;
+        static private Dictionary<IBlockParsingRules, PrefixType[]> s_PrefixPriorityCache;
 
-            public BlockTagDelimiters(IBlockParsingRules inBlockParser)
+        static private PrefixType[] CachePrefixPriorities(IBlockParsingRules inRules)
+        {
+            PrefixType[] prefixes = null;
+            if (s_PrefixPriorityCache != null && s_PrefixPriorityCache.TryGetValue(inRules, out prefixes))
+                return prefixes;
+
+            s_PrefixPriorityCache = new Dictionary<IBlockParsingRules, PrefixType[]>();
+            prefixes = GeneratePrefixPriority(inRules);
+            s_PrefixPriorityCache.Add(inRules, prefixes);
+            return prefixes;
+        }
+
+        // Generates a prioritized set of prefixes to analyze, from most specific to least specific
+        static private PrefixType[] GeneratePrefixPriority(IBlockParsingRules inRules)
+        {
+            List<PriorityValue<PrefixType>> buffer = new List<PriorityValue<PrefixType>>(4);
+            AddPrefixPriority(buffer, inRules.BlockIdPrefix, PrefixType.BlockId);
+            AddPrefixPriority(buffer, inRules.BlockMetaPrefix, PrefixType.BlockMeta);
+            AddPrefixPriority(buffer, inRules.BlockEndPrefix, PrefixType.BlockEnd);
+            AddPrefixPriority(buffer, inRules.PackageMetaPrefix, PrefixType.PackageMeta);
+            buffer.Sort();
+
+            PrefixType[] priority = new PrefixType[buffer.Count];
+            for (int i = 0; i < buffer.Count; ++i)
             {
-                m_BlockParser = inBlockParser;
+                priority[i] = buffer[i].Value;
             }
+            return priority;
+        }
+
+        // Adds a prefix priority to the buffer
+        static private void AddPrefixPriority(List<PriorityValue<PrefixType>> ioBuffer, string inString, PrefixType inPrefix)
+        {
+            if (!string.IsNullOrEmpty(inString))
+                ioBuffer.Add(new PriorityValue<PrefixType>(inPrefix, inString.Length));
+        }
+
+        protected class BlockTagDelimiters : IDelimiterRules
+        {
+            public IBlockParsingRules BlockParser;
 
             #region IDelimiterRules
 
@@ -162,7 +225,7 @@ namespace BeauUtil.Blocks
 
             public string TagEndDelimiter { get { return null; } }
 
-            public char[] TagDataDelimiters { get { return m_BlockParser.TagDataDelimiters; } }
+            public char[] TagDataDelimiters { get { return BlockParser.TagDataDelimiters; } }
 
             public char RegionCloseDelimiter { get { return '\0'; } }
 
@@ -173,12 +236,12 @@ namespace BeauUtil.Blocks
             #endregion // IDelimiterRules
         }
 
-        static internal readonly char[] TrimCharsWithSpace = new char[]
+        static protected readonly char[] TrimCharsWithSpace = new char[]
         {
             ' ', '\n', '\r', '\t', '\f', '\0'
         };
 
-        static internal readonly char[] TrimCharsWithoutSpace = new char[]
+        static protected readonly char[] TrimCharsWithoutSpace = new char[]
         {
             '\n', '\r', '\t', '\f', '\0'
         };
@@ -189,7 +252,7 @@ namespace BeauUtil.Blocks
 
         static private readonly Stack<StringBuilder> s_StringBuilderPool = new Stack<StringBuilder>(4);
 
-        static internal StringBuilder RentStringBuilder()
+        static protected StringBuilder RentStringBuilder()
         {
             if (s_StringBuilderPool.Count > 0)
             {
@@ -201,17 +264,246 @@ namespace BeauUtil.Blocks
             return new StringBuilder(256);
         }
 
-        static internal void ReturnStringBuilder(StringBuilder inBuilder)
+        static protected void ReturnStringBuilder(ref StringBuilder ioBuilder)
         {
-            #if DEVELOPEMNT
-            if (inBuilder == null || s_StringBuilderPool.Contains(inBuilder))
-                throw new ArgumentException("inBuilder");
+            if (ioBuilder == null)
+                return;
+
+            #if DEVELOPMENT
+            if (s_StringBuilderPool.Contains(ioBuilder))
+                throw new ArgumentException("ioBuilder");
             #endif // DEVELOPMENT
 
-            inBuilder.Length = 0;
-            s_StringBuilderPool.Push(inBuilder);
+            ioBuilder.Length = 0;
+            s_StringBuilderPool.Push(ioBuilder);
+            ioBuilder = null;
         }
 
         #endregion // String Builder
+
+        #region Line Buffer
+
+        static private readonly Stack<LineBuffer> s_LineBufferPool = new Stack<LineBuffer>(4);
+
+        static protected LineBuffer RentLineBuffer()
+        {
+            if (s_LineBufferPool.Count > 0)
+            {
+                LineBuffer buffer = s_LineBufferPool.Pop();
+                buffer.Clear();
+                return buffer;
+            }
+
+            return new LineBuffer(16, RingBufferMode.Expand);
+        }
+
+        static protected void ReturnLineBuffer(ref LineBuffer ioBuffer)
+        {
+            if (ioBuffer == null)
+                return;
+
+            #if DEVELOPMENT
+            if (s_LineBufferPool.Contains(ioBuffer))
+                throw new ArgumentException("ioBuffer");
+            #endif // DEVELOPMENT
+
+            ioBuffer.Clear();
+            s_LineBufferPool.Push(ioBuffer);
+            ioBuffer = null;
+        }
+
+        static protected int SplitIntoLines(IBlockParsingRules inRules, StringSlice inString, LineBuffer inBuffer)
+        {
+            if (inRules.CustomLineSplitter != null)
+                return inString.Split(inRules.CustomLineSplitter, StringSplitOptions.None, inBuffer);
+            return inString.Split(inRules.LineDelimiters, StringSplitOptions.None, inBuffer);
+        }
+
+        static protected int PrependLinesToExistingBuffer(LineBuffer inBuffer, StringSlice inString, IBlockParsingRules inRules)
+        {
+            var tempBuffer = RentLineBuffer();
+            try
+            {
+                int lineCount = SplitIntoLines(inRules, inString, tempBuffer);
+                
+                // ensure we have enough capacity
+                if (inBuffer.Capacity < inBuffer.Count + lineCount)
+                {
+                    int newCapacity = Mathf.NextPowerOfTwo((int) (inBuffer.Count + lineCount));
+                    if (newCapacity > 0 && newCapacity < 4)
+                        newCapacity = 4;
+                    inBuffer.SetCapacity(newCapacity);
+                }
+
+                for(int i = tempBuffer.Count - 1; i >= 0; i--)
+                {
+                    inBuffer.PushFront(tempBuffer[i]);
+                }
+                return lineCount;
+            }
+            finally
+            {
+                ReturnLineBuffer(ref tempBuffer);
+            }
+        }
+
+        #endregion // Line Buffer
+
+        #region Parse Buffer
+
+        protected sealed class ParseBuffer : IDisposable
+        {
+            public readonly BlockTagDelimiters TagDelimiters = new BlockTagDelimiters();
+            public readonly RingBuffer<PositionFrame> PositionStack = new RingBuffer<PositionFrame>(4, RingBufferMode.Expand);
+            
+            public BlockMetaCache Cache;
+            public PrefixType[] PrefixPriorities;
+            public IBlockParsingRules Rules;
+
+            public BlockState CurrentState;
+            public BlockFilePosition Position;
+            public bool PositionInline;
+            public int LineCount = -1;
+
+            public LineBuffer Buffer;
+
+            public StringBuilder Builder;
+            public StringBuilder LineBuilder;
+            public StringBuilder ContentBuilder;
+            public uint TempFlags;
+
+            public bool Error;
+            public bool BlockError;
+
+            public void PushPosition()
+            {
+                PositionStack.PushBack(new PositionFrame(Position, PositionInline, LineCount));
+            }
+
+            public void PopPosition()
+            {
+                PositionFrame oldState = PositionStack.PopBack();
+                Position = oldState.Position;
+                PositionInline = oldState.IsInline;
+                LineCount = oldState.LineCount;
+            }
+
+            public void Dispose()
+            {
+                ReturnLineBuffer(ref Buffer);
+                ReturnStringBuilder(ref Builder);
+                ReturnStringBuilder(ref ContentBuilder);
+                ReturnStringBuilder(ref LineBuilder);
+
+                TagDelimiters.BlockParser = null;
+
+                Cache = null;
+                PrefixPriorities = null;
+                Rules = null;
+
+                CurrentState = BlockState.NotStarted;
+                Position = default;
+                PositionInline = false;
+                LineCount = -1;
+                TempFlags = 0;
+                Error = false;
+                BlockError = false;
+
+                PositionStack.Clear();
+            }
+        }
+
+        protected struct PositionFrame
+        {
+            public readonly BlockFilePosition Position;
+            public readonly bool IsInline;
+            public readonly int LineCount;
+
+            public PositionFrame(BlockFilePosition inPosition, bool inbInline, int inLineCount)
+            {
+                Position = inPosition;
+                IsInline = inbInline;
+                LineCount = inLineCount;
+            }
+        }
+
+        static private void InitParseBuffer(ParseBuffer inBuffer, IBlockParsingRules inRules, BlockMetaCache inCache)
+        {
+            inBuffer.Buffer = RentLineBuffer();
+            inBuffer.Builder = RentStringBuilder();
+            inBuffer.ContentBuilder = RentStringBuilder();
+            inBuffer.LineBuilder = RentStringBuilder();
+            inBuffer.TagDelimiters.BlockParser = inRules;
+            inBuffer.Rules = inRules;
+            inBuffer.PrefixPriorities = CachePrefixPriorities(inRules);
+            inBuffer.Cache = inCache ?? BlockMetaCache.Default;
+        }
+
+        static private readonly Stack<ParseBuffer> s_ParseBufferPool = new Stack<ParseBuffer>(4);
+
+        static protected ParseBuffer RentParseBuffer(IBlockParsingRules inRules, BlockMetaCache inCache)
+        {
+            ParseBuffer buffer;
+            if (s_ParseBufferPool.Count > 0)
+            {
+                buffer = s_ParseBufferPool.Pop();
+            }
+            else
+            {
+                buffer = new ParseBuffer();
+            }
+            InitParseBuffer(buffer, inRules, inCache);
+            return buffer;
+        }
+
+        static protected void ReturnParseBuffer(ref ParseBuffer ioBuffer)
+        {
+            if (ioBuffer == null)
+                return;
+
+            #if DEVELOPMENT
+            if (s_ParseBufferPool.Contains(ioBuffer))
+                throw new ArgumentException("ioBuffer");
+            #endif // DEVELOPMENT
+
+            ioBuffer.Dispose();
+            s_ParseBufferPool.Push(ioBuffer);
+            ioBuffer = null;
+        }
+
+        #endregion // Parse Buffer
+
+        #region Shared Data Types
+
+        protected enum PrefixType : byte
+        {
+            BlockId,
+            BlockMeta,
+            BlockHeaderEnd,
+            BlockEnd,
+            PackageMeta,
+
+            NONE = 255
+        }
+
+        protected enum BlockState : byte
+        {
+            NotStarted,
+            BlockStarted,
+            InHeader,
+            InData,
+            BlockDone
+        }
+
+        protected enum LineResult : byte
+        {
+            NoError,
+            Empty,
+            Error,
+            Exception,
+            Continue
+        }
+
+        #endregion // Shared Data Types
     }
 }

@@ -23,16 +23,6 @@ namespace BeauUtil.Blocks
         /// Lines prefixed with this indicate a block header metadata command.
         /// </summary>
         string BlockMetaPrefix { get; }
-
-        /// <summary>
-        /// Lines prefixed with this indicate the end of the block header.
-        /// </summary>
-        string BlockHeaderEndPrefix { get; }
-
-        /// <summary>
-        /// Lines prefixed with this indicate block content.
-        /// </summary>
-        string BlockContentPrefix { get; }
         
         /// <summary>
         /// Lines prefixed with this indicate the end of a block.
@@ -65,17 +55,6 @@ namespace BeauUtil.Blocks
         /// ignoring the value of LineDelimiters.
         /// </summary>
         StringSlice.ISplitter CustomLineSplitter { get; }
-
-        /// <summary>
-        /// Indicates if the block header section must be explicitly closed
-        /// before either the file ends, block contents start, or another block begins.
-        /// </summary>
-        bool RequireExplicitBlockHeaderEnd { get; }
-
-        /// <summary>
-        /// Indicates if block content lines must be explicitly started with the content prefix.
-        /// </summary>
-        bool RequireExplicitBlockContent { get; }
         
         /// <summary>
         /// Indicates if blocks must be explicitly closed

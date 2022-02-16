@@ -153,6 +153,25 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        public int IndexOfAny(char[] inItems)
+        {
+            return IndexOfAny(inItems, 0, Length);
+        }
+
+        public int IndexOfAny(char[] inItems, int inStartIdx)
+        {
+            return IndexOfAny(inItems, inStartIdx, Length - inStartIdx);
+        }
+
+        public int IndexOfAny(char[] inItems, int inStartIdx, int inCount)
+        {
+            if (m_Source == null)
+                return -1;
+
+            int srcIndex = m_Source.IndexOfAny(inItems, m_StartIndex + inStartIdx, inCount);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
+        }
+
         public int LastIndexOf(char inItem)
         {
             return LastIndexOf(inItem, Length - 1, Length);
@@ -169,6 +188,25 @@ namespace BeauUtil
                 return -1;
 
             int srcIndex = m_Source.LastIndexOf(inItem, m_StartIndex + inStartIdx, inCount);
+            return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
+        }
+
+        public int LastIndexOfAny(char[] inItems)
+        {
+            return LastIndexOfAny(inItems, Length - 1, Length);
+        }
+
+        public int LastIndexOfAny(char[] inItems, int inStartIdx)
+        {
+            return LastIndexOfAny(inItems, inStartIdx, inStartIdx + 1);
+        }
+
+        public int LastIndexOfAny(char[] inItems, int inStartIdx, int inCount)
+        {
+            if (m_Source == null)
+                return -1;
+
+            int srcIndex = m_Source.LastIndexOfAny(inItems, m_StartIndex + inStartIdx, inCount);
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
@@ -814,7 +852,7 @@ namespace BeauUtil
 
         static public bool operator !=(StringSlice inA, StringSlice inB)
         {
-            return inA.Equals(inB);
+            return !inA.Equals(inB);
         }
 
         static public bool operator ==(StringSlice inA, string inB)
@@ -859,9 +897,9 @@ namespace BeauUtil
             return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
-        internal uint AppendHash32(uint inHash)
+        internal uint AppendHash32(uint inHash, bool inbReverseLookup)
         {
-            return StringHashing.AppendHash32(inHash, m_Source, m_StartIndex, Length);
+            return StringHashing.AppendHash32(inHash, m_Source, m_StartIndex, Length, inbReverseLookup);
         }
 
         internal ulong CalculateHash64()
@@ -869,9 +907,9 @@ namespace BeauUtil
             return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
         }
 
-        internal ulong AppendHash64(ulong inHash)
+        internal ulong AppendHash64(ulong inHash, bool inbReverseLookup)
         {
-            return StringHashing.AppendHash64(inHash, m_Source, m_StartIndex, Length);
+            return StringHashing.AppendHash64(inHash, m_Source, m_StartIndex, Length, inbReverseLookup);
         }
 
         static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)

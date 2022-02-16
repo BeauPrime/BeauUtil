@@ -257,10 +257,10 @@ namespace BeauUtil
             return hash;
         }
 
-        static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength)
+        static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength, bool inbReverseLookup)
         {
             uint hash = Hash32Append(inHash, inString, inOffset, inLength);
-            if (inLength > 0 && s_ReverseLookupEnabled)
+            if (inLength > 0 && s_ReverseLookupEnabled && inbReverseLookup)
             {
                 StringSlice current = new StringSlice(inString, inOffset, inLength);
                 if (inHash != 0)
@@ -337,10 +337,10 @@ namespace BeauUtil
             return hash;
         }
 
-        static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength)
+        static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength, bool inbReverseLookup)
         {
             ulong hash = Hash64Append(inHash, inString, inOffset, inLength);
-            if (inLength > 0 && s_ReverseLookupEnabled)
+            if (inLength > 0 && s_ReverseLookupEnabled && inbReverseLookup)
             {
                 StringSlice current = new StringSlice(inString, inOffset, inLength);
                 if (inHash != 0)
@@ -400,7 +400,7 @@ namespace BeauUtil
         }
 
         [MethodImpl(256)]
-        static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength)
+        static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength, bool inbReverseLookup)
         {
             return Hash32Append(inHash, inString, inOffset, inLength);
         }
@@ -418,7 +418,7 @@ namespace BeauUtil
         }
 
         [MethodImpl(256)]
-        static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength)
+        static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength, bool inbReverseLookup)
         {
             return Hash64Append(inHash, inString, inOffset, inLength);
         }

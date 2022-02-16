@@ -70,7 +70,17 @@ namespace BeauUtil
         /// </summary>
         public StringHash32 Concat(StringSlice inSlice)
         {
-            return new StringHash32(inSlice.AppendHash32(m_HashValue));
+            return new StringHash32(inSlice.AppendHash32(m_HashValue, true));
+        }
+
+        /// <summary>
+        /// Concats a string to this hash value.
+        /// This will not record the concatenated string to the Reverse Lookup.
+        /// In non-debug builds this is functionally identical to Concat.
+        /// </summary>
+        public StringHash32 FastConcat(StringSlice inSlice)
+        {
+            return new StringHash32(inSlice.AppendHash32(m_HashValue, false));
         }
 
         static public readonly StringHash32 Null = new StringHash32();

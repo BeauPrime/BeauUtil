@@ -80,11 +80,14 @@ namespace BeauUtil.Blocks
         void CompleteBlock(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData, bool inbError);
 
         #endregion // Block Actions
-    
+
+        #region Text
+
         /// <summary>
-        /// Attempts to add a comment.
-        /// Returns if handled.
+        /// Processes a line.
         /// </summary>
-        bool TryAddComment(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, StringSlice inComment);
+        void ProcessLine(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, ref StringSlice ioLine);
+
+        #endregion // Text
     }
 }

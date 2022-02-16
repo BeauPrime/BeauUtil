@@ -22,10 +22,6 @@ namespace BeauUtil.Blocks
 
             public string BlockMetaPrefix { get { return "@"; } }
 
-            public string BlockHeaderEndPrefix { get { return "---"; } }
-
-            public string BlockContentPrefix { get { return null; } }
-
             public string BlockEndPrefix { get { return "==="; } }
 
             public string PackageMetaPrefix { get { return "#"; } }
@@ -38,13 +34,9 @@ namespace BeauUtil.Blocks
 
             public StringSlice.ISplitter CustomLineSplitter { get { return null; } }
 
-            public bool RequireExplicitBlockHeaderEnd { get { return false; } }
-
             public bool RequireExplicitBlockEnd { get { return false; } }
 
-            public bool RequireExplicitBlockContent { get { return false; } }
-
-            public PackageMetaMode PackageMetaMode { get { return PackageMetaMode.ImplicitCloseBlock; } }
+            public PackageMetaMode PackageMetaMode { get { return PackageMetaMode.AllowInBlock; } }
         }
 
         static internal readonly char[] NewlineDelim = new char[]

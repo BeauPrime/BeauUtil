@@ -53,10 +53,10 @@ namespace BeauUtil.Blocks
 
         #endregion // Block Actions
 
-        public virtual bool TryAddComment(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, StringSlice inComment)
-        {
-            // Ignore the comment
-            return true;
-        }
+        #region Text
+
+        public virtual void ProcessLine(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, ref StringSlice ioLine) { }
+
+        #endregion // Text
     }
 }

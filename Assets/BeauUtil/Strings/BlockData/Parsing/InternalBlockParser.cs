@@ -20,88 +20,129 @@ using UnityEngine;
 
 namespace BeauUtil.Blocks
 {
-    static internal class InternalBlockParser<TBlock, TPackage>
+    internal class InternalBlockParser<TBlock, TPackage> : BlockParser
         where TBlock : class, IDataBlock
         where TPackage : class, IDataBlockPackage<TBlock>
     {
         #region Types
 
-        private enum PrefixType : byte
+        private sealed class Parser : IBlockParserUtil, IDisposable, IEnumerator
         {
-            BlockId,
-            BlockMeta,
-            BlockHeaderEnd,
-            BlockContent,
-            BlockEnd,
-            PackageMeta,
-        }
-
-        private enum BlockState : byte
-        {
-            NotStarted,
-            BlockStarted,
-            InHeader,
-            InData,
-            BlockDone
-        }
-
-        private enum LineResult : byte
-        {
-            NoError,
-            Empty,
-            Error,
-            Exception
-        }
-
-        private class ParseState : IBlockParserUtil, IDisposable
-        {
-            public PrefixType[] PrefixPriorities;
-            public IBlockParsingRules Rules;
+            public ParseBuffer Base;
             public IBlockGenerator<TBlock, TPackage> Generator;
-            public IDelimiterRules TagDelimiters;
-            public BlockMetaCache Cache;
-
             public TPackage Package;
             public TBlock CurrentBlock;
-            public BlockState CurrentState;
-            public BlockFilePosition Position;
 
-            public StringBuilder Builder;
-            public StringBuilder ContentBuilder;
-            public uint TempFlags;
+            #region IBlockParserUtil
 
-            public bool Error;
-            public bool BlockError;
+            StringBuilder IBlockParserUtil.TempBuilder { get { return Base.Builder; } }
 
-            public StringBuilder TempBuilder { get { return Builder; } }
+            BlockFilePosition IBlockParserUtil.Position { get { return Base.Position; } }
 
-            BlockFilePosition IBlockParserUtil.Position { get { return Position; } }
+            uint IBlockParserUtil.TempFlags
+            {
+                get { return Base.TempFlags; }
+                set { Base.TempFlags = value; }
+            }
 
-            uint IBlockParserUtil.TempFlags { get { return TempFlags; } set { TempFlags = value; } }
+            char[] IBlockParserUtil.LineBreakCharacters { get { return Base.Rules.LineDelimiters; } }
+
+            public void InsertText(StringSlice inText)
+            {
+                if (inText.IsEmpty)
+                {
+                    return;
+                }
+
+                Base.PushPosition();
+                Base.PositionInline = true;
+                Base.LineCount = PrependLinesToExistingBuffer(Base.Buffer, inText, Base.Rules);
+            }
+
+            public void InsertText(string inFileName, StringSlice inContents)
+            {
+                if (inContents.IsEmpty)
+                {
+                    return;
+                }
+
+                Base.PushPosition();
+                Base.PositionInline = false;
+                Base.LineCount = PrependLinesToExistingBuffer(Base.Buffer, inContents, Base.Rules);
+                Base.Position = new BlockFilePosition(inFileName, 0u);
+            }
+
+            #endregion // IBlockParserUtil
+
+            #region IEnumerator
+
+            object IEnumerator.Current { get { return null; }}
+
+            bool IEnumerator.MoveNext()
+            {
+                // if we've exhausted the current frame, then pop
+                if (Base.LineCount == 0)
+                {
+                    Base.PopPosition();
+                }
+
+                StringSlice line;
+                if (Base.Buffer.TryPopFront(out line))
+                {
+                    if (!Base.PositionInline)
+                    {
+                        Base.Position = new BlockFilePosition(Base.Position.FileName, Base.Position.LineNumber + 1);
+                    }
+
+                    if (Base.LineCount > 0)
+                    {
+                        Base.LineCount--;
+                    }
+
+                    LineResult result = ParseLine(this, Base, line);
+                    if (result == LineResult.Exception)
+                    {
+                        Generator.OnEnd(this, Package, true);
+                        return false;
+                    }
+
+                    // if we've exhausted the frame, then pop
+                    if (Base.LineCount == 0)
+                    {
+                        Base.PopPosition();
+                    }
+
+                    return true;
+                }
+
+                if (CurrentBlock != null)
+                {
+                    Base.Error |= !TryEndBlock(this, Base, StringSlice.Empty);
+                }
+
+                Generator.OnEnd(this, Package, Base.Error);
+                return false;
+            }
+
+            void IEnumerator.Reset()
+            {
+                throw new NotSupportedException();
+            }
+
+            #endregion // IEnumerator
+
+            #region IDisposable
 
             public void Dispose()
             {
-                if (Builder != null)
-                {
-                    BlockParser.ReturnStringBuilder(Builder);
-                    Builder = null;
-                }
+                ReturnParseBuffer(ref Base);
 
-                if (ContentBuilder != null)
-                {
-                    BlockParser.ReturnStringBuilder(ContentBuilder);
-                    ContentBuilder = null;
-                }
-
-                PrefixPriorities = null;
-                Rules = null;
                 Generator = null;
-                TagDelimiters = null;
-                Cache = null;
-
                 Package = null;
                 CurrentBlock = null;
             }
+        
+            #endregion // IDisposable
         }
 
         #endregion // Types
@@ -110,161 +151,86 @@ namespace BeauUtil.Blocks
 
         static internal IEnumerator ParseFile(string inFileName, StringSlice inFile, TPackage ioPackage, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache)
         {
-            var state = new ParseState();
-            state.PrefixPriorities = GeneratePrefixPriority(inRules);
-            state.Rules = inRules;
+            var state = new Parser();
+            var buffer = RentParseBuffer(inRules, inCache);
+            state.Base = buffer;
             state.Generator = inGenerator;
-            state.TagDelimiters = new BlockParser.BlockTagDelimiters(inRules);
             state.Package = ioPackage;
-            state.Builder = BlockParser.RentStringBuilder();
-            state.ContentBuilder = BlockParser.RentStringBuilder();
-            state.Cache = inCache ?? BlockMetaCache.Default;
 
-            using(var disposeRef = state)
-            {
-                uint lineNumber = 0;
-                state.Position = new BlockFilePosition(inFileName, lineNumber);
-                inGenerator.OnStart(state, state.Package);
+            SplitIntoLines(buffer.Rules, inFile, buffer.Buffer);
+            buffer.Position = new BlockFilePosition(inFileName, 0u);
+            buffer.PositionInline = false;
+            buffer.LineCount = -1;
 
-                foreach (var rawLine in SplitIntoLines(inRules, inFile))
-                {
-                    lineNumber++;
-                    state.Position = new BlockFilePosition(inFileName, lineNumber);
-
-                    LineResult result = ParseLine(ref state, rawLine);
-                    if (result == LineResult.Exception)
-                    {
-                        inGenerator.OnEnd(state, state.Package, true);
-                        yield break;
-                    }
-                    
-                    yield return null;
-                }
-
-                if (state.CurrentBlock != null)
-                {
-                    state.Error |= !TryEndBlock(ref state, StringSlice.Empty);
-                }
-
-                inGenerator.OnEnd(state, state.Package, state.Error);
-            }
+            inGenerator.OnStart(state, state.Package);
+            return state;
         }
 
-        static private LineResult ParseLine(ref ParseState ioState, StringSlice ioLine)
+        static private LineResult ParseLine(Parser ioParser, ParseBuffer ioState, StringSlice ioLine)
         {
-            StringSlice lineContents = ioLine.TrimStart(BlockParser.TrimCharsWithSpace).TrimEnd(BlockParser.TrimCharsWithoutSpace);
-            StringSlice lineComment = StringSlice.Empty;
+            StringSlice lineContents = ioLine.TrimStart(TrimCharsWithSpace).TrimEnd(TrimCharsWithoutSpace);
 
             if (lineContents.IsEmpty)
             {
-                if (ioState.CurrentState != BlockState.InData)
-                    return LineResult.Empty;
+                return TryFlushLine(ioParser, ioState, lineContents, false);
             }
 
             int commentIdx = lineContents.IndexOf(ioState.Rules.CommentPrefix);
             if (commentIdx >= 0)
             {
-                lineComment = lineContents.Substring(commentIdx + ioState.Rules.CommentPrefix.Length).TrimStart(BlockParser.TrimCharsWithSpace);
-                lineContents = lineContents.Substring(0, commentIdx).TrimEnd(BlockParser.TrimCharsWithSpace);
+                lineContents = lineContents.Substring(0, commentIdx).TrimEnd(TrimCharsWithSpace);
             }
 
+            // if line ends with continue character
+            if (lineContents.EndsWith('\\'))
+            {
+                lineContents = lineContents.Substring(0, lineContents.Length - 1).TrimEnd(TrimCharsWithSpace);
+                lineContents.Unescape(ioState.LineBuilder);
+                ioState.LineBuilder.Append(ioState.Rules.LineDelimiters[0]);
+                return LineResult.Continue;
+            }
+
+            LineResult flushResult = TryFlushLine(ioParser, ioState, lineContents, false);
+            if (flushResult != LineResult.Empty)
+            {
+                return flushResult;
+            }
+
+            return ParseLineCommand(ioParser, ioState, lineContents, false);
+        }
+
+        static private LineResult TryFlushLine(Parser ioParser, ParseBuffer ioState, StringSlice inLine, bool inbCloseBlock)
+        {
+            if (ioState.LineBuilder.Length > 0)
+            {
+                if (inLine.Length > 0)
+                {
+                    inLine.Unescape(ioState.LineBuilder);
+                }
+                ioState.LineBuilder.TrimEnd(TrimCharsWithSpace);
+                inLine = ioState.LineBuilder.Flush();
+
+                return ParseLineCommand(ioParser, ioState, inLine, inbCloseBlock);
+            }
+
+            return LineResult.Empty;
+        }
+
+        static private LineResult ParseLineCommand(Parser ioParser, ParseBuffer ioState, StringSlice ioLine, bool inbCloseBlock)
+        {
             try
             {
+                ioParser.Generator.ProcessLine(ioParser, ioParser.Package, ioParser.CurrentBlock, ref ioLine);
+
                 bool bSuccess = true;
-                bool bProcessedCommand = false;
+                bool bProcessedCommand = TryProcessCommand(ioParser, ioState, ioLine);
                 
-                if (!lineContents.IsEmpty)
-                {
-                    for (int i = 0; i < ioState.PrefixPriorities.Length && !bProcessedCommand; ++i)
-                    {
-                        PrefixType type = ioState.PrefixPriorities[i];
-                        switch (type)
-                        {
-                            case PrefixType.BlockId:
-                                {
-                                    if (lineContents.StartsWith(ioState.Rules.BlockIdPrefix))
-                                    {
-                                        lineContents = lineContents.Substring(ioState.Rules.BlockIdPrefix.Length);
-                                        bSuccess &= TryStartBlock(ref ioState, lineContents);
-                                        bProcessedCommand = true;
-                                    }
-                                    break;
-                                }
-
-                            case PrefixType.BlockMeta:
-                                {
-                                    if (ShouldCheckMeta(ref ioState) && lineContents.StartsWith(ioState.Rules.BlockMetaPrefix))
-                                    {
-                                        lineContents = lineContents.Substring(ioState.Rules.BlockMetaPrefix.Length);
-                                        bSuccess &= TryEvaluateMeta(ref ioState, lineContents);
-                                        bProcessedCommand = true;
-                                    }
-                                    break;
-                                }
-
-                            case PrefixType.BlockHeaderEnd:
-                                {
-                                    if (lineContents.StartsWith(ioState.Rules.BlockHeaderEndPrefix))
-                                    {
-                                        lineContents = lineContents.Substring(ioState.Rules.BlockHeaderEndPrefix.Length);
-                                        bSuccess &= TryEndHeader(ref ioState, lineContents);
-                                        bProcessedCommand = true;
-                                    }
-                                    break;
-                                }
-
-                            case PrefixType.BlockContent:
-                                {
-                                    if (lineContents.StartsWith(ioState.Rules.BlockContentPrefix))
-                                    {
-                                        lineContents = lineContents.Substring(ioState.Rules.BlockContentPrefix.Length);
-                                        bSuccess &= TryAddContent(ref ioState, lineContents);
-                                        bProcessedCommand = true;
-                                    }
-                                    break;
-                                }
-
-                            case PrefixType.BlockEnd:
-                                {
-                                    if (lineContents.StartsWith(ioState.Rules.BlockEndPrefix))
-                                    {
-                                        lineContents = lineContents.Substring(ioState.Rules.BlockEndPrefix.Length);
-                                        bSuccess &= TryEndBlock(ref ioState, lineContents);
-                                        bProcessedCommand = true;
-                                    }
-                                    break;
-                                }
-
-                            case PrefixType.PackageMeta:
-                                {
-                                    if (ShouldCheckPackageMeta(ref ioState) && lineContents.StartsWith(ioState.Rules.PackageMetaPrefix))
-                                    {
-                                        lineContents = lineContents.Substring(ioState.Rules.PackageMetaPrefix.Length);
-                                        bSuccess &= TryEvaluatePackage(ref ioState, lineContents);
-                                        bProcessedCommand = true;
-                                    }
-                                    break;
-                                }
-                        }
-                    }
-                }
-
                 if (!bProcessedCommand)
                 {
-                    if (ioState.CurrentState == BlockState.InData && ioState.Rules.RequireExplicitBlockContent && !string.IsNullOrEmpty(ioState.Rules.BlockContentPrefix))
+                    if (!ioLine.IsEmpty || ioState.CurrentState == BlockState.InData)
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot add content '{0}', must have content prefix '{1}'", lineContents, ioState.Rules.BlockContentPrefix);
-                        bSuccess = false;
+                        bSuccess &= TryAddContent(ioParser, ioState, ioLine, inbCloseBlock);
                     }
-                    else if (!lineContents.IsEmpty || ioState.CurrentState == BlockState.InData)
-                    {
-                        bSuccess &= TryAddContent(ref ioState, lineContents);
-                    }
-                }
-
-                if (!lineComment.IsEmpty)
-                {
-                    bSuccess &= TryAddComment(ref ioState, lineComment);
                 }
 
                 ioState.Error |= !bSuccess;
@@ -277,13 +243,72 @@ namespace BeauUtil.Blocks
             }
         }
 
+        static private bool TryProcessCommand(Parser ioParser, ParseBuffer ioState, StringSlice ioLine)
+        {
+            if (ioLine.IsEmpty)
+                return false;
+
+            for (int i = 0; i < ioState.PrefixPriorities.Length; i++)
+            {
+                PrefixType type = ioState.PrefixPriorities[i];
+                switch (type)
+                {
+                    case PrefixType.BlockId:
+                        {
+                            if (ioLine.StartsWith(ioState.Rules.BlockIdPrefix))
+                            {
+                                ioLine = ioLine.Substring(ioState.Rules.BlockIdPrefix.Length);
+                                ioState.Error |= !TryStartBlock(ioParser, ioState, ioLine);
+                                return true;
+                            }
+                            break;
+                        }
+
+                    case PrefixType.BlockMeta:
+                        {
+                            if (ShouldCheckMeta(ioState) && ioLine.StartsWith(ioState.Rules.BlockMetaPrefix))
+                            {
+                                ioLine = ioLine.Substring(ioState.Rules.BlockMetaPrefix.Length);
+                                ioState.Error |= !TryEvaluateMeta(ioParser, ioState, ioLine);
+                                return true;
+                            }
+                            break;
+                        }
+
+                    case PrefixType.BlockEnd:
+                        {
+                            if (ioLine.StartsWith(ioState.Rules.BlockEndPrefix))
+                            {
+                                ioLine = ioLine.Substring(ioState.Rules.BlockEndPrefix.Length);
+                                ioState.Error |= !TryEndBlock(ioParser, ioState, ioLine);
+                                return true;
+                            }
+                            break;
+                        }
+
+                    case PrefixType.PackageMeta:
+                        {
+                            if (ShouldCheckPackageMeta(ioState) && ioLine.StartsWith(ioState.Rules.PackageMetaPrefix))
+                            {
+                                ioLine = ioLine.Substring(ioState.Rules.PackageMetaPrefix.Length);
+                                ioState.Error |= !TryEvaluatePackage(ioParser, ioState, ioLine);
+                                return true;
+                            }
+                            break;
+                        }
+                }
+            }
+
+            return false;
+        }
+
         #endregion // Parse
 
         #region Checks
 
-        static private bool ShouldCheckMeta(ref ParseState ioState)
+        static private bool ShouldCheckMeta(ParseBuffer inBuffer)
         {
-            switch(ioState.CurrentState)
+            switch(inBuffer.CurrentState)
             {
                 case BlockState.InData:
                     return false;
@@ -293,16 +318,16 @@ namespace BeauUtil.Blocks
             }
         }
 
-        static private bool ShouldCheckPackageMeta(ref ParseState ioState)
+        static private bool ShouldCheckPackageMeta(ParseBuffer inBuffer)
         {
-            switch(ioState.CurrentState)
+            switch(inBuffer.CurrentState)
             {
                 case BlockState.BlockDone:
                 case BlockState.NotStarted:
                     return true;
 
                 default:
-                    return ioState.Rules.PackageMetaMode > PackageMetaMode.DisallowInBlock;
+                    return inBuffer.Rules.PackageMetaMode > PackageMetaMode.DisallowInBlock;
             }
         }
 
@@ -311,12 +336,12 @@ namespace BeauUtil.Blocks
         #region Parse Commands
 
         // Attempts to start a new data block
-        static private bool TryStartBlock(ref ParseState ioState, StringSlice inLine)
+        static private bool TryStartBlock(Parser ioParser, ParseBuffer ioState, StringSlice inLine)
         {
             TagData data = TagData.Parse(inLine, ioState.TagDelimiters);
             if (data.IsEmpty())
             {
-                BlockParser.LogError(ioState.Position, "Cannot start block with an empty id '{0}'", inLine);
+                LogError(ioState.Position, "Cannot start block with an empty id '{0}'", inLine);
                 return false;
             }
 
@@ -324,37 +349,25 @@ namespace BeauUtil.Blocks
             {
                 case BlockState.NotStarted:
                     {
-                        ioState.Generator.OnBlocksStart(ioState, ioState.Package);
+                        ioParser.Generator.OnBlocksStart(ioParser, ioParser.Package);
                         break;
                     }
 
                 case BlockState.InHeader:
                     {
-                        if (ioState.Rules.RequireExplicitBlockEnd || ioState.Rules.RequireExplicitBlockHeaderEnd)
-                        {
-                            BlockParser.LogError(ioState.Position, "Cannot start a new block '{0}' before previous block is closed", inLine);
-                            return false;
-                        }
-
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
-                        FlushBlock(ref ioState, TagData.Empty);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
+                        FlushBlock(ioParser, ioState, TagData.Empty);
                         break;
                     }
 
                 case BlockState.BlockStarted:
                 case BlockState.InData:
                     {
-                        if (ioState.Rules.RequireExplicitBlockHeaderEnd)
-                        {
-                            BlockParser.LogError(ioState.Position, "Cannot start a new block '{0}' before previous block is closed", inLine);
-                            return false;
-                        }
-
                         if (ioState.CurrentState == BlockState.BlockStarted)
                         {
-                            ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                            ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
                         }
-                        FlushBlock(ref ioState, TagData.Empty);
+                        FlushBlock(ioParser, ioState, TagData.Empty);
                         break;
                     }
 
@@ -363,22 +376,22 @@ namespace BeauUtil.Blocks
             }
 
             TBlock newBlock;
-            if (!ioState.Generator.TryCreateBlock(ioState, ioState.Package, data, out newBlock))
+            if (!ioParser.Generator.TryCreateBlock(ioParser, ioParser.Package, data, out newBlock))
             {
-                BlockParser.LogError(ioState.Position, "Failed to create a new block '{0}'", inLine);
-                ioState.CurrentBlock = null;
+                LogError(ioState.Position, "Failed to create a new block '{0}'", inLine);
+                ioParser.CurrentBlock = null;
                 ioState.CurrentState = BlockState.BlockDone;
                 return false;
             }
 
-            ioState.CurrentBlock = newBlock;
+            ioParser.CurrentBlock = newBlock;
             ioState.CurrentState = BlockState.BlockStarted;
             ioState.BlockError = false;
             return true;
         }
 
         // Attempts to evaluate metadata with the current block header
-        static private bool TryEvaluateMeta(ref ParseState ioState, StringSlice inLine)
+        static private bool TryEvaluateMeta(Parser ioParser, ParseBuffer ioState, StringSlice inLine)
         {
             TagData data = TagData.Parse(inLine, ioState.TagDelimiters);
 
@@ -387,13 +400,13 @@ namespace BeauUtil.Blocks
                 case BlockState.NotStarted:
                 case BlockState.BlockDone:
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot add metadata '{0}' to block, not currently in block", inLine);
+                        LogError(ioState.Position, "Cannot add metadata '{0}' to block, not currently in block", inLine);
                         return false;
                     }
 
                 case BlockState.InData:
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot add metadata '{0}' to block, not currently in header section", inLine);
+                        LogError(ioState.Position, "Cannot add metadata '{0}' to block, not currently in header section", inLine);
                         return false;
                     }
 
@@ -409,11 +422,11 @@ namespace BeauUtil.Blocks
 
             if (!data.IsEmpty())
             {
-                bool bHandled = ioState.Generator.TryEvaluateMeta(ioState, ioState.Package, ioState.CurrentBlock, data);
+                bool bHandled = ioParser.Generator.TryEvaluateMeta(ioParser, ioParser.Package, ioParser.CurrentBlock, data);
                 if (!bHandled)
-                    bHandled = ioState.Cache.TryEvaluateCommand(ioState.CurrentBlock, data);
+                    bHandled = ioState.Cache.TryEvaluateCommand(ioParser.CurrentBlock, data);
                 if (!bHandled)
-                    BlockParser.LogError(ioState.Position, "Unrecognized block metadata '{0}'", data);
+                    LogError(ioState.Position, "Unrecognized block metadata '{0}'", data);
                 return bHandled;
             }
 
@@ -421,7 +434,7 @@ namespace BeauUtil.Blocks
         }
 
         // Attempts to end the current block header
-        static private bool TryEndHeader(ref ParseState ioState, StringSlice inLine)
+        static private bool TryEndHeader(Parser ioParser, ParseBuffer ioState, StringSlice inLine)
         {
             TagData data = TagData.Parse(inLine, ioState.TagDelimiters);
 
@@ -430,13 +443,13 @@ namespace BeauUtil.Blocks
                 case BlockState.NotStarted:
                 case BlockState.BlockDone:
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot end block header with '{0}', not currently in block", inLine);
+                        LogError(ioState.Position, "Cannot end block header with '{0}', not currently in block", inLine);
                         return false;
                     }
 
                 case BlockState.InData:
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot end block header with '{0}', already in data section", inLine);
+                        LogError(ioState.Position, "Cannot end block header with '{0}', already in data section", inLine);
                         return false;
                     }
 
@@ -444,7 +457,7 @@ namespace BeauUtil.Blocks
                 case BlockState.InHeader:
                 default:
                     {
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, data);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, data);
                         ioState.CurrentState = BlockState.InData;
                         return true;
                     }
@@ -452,7 +465,7 @@ namespace BeauUtil.Blocks
         }
 
         // Attempts to end the current block
-        static private bool TryEndBlock(ref ParseState ioState, StringSlice inLine)
+        static private bool TryEndBlock(Parser ioParser, ParseBuffer ioState, StringSlice inLine)
         {
             TagData data = TagData.Parse(inLine, ioState.TagDelimiters);
 
@@ -461,13 +474,13 @@ namespace BeauUtil.Blocks
                 case BlockState.NotStarted:
                 case BlockState.BlockDone:
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot close block with '{0}', not currently in block", inLine);
+                        LogError(ioState.Position, "Cannot close block with '{0}', not currently in block", inLine);
                         return false;
                     }
 
                 case BlockState.BlockStarted:
                     {
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
                         break;
                     }
 
@@ -476,51 +489,39 @@ namespace BeauUtil.Blocks
 
                 case BlockState.InHeader:
                     {
-                        if (ioState.Rules.RequireExplicitBlockHeaderEnd)
-                        {
-                            BlockParser.LogError(ioState.Position, "Cannot close block with '{0}', header section not closed", inLine);
-                            return false;
-                        }
-
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
                         break;
                     }
             }
 
-            FlushBlock(ref ioState, data);
+            FlushBlock(ioParser, ioState, data);
             ioState.CurrentState = BlockState.BlockDone;
-            ioState.CurrentBlock = null;
+            ioParser.CurrentBlock = null;
             return true;
         }
 
         // Attempts to add content to the current block
-        static private bool TryAddContent(ref ParseState ioState, StringSlice inContent)
+        static private bool TryAddContent(Parser ioParser, ParseBuffer ioState, StringSlice inContent, bool inbCloseBlock)
         {
             switch (ioState.CurrentState)
             {
                 case BlockState.NotStarted:
                 case BlockState.BlockDone:
                     {
-                        BlockParser.LogError(ioState.Position, "Cannot add content '{0}', not currently in block", inContent);
+                        LogError(ioState.Position, "Cannot add content '{0}', not currently in block", inContent);
                         return false;
                     }
 
                 case BlockState.BlockStarted:
                     {
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
                         ioState.CurrentState = BlockState.InData;
                         break;
                     }
                 
                 case BlockState.InHeader:
                     {
-                        if (ioState.Rules.RequireExplicitBlockHeaderEnd)
-                        {
-                            BlockParser.LogError(ioState.Position, "Cannot add content '{0}', block header is not exited", inContent);
-                            return false;
-                        }
-
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
                         ioState.CurrentState = BlockState.InData;
                         break;
                     }
@@ -529,13 +530,13 @@ namespace BeauUtil.Blocks
                     break;
             }
 
-            bool bHandled = ioState.Generator.TryAddContent(ioState, ioState.Package, ioState.CurrentBlock, inContent);
+            bool bHandled = ioParser.Generator.TryAddContent(ioParser, ioParser.Package, ioParser.CurrentBlock, inContent);
             if (!bHandled)
             {
                 BlockMetaCache.ContentInfo contentSetter;
-                if (ioState.Cache.TryGetContent(ioState.CurrentBlock, out contentSetter))
+                if (ioState.Cache.TryGetContent(ioParser.CurrentBlock, out contentSetter))
                 {
-                    if (contentSetter.Mode == BlockContentMode.LineByLine)
+                    if (contentSetter.Mode == BlockContentMode.LineByLine || inbCloseBlock)
                     {
                         StringSlice contentString = inContent;
                         if (contentString.Contains('\\'))
@@ -543,7 +544,7 @@ namespace BeauUtil.Blocks
                             contentString = inContent.Unescape();
                         }
 
-                        bHandled = contentSetter.Invoke(ioState.CurrentBlock, contentString, ioState.Cache.SharedResources);
+                        bHandled = contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
                     }
                     else
                     {
@@ -562,27 +563,13 @@ namespace BeauUtil.Blocks
             }
 
             if (!bHandled)
-                BlockParser.LogError(ioState.Position, "Unable to add content");
+                LogError(ioState.Position, "Unable to add content");
 
             return bHandled;
         }
 
-        // Attempts to add a comment
-        static private bool TryAddComment(ref ParseState ioState, StringSlice inComment)
-        {
-            if (inComment.IsEmpty)
-                return true;
-
-            if (!ioState.Generator.TryAddComment(ioState, ioState.Package, ioState.CurrentBlock, inComment))
-            {
-                BlockParser.LogError(ioState.Position, "Unhandled comment");
-            }
-
-            return true;
-        }
-
         // Attempts to add package metadata
-        static private bool TryEvaluatePackage(ref ParseState ioState, StringSlice inLine)
+        static private bool TryEvaluatePackage(Parser ioParser, ParseBuffer ioState, StringSlice inLine)
         {
             TagData data = TagData.Parse(inLine, ioState.TagDelimiters);
 
@@ -590,7 +577,7 @@ namespace BeauUtil.Blocks
             {
                 if (ioState.CurrentState != BlockState.NotStarted && ioState.CurrentState != BlockState.BlockDone)
                 {
-                    BlockParser.LogError(ioState.Position, "Cannot set package metadata '{0}', currently in a block", inLine);
+                    LogError(ioState.Position, "Cannot set package metadata '{0}', currently in a block", inLine);
                     return false;
                 }
             }
@@ -605,31 +592,25 @@ namespace BeauUtil.Blocks
 
                     case BlockState.InHeader:
                     {
-                        if (ioState.Rules.RequireExplicitBlockEnd || ioState.Rules.RequireExplicitBlockHeaderEnd)
+                        if (ioState.Rules.RequireExplicitBlockEnd)
                         {
-                            BlockParser.LogError(ioState.Position, "Cannot close a block with meta command '{0}' before previous block is closed", inLine);
+                            LogError(ioState.Position, "Cannot close a block with meta command '{0}' before previous block is closed", inLine);
                             return false;
                         }
 
-                        ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
-                        FlushBlock(ref ioState, TagData.Empty);
+                        ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
+                        FlushBlock(ioParser, ioState, TagData.Empty);
                         break;
                     }
 
                 case BlockState.BlockStarted:
                 case BlockState.InData:
                     {
-                        if (ioState.Rules.RequireExplicitBlockHeaderEnd)
-                        {
-                            BlockParser.LogError(ioState.Position, "Cannot close a block with meta command '{0}' before previous block is closed", inLine);
-                            return false;
-                        }
-
                         if (ioState.CurrentState == BlockState.BlockStarted)
                         {
-                            ioState.Generator.CompleteHeader(ioState, ioState.Package, ioState.CurrentBlock, TagData.Empty);
+                            ioParser.Generator.CompleteHeader(ioParser, ioParser.Package, ioParser.CurrentBlock, TagData.Empty);
                         }
-                        FlushBlock(ref ioState, TagData.Empty);
+                        FlushBlock(ioParser, ioState, TagData.Empty);
                         break;
                     }
                 }   
@@ -637,24 +618,24 @@ namespace BeauUtil.Blocks
 
             if (!data.IsEmpty())
             {
-                bool bHandled = ioState.Generator.TryEvaluatePackage(ioState, ioState.Package, ioState.CurrentBlock, data);
+                bool bHandled = ioParser.Generator.TryEvaluatePackage(ioParser, ioParser.Package, ioParser.CurrentBlock, data);
                 if (!bHandled)
-                    bHandled = ioState.Cache.TryEvaluateCommand(ioState.Package, data);
+                    bHandled = ioState.Cache.TryEvaluateCommand(ioParser.Package, data);
                 if (!bHandled)
-                    BlockParser.LogError(ioState.Position, "Unrecognized package metadata '{0}'", data);
+                    LogError(ioState.Position, "Unrecognized package metadata '{0}'", data);
                 return bHandled;
             }
 
             return false; 
         }
 
-        static private void FlushBlock(ref ParseState ioState, TagData inEndData)
+        static private void FlushBlock(Parser ioParser, ParseBuffer ioState, TagData inEndData)
         {
-            ioState.ContentBuilder.TrimEnd(BlockParser.TrimCharsWithSpace);
+            TryFlushLine(ioParser, ioState, inEndData.Data, true);
             if (ioState.ContentBuilder.Length > 0)
             {
                 BlockMetaCache.ContentInfo contentSetter;
-                if (ioState.Cache.TryGetContent(ioState.CurrentBlock, out contentSetter))
+                if (ioState.Cache.TryGetContent(ioParser.CurrentBlock, out contentSetter))
                 {
                     if (contentSetter.Mode == BlockContentMode.BatchContent)
                     {
@@ -663,7 +644,7 @@ namespace BeauUtil.Blocks
                         {
                             contentString = StringUtils.Unescape(contentString);
                         }
-                        ioState.BlockError |= contentSetter.Invoke(ioState.CurrentBlock, contentString, ioState.Cache.SharedResources);
+                        ioState.BlockError |= contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
                         ioState.Error |= ioState.BlockError;
                     }
                 }
@@ -671,52 +652,13 @@ namespace BeauUtil.Blocks
                 ioState.ContentBuilder.Length = 0;
             }
             
-            IValidatable validatable = ioState.CurrentBlock as IValidatable;
+            IValidatable validatable = ioParser.CurrentBlock as IValidatable;
             if (validatable != null)
                 validatable.Validate();
             
-            ioState.Generator.CompleteBlock(ioState, ioState.Package, ioState.CurrentBlock, inEndData, ioState.BlockError);
+            ioParser.Generator.CompleteBlock(ioParser, ioParser.Package, ioParser.CurrentBlock, inEndData, ioState.BlockError);
         }
 
         #endregion // Parse Commands
-
-        #region Pre-parse steps
-
-        // Generates a prioritized set of prefixes to analyze, from most specific to least specific
-        static private PrefixType[] GeneratePrefixPriority(IBlockParsingRules inRules)
-        {
-            List<PriorityValue<PrefixType>> buffer = new List<PriorityValue<PrefixType>>(6);
-            AddPrefixPriority(buffer, inRules.BlockIdPrefix, PrefixType.BlockId);
-            AddPrefixPriority(buffer, inRules.BlockMetaPrefix, PrefixType.BlockMeta);
-            AddPrefixPriority(buffer, inRules.BlockHeaderEndPrefix, PrefixType.BlockHeaderEnd);
-            AddPrefixPriority(buffer, inRules.BlockContentPrefix, PrefixType.BlockContent);
-            AddPrefixPriority(buffer, inRules.BlockEndPrefix, PrefixType.BlockEnd);
-            AddPrefixPriority(buffer, inRules.PackageMetaPrefix, PrefixType.PackageMeta);
-            buffer.Sort();
-
-            PrefixType[] priority = new PrefixType[buffer.Count];
-            for (int i = 0; i < buffer.Count; ++i)
-            {
-                priority[i] = buffer[i].Value;
-            }
-            return priority;
-        }
-
-        // Adds a prefix priority to the buffer
-        static private void AddPrefixPriority(List<PriorityValue<PrefixType>> ioBuffer, string inString, PrefixType inPrefix)
-        {
-            if (!string.IsNullOrEmpty(inString))
-                ioBuffer.Add(new PriorityValue<PrefixType>(inPrefix, inString.Length));
-        }
-
-        // Splits a string into lines based on 
-        static private IEnumerable<StringSlice> SplitIntoLines(IBlockParsingRules inRules, StringSlice inString)
-        {
-            if (inRules.CustomLineSplitter != null)
-                return inString.EnumeratedSplit(inRules.CustomLineSplitter, StringSplitOptions.None);
-            return inString.EnumeratedSplit(inRules.LineDelimiters, StringSplitOptions.None);
-        }
-
-        #endregion // Pre-parse steps
     }
 }
