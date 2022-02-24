@@ -795,6 +795,13 @@ namespace BeauUtil
             /// </summary>
             public sealed class Splitter : StringSlice.ISplitter
             {
+                [ThreadStatic] static private Splitter s_Instance;
+
+                static public Splitter Instance
+                {
+                    get { return s_Instance ?? (s_Instance = new Splitter()); }
+                }
+
                 private readonly bool m_Unescape;
                 private bool m_QuoteMode;
                 private int m_GroupingDepth;

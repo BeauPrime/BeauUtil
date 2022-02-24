@@ -106,6 +106,7 @@ namespace BeauUtil.Variants
             VariantUtils.TryFindOperator(inData, LessThanOrEqualToOperator, VariantCompareOperator.LessThanOrEqualTo, ref operatorIdx, ref op, ref operatorLength);
             VariantUtils.TryFindOperator(inData, GreaterThanOperator, VariantCompareOperator.GreaterThan, ref operatorIdx, ref op, ref operatorLength);
             VariantUtils.TryFindOperator(inData, LessThanOperator, VariantCompareOperator.LessThan, ref operatorIdx, ref op, ref operatorLength);
+            VariantUtils.TryFindOperator(inData, DoubleNotOperator, VariantCompareOperator.True, ref operatorIdx, ref op, ref operatorLength);
             VariantUtils.TryFindOperator(inData, NotOperator, VariantCompareOperator.False, ref operatorIdx, ref op, ref operatorLength);
             VariantUtils.TryFindOperator(inData, ShortEqualsOperator, VariantCompareOperator.EqualTo, ref operatorIdx, ref op, ref operatorLength);
             VariantUtils.TryFindOperator(inData, ExistsOperator, VariantCompareOperator.Exists, ref operatorIdx, ref op, ref operatorLength);
@@ -133,7 +134,7 @@ namespace BeauUtil.Variants
 
                 case VariantCompareOperator.True:
                     {
-                        idSlice = inData;
+                        idSlice = inData.Substring(operatorLength);
                         bRequiresOperand = false;
                         break;
                     }
@@ -183,6 +184,7 @@ namespace BeauUtil.Variants
         private const char GreaterThanOperator = '>';
         private const char LessThanOperator = '<';
         private const char NotOperator = '!';
+        private const string DoubleNotOperator = "!!";
         private const string ExistsOperator = "isDefined";
         private const string DoesNotExistOperator = "notDefined";
     }
