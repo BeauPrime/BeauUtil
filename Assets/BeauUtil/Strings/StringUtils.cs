@@ -845,20 +845,13 @@ namespace BeauUtil
                             break;
 
                         case '"':
-                            if (m_QuoteMode)
+                            if (inIndex > 0 && inString[inIndex - 1] == '\\')
                             {
-                                if (inIndex > 0 && inString[inIndex - 1] == '\\')
-                                {
-                                    outAdvance = 1;
-                                }
-                                else
-                                {
-                                    m_QuoteMode = !m_QuoteMode;
-                                }
+                                break;
                             }
                             else
                             {
-                                m_QuoteMode = true;
+                                m_QuoteMode = !m_QuoteMode;
                             }
                             break;
                     }
