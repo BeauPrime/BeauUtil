@@ -726,14 +726,14 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Comma-separated argument list utils.
+        /// Delimiter-separated argument list utils.
         /// </summary>
         static public class ArgsList
         {
             /// <summary>
-            /// Returns if the given string contains at least two comma-separated arguments.
+            /// Returns if the given string contains at least two delimiter-separated arguments.
             /// </summary>
-            static public bool IsList(StringSlice inString)
+            static public bool IsList(StringSlice inString, char inDelimiter = 'c')
             {
                 bool quote = false;
                 int group = 0;
@@ -743,13 +743,14 @@ namespace BeauUtil
                 {
                     c = inString[i];
 
+                    if (c == inDelimiter)
+                    {
+                        if (!quote && group <= 0)
+                            return true;
+                    }
+
                     switch(c)
                     {
-                        case ',':
-                            if (!quote && group <= 0)
-                                return true;
-                            break;
-
                         case '(':
                         case '[':
                         case '{':
@@ -803,11 +804,19 @@ namespace BeauUtil
                 }
 
                 private readonly bool m_Unescape;
+                private readonly char m_Delimiter;
                 private bool m_QuoteMode;
                 private int m_GroupingDepth;
 
                 public Splitter(bool inbUnescape = false)
                 {
+                    m_Delimiter = ',';
+                    m_Unescape = inbUnescape;
+                }
+
+                public Splitter(char inDelimiter, bool inbUnescape = false)
+                {
+                    m_Delimiter = inDelimiter;
                     m_Unescape = inbUnescape;
                 }
 
@@ -821,11 +830,11 @@ namespace BeauUtil
                     outAdvance = 0;
                     char c = inString[inIndex];
 
+                    if (c == m_Delimiter)
+                        return !m_QuoteMode && m_GroupingDepth <= 0;
+
                     switch(c)
                     {
-                        case ',':
-                            return !m_QuoteMode && m_GroupingDepth <= 0;
-
                         case '(':
                         case '[':
                         case '{':
