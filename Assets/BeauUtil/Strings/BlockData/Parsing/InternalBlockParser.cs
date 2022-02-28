@@ -201,7 +201,7 @@ namespace BeauUtil.Blocks
 
         static private LineResult TryFlushLine(Parser ioParser, ParseBuffer ioState, StringSlice inLine, bool inbCloseBlock)
         {
-            if (ioState.LineBuilder.Length > 0)
+            if (ioState.LineBuilder.Length > 0 || ioState.CurrentState == BlockState.InData)
             {
                 if (inLine.Length > 0)
                 {

@@ -47,7 +47,7 @@ namespace BeauUtil.Variants
 
             if (TableId.IsEmpty)
             {
-                return VariableId.ToDebugString();
+                return TableOperator + VariableId.ToDebugString();
             }
 
             return string.Format(StringFormat, TableId.ToDebugString(), VariableId.ToDebugString());
@@ -60,6 +60,7 @@ namespace BeauUtil.Variants
         /// Valid formats are:
         /// <list type="bullet">
         /// <item>variableId</item>
+        /// <item>:variableId</item>
         /// <item>tableId:variableId</item>
         /// </list>
         /// </summary>
@@ -86,7 +87,7 @@ namespace BeauUtil.Variants
                 StringSlice tableId = inSource.Substring(0, operatorIdx).TrimEnd();
                 StringSlice variantId = inSource.Substring(variantIdx).TrimStart();
 
-                if (!VariantUtils.IsValidIdentifier(tableId) || !VariantUtils.IsValidIdentifier(variantId))
+                if ((!tableId.IsEmpty && !VariantUtils.IsValidIdentifier(tableId)) || !VariantUtils.IsValidIdentifier(variantId))
                 {
                     outKey = default(TableKeyPair);
                     return false;
@@ -151,7 +152,7 @@ namespace BeauUtil.Variants
 
             if (TableId.IsEmpty)
             {
-                return VariableId.ToString();
+                return TableOperator + VariableId.ToString();
             }
 
             return string.Format(StringFormat, TableId.ToString(), VariableId.ToString());
