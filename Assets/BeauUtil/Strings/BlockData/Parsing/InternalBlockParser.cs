@@ -543,6 +543,7 @@ namespace BeauUtil.Blocks
                         {
                             contentString = inContent.Unescape();
                         }
+                        contentString = contentString.TrimEnd(TrimCharsWithSpace);
 
                         bHandled = contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
                     }
@@ -644,6 +645,7 @@ namespace BeauUtil.Blocks
                         {
                             contentString = StringUtils.Unescape(contentString);
                         }
+                        contentString = contentString.TrimEnd(TrimCharsWithSpace);
                         ioState.BlockError |= contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
                         ioState.Error |= ioState.BlockError;
                     }
