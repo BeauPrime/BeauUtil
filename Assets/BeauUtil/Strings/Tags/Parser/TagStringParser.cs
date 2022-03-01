@@ -536,7 +536,6 @@ namespace BeauUtil.Tags
             }
 
             m_Delimiters = null;
-            
         }
     
         #endregion // IDisposable
@@ -566,7 +565,7 @@ namespace BeauUtil.Tags
                     {
                         richStart = charIdx;
                     }
-                    else if (inString.AttemptMatch(charIdx, ">"))
+                    else if (richStart >= 0 && inString.AttemptMatch(charIdx, ">"))
                     {
                         return true;
                     }
@@ -578,7 +577,7 @@ namespace BeauUtil.Tags
                     {
                         tagStart = charIdx;
                     }
-                    else if (inString.AttemptMatch(charIdx, inDelimiters.TagEndDelimiter))
+                    else if (tagStart >= 0 && inString.AttemptMatch(charIdx, inDelimiters.TagEndDelimiter))
                     {
                         StringSlice check = inString.Substring(copyStart, tagStart - copyStart);
                         if (!check.IsWhitespace)

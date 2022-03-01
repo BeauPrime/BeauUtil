@@ -733,7 +733,7 @@ namespace BeauUtil
             /// <summary>
             /// Returns if the given string contains at least two delimiter-separated arguments.
             /// </summary>
-            static public bool IsList(StringSlice inString, char inDelimiter = 'c')
+            static public bool IsList(StringSlice inString, char inDelimiter = ',')
             {
                 bool quote = false;
                 int group = 0;
