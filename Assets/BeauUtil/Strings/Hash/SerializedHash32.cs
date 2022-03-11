@@ -169,11 +169,13 @@ namespace BeauUtil
                 EditorGUI.BeginChangeCheck();
                 var stringProp = property.FindPropertyRelative("m_Source");
                 var hashProp = property.FindPropertyRelative("m_HashValue");
-                EditorGUI.PropertyField(propRect, stringProp, label);
-                if (UnityEditor.EditorGUI.EndChangeCheck()
-                    || (!stringProp.hasMultipleDifferentValues && !string.IsNullOrEmpty(stringProp.stringValue) && hashProp.longValue == 0))
+                EditorGUI.showMixedValue = stringProp.hasMultipleDifferentValues;
+                string newString = EditorGUI.TextField(propRect, label, stringProp.stringValue);
+                EditorGUI.showMixedValue = false;
+                if (UnityEditor.EditorGUI.EndChangeCheck())
                 {
-                    hashProp.longValue = new StringHash32(stringProp.stringValue).HashValue;
+                    stringProp.stringValue = newString;
+                    hashProp.longValue = new StringHash32(newString).HashValue;
                 }
                 
                 int lastIndent = EditorGUI.indentLevel;
