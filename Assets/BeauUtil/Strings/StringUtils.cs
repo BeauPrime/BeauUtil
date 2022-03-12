@@ -934,8 +934,8 @@ namespace BeauUtil
             static private readonly string[] s_KnownRichTags = new string[]
             {
                 "align", "alpha", "color", "b", "i", "cspace", "font", "indent",
-                "line-height", "line-indent", "link", "lowercase", "uppercase", "smallcaps",
-                "margin", "mark", "mspace", "noparse", "nobr", "page", "pos",
+                "line-height", "line-indent", "link", "lowercase", "uppercase", "smallcaps", "allcaps",
+                "margin", "margin-left", "margin-right", "mark", "mspace", "noparse", "nobr", "page", "pos",
                 "size", "space", "sprite", "s", "u", "style", "sub", "sup",
                 "voffset", "width", "material", "quad"
             };

@@ -209,5 +209,60 @@ namespace BeauUtil.Debugger
         }
 
         #endregion // Message
+
+        #region Stack Traces
+
+        /// <summary>
+        /// Scope object that temporarily sets the stack trace level for a given log type.
+        /// </summary>
+        public struct StackTraceLevelScope : IDisposable
+        {
+            private UnityEngine.LogType m_Type;
+            private UnityEngine.StackTraceLogType m_RestoreLevel;
+            private bool m_Disposed;
+
+            public StackTraceLevelScope(UnityEngine.LogType inType, UnityEngine.StackTraceLogType inDesiredLevel)
+            {
+                m_Type = inType;
+                m_RestoreLevel = UnityEngine.Application.GetStackTraceLogType(inType);
+                UnityEngine.Application.SetStackTraceLogType(inType, inDesiredLevel);
+                m_Disposed = false;
+            }
+
+            public void Dispose()
+            {
+                if (!m_Disposed)
+                {
+                    m_Disposed = true;
+                    UnityEngine.Application.SetStackTraceLogType(m_Type, m_RestoreLevel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a scope that temporarily disables stack trace logging for regular logs.
+        /// </summary>
+        static public StackTraceLevelScope DisableMsgStackTrace()
+        {
+            return new StackTraceLevelScope(UnityEngine.LogType.Log, UnityEngine.StackTraceLogType.None);
+        }
+
+        /// <summary>
+        /// Returns a scope that temporarily disables stack trace logging for warnings.
+        /// </summary>
+        static public StackTraceLevelScope DisableWarnStackTrace()
+        {
+            return new StackTraceLevelScope(UnityEngine.LogType.Warning, UnityEngine.StackTraceLogType.None);
+        }
+
+        /// <summary>
+        /// Returns a scope that temporarily disables stack trace logging for errors.
+        /// </summary>
+        static public StackTraceLevelScope DisableErrorStackTrace()
+        {
+            return new StackTraceLevelScope(UnityEngine.LogType.Error, UnityEngine.StackTraceLogType.None);
+        }
+
+        #endregion // Stack Traces
     }
 }
