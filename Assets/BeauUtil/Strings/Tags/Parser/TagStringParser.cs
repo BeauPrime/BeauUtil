@@ -133,7 +133,7 @@ namespace BeauUtil.Tags
             if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
             {
                 // if we're not considering rich text, and we have no processors, there's nothing to do here
-                outTarget.AddNode(TagNodeData.TextNode((uint) inInput.Length));
+                outTarget.AddNode(TagNodeData.TextNode(0, (uint) inInput.Length));
                 outbModified = false;
                 return;
             }
@@ -346,7 +346,7 @@ namespace BeauUtil.Tags
 
             if (copySlice.Length > 0)
             {
-                ioState.Target.AddText((uint) copySlice.Length);
+                ioState.Target.AddText((uint) ioState.StrippedOutput.Length, (uint) copySlice.Length);
                 copySlice.AppendTo(ioState.RichOutput);
                 copySlice.AppendTo(ioState.StrippedOutput);
             }
@@ -369,7 +369,7 @@ namespace BeauUtil.Tags
 
             if (inString.Length > 0)
             {
-                ioState.Target.AddText((uint) inString.Length);
+                ioState.Target.AddText((uint) ioState.StrippedOutput.Length, (uint) inString.Length);
                 inString.AppendTo(ioState.StrippedOutput);
             }
         }
@@ -399,7 +399,7 @@ namespace BeauUtil.Tags
 
             if (inString.Length > 0)
             {
-                ioState.Target.AddText((uint) inString.Length);
+                ioState.Target.AddText((uint) ioState.StrippedOutput.Length, (uint) inString.Length);
                 inString.AppendTo(ioState.RichOutput);
                 inString.AppendTo(ioState.StrippedOutput);
             }

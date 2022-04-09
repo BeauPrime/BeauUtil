@@ -21,6 +21,11 @@ namespace BeauUtil.Tags
     public struct TagTextData
     {
         /// <summary>
+        /// Starting index of visible characters.
+        /// </summary>
+        public uint VisibleCharacterOffset;
+
+        /// <summary>
         /// Number of visible characters to type out.
         /// </summary>
         public uint VisibleCharacterCount;
@@ -30,6 +35,7 @@ namespace BeauUtil.Tags
         /// </summary>
         public void Reset()
         {
+            VisibleCharacterOffset = 0;
             VisibleCharacterCount = 0;
         }
     }

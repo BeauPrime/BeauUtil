@@ -90,7 +90,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds text characters.
         /// </summary>
-        public void AddText(uint inVisibleCharacterCount)
+        public void AddText(uint inVisibleCharacterOffset, uint inVisibleCharacterCount)
         {
             if (inVisibleCharacterCount == 0)
                 return;
@@ -102,7 +102,7 @@ namespace BeauUtil.Tags
 
             if (m_NodeCount == 0 || m_Nodes[m_NodeCount - 1].Type != TagNodeType.Text)
             {
-                AddNode(TagNodeData.TextNode(inVisibleCharacterCount));
+                AddNode(TagNodeData.TextNode(inVisibleCharacterOffset, inVisibleCharacterCount));
             }
             else
             {
