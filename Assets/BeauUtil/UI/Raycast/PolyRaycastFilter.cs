@@ -33,6 +33,10 @@ namespace BeauUtil.UI
 
         bool ICanvasRaycastFilter.IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
         {
+            if (!enabled) {
+                return true;
+            }
+
             Vector2 localPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(Rect, sp, eventCamera, out localPos);
 
