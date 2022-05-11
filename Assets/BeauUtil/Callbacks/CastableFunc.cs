@@ -63,6 +63,10 @@ namespace BeauUtil
             m_CallbackNoArgs = null;
         }
 
+        public bool IsEmpty {
+            get { return m_Mode != CallbackMode.Unassigned; }
+        }
+
         public TOutput Invoke(TInput inArg)
         {
             switch(m_Mode)
@@ -151,7 +155,7 @@ namespace BeauUtil
                     return m_CallbackNativeArg == other.m_CallbackNativeArg;
 
                 case CallbackMode.CastedArg:
-                    return m_CallbackWithCastedArg.Equals(other.m_CallbackWithCastedArg);
+                    return (Delegate) m_CallbackWithCastedArg == other.m_CallbackWithCastedArg;
 
                 default:
                     return true;
@@ -191,7 +195,7 @@ namespace BeauUtil
                 return Equals(nativeArg);
             }
 
-            return m_Mode == CallbackMode.CastedArg && m_CallbackWithCastedArg.Equals(other);
+            return m_Mode == CallbackMode.CastedArg && (Delegate) m_CallbackWithCastedArg == other;
         }
 
         #endregion // IEquatable
