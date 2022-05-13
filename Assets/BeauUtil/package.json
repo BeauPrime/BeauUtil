@@ -7,7 +7,8 @@
   "author": {
     "name": "Autumn Beauchesne",
     "email": "beauchesne@beauprime.com",
-    "url": "beauprime.com"
+    "url": "http://beauprime.com"
   },
-  "type": "library"
+  "type": "library",
+  "license": "MIT"
 }
