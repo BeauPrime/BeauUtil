@@ -2,7 +2,8 @@
     "name": "BeauUtil",
     "references": [
         "Unity.TextMeshPro",
-        "BeauData"
+        "BeauData",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -16,6 +17,11 @@
             "name": "com.beauprime.beaudata",
             "expression": "0.3.0",
             "define": "USING_BEAUDATA"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "0.0.1",
+            "define": "USING_URP"
         }
     ],
     "noEngineReferences": false

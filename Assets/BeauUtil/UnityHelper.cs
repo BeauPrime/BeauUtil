@@ -395,6 +395,59 @@ namespace BeauUtil
         }
 
         #endregion // Path
+
+        #region Render Texture
+
+        /// <summary>
+        /// Blits the source texture to the destination in a "best effort pixel perfect" manner.
+        /// This will scale up to the nearest integer scale with point filtering, and then bilinear scale up to the final scale.
+        /// </summary>
+        static public void BlitPixelPerfect(RenderTexture inSrc, RenderTexture inDest, Camera inCamera = null)
+        {
+            float destHeight;
+            if (inDest != null)
+            {
+                destHeight = inDest.height;
+            }
+            else
+            {
+                destHeight = Screen.height;
+                if (inCamera == null)
+                {
+                    inCamera = Camera.current;
+                }
+                if (inCamera != null)
+                {
+                    destHeight *= inCamera.rect.height;
+                }
+            }
+            float scale = destHeight / (float) inSrc.height;
+            bool integerScale = Mathf.Approximately(scale % 1, 0);
+            if (scale >= 2 && !integerScale)
+            {
+                int intScale = (int) scale;
+                var tempRT = RenderTexture.GetTemporary(inSrc.width * intScale, inSrc.height * intScale, inSrc.depth, inSrc.format);
+                try
+                {
+                    inSrc.filterMode = FilterMode.Point;
+                    tempRT.filterMode = FilterMode.Point;
+                    Graphics.Blit(inSrc, tempRT);
+                    tempRT.filterMode = FilterMode.Bilinear;
+                    Graphics.Blit(tempRT, inDest);
+                }
+                finally
+                {
+                    RenderTexture.ReleaseTemporary(tempRT);
+                }
+            }
+            else
+            {
+                inSrc.filterMode = integerScale ? FilterMode.Point : FilterMode.Bilinear;
+                Graphics.Blit(inSrc, inDest);
+            }
+        }
+
+        #endregion // Render Textures
     
         #region Memory Usage
 
