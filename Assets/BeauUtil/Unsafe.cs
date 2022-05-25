@@ -275,6 +275,7 @@ namespace BeauUtil
 
         #endif // UNMANAGED_CONSTRAINT
 
+        [MethodImpl(256)]
         static public void* Alloc(int inLength)
         {
             return (void*) Marshal.AllocHGlobal(inLength);
@@ -293,7 +294,7 @@ namespace BeauUtil
 
             if (header->SizeRemaining < inLength)
             {
-                Log.Warn("[Unsafe] Unable to allocate region of size {0} in arena {1} (size remaining {2})", inLength, header->Name, header->SizeRemaining);
+                Log.Error("[Unsafe] Unable to allocate region of size {0} in arena {1} (size remaining {2})", inLength, header->Name, header->SizeRemaining);
                 return null;
             }
 
@@ -318,7 +319,7 @@ namespace BeauUtil
             uint padding = (uint) (aligned - header->CurrentPtr);
             if (header->SizeRemaining < padding + inLength)
             {
-                Log.Warn("[Unsafe] Unable to allocate region of size {0} and alignment {1} in arena {2} (size remaining {3})", inLength, inAlignment, header->Name, header->SizeRemaining);
+                Log.Error("[Unsafe] Unable to allocate region of size {0} and alignment {1} in arena {2} (size remaining {3})", inLength, inAlignment, header->Name, header->SizeRemaining);
                 return null;
             }
 
@@ -332,6 +333,7 @@ namespace BeauUtil
             return (void*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) inLength);
         }
 
+        [MethodImpl(256)]
         static public void Free(void* inPtr)
         {
             Marshal.FreeHGlobal((IntPtr) inPtr);
@@ -398,6 +400,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given arena has been initialized.
         /// </summary>
+        [MethodImpl(256)]
         static public bool ArenaInitialized(ArenaHandle inArena)
         {
             return inArena.HeaderStart != null;
@@ -582,6 +585,15 @@ namespace BeauUtil
         }
 
         #endif // UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Copy(void* inSrc, int inSrcLength, void* inDest, int inDestLength)
+        {
+            Buffer.MemoryCopy(inSrc, inDest, inDestLength, inSrcLength);
+        }
 
         #endregion // Copy
     }
