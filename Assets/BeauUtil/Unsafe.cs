@@ -40,7 +40,7 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Returns the alignment of the given 
+        /// Returns the alignment of the given type.
         /// </summary>
         [MethodImpl(256)]
         static public uint AlignOf<T>()
@@ -204,10 +204,22 @@ namespace BeauUtil
             return sizeof(T);
         }
 
+        static public T* Alloc<T>()
+            where T : unmanaged
+        {
+            return (T*) Alloc(sizeof(T));
+        }
+
         static public T* AllocArray<T>(int inLength)
             where T : unmanaged
         {
             return (T*) Marshal.AllocHGlobal(inLength * sizeof(T));
+        }
+
+        static public T* Alloc<T>(ArenaHandle inArena)
+            where T : unmanaged
+        {
+            return (T*) AllocAligned(inArena, sizeof(T), AlignOf<T>());
         }
 
         static public T* AllocArray<T>(ArenaHandle inArena, int inLength)
@@ -231,10 +243,22 @@ namespace BeauUtil
             return Marshal.SizeOf<T>();
         }
 
+        static public void* Alloc<T>()
+            where T : struct
+        {
+            return Alloc(SizeOf<T>());
+        }
+
         static public void* AllocArray<T>(int inLength)
             where T : struct
         {
             return (void*) Marshal.AllocHGlobal(inLength * SizeOf<T>());
+        }
+
+        static public void* Alloc<T>(ArenaHandle inArena)
+            where T : struct
+        {
+            return AllocAligned(inArena, SizeOf<T>(), AlignOf<T>());
         }
 
         static public void* AllocArray<T>(ArenaHandle inArena, int inLength)
@@ -372,6 +396,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if the given arena has been initialized.
+        /// </summary>
+        static public bool ArenaInitialized(ArenaHandle inArena)
+        {
+            return inArena.HeaderStart != null;
+        }
+
+        /// <summary>
         /// Returns the size of the given arena.
         /// </summary>
         static public int ArenaSize(ArenaHandle inArena)
@@ -435,5 +467,122 @@ namespace BeauUtil
         }
 
         #endregion // Arenas
+
+        #region Copy
+
+        #if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        static public void Copy<T>(T* inSrc, int inSrcCount, T* inDest, int inDestCount)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, inDestCount * size, inSrcCount * size);
+        }
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        static public void Copy<T>(T* inSrc, int inSrcCount, T[] inDest)
+            where T : unmanaged
+        {
+            fixed(T* destPtr = inDest)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void Copy<T>(T[] inSrc, T* inDest, int inDestCount)
+            where T : unmanaged
+        {
+            fixed(T* srcPtr = inSrc)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrc.Length * size);
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void Copy<T>(T[] inSrc, int inSrcCount, T* inDest, int inDestCount)
+            where T : unmanaged
+        {
+            fixed(T* srcPtr = inSrc)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrcCount * size);
+            }
+        }
+
+        #else
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        static public void Copy<T>(void* inSrc, int inSrcCount, void* inDest, int inDestCount)
+            where T : struct
+        {
+            int size = SizeOf<T>();
+            Buffer.MemoryCopy(inSrc, inDest, inDestCount * size, inSrcCount * size);
+        }
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        static public void Copy<T>(void* inSrc, int inSrcCount, T[] inDest)
+            where T : struct
+        {
+            GCHandle gc = GCHandle.Alloc(inDest, GCHandleType.Pinned);
+            try {
+                void* destPtr = (void*) Marshal.UnsafeAddrOfPinnedArrayElement<T>(inDest, 0);
+                int size = SizeOf<T>();
+                Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
+            } finally {
+                gc.Free();
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void Copy<T>(T[] inSrc, void* inDest, int inDestCount)
+            where T : struct
+        {
+            GCHandle gc = GCHandle.Alloc(inSrc, GCHandleType.Pinned);
+            try {
+                void* srcPtr = (void*) Marshal.UnsafeAddrOfPinnedArrayElement<T>(inSrc, 0);
+                int size = SizeOf<T>();
+                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrc.Length * size);
+            } finally {
+                gc.Free();
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void Copy<T>(T[] inSrc, int inSrcCount, void* inDest, int inDestCount)
+            where T : struct
+        {
+            GCHandle gc = GCHandle.Alloc(inSrc, GCHandleType.Pinned);
+            try {
+                void* srcPtr = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSrc, 0);
+                int size = SizeOf<T>();
+                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrcCount * size);
+            } finally {
+                gc.Free();
+            }
+        }
+
+        #endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Copy
     }
 }
