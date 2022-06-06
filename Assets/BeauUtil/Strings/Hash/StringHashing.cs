@@ -7,8 +7,8 @@
  * Purpose: Shared string hashing code.
  */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-#define DEVELOPMENT
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+#define PRESERVE_DEBUG_SYMBOLS
 #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 
 using System.Collections.Generic;
@@ -21,9 +21,9 @@ namespace BeauUtil
     {
         static StringHashing()
         {
-            #if DEVELOPMENT
+            #if PRESERVE_DEBUG_SYMBOLS
             EnableReverseLookup(true);
-            #endif // DEVELOPMENT
+            #endif // PRESERVE_DEBUG_SYMBOLS
         }
 
         internal const char CustomHashPrefix = '@';
@@ -124,10 +124,10 @@ namespace BeauUtil
 
         public delegate void CollisionCallbackDelegate(StringSlice inStringA, StringSlice inStringB, int inHashSize, ulong inHashValue);
 
-        #if DEVELOPMENT
+        #if PRESERVE_DEBUG_SYMBOLS
 
         static private bool s_ReverseLookupEnabled;
-        static private CollisionCallbackDelegate s_OnCollison;
+        static private CollisionCallbackDelegate s_OnCollision;
 
         static private Dictionary<uint, string> s_ReverseLookup32;
         static private Dictionary<ulong, string> s_ReverseLookup64;
@@ -184,7 +184,7 @@ namespace BeauUtil
         /// </summary>
         static public void SetOnCollision(CollisionCallbackDelegate inCallback)
         {
-            s_OnCollison = inCallback;
+            s_OnCollision = inCallback;
         }
 
         #else
@@ -223,13 +223,13 @@ namespace BeauUtil
         {
         }
 
-        #endif // DEVELOPMENT
+        #endif // PRESERVE_DEBUG_SYMBOLS
 
         #endregion // Lookups
     
         #region Store/Retrieve
 
-        #if DEVELOPMENT
+        #if PRESERVE_DEBUG_SYMBOLS
 
         static internal uint StoreHash32(string inString, int inOffset, int inLength)
         {
@@ -243,8 +243,8 @@ namespace BeauUtil
                 {
                     if (current != existing)
                     {
-                        if (s_OnCollison != null)
-                            s_OnCollison(existing, current, 32, hash);
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current, 32, hash);
                         else
                             UnityEngine.Debug.LogErrorFormat("[StringHashing] 32-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X8"));
                     }
@@ -282,8 +282,8 @@ namespace BeauUtil
                 {
                     if (current != existing)
                     {
-                        if (s_OnCollison != null)
-                            s_OnCollison(existing, current, 32, hash);
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current, 32, hash);
                         else
                             UnityEngine.Debug.LogErrorFormat("[StringHashing] 32-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X8"));
                     }
@@ -323,8 +323,8 @@ namespace BeauUtil
                 {
                     if (current != existing)
                     {
-                        if (s_OnCollison != null)
-                            s_OnCollison(existing, current, 64, hash);
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current, 64, hash);
                         else
                             UnityEngine.Debug.LogErrorFormat("[StringHashing] 64-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X16"));
                     }
@@ -362,8 +362,8 @@ namespace BeauUtil
                 {
                     if (current != existing)
                     {
-                        if (s_OnCollison != null)
-                            s_OnCollison(existing, current, 64, hash);
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current, 64, hash);
                         else
                             UnityEngine.Debug.LogErrorFormat("[StringHashing] 64-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X16"));
                     }
@@ -429,7 +429,7 @@ namespace BeauUtil
             return inHash == 0 ? string.Empty : ReverseLookupUnavailable;
         }
 
-        #endif // DEVELOPMENT
+        #endif // PRESERVE_DEBUG_SYMBOLS
 
         #endregion // Store/Retrieve
     }

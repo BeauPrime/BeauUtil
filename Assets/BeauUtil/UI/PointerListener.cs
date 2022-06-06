@@ -7,10 +7,6 @@
  * Purpose: Pointer event proxy.
 */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-#define DEVELOPMENT
-#endif
-
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;

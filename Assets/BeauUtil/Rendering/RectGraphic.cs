@@ -7,10 +7,6 @@
  * Purpose: Plain rectangle graphic.
 */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-#define DEVELOPMENT
-#endif
-
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;

@@ -7,6 +7,10 @@
  * Purpose: Serializable string hash struct.
  */
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+#define PRESERVE_DEBUG_SYMBOLS
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+
 #if CSHARP_7_3_OR_NEWER
 #define EXPANDED_REFS
 #endif // CSHARP_7_3_OR_NEWER
@@ -62,24 +66,24 @@ namespace BeauUtil
 
         public StringHash32 Hash()
         {
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+            #if PRESERVE_DEBUG_SYMBOLS
             if (!string.IsNullOrEmpty(m_Source))
                 return new StringHash32(m_Source);
             return new StringHash32(m_HashValue);
             #else
             return new StringHash32(m_HashValue);
-            #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+            #endif // PRESERVE_DEBUG_SYMBOLS
         }
 
         public string ToDebugString()
         {
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+            #if PRESERVE_DEBUG_SYMBOLS
             if (!string.IsNullOrEmpty(m_Source))
                 return m_Source;
             return new StringHash32(m_HashValue).ToDebugString();
             #else
             return Hash().ToDebugString();
-            #endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+            #endif // PRESERVE_DEBUG_SYMBOLS
         }
 
         public override string ToString()

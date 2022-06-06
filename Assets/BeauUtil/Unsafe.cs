@@ -14,18 +14,25 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using BeauUtil.Debugger;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Contains unsafe utility functions.
     /// </summary>
-    static public unsafe class Unsafe
+    static public unsafe partial class Unsafe
     {
+        /// <summary>
+        /// Size of an unmanaged pointer.
+        /// </summary>
+        static public readonly uint PointerSize = (uint) IntPtr.Size;
+
+        /// <summary>
+        /// Attempts to load the given address into the cache.
+        /// </summary>
         static public void Prefetch(void* inData)
         {
-            char c = *((char*) inData);
+            byte b = *((byte*) inData);
         }
 
         #region Alignment
@@ -195,8 +202,13 @@ namespace BeauUtil
 
         #endregion // Alignment
 
+        #region Size
+
         #if UNMANAGED_CONSTRAINT
 
+        /// <summary>
+        /// Returns the size of the unmanaged type.
+        /// </summary>
         [MethodImpl(256)]
         static public int SizeOf<T>()
             where T : unmanaged
@@ -204,272 +216,21 @@ namespace BeauUtil
             return sizeof(T);
         }
 
-        static public T* Alloc<T>()
-            where T : unmanaged
-        {
-            return (T*) Alloc(sizeof(T));
-        }
-
-        static public T* AllocArray<T>(int inLength)
-            where T : unmanaged
-        {
-            return (T*) Marshal.AllocHGlobal(inLength * sizeof(T));
-        }
-
-        static public T* Alloc<T>(ArenaHandle inArena)
-            where T : unmanaged
-        {
-            return (T*) AllocAligned(inArena, sizeof(T), AlignOf<T>());
-        }
-
-        static public T* AllocArray<T>(ArenaHandle inArena, int inLength)
-            where T : unmanaged
-        {
-            return (T*) AllocAligned(inArena, inLength * sizeof(T), AlignOf<T>());
-        }
-
-        static public T* ReallocArray<T>(void* inPtr, int inLength)
-            where T : unmanaged
-        {
-            return (T*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) (inLength * sizeof(T)));
-        }
-
         #else
 
+        /// <summary>
+        /// Returns the size of the unmanaged type.
+        /// </summary>
         [MethodImpl(256)]
         static public int SizeOf<T>()
             where T : struct
         {
-            return Marshal.SizeOf<T>();
-        }
-
-        static public void* Alloc<T>()
-            where T : struct
-        {
-            return Alloc(SizeOf<T>());
-        }
-
-        static public void* AllocArray<T>(int inLength)
-            where T : struct
-        {
-            return (void*) Marshal.AllocHGlobal(inLength * SizeOf<T>());
-        }
-
-        static public void* Alloc<T>(ArenaHandle inArena)
-            where T : struct
-        {
-            return AllocAligned(inArena, SizeOf<T>(), AlignOf<T>());
-        }
-
-        static public void* AllocArray<T>(ArenaHandle inArena, int inLength)
-            where T : struct
-        {
-            return (void*) AllocAligned(inArena, inLength * SizeOf<T>(), AlignOf<T>());
-        }
-
-        static public void* ReallocArray<T>(void* inPtr, int inLength)
-            where T : struct
-        {
-            return (void*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) (inLength * SizeOf<T>()));
+            return Marshal.SizeOf(typeof(T));
         }
 
         #endif // UNMANAGED_CONSTRAINT
 
-        [MethodImpl(256)]
-        static public void* Alloc(int inLength)
-        {
-            return (void*) Marshal.AllocHGlobal(inLength);
-        }
-
-        /// <summary>
-        /// Allocates from the given arena.
-        /// </summary>
-        static public void* Alloc(ArenaHandle inArena, int inLength)
-        {
-            ArenaHeader* header = (ArenaHeader*) inArena.HeaderStart;
-            if (header == null)
-            {
-                return null;
-            }
-
-            if (header->SizeRemaining < inLength)
-            {
-                Log.Error("[Unsafe] Unable to allocate region of size {0} in arena {1} (size remaining {2})", inLength, header->Name, header->SizeRemaining);
-                return null;
-            }
-
-            void* addr = header->CurrentPtr;
-            header->CurrentPtr += inLength;
-            header->SizeRemaining -= (uint) inLength;
-            return addr;
-        }
-
-        /// <summary>
-        /// Allocates from the given arena with the given alignment.
-        /// </summary>
-        static public void* AllocAligned(ArenaHandle inArena, int inLength, uint inAlignment)
-        {
-            ArenaHeader* header = (ArenaHeader*) inArena.HeaderStart;
-            if (header == null)
-            {
-                return null;
-            }
-            
-            byte* aligned = (byte*) AlignUpN((ulong) header->CurrentPtr, inAlignment);
-            uint padding = (uint) (aligned - header->CurrentPtr);
-            if (header->SizeRemaining < padding + inLength)
-            {
-                Log.Error("[Unsafe] Unable to allocate region of size {0} and alignment {1} in arena {2} (size remaining {3})", inLength, inAlignment, header->Name, header->SizeRemaining);
-                return null;
-            }
-
-            header->CurrentPtr += inLength + padding;
-            header->SizeRemaining -= (uint) inLength + padding;
-            return aligned;
-        }
-
-        static public void* Realloc(void* inPtr, int inLength)
-        {
-            return (void*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) inLength);
-        }
-
-        [MethodImpl(256)]
-        static public void Free(void* inPtr)
-        {
-            Marshal.FreeHGlobal((IntPtr) inPtr);
-        }
-
-        static public bool TryFree(ref void* ioPtr)
-        {
-            if (ioPtr != null)
-            {
-                Marshal.FreeHGlobal((IntPtr) ioPtr);
-                ioPtr = null;
-                return true;
-            }
-
-            return false;
-        }
-
-        #region Arenas
-
-        /// <summary>
-        /// Handle for a linear allocator.
-        /// </summary>
-        public struct ArenaHandle {
-            internal ArenaHeader* HeaderStart;
-
-            internal ArenaHandle(ArenaHeader* inHeader)
-            {
-                HeaderStart = inHeader;
-            }
-        }
-
-        internal struct ArenaHeader {
-            public StringHash32 Name;
-            internal byte* StartPtr;
-            internal byte* CurrentPtr;
-            internal uint Size;
-            internal uint SizeRemaining;
-
-            static internal readonly int HeaderSize = (int) AlignUp32((uint) sizeof(ArenaHeader));
-        }
-
-        /// <summary>
-        /// Creates a linear allocation arena.
-        /// </summary>
-        static public ArenaHandle CreateArena(int inSize, StringHash32 inName = default)
-        {
-            uint arenaSize = AlignUp32((uint) inSize);
-            int totalSize = (int) (ArenaHeader.HeaderSize + arenaSize);
-
-            void* block = Alloc(totalSize);
-            ArenaHeader* blockHeader = (ArenaHeader*) block;
-            byte* dataStart = (byte*) block + ArenaHeader.HeaderSize;
-
-            ArenaHeader header;
-            header.Name = inName;
-            header.StartPtr = header.CurrentPtr = dataStart;
-            header.Size = header.SizeRemaining = arenaSize;
-
-            *blockHeader = header;
-
-            return new ArenaHandle(blockHeader);
-        }
-
-        /// <summary>
-        /// Returns if the given arena has been initialized.
-        /// </summary>
-        [MethodImpl(256)]
-        static public bool ArenaInitialized(ArenaHandle inArena)
-        {
-            return inArena.HeaderStart != null;
-        }
-
-        /// <summary>
-        /// Returns the size of the given arena.
-        /// </summary>
-        static public int ArenaSize(ArenaHandle inArena)
-        {
-            ArenaHeader* header = (ArenaHeader*) inArena.HeaderStart;
-            if (header != null)
-            {
-                return (int) header->Size;
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Returns the number of free bytes in the given arena.
-        /// </summary>
-        /// <returns></returns>
-        static public int ArenaFreeBytes(ArenaHandle inArena)
-        {
-            ArenaHeader* header = (ArenaHeader*) inArena.HeaderStart;
-            if (header != null)
-            {
-                return (int) header->SizeRemaining;
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Resets the given allocation arena.
-        /// </summary>
-        static public void ResetArena(ArenaHandle inArena)
-        {
-            ArenaHeader* header = (ArenaHeader*) inArena.HeaderStart;
-            if (header != null)
-            {
-                header->SizeRemaining = header->Size;
-                header->CurrentPtr = header->StartPtr;
-            }
-        }
-
-        /// <summary>
-        /// Frees the given allocation arena.
-        /// </summary>
-        static public void FreeArena(ArenaHandle inArena)
-        {
-            Free(inArena.HeaderStart);
-        }
-
-        /// <summary>
-        /// Attempts to free the given allocation arena.
-        /// </summary>
-        static public bool TryFreeArena(ref ArenaHandle ioArena)
-        {
-            if (ioArena.HeaderStart != null)
-            {
-                Free(ioArena.HeaderStart);
-                ioArena.HeaderStart = null;
-                return true;
-            }
-
-            return false;
-        }
-
-        #endregion // Arenas
+        #endregion // Size
 
         #region Copy
 
@@ -478,7 +239,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        static public void Copy<T>(T* inSrc, int inSrcCount, T* inDest, int inDestCount)
+        static public void CopyArray<T>(T* inSrc, int inSrcCount, T* inDest, int inDestCount)
             where T : unmanaged
         {
             int size = sizeof(T);
@@ -486,9 +247,19 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        static public void CopyArray<T>(T* inSrc, int inCount, T* inDest)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+        }
+
+        /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        static public void Copy<T>(T* inSrc, int inSrcCount, T[] inDest)
+        static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest)
             where T : unmanaged
         {
             fixed(T* destPtr = inDest)
@@ -499,9 +270,22 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
+            where T : unmanaged
+        {
+            fixed(T* destPtr = inDest)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(inSrc, destPtr + inDestOffset, (inDest.Length - inDestOffset) * size, inSrcCount * size);
+            }
+        }
+
+        /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        static public void Copy<T>(T[] inSrc, T* inDest, int inDestCount)
+        static public void CopyArray<T>(T[] inSrc, T* inDest, int inDestCount)
             where T : unmanaged
         {
             fixed(T* srcPtr = inSrc)
@@ -514,13 +298,26 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        static public void Copy<T>(T[] inSrc, int inSrcCount, T* inDest, int inDestCount)
+        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, T* inDest, int inDestCount)
             where T : unmanaged
         {
             fixed(T* srcPtr = inSrc)
             {
                 int size = sizeof(T);
-                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrcCount * size);
+                Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, (inSrc.Length - inSrcOffset) * size);
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, T* inDest, int inDestCount)
+            where T : unmanaged
+        {
+            fixed(T* srcPtr = inSrc)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, inSrcCount * size);
             }
         }
 
@@ -529,7 +326,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        static public void Copy<T>(void* inSrc, int inSrcCount, void* inDest, int inDestCount)
+        static public void CopyArray<T>(void* inSrc, int inSrcCount, void* inDest, int inDestCount)
             where T : struct
         {
             int size = SizeOf<T>();
@@ -537,50 +334,70 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        static public void CopyArray<T>(void* inSrc, int inCount, void* inDest)
+            where T : struct
+        {
+            int size = SizeOf<T>();
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+        }
+
+        /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        static public void Copy<T>(void* inSrc, int inSrcCount, T[] inDest)
+        [MethodImpl(256)]
+        static public void CopyArray<T>(void* inSrc, int inSrcCount, T[] inDest)
             where T : struct
         {
-            GCHandle gc = GCHandle.Alloc(inDest, GCHandleType.Pinned);
-            try {
-                void* destPtr = (void*) Marshal.UnsafeAddrOfPinnedArrayElement<T>(inDest, 0);
-                int size = SizeOf<T>();
-                Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
-            } finally {
-                gc.Free();
+            CopyArray<T>(inSrc, inSrcCount, inDest, 0);
+        }
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        static public void CopyArray<T>(void* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
+            where T : struct
+        {
+            using(var pin = PinArray(inDest))
+            {
+                void* destPtr = pin.ElementAddress(inDestOffset);
+                int size = pin.ElementSize;
+                Buffer.MemoryCopy(inSrc, destPtr, (inDest.Length - inDestOffset) * size, inSrcCount * size);
             }
         }
 
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        static public void Copy<T>(T[] inSrc, void* inDest, int inDestCount)
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, void* inDest, int inDestCount)
             where T : struct
         {
-            GCHandle gc = GCHandle.Alloc(inSrc, GCHandleType.Pinned);
-            try {
-                void* srcPtr = (void*) Marshal.UnsafeAddrOfPinnedArrayElement<T>(inSrc, 0);
-                int size = SizeOf<T>();
-                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrc.Length * size);
-            } finally {
-                gc.Free();
-            }
+            CopyArray<T>(inSrc, 0, inSrc.Length, inDest, inDestCount);
         }
 
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        static public void Copy<T>(T[] inSrc, int inSrcCount, void* inDest, int inDestCount)
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, void* inDest, int inDestCount)
             where T : struct
         {
-            GCHandle gc = GCHandle.Alloc(inSrc, GCHandleType.Pinned);
-            try {
-                void* srcPtr = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSrc, 0);
-                int size = SizeOf<T>();
+            CopyArray<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCount);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, void* inDest, int inDestCount)
+            where T : struct
+        {
+            using(var pin = PinArray(inSrc))
+            {
+                void* srcPtr = pin.ElementAddress(inSrcOffset);
+                int size = pin.ElementSize;
                 Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrcCount * size);
-            } finally {
-                gc.Free();
             }
         }
 
@@ -590,11 +407,117 @@ namespace BeauUtil
         /// Copies memory from one buffer to another.
         /// </summary>
         [MethodImpl(256)]
-        static public void Copy(void* inSrc, int inSrcLength, void* inDest, int inDestLength)
+        static public void Copy(void* inSrc, int inSrcSize, void* inDest, int inDestSize)
         {
-            Buffer.MemoryCopy(inSrc, inDest, inDestLength, inSrcLength);
+            Buffer.MemoryCopy(inSrc, inDest, inDestSize, inSrcSize);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Copy(void* inSrc, int inSize, void* inDest)
+        {
+            Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
         }
 
         #endregion // Copy
+
+        #region Pinning
+
+        /// <summary>
+        /// Handle and address for a pinned array.
+        /// </summary>
+        public struct PinnedArrayHandle<T> : IDisposable
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged
+#else
+            where T : struct
+#endif // UNMANAGED_CONSTRAINT
+        {
+            #if UNMANAGED_CONSTRAINT
+            public T* Address;
+            #else
+            public void* Address;
+            internal int ElementSize;
+            #endif // UNMANAGED_CONSTRAINT
+
+            internal GCHandle Handle;
+
+            internal PinnedArrayHandle(GCHandle inHandle, T[] inSource)
+            {
+                Handle = inHandle;
+
+                #if UNMANAGED_CONSTRAINT
+                Address = (T*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
+                #else
+                Address = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
+                ElementSize = SizeOf<T>();
+                #endif // UNMANAGED_CONSTRAINT
+            }
+
+            internal PinnedArrayHandle(T[] inSource)
+            {
+                Handle = GCHandle.Alloc(inSource, GCHandleType.Pinned);
+
+                #if UNMANAGED_CONSTRAINT
+                Address = (T*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
+                #else
+                Address = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
+                ElementSize = SizeOf<T>();
+                #endif // UNMANAGED_CONSTRAINT
+            }
+
+            #if UNMANAGED_CONSTRAINT
+            public T* ElementAddress(int inIndex)
+            {
+                return Address + inIndex;
+            }
+            #else
+            public void* ElementAddress(int inIndex)
+            {
+                return (byte*) Address + ElementSize * inIndex;
+            }
+            #endif // UNMANAGED_CONSTRAINT
+
+            public void Dispose()
+            {
+                if (Handle.IsAllocated)
+                {
+                    Address = null;
+                    Handle.Free();
+                }
+            }
+
+            #if UNMANAGED_CONSTRAINT
+            static public implicit operator T*(PinnedArrayHandle<T> inHandle)
+            {
+                return inHandle.Address;
+            }
+            #else
+            static public implicit operator void*(PinnedArrayHandle<T> inHandle)
+            {
+                return inHandle.Address;
+            }
+            #endif // UNMANAGED_CONSTRAINT
+        }
+
+        /// <summary>
+        /// Pins the given array in memory.
+        /// </summary>
+        static public PinnedArrayHandle<T> PinArray<T>(T[] inArray)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged
+#else
+            where T : struct
+#endif // UNMANAGED_CONSTRAINT
+        {
+            if (inArray == null)
+                throw new ArgumentNullException("inArray", "Cannot pin null array");
+
+            return new PinnedArrayHandle<T>(inArray);
+        }
+
+        #endregion // Pinning
     }
 }

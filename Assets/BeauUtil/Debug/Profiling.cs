@@ -7,9 +7,9 @@
  * Purpose: Profiling blocks.
  */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-#define DEVELOPMENT
-#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+#define ENABLE_PROFILING_BEAUUTIL
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
 
 using System;
 using System.Diagnostics;
@@ -26,71 +26,44 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Returns a profiling block for time.
         /// </summary>
-        static public IDisposable Time(string inLabel)
+        static public TimeBlock Time(string inLabel)
         {
-            #if DEVELOPMENT
+            #if ENABLE_PROFILING_BEAUUTIL
             return new TimeBlock(inLabel);
             #else
-            return null;
-            #endif // DEVELOPMENT
+            return default;
+            #endif // ENABLE_PROFILING_BEAUUTIL
         }
 
-        private class TimeBlock : IDisposable
+        public struct TimeBlock : IDisposable
         {
+            #if ENABLE_PROFILING_BEAUUTIL
             private readonly string m_Label;
-            private readonly Stopwatch m_Stopwatch;
+            private readonly long m_TickStart;
             private readonly int m_FrameStart;
 
             internal TimeBlock(string inLabel)
             {
                 m_Label = inLabel ?? "Unknown";
-                m_Stopwatch = Stopwatch.StartNew();
+                m_TickStart = Stopwatch.GetTimestamp();
                 m_FrameStart = UnityEngine.Time.frameCount;
             }
 
             public void Dispose()
             {
-                m_Stopwatch.Stop();
-                double durationMS = (double) m_Stopwatch.ElapsedTicks / Stopwatch.Frequency * 1000;
-                int durationFrames = UnityEngine.Time.frameCount - m_FrameStart;
-                UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
+                if (m_TickStart > 0)
+                {
+                    long elapsed = Stopwatch.GetTimestamp() - m_TickStart;
+                    double durationMS = (double) elapsed / Stopwatch.Frequency * 1000;
+                    int durationFrames = UnityEngine.Time.frameCount - m_FrameStart;
+                    UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
+                }
             }
-        }
-
-        #endregion // TIme
-
-        #region Memory
-
-        /// <summary>
-        /// Returns a profiling block for memory (experimental).
-        /// </summary>
-        static public IDisposable Memory(string inLabel)
-        {
-            #if DEVELOPMENT
-            return new MemoryBlock(inLabel);
             #else
-            return null;
-            #endif // DEVELOPMENT
+            public void Dispose() { }
+            #endif // ENABLE_PROFILING_BEAUUTIL
         }
 
-        private class MemoryBlock : IDisposable
-        {
-            private readonly string m_Label;
-            private readonly long m_BytesStart;
-
-            internal MemoryBlock(string inLabel)
-            {
-                m_Label = inLabel ?? "Unknown";
-                m_BytesStart = GC.GetTotalMemory(false);
-            }
-
-            public void Dispose()
-            {
-                long memDiff = GC.GetTotalMemory(false) - m_BytesStart;
-                // TODO: Log
-            }
-        }
-
-        #endregion // Memory
+        #endregion // Time
     }
 }
