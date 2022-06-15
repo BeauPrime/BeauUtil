@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace BeauUtil
@@ -100,15 +101,16 @@ namespace BeauUtil
             {
                 throw new ArgumentOutOfRangeException("Starting index is out of range");
             }
-            if (inStartIndex + inLength > inString.Length)
+
+            int endIdx = inStartIndex + inLength;
+            if (endIdx > inString.Length)
             {
                 throw new ArgumentOutOfRangeException("Length extends beyond end of string");
             }
 
-            for (int idx = 0; idx < inLength; ++idx)
+            for (int idx = inStartIndex; idx < endIdx; ++idx)
             {
-                int realIdx = inStartIndex + idx;
-                char c = inString[realIdx];
+                char c = inString[idx];
                 if (inCustomEscape != null)
                 {
                     if (inCustomEscape.TryEscape(c, ioBuilder))
@@ -170,6 +172,83 @@ namespace BeauUtil
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Escapes a string builder to another string builder.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Escape(StringBuilder inString, StringBuilder ioBuilder)
+        {
+            Escape(inString, 0, inString.Length, ioBuilder);
+        }
+
+        /// <summary>
+        /// Escapes a string builder to another string builder.
+        /// </summary>
+        static public void Escape(StringBuilder inString, int inStartIndex, int inLength, StringBuilder ioBuilder)
+        {
+            if (inString == null || inLength <= 0)
+                return;
+
+            if (inStartIndex < 0 || inStartIndex >= inString.Length)
+            {
+                throw new ArgumentOutOfRangeException("Starting index is out of range");
+            }
+
+            int endIdx = inStartIndex + inLength;
+            if (endIdx > inString.Length)
+            {
+                throw new ArgumentOutOfRangeException("Length extends beyond end of string");
+            }
+
+            for (int idx = inStartIndex; idx < endIdx; ++idx)
+            {
+                char c = inString[idx];
+
+                switch (c)
+                {
+                    case '\\':
+                        ioBuilder.Append("\\\\");
+                        break;
+
+                    case '\"':
+                        ioBuilder.Append("\\\"");
+                        break;
+
+                    case '\0':
+                        ioBuilder.Append("\\0");
+                        break;
+
+                    case '\a':
+                        ioBuilder.Append("\\a");
+                        break;
+
+                    case '\v':
+                        ioBuilder.Append("\\v");
+                        break;
+
+                    case '\t':
+                        ioBuilder.Append("\\t");
+                        break;
+
+                    case '\b':
+                        ioBuilder.Append("\\b");
+                        break;
+
+                    case '\f':
+                        ioBuilder.Append("\\f");
+                        break;
+
+                    case '\n':
+                        ioBuilder.Append("\\n");
+                        break;
+
+                    default:
+                        ioBuilder.Append(c);
+                        break;
+                }
+            }
+        }
+
         #endregion // Escape
 
         #region Unescape
@@ -228,20 +307,21 @@ namespace BeauUtil
             {
                 throw new ArgumentOutOfRangeException("Starting index is out of range");
             }
-            if (inStartIndex + inLength > inString.Length)
+
+            int endIdx = inStartIndex + inLength;
+            if (endIdx > inString.Length)
             {
                 throw new ArgumentOutOfRangeException("Length extends beyond end of string");
             }
 
-            for (int idx = 0; idx < inLength; ++idx)
+            for (int idx = inStartIndex; idx < endIdx; ++idx)
             {
-                int realIdx = inStartIndex + idx;
-                char c = inString[realIdx];
+                char c = inString[idx];
 
                 if (inCustomEscape != null)
                 {
                     int advance = 0;
-                    if (inCustomEscape.TryUnescape(c, inString, realIdx, out advance, ioBuilder))
+                    if (inCustomEscape.TryUnescape(c, inString, idx, out advance, ioBuilder))
                     {
                         idx += advance;
                         continue;
@@ -251,8 +331,7 @@ namespace BeauUtil
                 if (c == '\\')
                 {
                     ++idx;
-                    ++realIdx;
-                    c = inString[realIdx];
+                    c = inString[idx];
                     switch (c)
                     {
                         case '0':
@@ -289,7 +368,7 @@ namespace BeauUtil
 
                         case 'u':
                             {
-                                string unicode = inString.Substring(realIdx + 1, 4);
+                                string unicode = inString.Substring(idx + 1, 4);
                                 char code = (char)int.Parse(unicode, NumberStyles.AllowHexSpecifier);
                                 ioBuilder.Append(code);
                                 idx += 4;
@@ -316,6 +395,185 @@ namespace BeauUtil
             StringBuilder sb = new StringBuilder(inLength);
             Unescape(inString, inStartIndex, inLength, sb, inCustomEscape);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Unescapes a string builder to another string builder.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Unescape(StringBuilder inString, StringBuilder ioBuilder)
+        {
+            Unescape(inString, 0, inString.Length, ioBuilder);
+        }
+
+        /// <summary>
+        /// Unescapes a string builder to another string builder.
+        /// </summary>
+        static public void Unescape(StringBuilder inString, int inStartIndex, int inLength, StringBuilder ioBuilder)
+        {
+            if (inString == null || inLength <= 0)
+                return;
+
+            if (inStartIndex < 0 || inStartIndex >= inString.Length)
+            {
+                throw new ArgumentOutOfRangeException("Starting index is out of range");
+            }
+
+            int endIdx = inStartIndex + inLength;
+            if (endIdx > inString.Length)
+            {
+                throw new ArgumentOutOfRangeException("Length extends beyond end of string");
+            }
+
+            for (int idx = 0; idx < inLength; ++idx)
+            {
+                char c = inString[idx];
+
+                if (c == '\\')
+                {
+                    ++idx;
+                    c = inString[idx];
+                    switch (c)
+                    {
+                        case '0':
+                            ioBuilder.Append('\0');
+                            break;
+
+                        case 'a':
+                            ioBuilder.Append('\a');
+                            break;
+
+                        case 'v':
+                            ioBuilder.Append('\v');
+                            break;
+
+                        case 't':
+                            ioBuilder.Append('\t');
+                            break;
+
+                        case 'r':
+                            ioBuilder.Append('\r');
+                            break;
+
+                        case 'n':
+                            ioBuilder.Append('\n');
+                            break;
+
+                        case 'b':
+                            ioBuilder.Append('\b');
+                            break;
+
+                        case 'f':
+                            ioBuilder.Append('\f');
+                            break;
+
+                        case 'u':
+                            {
+                                string unicode = inString.ToString(idx + 1, 4);
+                                char code = (char)int.Parse(unicode, NumberStyles.AllowHexSpecifier);
+                                ioBuilder.Append(code);
+                                idx += 4;
+                                break;
+                            }
+
+                        default:
+                            ioBuilder.Append(c);
+                            break;
+                    }
+                }
+                else
+                {
+                    ioBuilder.Append(c);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unescapes a string builder to itself.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void UnescapeInline(StringBuilder ioString)
+        {
+            UnescapeInline(ioString, 0, ioString.Length);
+        }
+
+        /// <summary>
+        /// Unescapes a string builder to itself.
+        /// </summary>
+        static public void UnescapeInline(StringBuilder ioString, int inStartIndex, int inLength)
+        {
+            unsafe
+            {
+                int length = inLength;
+                char* inlineCopy = stackalloc char[length];
+
+                for(int i = 0; i < length; i++)
+                    inlineCopy[i] = ioString[inStartIndex + i];
+
+                ioString.Length -= inLength;
+
+                for (int idx = 0; idx < length; ++idx)
+                {
+                    char c = inlineCopy[idx];
+
+                    if (c == '\\')
+                    {
+                        ++idx;
+                        c = ioString[idx];
+                        switch (c)
+                        {
+                            case '0':
+                                ioString.Append('\0');
+                                break;
+
+                            case 'a':
+                                ioString.Append('\a');
+                                break;
+
+                            case 'v':
+                                ioString.Append('\v');
+                                break;
+
+                            case 't':
+                                ioString.Append('\t');
+                                break;
+
+                            case 'r':
+                                ioString.Append('\r');
+                                break;
+
+                            case 'n':
+                                ioString.Append('\n');
+                                break;
+
+                            case 'b':
+                                ioString.Append('\b');
+                                break;
+
+                            case 'f':
+                                ioString.Append('\f');
+                                break;
+
+                            case 'u':
+                                {
+                                    string unicode = new string(inlineCopy, idx + 1, 4);
+                                    char code = (char)int.Parse(unicode, NumberStyles.AllowHexSpecifier);
+                                    ioString.Append(code);
+                                    idx += 4;
+                                    break;
+                                }
+
+                            default:
+                                ioString.Append(c);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        ioString.Append(c);
+                    }
+                }
+            }
         }
 
         #endregion // Unescape
@@ -552,20 +810,67 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(inMatch))
                 return false;
 
-            if (inIndex < 0 || inIndex + inMatch.Length > inBuilder.Length)
+            int matchLength = inMatch.Length;
+
+            if (inIndex < 0 || inIndex + matchLength > inBuilder.Length)
                 return false;
 
-            for (int i = 0; i < inMatch.Length; ++i)
+            if (!inbIgnoreCase)
             {
-                char a = inBuilder[inIndex + i];
-                char b = inMatch[i];
-                if (!inbIgnoreCase)
+                for (int i = 0; i < matchLength; ++i)
                 {
+                    char a = inBuilder[inIndex + i];
+                    char b = inMatch[i];
                     if (a != b)
                         return false;
                 }
-                else
+            }
+            else
+            {
+                for (int i = 0; i < matchLength; ++i)
                 {
+                    char a = inBuilder[inIndex + i];
+                    char b = inMatch[i];
+                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if the given StringBuilder contains the given string at the given index, looking backwards.
+        /// </summary>
+        static public bool AttemptMatchEnd(this StringBuilder inBuilder, int inIndex, string inMatch, bool inbIgnoreCase = false)
+        {
+            if (inBuilder == null)
+                throw new ArgumentNullException("inBuilder");
+
+            if (string.IsNullOrEmpty(inMatch))
+                return false;
+
+            int matchLength = inMatch.Length;
+
+            if (inIndex >= inBuilder.Length || inIndex - matchLength < 0)
+                return false;
+
+            if (!inbIgnoreCase)
+            {
+                for (int i = 0; i < matchLength; ++i)
+                {
+                    char a = inBuilder[inIndex - matchLength + 1 + i];
+                    char b = inMatch[i];
+                    if (a != b)
+                        return false;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < matchLength; ++i)
+                {
+                    char a = inBuilder[inIndex - matchLength + 1 + i];
+                    char b = inMatch[i];
                     if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
                         return false;
                 }
@@ -619,7 +924,102 @@ namespace BeauUtil
             return ioBuilder;
         }
 
+        /// <summary>
+        /// Returns the first index of the given character.
+        /// </summary>
+        static public int IndexOf(this StringBuilder inBuilder, char inChar, int inStartIndex, int inCount)
+        {
+            int end = inStartIndex + inCount;
+            for(int i = inStartIndex; i < end; i++)
+            {
+                if (inBuilder[i] == inChar)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the first index of the given character.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int IndexOf(this StringBuilder inBuilder, char inChar)
+        {
+            return IndexOf(inBuilder, inChar, 0, inBuilder.Length);
+        }
+
+        /// <summary>
+        /// Returns the first index of the given string.
+        /// </summary>
+        static public int IndexOf(this StringBuilder inBuilder, string inString, int inStartIndex, int inCount)
+        {
+            if (string.IsNullOrEmpty(inString))
+                return -1;
+
+            char first = inString[0];
+            if (inString.Length == 1)
+                return IndexOf(inBuilder, first, inStartIndex, inCount);
+            
+            int end = inStartIndex + inCount - inString.Length;
+            for(int i = inStartIndex; i < end; i++)
+            {
+                if (inBuilder[i] == first && AttemptMatch(inBuilder, i, inString))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the first index of the given string.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int IndexOf(this StringBuilder inBuilder, string inString)
+        {
+            return IndexOf(inBuilder, inString, 0, inBuilder.Length);
+        }
+
         #endregion // StringBuilder
+
+        #region UTF8
+
+        /// <summary>
+        /// Decodes a UTF8 byte buffer into a char buffer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public unsafe int DecodeUFT8(byte* inBuffer, int inCount, char* outCharBuffer, int outCharBufferLength)
+        {
+            return Encoding.UTF8.GetChars(inBuffer, inCount, outCharBuffer, outCharBufferLength);
+        }
+
+        /// <summary>
+        /// Returns the maximum size of a char buffer needed to decode a UTF8 byte buffer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int DecodeSizeUTF8(int inByteCount)
+        {
+            return Encoding.UTF8.GetMaxCharCount(inByteCount);
+        }
+
+        /// <summary>
+        /// Decodes a byte buffer into a UTF-8 char buffer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public unsafe int EncodeUFT8(char* inBuffer, int inCount, byte* outByteBuffer, int outByteBufferLength)
+        {
+            return Encoding.UTF8.GetBytes(inBuffer, inCount, outByteBuffer, outByteBufferLength);
+        }
+
+        /// <summary>
+        /// Returns the maximum size of a UTF8 byte buffer needed to encode a char buffer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int EncodeSizeUTF8(int inCharCount)
+        {
+            return Encoding.UTF8.GetMaxByteCount(inCharCount);
+        }
+
+        #endregion // UTF8
 
         /// <summary>
         /// CSV utils.

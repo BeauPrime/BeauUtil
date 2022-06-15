@@ -6,6 +6,8 @@ using BeauUtil.Blocks;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.IO;
+using BeauUtil.Debugger;
+using BeauUtil.Streaming;
 
 namespace BeauUtil.Examples
 {

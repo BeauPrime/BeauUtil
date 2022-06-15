@@ -13,6 +13,7 @@ using UnityEngine;
 using System.IO;
 using System.Text;
 using System;
+using BeauUtil.Streaming;
 
 namespace BeauUtil.Blocks
 {
@@ -33,7 +34,7 @@ namespace BeauUtil.Blocks
                 return;
 
             TPackage self = (TPackage) this;
-            BlockParser.Parse(ref self, name, Source(), BlockParsingRules.Default, inGenerator, inCache);
+            BlockParser.Parse(ref self, CharStreamParams.FromCustomTextAsset(this), BlockParsingRules.Default, inGenerator, inCache);
         }
 
         public void Parse<TPackage>(IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
@@ -43,7 +44,7 @@ namespace BeauUtil.Blocks
                 return;
 
             TPackage self = (TPackage) this;
-            BlockParser.Parse(ref self, name, Source(), inRules, inGenerator, inCache);
+            BlockParser.Parse(ref self, CharStreamParams.FromCustomTextAsset(this), inRules, inGenerator, inCache);
         }
 
         public IEnumerator ParseAsync<TPackage>(IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
@@ -53,7 +54,7 @@ namespace BeauUtil.Blocks
                 return null;
             
             TPackage self = (TPackage) this;
-            return BlockParser.ParseAsync(ref self, name, Source(), BlockParsingRules.Default, inGenerator, inCache);
+            return BlockParser.ParseAsync(ref self, CharStreamParams.FromCustomTextAsset(this), BlockParsingRules.Default, inGenerator, inCache);
         }
 
         public IEnumerator ParseAsync<TPackage>(IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
@@ -63,7 +64,7 @@ namespace BeauUtil.Blocks
                 return null;
             
             TPackage self = (TPackage) this;
-            return BlockParser.ParseAsync(ref self, name, Source(), inRules, inGenerator, inCache);
+            return BlockParser.ParseAsync(ref self, CharStreamParams.FromCustomTextAsset(this), inRules, inGenerator, inCache);
         }
 
         #endregion // Parse

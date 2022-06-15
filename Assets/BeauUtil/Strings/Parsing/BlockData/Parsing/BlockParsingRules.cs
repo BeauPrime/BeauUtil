@@ -32,8 +32,6 @@ namespace BeauUtil.Blocks
 
             public char[] LineDelimiters { get { return NewlineDelim; } }
 
-            public StringSlice.ISplitter CustomLineSplitter { get { return null; } }
-
             public bool RequireExplicitBlockEnd { get { return false; } }
 
             public PackageMetaMode PackageMetaMode { get { return PackageMetaMode.AllowInBlock; } }

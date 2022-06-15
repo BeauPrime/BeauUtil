@@ -96,5 +96,20 @@ namespace BeauUtil.UnitTests
 
             Unsafe.TryDestroyArena(ref Allocator);
         }
+
+        [Test]
+        static public void QuickSortOnBuffer()
+        {
+            float* buffer = stackalloc float[64];
+            for(int i = 0; i < 64; i++)
+                buffer[i] = UnityEngine.Random.value;
+            
+            Unsafe.Quicksort<float>(buffer, 64);
+
+            for(int i = 1; i < 64; i++)
+            {
+                Assert.GreaterOrEqual(buffer[i], buffer[i - 1]);
+            }
+        }
     }
 }

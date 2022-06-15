@@ -5,6 +5,8 @@ using UnityEngine;
 using BeauUtil.Blocks;
 using System.Collections.Generic;
 using BeauUtil.Tags;
+using System.Text;
+using BeauUtil.Streaming;
 
 namespace BeauUtil.Examples
 {
@@ -45,31 +47,6 @@ namespace BeauUtil.Examples
                 return new TextPackage(inFileName);
             }
 
-            public override bool TryAddContent(IBlockParserUtil inUtil, TextPackage inPackage, TextBlock inBlock, StringSlice inContent)
-            {
-                inBlock.AddText(inContent.ToString());
-                return true;
-            }
-
-            public override bool TryEvaluateMeta(IBlockParserUtil inUtil, TextPackage inPackage, TextBlock inBlock, TagData inMetadata)
-            {
-                if (inMetadata.Id == "color")
-                {
-                    inBlock.SetColor(Colors.HTML(inMetadata.Data.ToString()));
-                    return true;
-                }
-                if (inMetadata.Id == "position")
-                {
-                    StringSlice[] split = inMetadata.Data.Split(SpaceSplit, StringSplitOptions.None);
-                    float x = float.Parse(split[0].ToString());
-                    float y = float.Parse(split[1].ToString());
-                    inBlock.SetPosition(new Vector2(x, y));
-                    return true;
-                }
-
-                return base.TryEvaluateMeta(inUtil, inPackage, inBlock, inMetadata);
-            }
-
             public override bool TryEvaluatePackage(IBlockParserUtil inUtil, TextPackage inPackage, TextBlock inCurrentBlock, TagData inMetadata)
             {
                 if (inMetadata.Id == "print")
@@ -104,12 +81,12 @@ namespace BeauUtil.Examples
 
         static public TextPackage Parse(TextAsset inTextAsset)
         {
-            return BlockParser.Parse(inTextAsset.name, inTextAsset.text, BlockParsingRules.Default, new Generator());
+            return BlockParser.Parse(CharStreamParams.FromTextAsset(inTextAsset), BlockParsingRules.Default, new Generator());
         }
 
         static public void Merge(TextAsset inTextAsset, TextPackage ioTarget)
         {
-            BlockParser.Parse(ref ioTarget, inTextAsset.name, inTextAsset.text, BlockParsingRules.Default, new Generator());
+            BlockParser.Parse(ref ioTarget, CharStreamParams.FromTextAsset(inTextAsset), BlockParsingRules.Default, new Generator());
         }
     }
 }

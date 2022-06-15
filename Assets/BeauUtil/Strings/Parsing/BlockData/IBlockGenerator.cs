@@ -7,6 +7,7 @@
  * Purpose: Interface for generating and configuring data blocks.
  */
 
+using System.Text;
 using BeauUtil.Tags;
 
 namespace BeauUtil.Blocks
@@ -66,18 +67,18 @@ namespace BeauUtil.Blocks
         /// <summary>
         /// Executes when the block object header is completed.
         /// </summary>
-        void CompleteHeader(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData);
+        void CompleteHeader(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock);
         
         /// <summary>
         /// Attempts to add content to the block object data.
         /// Returns if handled.
         /// </summary>
-        bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringSlice inContent);
+        bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringBuilder inContent);
         
         /// <summary>
         /// Executes when the block object is completed.
         /// </summary>
-        void CompleteBlock(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData, bool inbError);
+        void CompleteBlock(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, bool inbError);
 
         #endregion // Block Actions
 
@@ -86,7 +87,7 @@ namespace BeauUtil.Blocks
         /// <summary>
         /// Processes a line.
         /// </summary>
-        void ProcessLine(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, ref StringSlice ioLine);
+        void ProcessLine(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringBuilder ioLine);
 
         #endregion // Text
     }

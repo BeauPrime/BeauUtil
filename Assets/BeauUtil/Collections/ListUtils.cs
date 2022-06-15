@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -70,6 +71,7 @@ namespace BeauUtil
         /// Removes an element from the given list by swapping.
         /// Does not preserve order.
         /// </summary>
+        [MethodImpl(256)]
         static public void FastRemoveAt<T>(this IList<T> ioList, int inIndex)
         {
             int end = ioList.Count - 1;

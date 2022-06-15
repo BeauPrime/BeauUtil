@@ -7,6 +7,7 @@
  * Purpose: Rules for parsing a set of tagged blocks.
  */
 
+using System.Text;
 using BeauUtil.Tags;
 
 namespace BeauUtil.Blocks
@@ -45,17 +46,17 @@ namespace BeauUtil.Blocks
             return false;
         }
 
-        public virtual void CompleteHeader(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData) { }
+        public virtual void CompleteHeader(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock) { }
 
-        public virtual bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringSlice inContent) { return false; }
+        public virtual bool TryAddContent(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringBuilder inContent) { return false; }
         
-        public virtual void CompleteBlock(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inAdditionalData, bool inbError) { }
+        public virtual void CompleteBlock(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, bool inbError) { }
 
         #endregion // Block Actions
 
         #region Text
 
-        public virtual void ProcessLine(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, ref StringSlice ioLine) { }
+        public virtual void ProcessLine(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, StringBuilder ioLine) { }
 
         #endregion // Text
     }

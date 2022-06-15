@@ -1,14 +1,11 @@
 {
-    "name": "BeauUtil.Editor",
+    "name": "BeauUtil.Parse",
     "references": [
-        "BeauUtil",
-        "BeauUtil.Parse"
+        "BeauUtil"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

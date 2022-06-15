@@ -524,12 +524,19 @@ namespace BeauUtil
 
         public void CopyTo(int inStartIndex, char[] inArray, int inArrayIdx, int inCount)
         {
+            if (m_Source == null || inCount <= 0)
+                return;
             if (inArray.Length < inCount)
                 throw new ArgumentException("Not enough room to copy " + inCount + " items to destination");
+            if (inStartIndex + inCount > Length)
+                throw new ArgumentException("Attempting to copy data outside StringSlice range");
 
-            for (int i = 0; i < inCount; ++i)
+            unsafe
             {
-                inArray[inArrayIdx + i] = m_Source[m_StartIndex + inStartIndex + i];
+                fixed(char* src = m_Source)
+                {
+                    Unsafe.CopyArray(src + m_StartIndex + inStartIndex, inCount, inArray, inArrayIdx);
+                }
             }
         }
 
@@ -540,12 +547,11 @@ namespace BeauUtil
 
         public char[] ToCharArray()
         {
-            char[] arr = new char[Length];
-            for (int i = 0; i < Length; ++i)
+            if (Length > 0)
             {
-                arr[i] = m_Source[m_StartIndex + i];
+                return m_Source.ToCharArray(m_StartIndex, Length);
             }
-            return arr;
+            return Array.Empty<char>();
         }
 
         public string Escape()
@@ -838,11 +844,17 @@ namespace BeauUtil
         public override string ToString()
         {
             if (Length <= 0)
+            {
                 return string.Empty;
+            }
             else if (m_StartIndex == 0 && Length == m_Source.Length)
+            {
                 return m_Source;
+            }
             else
+            {
                 return m_Source.Substring(m_StartIndex, Length);
+            }
         }
 
         static public bool operator ==(StringSlice inA, StringSlice inB)

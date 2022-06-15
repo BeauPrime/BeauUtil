@@ -144,31 +144,31 @@ namespace BeauUtil.Debugger
 
         #region Message
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_WARNINGS_BEAUUTIL")]
         static public void Warn(string inMessage)
         {
             UnityEngine.Debug.LogWarningFormat(inMessage, Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_WARNINGS_BEAUUTIL")]
         static public void Warn(string inMessage, object inArg0)
         {
             UnityEngine.Debug.LogWarningFormat(Format(inMessage, inArg0), Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_WARNINGS_BEAUUTIL")]
         static public void Warn(string inMessage, object inArg0, object inArg1)
         {
             UnityEngine.Debug.LogWarningFormat(Format(inMessage, inArg0, inArg1), Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_WARNINGS_BEAUUTIL")]
         static public void Warn(string inMessage, object inArg0, object inArg1, object inArg2)
         {
             UnityEngine.Debug.LogWarningFormat(Format(inMessage, inArg0, inArg1, inArg2), Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_WARNINGS_BEAUUTIL")]
         static public void Warn(string inMessage, params object[] inArgs)
         {
             UnityEngine.Debug.LogWarningFormat(Format(inMessage, inArgs), Array.Empty<object>());
@@ -178,31 +178,31 @@ namespace BeauUtil.Debugger
 
         #region Message
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_ERRORS_BEAUUTIL")]
         static public void Error(string inMessage)
         {
             UnityEngine.Debug.LogErrorFormat(inMessage, Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_ERRORS_BEAUUTIL")]
         static public void Error(string inMessage, object inArg0)
         {
             UnityEngine.Debug.LogErrorFormat(Format(inMessage, inArg0), Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_ERRORS_BEAUUTIL")]
         static public void Error(string inMessage, object inArg0, object inArg1)
         {
             UnityEngine.Debug.LogErrorFormat(Format(inMessage, inArg0, inArg1), Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_ERRORS_BEAUUTIL")]
         static public void Error(string inMessage, object inArg0, object inArg1, object inArg2)
         {
             UnityEngine.Debug.LogErrorFormat(Format(inMessage, inArg0, inArg1, inArg2), Array.Empty<object>());
         }
 
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_ERRORS_BEAUUTIL")]
         static public void Error(string inMessage, params object[] inArgs)
         {
             UnityEngine.Debug.LogErrorFormat(Format(inMessage, inArgs), Array.Empty<object>());

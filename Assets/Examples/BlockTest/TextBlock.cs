@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using BeauUtil.Blocks;
 using System.Collections.Generic;
+using UnityEngine.Scripting;
 
 namespace BeauUtil.Examples
 {
@@ -24,22 +25,22 @@ namespace BeauUtil.Examples
         public Color Color() { return m_Color; }
         public string Text() { return m_Text; }
 
-        public void SetPosition(Vector2 inPosition)
+        [BlockMeta("position"), Preserve]
+        private void SetPosition(float inX, float inY)
         {
-            m_Position = inPosition;
+            m_Position = new Vector2(inX, inY);
         }
 
-        public void SetColor(Color inColor)
+        [BlockMeta("color"), Preserve]
+        private void SetColor(string inColorString)
         {
-            m_Color = inColor;
+            m_Color = Colors.HTML(inColorString);
         }
 
-        public void AddText(string inText)
+        [BlockContent, Preserve]
+        private void SetText(string inText)
         {
-            if (string.IsNullOrEmpty(m_Text))
-                m_Text = inText;
-            else
-                m_Text += "\n" + inText.Replace("\\n", "\n");
+            m_Text = inText;
         }
     }
 }

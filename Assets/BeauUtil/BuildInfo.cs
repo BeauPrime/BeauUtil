@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 [assembly: InternalsVisibleTo("BeauUtil.Editor")]
+[assembly: InternalsVisibleTo("BeauUtil.Parse")]
 
 namespace BeauUtil
 {

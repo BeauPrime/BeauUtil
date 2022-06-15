@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -148,6 +149,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the index of an element in an array.
         /// </summary>
+        [MethodImpl(256)]
         static public int IndexOf<T>(T[] inArray, T inItem)
         {
             if (inArray == null || inArray.Length == 0)
@@ -159,6 +161,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if an element is present in an array.
         /// </summary>
+        [MethodImpl(256)]
         static public bool Contains<T>(T[] inArray, T inItem)
         {
             return IndexOf(inArray, inItem) >= 0;
@@ -213,6 +216,7 @@ namespace BeauUtil
         /// <summary>
         /// Clears all elements from an array.
         /// </summary>
+        [MethodImpl(256)]
         static public void Clear<T>(ref T[] ioArray)
         {
             if (ioArray != null)
@@ -225,6 +229,7 @@ namespace BeauUtil
         /// <summary>
         /// Reverses the given array.
         /// </summary>
+        [MethodImpl(256)]
         static public void Reverse<T>(T[] ioArray)
         {
             if (ioArray != null)
@@ -262,6 +267,7 @@ namespace BeauUtil
         /// <summary>
         /// Clears all elements from the array and sets the reference to null.
         /// </summary>
+        [MethodImpl(256)]
         static public void Dispose<T>(ref T[] ioArray)
         {
             if (ioArray != null)

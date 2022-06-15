@@ -11,6 +11,10 @@
 #define UNMANAGED_CONSTRAINT
 #endif // CSHARP_7_3_OR_NEWER
 
+#if UNITY_2018_1_OR_NEWER
+#define NATIVE_ARRAY_EXT
+#endif // UNITY_2018_1_OR_NEWER
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -232,196 +236,79 @@ namespace BeauUtil
 
         #endregion // Size
 
-        #region Copy
+        #region Unity Native
+
+        #if NATIVE_ARRAY_EXT
 
         #if UNMANAGED_CONSTRAINT
 
         /// <summary>
-        /// Copies memory from one buffer to another.
+        /// Returns a pointer to the start of the given native buffer.
         /// </summary>
-        static public void CopyArray<T>(T* inSrc, int inSrcCount, T* inDest, int inDestCount)
+        [MethodImpl(256)]
+        static public T* NativePointer<T>(Unity.Collections.NativeArray<T> inArray)
             where T : unmanaged
         {
-            int size = sizeof(T);
-            Buffer.MemoryCopy(inSrc, inDest, inDestCount * size, inSrcCount * size);
+            return (T*) Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(inArray);
         }
 
         /// <summary>
-        /// Copies memory from one buffer to another.
+        /// Returns a read-only pointer to the start of the given native buffer.
         /// </summary>
-        static public void CopyArray<T>(T* inSrc, int inCount, T* inDest)
+        [MethodImpl(256)]
+        static public T* NativePointerReadOnly<T>(Unity.Collections.NativeArray<T> inArray)
             where T : unmanaged
         {
-            int size = sizeof(T);
-            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+            return (T*) Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(inArray);
         }
 
         /// <summary>
-        /// Copies memory from a buffer to an array.
+        /// Returns a pointer to the start of the given native slice.
         /// </summary>
-        static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest)
+        [MethodImpl(256)]
+        static public T* NativePointer<T>(Unity.Collections.NativeSlice<T> inSlice)
             where T : unmanaged
         {
-            fixed(T* destPtr = inDest)
-            {
-                int size = sizeof(T);
-                Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
-            }
-        }
-
-        /// <summary>
-        /// Copies memory from a buffer to an array.
-        /// </summary>
-        static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
-            where T : unmanaged
-        {
-            fixed(T* destPtr = inDest)
-            {
-                int size = sizeof(T);
-                Buffer.MemoryCopy(inSrc, destPtr + inDestOffset, (inDest.Length - inDestOffset) * size, inSrcCount * size);
-            }
-        }
-
-        /// <summary>
-        /// Copies memory from an array to a buffer.
-        /// </summary>
-        static public void CopyArray<T>(T[] inSrc, T* inDest, int inDestCount)
-            where T : unmanaged
-        {
-            fixed(T* srcPtr = inSrc)
-            {
-                int size = sizeof(T);
-                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrc.Length * size);
-            }
-        }
-
-        /// <summary>
-        /// Copies memory from an array to a buffer.
-        /// </summary>
-        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, T* inDest, int inDestCount)
-            where T : unmanaged
-        {
-            fixed(T* srcPtr = inSrc)
-            {
-                int size = sizeof(T);
-                Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, (inSrc.Length - inSrcOffset) * size);
-            }
-        }
-
-        /// <summary>
-        /// Copies memory from an array to a buffer.
-        /// </summary>
-        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, T* inDest, int inDestCount)
-            where T : unmanaged
-        {
-            fixed(T* srcPtr = inSrc)
-            {
-                int size = sizeof(T);
-                Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, inSrcCount * size);
-            }
+            return (T*) Unity.Collections.LowLevel.Unsafe.NativeSliceUnsafeUtility.GetUnsafePtr(inSlice);
         }
 
         #else
 
         /// <summary>
-        /// Copies memory from one buffer to another.
-        /// </summary>
-        static public void CopyArray<T>(void* inSrc, int inSrcCount, void* inDest, int inDestCount)
-            where T : struct
-        {
-            int size = SizeOf<T>();
-            Buffer.MemoryCopy(inSrc, inDest, inDestCount * size, inSrcCount * size);
-        }
-
-        /// <summary>
-        /// Copies memory from one buffer to another.
-        /// </summary>
-        static public void CopyArray<T>(void* inSrc, int inCount, void* inDest)
-            where T : struct
-        {
-            int size = SizeOf<T>();
-            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
-        }
-
-        /// <summary>
-        /// Copies memory from a buffer to an array.
+        /// Returns a pointer to the start of the given native buffer.
         /// </summary>
         [MethodImpl(256)]
-        static public void CopyArray<T>(void* inSrc, int inSrcCount, T[] inDest)
+        static public void* NativePointer<T>(Unity.Collections.NativeArray<T> inArray)
             where T : struct
         {
-            CopyArray<T>(inSrc, inSrcCount, inDest, 0);
+            return Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(inArray);
         }
 
         /// <summary>
-        /// Copies memory from a buffer to an array.
-        /// </summary>
-        static public void CopyArray<T>(void* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
-            where T : struct
-        {
-            using(var pin = PinArray(inDest))
-            {
-                void* destPtr = pin.ElementAddress(inDestOffset);
-                int size = pin.ElementSize;
-                Buffer.MemoryCopy(inSrc, destPtr, (inDest.Length - inDestOffset) * size, inSrcCount * size);
-            }
-        }
-
-        /// <summary>
-        /// Copies memory from an array to a buffer.
+        /// Returns a read-only pointer to the start of the given native buffer.
         /// </summary>
         [MethodImpl(256)]
-        static public void CopyArray<T>(T[] inSrc, void* inDest, int inDestCount)
+        static public void* NativePointerReadOnly<T>(Unity.Collections.NativeArray<T> inArray)
             where T : struct
         {
-            CopyArray<T>(inSrc, 0, inSrc.Length, inDest, inDestCount);
+            return Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(inArray);
         }
 
         /// <summary>
-        /// Copies memory from an array to a buffer.
+        /// Returns a pointer to the start of the given native slice.
         /// </summary>
         [MethodImpl(256)]
-        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, void* inDest, int inDestCount)
+        static public void* NativePointer<T>(Unity.Collections.NativeSlice<T> inSlice)
             where T : struct
         {
-            CopyArray<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCount);
-        }
-
-        /// <summary>
-        /// Copies memory from an array to a buffer.
-        /// </summary>
-        static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, void* inDest, int inDestCount)
-            where T : struct
-        {
-            using(var pin = PinArray(inSrc))
-            {
-                void* srcPtr = pin.ElementAddress(inSrcOffset);
-                int size = pin.ElementSize;
-                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrcCount * size);
-            }
+            return Unity.Collections.LowLevel.Unsafe.NativeSliceUnsafeUtility.GetUnsafePtr(inSlice);
         }
 
         #endif // UNMANAGED_CONSTRAINT
 
-        /// <summary>
-        /// Copies memory from one buffer to another.
-        /// </summary>
-        [MethodImpl(256)]
-        static public void Copy(void* inSrc, int inSrcSize, void* inDest, int inDestSize)
-        {
-            Buffer.MemoryCopy(inSrc, inDest, inDestSize, inSrcSize);
-        }
+        #endif // NATIVE_ARRAY_EXT
 
-        /// <summary>
-        /// Copies memory from one buffer to another.
-        /// </summary>
-        [MethodImpl(256)]
-        static public void Copy(void* inSrc, int inSize, void* inDest)
-        {
-            Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
-        }
-
-        #endregion // Copy
+        #endregion // Unity Native
 
         #region Pinning
 
@@ -444,9 +331,9 @@ namespace BeauUtil
 
             internal GCHandle Handle;
 
-            internal PinnedArrayHandle(GCHandle inHandle, T[] inSource)
+            internal PinnedArrayHandle(T[] inSource)
             {
-                Handle = inHandle;
+                Handle = GCHandle.Alloc(inSource, GCHandleType.Pinned);
 
                 #if UNMANAGED_CONSTRAINT
                 Address = (T*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
@@ -456,14 +343,14 @@ namespace BeauUtil
                 #endif // UNMANAGED_CONSTRAINT
             }
 
-            internal PinnedArrayHandle(T[] inSource)
+            internal PinnedArrayHandle(string inSource)
             {
                 Handle = GCHandle.Alloc(inSource, GCHandleType.Pinned);
 
                 #if UNMANAGED_CONSTRAINT
-                Address = (T*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
+                Address = (T*) Handle.AddrOfPinnedObject();
                 #else
-                Address = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
+                Address = (void*) Handle.AddrOfPinnedObject();
                 ElementSize = SizeOf<T>();
                 #endif // UNMANAGED_CONSTRAINT
             }
@@ -516,6 +403,17 @@ namespace BeauUtil
                 throw new ArgumentNullException("inArray", "Cannot pin null array");
 
             return new PinnedArrayHandle<T>(inArray);
+        }
+
+        /// <summary>
+        /// Pins the given string in memory.
+        /// </summary>
+        static public PinnedArrayHandle<char> PinString(string inString)
+        {
+            if (inString == null)
+                throw new ArgumentNullException("inArray", "Cannot pin null array");
+
+            return new PinnedArrayHandle<char>(inString);
         }
 
         #endregion // Pinning

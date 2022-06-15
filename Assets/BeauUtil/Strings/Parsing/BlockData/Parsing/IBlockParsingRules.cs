@@ -44,17 +44,6 @@ namespace BeauUtil.Blocks
         /// Commonly used are ' ', '=', and ':'.
         /// </summary>
         char[] TagDataDelimiters { get; }
-
-        /// <summary>
-        /// These characters will be used to divide file contents into lines.
-        /// </summary>
-        char[] LineDelimiters { get; }
-        
-        /// <summary>
-        /// If set, this splitter will be used to divide file contents into lines,
-        /// ignoring the value of LineDelimiters.
-        /// </summary>
-        StringSlice.ISplitter CustomLineSplitter { get; }
         
         /// <summary>
         /// Indicates if blocks must be explicitly closed

@@ -3,13 +3,13 @@
 :: node0
 First node! Woo!
 
-:: node1
+:: node1 // ow wow this is weird holy shit
 @color red
-@position 0 5
-this time in red!
+@position 0, 5
+this time in red! // could this be a thing?l aoshdofopasduifpo aopwiuefpoauwpoeiucpoawueopf poaiwe fop uawopefu opawuiefopu awpoeuf poawiu efpoiaw peofiu awpoeuf poawu ef
 
 :: node2
-@position 0 -5
+@position 0, -5
 @color black
-what if no?
+what if no? // what if
 and if it had some text starting with this key?
