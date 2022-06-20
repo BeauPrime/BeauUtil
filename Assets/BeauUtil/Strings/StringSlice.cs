@@ -838,7 +838,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            return (int) CalculateHash32();
+            return (int) StringHashing.Hash32(m_Source, m_StartIndex, Length);
         }
 
         public override string ToString()

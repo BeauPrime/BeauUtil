@@ -15,6 +15,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using BeauUtil.Streaming;
 using BeauUtil.Tags;
@@ -148,6 +150,195 @@ namespace BeauUtil.Blocks
         }
 
         #endregion // Parse
+
+        #region Parse Shortcuts
+
+        /// <summary>
+        /// Parses the given file contents into blocks.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage Parse<TBlock, TPackage>(CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return Parse(CharStreamParams.FromCustomTextAsset(inAsset), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks
+        /// and merges into the given package.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            Parse(ref ioPackage, CharStreamParams.FromCustomTextAsset(inAsset), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage ParseAsync<TBlock, TPackage>(CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(CharStreamParams.FromCustomTextAsset(inAsset), inRules, inGenerator, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage ParseAsync<TBlock, TPackage>(CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(CharStreamParams.FromCustomTextAsset(inAsset), inRules, inGenerator, inCache, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously
+        /// and merges into the given package.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(ref ioPackage, CharStreamParams.FromCustomTextAsset(inAsset), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage Parse<TBlock, TPackage>(TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return Parse(CharStreamParams.FromTextAsset(inAsset), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks
+        /// and merges into the given package.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            Parse(ref ioPackage, CharStreamParams.FromTextAsset(inAsset), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage ParseAsync<TBlock, TPackage>(TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(CharStreamParams.FromTextAsset(inAsset), inRules, inGenerator, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage ParseAsync<TBlock, TPackage>(TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(CharStreamParams.FromTextAsset(inAsset), inRules, inGenerator, inCache, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given file contents into blocks asynchronously
+        /// and merges into the given package.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(ref ioPackage, CharStreamParams.FromTextAsset(inAsset), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given stream contents into blocks.
+        /// The stream will be disposed once parsing is complete.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage Parse<TBlock, TPackage>(Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return Parse(CharStreamParams.FromStream(inAsset, null), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given stream contents into blocks
+        /// and merges into the given package.
+        /// The stream will be disposed once parsing is complete.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            Parse(ref ioPackage, CharStreamParams.FromStream(inAsset, null), inRules, inGenerator, inCache);
+        }
+
+        /// <summary>
+        /// Parses the given stream contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// The stream will be disposed once parsing is complete.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage ParseAsync<TBlock, TPackage>(Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(CharStreamParams.FromStream(inAsset, null), inRules, inGenerator, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given stream contents into blocks asynchronously.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// The stream will be disposed once parsing is complete.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TPackage ParseAsync<TBlock, TPackage>(Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(CharStreamParams.FromStream(inAsset, null), inRules, inGenerator, inCache, out outLoader);
+        }
+
+        /// <summary>
+        /// Parses the given stream contents into blocks asynchronously
+        /// and merges into the given package.
+        /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
+        /// The stream will be disposed once parsing is complete.
+        /// </summary>
+        [MethodImpl(256)]
+        static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
+            where TBlock : class, IDataBlock
+            where TPackage : class, IDataBlockPackage<TBlock>
+        {
+            return ParseAsync(ref ioPackage, CharStreamParams.FromStream(inAsset, null), inRules, inGenerator, inCache);
+        }
+
+        #endregion // Parse Shortcuts
 
         #region Cache
 

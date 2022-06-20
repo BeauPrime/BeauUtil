@@ -17,7 +17,7 @@ namespace BeauUtil
     /// <summary>
     /// A section of a StringBuilder.
     /// </summary>
-    internal struct StringBuilderSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringBuilderSlice>, IEquatable<string>
+    public struct StringBuilderSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringBuilderSlice>, IEquatable<string>
     {
         private readonly StringBuilder m_Source;
         private readonly int m_StartIndex;
@@ -97,6 +97,22 @@ namespace BeauUtil
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Returns the 32-bit hash of this string slice.
+        /// </summary>
+        public StringHash32 Hash32()
+        {
+            return new StringHash32(StringHashing.StoreHash32(m_Source, m_StartIndex, Length));
+        }
+
+        /// <summary>
+        /// Returns the 64-bit hash of this string slice.
+        /// </summary>
+        public StringHash64 Hash64()
+        {
+            return new StringHash64(StringHashing.StoreHash64(m_Source, m_StartIndex, Length));
         }
 
         #region Search
@@ -315,19 +331,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            if (Length <= 0)
-                return 0;
-            
-            // fnv-1a
-            uint hash = 2166136261;
-            
-            // unsafe method
-            for(int i = 0; i < Length; i++)
-            {
-                hash = (hash ^ m_Source[m_StartIndex + i]) * 16777619;
-            }
-            
-            return (int) hash;
+            return (int) StringHashing.Hash32(m_Source, m_StartIndex, Length);
         }
 
         public override string ToString()

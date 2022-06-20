@@ -671,6 +671,9 @@ namespace BeauUtil.Streaming
         /// </summary>
         public void Dispose()
         {
+            if (Type == 0)
+                return;
+
             int disposeType = (int) Ownership;
             if (disposeType != 0)
             {
@@ -683,6 +686,8 @@ namespace BeauUtil.Streaming
             DataLength = -1;
             DataMaxLength = 0;
             DataOffset = 0;
+            Type = 0;
+            Ownership = 0;
         }
 
         static private unsafe void Dispose_Stream(ref CharStream ioStream)
@@ -720,7 +725,7 @@ namespace BeauUtil.Streaming
 
         #endregion // Dispose
     
-        #region Copy
+        #region Queue
 
         /// <summary>
         /// Writes characters into the stream to be later read.
@@ -733,6 +738,9 @@ namespace BeauUtil.Streaming
 
             if (DataLength + inDataCount > DataMaxLength)
                 throw new InvalidOperationException(string.Format("No more room in buffer - attempting to add {0} when only {1} are available", inDataCount, DataMaxLength - DataLength));
+
+            if (inDataCount <= 0)
+                return;
 
             int writeHead = (DataOffset + DataLength) % DataMaxLength;
             int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
@@ -763,6 +771,9 @@ namespace BeauUtil.Streaming
             if (DataLength + inDataCount > DataMaxLength)
                 throw new InvalidOperationException(string.Format("No more room in buffer - attempting to add {0} when only {1} are available", inDataCount, DataMaxLength - DataLength));
 
+            if (inDataCount <= 0)
+                return;
+
             int writeHead = (DataOffset + DataLength) % DataMaxLength;
             int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
 
@@ -780,7 +791,7 @@ namespace BeauUtil.Streaming
             DataLength += inDataCount;
         }
 
-        #endregion // Copy
+        #endregion // Queue
     }
 
     /// <summary>
