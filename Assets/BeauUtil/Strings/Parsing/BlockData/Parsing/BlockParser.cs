@@ -566,8 +566,10 @@ namespace BeauUtil.Blocks
             public readonly BlockTagDelimiters TagDelimiters = new BlockTagDelimiters();
             
             public readonly PositionFrame[] PositionStack = new PositionFrame[MaxNestingDepth];
-            public readonly CharStream[] BufferStack = new CharStream[MaxNestingDepth];
-            public readonly byte[] UnpackBuffer = new byte[128];
+            public readonly CharStream[] StreamStack = new CharStream[MaxNestingDepth];
+            public readonly byte[] UnpackBuffer = new byte[64];
+            public readonly char[] LeftoverBuffer = new char[512];
+
             public BlockMetaCache Cache;
             public PrefixPriority PrefixPriorities;
             public IBlockParsingRules Rules;
@@ -576,11 +578,13 @@ namespace BeauUtil.Blocks
             public ParseStateFlags ParseFlags;
             public BlockFilePosition Position;
             public bool PositionInline;
+            public int LeftoverCount;
             public int StackOffset = -1;
 
             public StringBuilder Builder;
             public StringBuilder LineBuilder;
             public StringBuilder ContentBuilder;
+            public CharStream LeftoverStream;
             public uint TempFlags;
 
             public bool Error;
@@ -589,8 +593,9 @@ namespace BeauUtil.Blocks
             public void PushStream(CharStreamParams inStream, string inFileName = null)
             {
                 StackOffset++;
-                PositionStack[StackOffset] = new PositionFrame(Position, PositionInline);
-                BufferStack[StackOffset].LoadParams(inStream, UnpackBuffer);
+                PositionStack[StackOffset] = new PositionFrame(Position, PositionInline, LeftoverCount);
+                StreamStack[StackOffset].LoadParams(inStream, UnpackBuffer);
+                ParseFlags |= ParseStateFlags.EarlyBreakForInsertion;
                 if (string.IsNullOrEmpty(inFileName))
                 {
                     PositionInline = true;
@@ -603,6 +608,7 @@ namespace BeauUtil.Blocks
 
                 ParseFlags |= ParseStateFlags.SkipWhitespace;
                 ParseFlags &= ~ParseStateFlags.InComment;
+                LeftoverCount = 0;
             }
 
             public void PopStream()
@@ -610,11 +616,13 @@ namespace BeauUtil.Blocks
                 PositionFrame oldState = PositionStack[StackOffset];
                 Position = oldState.Position;
                 PositionInline = oldState.IsInline;
-                BufferStack[StackOffset].Dispose();
+                LeftoverCount = oldState.LeftoverCount;
+                StreamStack[StackOffset].Dispose();
                 StackOffset--;
 
                 ParseFlags |= ParseStateFlags.SkipWhitespace;
                 ParseFlags &= ~ParseStateFlags.InComment;
+                ParseFlags &= ~ParseStateFlags.EarlyBreakForInsertion;
             }
 
             public void Dispose()
@@ -622,6 +630,7 @@ namespace BeauUtil.Blocks
                 ReturnStringBuilder(ref Builder);
                 ReturnStringBuilder(ref LineBuilder);
                 ReturnStringBuilder(ref ContentBuilder);
+                LeftoverStream.Dispose();
 
                 TagDelimiters.BlockParser = null;
 
@@ -636,11 +645,12 @@ namespace BeauUtil.Blocks
                 TempFlags = 0;
                 Error = false;
                 BlockError = false;
+                LeftoverCount = 0;
                 
                 while(StackOffset >= 0)
                 {
                     PositionStack[StackOffset] = default;
-                    BufferStack[StackOffset].Dispose();
+                    StreamStack[StackOffset].Dispose();
                     StackOffset--;
                 }
             }
@@ -650,17 +660,20 @@ namespace BeauUtil.Blocks
         protected enum ParseStateFlags : uint
         {
             SkipWhitespace = 0x01,
-            InComment = 0x02
+            InComment = 0x02,
+            EarlyBreakForInsertion = 0x04,
         }
 
         protected struct PositionFrame
         {
             public readonly BlockFilePosition Position;
+            public readonly int LeftoverCount;
             public readonly bool IsInline;
 
-            public PositionFrame(BlockFilePosition inPosition, bool inbInline)
+            public PositionFrame(BlockFilePosition inPosition, bool inbInline, int inLeftoverCount)
             {
                 Position = inPosition;
+                LeftoverCount = inLeftoverCount;
                 IsInline = inbInline;
             }
         }
@@ -674,6 +687,7 @@ namespace BeauUtil.Blocks
             ioBuffer.Rules = inRules;
             ioBuffer.PrefixPriorities = CachePrefixPriorities(inRules);
             ioBuffer.Cache = inCache ?? BlockMetaCache.Default;
+            ioBuffer.LeftoverStream.LoadCharBuffer(ioBuffer.LeftoverBuffer);
         }
 
         static private readonly Stack<ParseBuffer> s_ParseBufferPool = new Stack<ParseBuffer>(4);

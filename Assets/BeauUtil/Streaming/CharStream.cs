@@ -215,6 +215,32 @@ namespace BeauUtil.Streaming
         }
 
         /// <summary>
+        /// Loads this CharStream as a byte buffer.
+        /// </summary>
+        public void LoadByteBuffer(byte[] inBytes)
+        {
+            if (Type != 0)
+            {
+                Dispose();
+            }
+
+            unsafe
+            {
+                GCHandle pinned = GCHandle.Alloc(inBytes, GCHandleType.Pinned);
+                Data = (byte*) pinned.AddrOfPinnedObject();
+                Ownership = CharStreamResourceOwnership.UnpinData;
+                PinnedDataHandle = pinned;
+
+                DataLength = 0;
+                DataMaxLength = inBytes.Length;
+            }
+
+            DataOffset = 0;
+            Type = CharStreamType.BytePtr_Ring;
+            Decoder = Decoder ?? Encoding.UTF8.GetDecoder();
+        }
+
+        /// <summary>
         /// Loads this CharStream from the given char array.
         /// </summary>
         public void LoadChars(char[] inChars)
@@ -237,6 +263,31 @@ namespace BeauUtil.Streaming
 
             DataOffset = 0;
             Type = CharStreamType.CharPtr;
+        }
+
+        /// <summary>
+        /// Loads this CharStream as a character buffer.
+        /// </summary>
+        public void LoadCharBuffer(char[] inChars)
+        {
+            if (Type != 0)
+            {
+                Dispose();
+            }
+
+            unsafe
+            {
+                GCHandle pinned = GCHandle.Alloc(inChars, GCHandleType.Pinned);
+                Data = (char*) pinned.AddrOfPinnedObject();
+                Ownership = CharStreamResourceOwnership.UnpinData;
+                PinnedDataHandle = pinned;
+
+                DataLength = 0;
+                DataMaxLength = inChars.Length;
+            }
+
+            DataOffset = 0;
+            Type = CharStreamType.CharPtr_Ring;
         }
 
         #endregion // Creation
@@ -393,7 +444,7 @@ namespace BeauUtil.Streaming
             int tail = (ioStream.DataOffset + charsToRead - 1) % ioStream.DataMaxLength;
             int nextHead = (tail + 1) % ioStream.DataMaxLength;
 
-            if (head < tail)
+            if (head <= tail)
             {
                 Unsafe.CopyArray<char>((char*) ioStream.Data + head, charsToRead, outBuffer, inOutBufferLength);
             }
@@ -453,7 +504,7 @@ namespace BeauUtil.Streaming
             int nextHead = (tail + 1) % ioStream.DataMaxLength;
             int charsRead;
 
-            if (head < tail)
+            if (head <= tail)
             {
                 charsRead = ioStream.Decoder.GetChars((byte*) ioStream.Data + head, bytesToRead, outBuffer, inOutBufferLength, false);
             }
@@ -572,7 +623,7 @@ namespace BeauUtil.Streaming
             int nextHead = (tail + 1) % ioStream.DataMaxLength;
             int readBytes;
 
-            if (head < tail)
+            if (head <= tail)
             {
                 readBytes = StringUtils.EncodeUFT8((char*) ioStream.Data + head, charsToRead, outBuffer, inOutBufferLength);
             }
@@ -630,7 +681,7 @@ namespace BeauUtil.Streaming
             int tail = (ioStream.DataOffset + bytesToRead - 1) % ioStream.DataMaxLength;
             int nextHead = (tail + 1) % ioStream.DataMaxLength;
 
-            if (head < tail)
+            if (head <= tail)
             {
                 Unsafe.CopyArray<byte>((byte*) ioStream.Data + head, bytesToRead, outBuffer, inOutBufferLength);
             }
@@ -728,7 +779,7 @@ namespace BeauUtil.Streaming
         #region Queue
 
         /// <summary>
-        /// Writes characters into the stream to be later read.
+        /// Writes characters to the end of the stream to be later read.
         /// This is only a valid operation for a Character Buffer stream.
         /// </summary>
         public unsafe void QueueChars(char* inData, int inDataCount)
@@ -745,7 +796,7 @@ namespace BeauUtil.Streaming
             int writeHead = (DataOffset + DataLength) % DataMaxLength;
             int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
 
-            if (writeHead < writeTail)
+            if (writeHead <= writeTail)
             {
                 Unsafe.CopyArray<char>(inData, inDataCount, (char*) Data + writeHead, inDataCount);
             }
@@ -760,7 +811,40 @@ namespace BeauUtil.Streaming
         }
 
         /// <summary>
-        /// Writes bytes into the stream to be later read.
+        /// Writes characters to the head of the stream to be later read.
+        /// This is only a valid operation for a Character Buffer stream.
+        /// </summary>
+        public unsafe void InsertChars(char* inData, int inDataCount)
+        {
+            if (Type != CharStreamType.CharPtr_Ring)
+                throw new InvalidOperationException(string.Format("Cannot queue chars to a buffer of type {0}", Type.ToString()));
+
+            if (DataLength + inDataCount > DataMaxLength)
+                throw new InvalidOperationException(string.Format("No more room in buffer - attempting to add {0} when only {1} are available", inDataCount, DataMaxLength - DataLength));
+
+            if (inDataCount <= 0)
+                return;
+
+            int writeHead = (DataOffset + DataMaxLength - DataLength) % DataMaxLength;
+            int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
+
+            if (writeHead <= writeTail)
+            {
+                Unsafe.CopyArray<char>(inData, inDataCount, (char*) Data + writeHead, inDataCount);
+            }
+            else
+            {
+                int segA = DataMaxLength - writeHead;
+                Unsafe.CopyArray<char>(inData, segA, (char*) Data + writeHead, segA);
+                Unsafe.CopyArray<char>(inData + segA, inDataCount - segA, (char*) Data, inDataCount - segA);
+            }
+
+            DataOffset = writeHead;
+            DataLength += inDataCount;
+        }
+
+        /// <summary>
+        /// Writes bytes to the end of the stream to be later read.
         /// This is only a valid operation for a Byte Buffer stream.
         /// </summary>
         public unsafe void QueueBytes(byte* inData, int inDataCount)
@@ -777,7 +861,7 @@ namespace BeauUtil.Streaming
             int writeHead = (DataOffset + DataLength) % DataMaxLength;
             int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
 
-            if (writeHead < writeTail)
+            if (writeHead <= writeTail)
             {
                 Unsafe.CopyArray<byte>(inData, inDataCount, (byte*) Data + writeHead, inDataCount);
             }
@@ -789,6 +873,39 @@ namespace BeauUtil.Streaming
             }
             
             DataLength += inDataCount;
+        }
+
+        /// <summary>
+        /// Writes bytes to the head of the stream to be later read.
+        /// This is only a valid operation for a Byte Buffer stream.
+        /// </summary>
+        public unsafe void InsertBytes(byte* inData, int inDataCount)
+        {
+            if (Type != CharStreamType.BytePtr_Ring)
+                throw new InvalidOperationException(string.Format("Cannot queue bytes to a buffer of type {0}", Type.ToString()));
+
+            if (DataLength + inDataCount > DataMaxLength)
+                throw new InvalidOperationException(string.Format("No more room in buffer - attempting to add {0} when only {1} are available", inDataCount, DataMaxLength - DataLength));
+
+            if (inDataCount <= 0)
+                return;
+
+            int writeHead = (DataOffset + DataMaxLength - DataLength) % DataMaxLength;
+            int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
+
+            if (writeHead <= writeTail)
+            {
+                Unsafe.CopyArray<byte>(inData, inDataCount, (byte*) Data + writeHead, inDataCount);
+            }
+            else
+            {
+                int segA = DataMaxLength - writeHead;
+                Unsafe.CopyArray<byte>(inData, segA, (byte*) Data + writeHead, segA);
+                Unsafe.CopyArray<byte>(inData + segA, inDataCount - segA, (byte*) Data, inDataCount - segA);
+            }
+            
+            DataLength += inDataCount;
+            DataOffset = writeHead;
         }
 
         #endregion // Queue

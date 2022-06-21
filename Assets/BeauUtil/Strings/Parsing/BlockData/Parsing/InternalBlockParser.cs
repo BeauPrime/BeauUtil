@@ -71,19 +71,34 @@ namespace BeauUtil.Blocks
                 }
 
                 char* tempChars = stackalloc char[s_BlockSize + 32];
-                ref CharStream buffer = ref Base.BufferStack[Base.StackOffset];
-                int charsRead = buffer.ReadChars(s_BlockSize, tempChars, 0, s_BlockSize + 32);
-                if (charsRead == -1)
+                int charsRead;
+                if (Base.LeftoverCount > 0)
                 {
-                    Base.PopStream();
-                    ParseLine(this, Base, Base.LineBuilder, false);
-                    return true;
+                    charsRead = Base.LeftoverStream.ReadChars(Math.Min(s_BlockSize, Base.LeftoverCount), tempChars, 0, s_BlockSize + 32);
+                    Base.LeftoverCount -= charsRead;
+
+                    // Debug.Log("Read leftover string: \"" + new string(tempChars, 0, charsRead) + "\"");
+                }
+                else
+                {
+                    ref CharStream buffer = ref Base.StreamStack[Base.StackOffset];
+                    charsRead = buffer.ReadChars(s_BlockSize, tempChars, 0, s_BlockSize + 32);
+                    if (charsRead == -1)
+                    {
+                        Base.PopStream();
+                        ParseLine(this, Base, Base.LineBuilder, false);
+                        return true;
+                    }
+
+                    // Debug.Log("Read string from buffer: \"" + new string(tempChars, 0, charsRead) + "\"");
                 }
 
                 if (charsRead == 0)
                 {
                     return true;
                 }
+
+                Base.ParseFlags &= ~ParseStateFlags.EarlyBreakForInsertion;
 
                 bool skipWhitespace = (Base.ParseFlags & ParseStateFlags.SkipWhitespace) != 0;
                 bool inComment = (Base.ParseFlags & ParseStateFlags.InComment) != 0;
@@ -130,8 +145,7 @@ namespace BeauUtil.Blocks
                             charPtr++;
                         }
                     }
-
-                    if (!inComment)
+                    else
                     {
                         Base.LineBuilder.Append(begin, (int) (charPtr - begin));
                     }
@@ -147,6 +161,9 @@ namespace BeauUtil.Blocks
                         skipWhitespace = true;
                         inComment = false;
 
+                        int leftover = (int) (charPtrEnd - charPtr - 1);
+                        Base.LeftoverCount = leftover;
+
                         LineResult result = ParseLine(this, Base, Base.LineBuilder, false);
                         if (result == LineResult.Exception)
                         {
@@ -155,6 +172,17 @@ namespace BeauUtil.Blocks
                         }
 
                         charPtr++;
+
+                        if ((Base.ParseFlags & ParseStateFlags.EarlyBreakForInsertion) != 0)
+                        {
+                            if (leftover > 0)
+                            {
+                                Base.LeftoverStream.InsertChars(charPtr, leftover);
+                            }
+                            return true;
+                        }
+
+                        Base.LeftoverCount = 0;
                     }
                 }
 
@@ -246,7 +274,7 @@ namespace BeauUtil.Blocks
 
                 ioLine.Length = 0;
                 ioState.Error |= !bSuccess;
-                return bSuccess ? LineResult.Error : LineResult.NoError;
+                return !bSuccess ? LineResult.Error : LineResult.NoError;
             }
             catch (Exception e)
             {

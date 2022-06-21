@@ -10,5 +10,8 @@
     "url": "http://beauprime.com"
   },
   "type": "library",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://package.openupm.com"
+  }
 }

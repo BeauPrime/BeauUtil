@@ -519,7 +519,13 @@ namespace BeauUtil
                     if (c == '\\')
                     {
                         ++idx;
-                        c = ioString[idx];
+                        if (idx >= length)
+                        {
+                            ioString.Append(c);
+                            break;
+                        }
+                        
+                        c = inlineCopy[idx];
                         switch (c)
                         {
                             case '0':
