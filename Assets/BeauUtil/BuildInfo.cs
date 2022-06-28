@@ -7,6 +7,10 @@
  * Purpose: Cached build information.
  */
 
+#if UNITY_2020_1_OR_NEWER
+#define UWR_HAS_RESULT
+#endif // UNITY_2020_1_OR_NEWER
+
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -202,6 +206,16 @@ namespace BeauUtil
             }
 
             UnityWebRequest request = inHandler.webRequest;
+            #if UWR_HAS_RESULT
+            switch(request.result)
+            {
+                case UnityWebRequest.Result.ConnectionError:
+                case UnityWebRequest.Result.DataProcessingError:
+                case UnityWebRequest.Result.ProtocolError:
+                    Error("Request encountered a network error: {0} (response code {1})", request.error, request.responseCode);
+                    return;
+            }
+            #else
             if (request.isNetworkError)
             {
                 Error("Request encountered a network error: {0}", request.error);
@@ -213,6 +227,7 @@ namespace BeauUtil
                 Error("Request encountered an http error {0}: {1}", request.responseCode, request.error);
                 return;
             }
+            #endif // UWR_HAS_RESULT
 
             try
             {

@@ -523,6 +523,18 @@ namespace BeauUtil
                 #endif // UNITY_2017_3_OR_NEWER
 
                 #if UNITY_2019_1_OR_NEWER
+
+                #if UNITY_2020_1_OR_NEWER
+
+                case TextureFormat.ASTC_4x4: return numPixels;
+                case TextureFormat.ASTC_5x5: return numPixels * 16 / 25;
+                case TextureFormat.ASTC_6x6: return numPixels * 16 / 36;
+                case TextureFormat.ASTC_8x8: return numPixels * 16 / 64;
+                case TextureFormat.ASTC_10x10: return numPixels * 16 / 100;
+                case TextureFormat.ASTC_12x12: return numPixels * 16 / 144;
+
+                #else
+
                 case TextureFormat.ASTC_RGB_4x4: return numPixels;
                 case TextureFormat.ASTC_RGBA_4x4: return numPixels;
                 case TextureFormat.ASTC_RGB_5x5: return numPixels * 16 / 25;
@@ -535,12 +547,16 @@ namespace BeauUtil
                 case TextureFormat.ASTC_RGBA_10x10: return numPixels * 16 / 100;
                 case TextureFormat.ASTC_RGB_12x12: return numPixels * 16 / 144;
                 case TextureFormat.ASTC_RGBA_12x12: return numPixels * 16 / 144;
+
+                #endif // !UNITY_2020_1_OR_NEWER
+
                 case TextureFormat.ASTC_HDR_4x4: return numPixels;
                 case TextureFormat.ASTC_HDR_5x5: return numPixels * 16 / 25;
                 case TextureFormat.ASTC_HDR_6x6: return numPixels * 16 / 36;
                 case TextureFormat.ASTC_HDR_8x8: return numPixels * 16 / 64;
                 case TextureFormat.ASTC_HDR_10x10: return numPixels * 16 / 100;
                 case TextureFormat.ASTC_HDR_12x12: return numPixels * 16 / 144;
+
                 #endif // UNITY_2019_1_OR_NEWER
 
                 #if UNITY_2019_4_OR_NEWER

@@ -68,11 +68,13 @@ namespace BeauUtil.Streaming
 
         /// <summary>
         /// Unsafe callback.
+        /// Return "false" to end the download.
         /// </summary>
         public unsafe delegate bool UnsafeDataHandler(byte* inData, int inCount, object inContext, int inContextFlags);
         
         /// <summary>
         /// Safe callback.
+        /// Return "false" to end the download.
         /// </summary>
         public delegate bool DataHandler(byte[] inData, int inCount, object inContext, int inContextFlags);
     }
