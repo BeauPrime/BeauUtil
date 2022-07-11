@@ -299,7 +299,7 @@ namespace BeauUtil.Blocks
                             if (ioLine.AttemptMatch(0, ioState.Rules.BlockIdPrefix))
                             {
                                 StringBuilderSlice data = new StringBuilderSlice(ioLine, ioState.Rules.BlockIdPrefix.Length);
-                                ioState.Error |= !TryStartBlock(ioParser, ioState, data);
+                                ioState.BlockError |= !TryStartBlock(ioParser, ioState, data);
                                 return true;
                             }
                             break;
@@ -310,7 +310,7 @@ namespace BeauUtil.Blocks
                             if (ShouldCheckMeta(ioState) && ioLine.AttemptMatch(0, ioState.Rules.BlockMetaPrefix))
                             {
                                 StringBuilderSlice data = new StringBuilderSlice(ioLine, ioState.Rules.BlockMetaPrefix.Length);
-                                ioState.Error |= !TryEvaluateMeta(ioParser, ioState, data);
+                                ioState.BlockError |= !TryEvaluateMeta(ioParser, ioState, data);
                                 return true;
                             }
                             break;
@@ -320,7 +320,7 @@ namespace BeauUtil.Blocks
                         {
                             if (ioLine.AttemptMatch(0, ioState.Rules.BlockEndPrefix))
                             {
-                                ioState.Error |= !TryEndBlock(ioParser, ioState);
+                                ioState.BlockError |= !TryEndBlock(ioParser, ioState);
                                 return true;
                             }
                             break;
@@ -663,7 +663,7 @@ namespace BeauUtil.Blocks
                     {
                         ioState.ContentBuilder.TrimEnd(TrimCharsWithSpace);
                         string contentString = ioState.ContentBuilder.Flush();
-                        ioState.BlockError |= contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
+                        ioState.BlockError |= !contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
                         ioState.Error |= ioState.BlockError;
                     }
                 }

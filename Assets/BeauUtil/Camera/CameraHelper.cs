@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -18,8 +19,33 @@ namespace BeauUtil
     static public class CameraHelper
     {
         /// <summary>
-        /// Attempts to get the distance from the camera to the object plane.
+        /// Attempts to get the distance from the camera to the plane.
+        /// Note: This is distance from the camera transform, and not the near plane.
         /// </summary>
+        static public bool TryGetDistanceToPlane(this Camera inCamera, Plane inPlane, out float outDistance)
+        {
+            Ray r = inCamera.ViewportPointToRay(s_CenterViewportPoint);
+            bool hit = inPlane.Raycast(r, out outDistance);
+            outDistance += inCamera.nearClipPlane;
+            return hit;
+        }
+
+        /// <summary>
+        /// Attempts to get the distance from the camera to the point plane.
+        /// Note: This is distance from the camera transform, and not the near plane.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool TryGetDistanceToPointPlane(this Camera inCamera, Vector3 inPosition, out float outDistance)
+        {
+            Plane p = new Plane(-inCamera.transform.forward, inPosition);
+            return TryGetDistanceToPlane(inCamera, p, out outDistance);
+        }
+
+        /// <summary>
+        /// Attempts to get the distance from the camera to the object plane.
+        /// Note: This is distance from the camera transform, and not the near plane.
+        /// </summary>
+        [MethodImpl(256)]
         static public bool TryGetDistanceToObjectPlane(this Camera inCamera, Transform inTransform, out float outDistance)
         {
             if (!inTransform)
@@ -28,10 +54,7 @@ namespace BeauUtil
                 return false;
             }
 
-            Plane p = new Plane(-inCamera.transform.forward, inTransform.position);
-            Ray r = inCamera.ViewportPointToRay(s_CenterViewportPoint);
-
-            return p.Raycast(r, out outDistance);
+            return TryGetDistanceToPointPlane(inCamera, inTransform.position, out outDistance);
         }
 
         /// <summary>
@@ -49,10 +72,10 @@ namespace BeauUtil
             float distSrc, distTarg;
             if (!TryGetDistanceToObjectPlane(inCamera, inTransform, out distSrc)
                 || !TryGetDistanceToObjectPlane(inCamera, inTargetTransform, out distTarg))
-                {
-                    outScale = 0;
-                    return false;
-                }
+            {
+                outScale = 0;
+                return false;
+            }
 
             outScale = distTarg / distSrc;
             return !float.IsInfinity(outScale) && !float.IsNaN(outScale);
