@@ -1,3 +1,18 @@
+### Version 0.7.5
+**10 July 2022**
+
+Updating for 2020.1+ compatibility.
+Adjusted CameraFOVPlane math for stability when altering clipping planes.
+
+#### Breaking Changes
+* `CameraHelper.TryGetDistance` methods now return distance from the camera transform to the target plane, not the distance from the near clip plane to the target plane.
+
+#### Fixes
+* `BlockParser` no longer erroneously reports errors when setting content via a `BlockContent` attribute
+
+#### Improvements
+* Updated several classes to avoid compiler warnings/errors in Unity 2020.1+.
+
 ### Version 0.7.4
 **21 June 2022**
 
