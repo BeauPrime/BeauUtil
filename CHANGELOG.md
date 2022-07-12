@@ -1,3 +1,15 @@
+### Version 0.7.6
+**12 July 2022**
+
+Fixed BlockParser leftover buffer corruption issues.
+Added additional StringBuilder argument to IBlockGenerator callbacks
+
+#### Fixes
+* Fixed `CharStream.Insert` occasional buffer corruption
+
+#### Improvements
+* Added `StringBuilder` argument to `IBlockGenerator.TryEvaluatePackage` and `IBlockGenerator.TryEvaluateMeta` as additional context
+
 ### Version 0.7.5
 **10 July 2022**
 
