@@ -20,7 +20,7 @@ namespace BeauUtil.Blocks
 
         public abstract TPackage CreatePackage(string inFileName);
 
-        public virtual bool TryEvaluatePackage(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, TagData inMetadata)
+        public virtual bool TryEvaluatePackage(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, TagData inMetadata, StringBuilder inLine)
         {
             return false;
         }
@@ -41,7 +41,7 @@ namespace BeauUtil.Blocks
         
         public abstract bool TryCreateBlock(IBlockParserUtil inUtil, TPackage inPackage, TagData inId, out TBlock outBlock);
 
-        public virtual bool TryEvaluateMeta(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inMetadata)
+        public virtual bool TryEvaluateMeta(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inMetadata, StringBuilder inLine)
         {
             return false;
         }

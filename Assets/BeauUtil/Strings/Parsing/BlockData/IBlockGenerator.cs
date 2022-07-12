@@ -27,7 +27,7 @@ namespace BeauUtil.Blocks
         /// Attempts to evaluate data through the package object.
         /// Returns if no error.
         /// </summary>
-        bool TryEvaluatePackage(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, TagData inMetadata);
+        bool TryEvaluatePackage(IBlockParserUtil inUtil, TPackage inPackage, TBlock inCurrentBlock, TagData inMetadata, StringBuilder inLine);
 
         #endregion // Shared Object
 
@@ -62,7 +62,7 @@ namespace BeauUtil.Blocks
         /// Attempts to evaluate data through the block object header.
         /// Returns if handled.
         /// </summary>
-        bool TryEvaluateMeta(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inMetadata);
+        bool TryEvaluateMeta(IBlockParserUtil inUtil, TPackage inPackage, TBlock inBlock, TagData inMetadata, StringBuilder inLine);
         
         /// <summary>
         /// Executes when the block object header is completed.

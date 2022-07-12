@@ -455,7 +455,7 @@ namespace BeauUtil.Blocks
 
             if (!data.IsEmpty())
             {
-                bool bHandled = ioParser.Generator.TryEvaluateMeta(ioParser, ioParser.Package, ioParser.CurrentBlock, data);
+                bool bHandled = ioParser.Generator.TryEvaluateMeta(ioParser, ioParser.Package, ioParser.CurrentBlock, data, ioState.LineBuilder);
                 if (!bHandled)
                     bHandled = ioState.Cache.TryEvaluateCommand(ioParser.CurrentBlock, data);
                 if (!bHandled)
@@ -637,7 +637,7 @@ namespace BeauUtil.Blocks
 
             if (!data.IsEmpty())
             {
-                bool bHandled = ioParser.Generator.TryEvaluatePackage(ioParser, ioParser.Package, ioParser.CurrentBlock, data);
+                bool bHandled = ioParser.Generator.TryEvaluatePackage(ioParser, ioParser.Package, ioParser.CurrentBlock, data, ioState.LineBuilder);
                 if (!bHandled)
                     bHandled = ioState.Cache.TryEvaluateCommand(ioParser.Package, data);
                 if (!bHandled)

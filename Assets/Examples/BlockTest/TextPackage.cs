@@ -47,7 +47,7 @@ namespace BeauUtil.Examples
                 return new TextPackage(inFileName);
             }
 
-            public override bool TryEvaluatePackage(IBlockParserUtil inUtil, TextPackage inPackage, TextBlock inCurrentBlock, TagData inMetadata)
+            public override bool TryEvaluatePackage(IBlockParserUtil inUtil, TextPackage inPackage, TextBlock inCurrentBlock, TagData inMetadata, StringBuilder inLine)
             {
                 if (inMetadata.Id == "print")
                 {
@@ -55,7 +55,7 @@ namespace BeauUtil.Examples
                     return true;
                 }
 
-                return base.TryEvaluatePackage(inUtil, inPackage, inCurrentBlock, inMetadata);
+                return base.TryEvaluatePackage(inUtil, inPackage, inCurrentBlock, inMetadata, inLine);
             }
 
             public override bool TryCreateBlock(IBlockParserUtil inUtil, TextPackage inPackage, TagData inId, out TextBlock outBlock)

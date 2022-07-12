@@ -825,7 +825,7 @@ namespace BeauUtil.Streaming
             if (inDataCount <= 0)
                 return;
 
-            int writeHead = (DataOffset + DataMaxLength - DataLength) % DataMaxLength;
+            int writeHead = (DataOffset + DataMaxLength - inDataCount) % DataMaxLength;
             int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
 
             if (writeHead <= writeTail)
@@ -890,7 +890,7 @@ namespace BeauUtil.Streaming
             if (inDataCount <= 0)
                 return;
 
-            int writeHead = (DataOffset + DataMaxLength - DataLength) % DataMaxLength;
+            int writeHead = (DataOffset + DataMaxLength - inDataCount) % DataMaxLength;
             int writeTail = (writeHead + inDataCount - 1) % DataMaxLength;
 
             if (writeHead <= writeTail)
