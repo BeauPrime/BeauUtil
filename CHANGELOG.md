@@ -1,3 +1,8 @@
+### Version 0.7.8
+**19 July 2022**
+
+Hotfix for `Bits.Count` hang
+
 ### Version 0.7.7
 **18 July 2022**
 
