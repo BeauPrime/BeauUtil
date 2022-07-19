@@ -1,3 +1,8 @@
+### Version 0.7.9
+**19 July 2022**
+
+Hotfix for `StringUtils.Args.Splitter` state corruption
+
 ### Version 0.7.8
 **19 July 2022**
 

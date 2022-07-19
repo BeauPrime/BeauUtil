@@ -413,12 +413,12 @@ namespace BeauUtil
             /// <param name="inIndex">Current evaluation index.</param>
             /// <param name="inSliceCount">Number of slices currently found.</param>
             /// <param name="outAdvance">Output for any additional characters to advance.</param>
-            bool Evaluate(string inString, int inIndex, int inSliceCount, ref int ioState, out int outAdvance);
+            bool Evaluate(string inString, int inIndex, int inSliceCount, ref uint ioState, out int outAdvance);
 
             /// <summary>
             /// Post-process for a given slice. Useful for trimming and unescaping.
             /// </summary>
-            StringSlice Process(StringSlice inSlice, int ioState);
+            StringSlice Process(StringSlice inSlice, uint ioState);
         }
 
         #region Slice
@@ -1123,7 +1123,7 @@ namespace BeauUtil
                 return 0;
             }
 
-            int splitterState = 0;
+            uint splitterState = 0;
 
             int startIdx = inStartIdx;
             int currentLength = 0;
@@ -1281,7 +1281,7 @@ namespace BeauUtil
                 return 0;
             }
 
-            int splitterState = 0;
+            uint splitterState = 0;
 
             int startIdx = inStartIdx;
             int currentLength = 0;
@@ -1430,7 +1430,7 @@ namespace BeauUtil
                 yield break;
             }
 
-            int splitterState = 0;
+            uint splitterState = 0;
 
             int startIdx = inStartIdx;
             int currentLength = 0;

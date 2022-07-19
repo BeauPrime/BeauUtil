@@ -1046,7 +1046,7 @@ namespace BeauUtil
                     m_Unescape = inbUnescape;
                 }
 
-                public bool Evaluate(string inString, int inIndex, int inSliceCount, ref int ioState, out int outAdvance)
+                public bool Evaluate(string inString, int inIndex, int inSliceCount, ref uint ioState, out int outAdvance)
                 {
                     outAdvance = 0;
                     char c = inString[inIndex];
@@ -1076,7 +1076,7 @@ namespace BeauUtil
                     return false;
                 }
 
-                public StringSlice Process(StringSlice inSlice, int inState)
+                public StringSlice Process(StringSlice inSlice, uint inState)
                 {
                     StringSlice slice = inSlice.TrimStart().Trim(DefaultQuoteChar);
 
@@ -1206,8 +1206,8 @@ namespace BeauUtil
             /// </summary>
             public sealed class Splitter : StringSlice.ISplitter
             {
-                private const int QUOTE_FLAG = 1 << 31;
-                private const int GROUP_MASK = 1 << 30 - 1;
+                private const uint QUOTE_FLAG = 1u << 31;
+                private const uint GROUP_MASK = (1u << 30) - 1;
 
                 [ThreadStatic] static private Splitter s_Instance;
 
@@ -1241,13 +1241,13 @@ namespace BeauUtil
                     m_Delimiter = inDelimiter;
                 }
 
-                public bool Evaluate(string inString, int inIndex, int inSliceCount, ref int ioState, out int outAdvance)
+                public bool Evaluate(string inString, int inIndex, int inSliceCount, ref uint ioState, out int outAdvance)
                 {
                     outAdvance = 0;
                     char c = inString[inIndex];
 
                     bool quote;
-                    int depth;
+                    uint depth;
                     DeconstructState(ioState, out quote, out depth);
 
                     if (c == m_Delimiter)
@@ -1270,7 +1270,10 @@ namespace BeauUtil
                         case '}':
                             if (!quote)
                             {
-                                --depth;
+                                if (depth > 0)
+                                {
+                                    --depth;
+                                }
                                 ioState = ConstructState(quote, depth);
                             }
                             break;
@@ -1291,7 +1294,7 @@ namespace BeauUtil
                     return false;
                 }
 
-                public StringSlice Process(StringSlice inSlice, int inState)
+                public StringSlice Process(StringSlice inSlice, uint inState)
                 {
                     StringSlice slice = inSlice.Trim();
 
@@ -1309,13 +1312,13 @@ namespace BeauUtil
                     return slice;
                 }
             
-                static private void DeconstructState(int inState, out bool outbQuote, out int outDepth)
+                static private void DeconstructState(uint inState, out bool outbQuote, out uint outDepth)
                 {
                     outbQuote = (inState & QUOTE_FLAG) != 0;
                     outDepth = inState & GROUP_MASK;
                 }
 
-                static private int ConstructState(bool inbQuote, int inDepth)
+                static private uint ConstructState(bool inbQuote, uint inDepth)
                 {
                     return (inbQuote ? QUOTE_FLAG : 0) | (inDepth & GROUP_MASK);
                 }
