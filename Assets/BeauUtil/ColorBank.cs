@@ -1,6 +1,7 @@
 ﻿// This file contains source code from MonoGame
 // see MONOGAME-LICENSE.txt for licensing info
 
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -12,6 +13,7 @@ namespace BeauUtil
     {
         #region Initialization
 
+        [MethodImpl(256)]
         static private Color DecodeABGR(uint inValue)
         {
             return Colors.ABGR(inValue);

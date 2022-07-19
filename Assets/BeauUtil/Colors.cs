@@ -30,10 +30,46 @@ namespace BeauUtil
         /// </summary>
         static public Color Hex(string inHexCode, Color inDefault)
         {
-            string hexString = inHexCode;
-            if (hexString[0] != '#')
-                hexString = "#" + hexString;
-            return HTML(inHexCode, inDefault);
+            StringSlice str = inHexCode;
+            if (str.StartsWith("#"))
+                str = str.Substring(1);
+            else if (str.StartsWith("0x"))
+                str = str.Substring(2);
+
+            if (!StringParser.IsHex(str))
+                return inDefault;
+
+            Color32 c = default;
+            if (str.Length == 3 || str.Length == 4)
+            {
+                c.r = (byte) (16 * StringParser.FromHex(str[0])); c.r += c.r;
+                c.g = (byte) (16 * StringParser.FromHex(str[1])); c.g += c.g;
+                c.b = (byte) (16 * StringParser.FromHex(str[3])); c.b += c.b;
+                if (str.Length == 4)
+                {
+                    c.a = (byte) (16 * StringParser.FromHex(str[4])); c.a += c.a;
+                }
+                else
+                {
+                    c.a = 255;
+                }
+            }
+            if (str.Length == 6 || str.Length == 8)
+            {
+                c.r = (byte) (16 * StringParser.FromHex(str[0]) + StringParser.FromHex(str[1]));
+                c.g = (byte) (16 * StringParser.FromHex(str[2]) + StringParser.FromHex(str[3]));
+                c.b = (byte) (16 * StringParser.FromHex(str[4]) + StringParser.FromHex(str[5]));
+                if (str.Length == 8)
+                {
+                    c.a = (byte) (16 * StringParser.FromHex(str[6]) + StringParser.FromHex(str[7]));
+                }
+                else
+                {
+                    c.a = 255;
+                }
+            }
+
+            return (Color) c;
         }
 
         /// <summary>

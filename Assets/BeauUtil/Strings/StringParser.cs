@@ -1277,6 +1277,37 @@ namespace BeauUtil
 
         #region Internal
 
+        /// <summary>
+        /// Returns the integer value associated with the given hex character.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int FromHex(char inChar)
+        {
+            inChar = char.ToUpperInvariant(inChar);
+            if (IsDigit(inChar))
+                return inChar - '0';
+            else if (IsHexAlpha(inChar))
+                return 10 + inChar - 'A';
+            else
+                return -1;
+        }
+
+        static internal bool IsHex(StringSlice inSlice)
+        {
+            char c;
+            for(int i = 0; i < inSlice.Length; ++i)
+            {
+                c = char.ToUpperInvariant(inSlice[i]);
+
+                if (!IsDigit(c) && !IsHexAlpha(c))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         static internal bool TryParseHex(StringSlice inSlice, int inMaxChars, out ulong outULong)
         {
             if (inSlice.Length <= 0 || inSlice.Length > inMaxChars)

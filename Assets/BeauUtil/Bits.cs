@@ -7,6 +7,17 @@
  * Purpose: Helper methods for dealing with bit masks on integers and unsigned integers.
  */
 
+#if NET_4_6 || CSHARP_7_OR_LATER
+#define HAS_ENUM_CONSTRAINT
+#endif // NET_4_6 || CSHARP_7_OR_LATER
+
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
+using System;
+using System.Runtime.CompilerServices;
+
 namespace BeauUtil
 {
     /// <summary>
@@ -25,6 +36,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given uint has the given bit toggled on.
         /// </summary>
+        [MethodImpl(256)]
         static public bool Contains(uint inBitArray, int inBitIndex)
         {
             return (inBitArray & (1U << inBitIndex)) != 0;
@@ -33,30 +45,85 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given int has the given bit toggled on.
         /// </summary>
+        [MethodImpl(256)]
         static public bool Contains(int inBitArray, int inBitIndex)
         {
             return (inBitArray & (1 << inBitIndex)) != 0;
         }
 
         /// <summary>
-        /// Returns if the given uint contains the given mask.
+        /// Returns if the given uint contains any of the given mask.
         /// </summary>
-        static public bool ContainsMask(uint inBitArray, uint inBitMask)
+        [MethodImpl(256)]
+        static public bool ContainsAny(uint inBitArray, uint inBitMask)
         {
             return (inBitArray & inBitMask) != 0;
         }
 
         /// <summary>
-        /// Returns if the given int contains the given mask.
+        /// Returns if the given int contains any of the given mask.
         /// </summary>
-        static public bool ContainsMask(int inBitArray, int inBitMask)
+        [MethodImpl(256)]
+        static public bool ContainsAny(int inBitArray, int inBitMask)
         {
             return (inBitArray & inBitMask) != 0;
+        }
+
+        /// <summary>
+        /// Returns if the given enum contains any of the given mask.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool ContainsAny<T>(T inBitArray, T inBitMask)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            return (Enums.ToUInt(inBitArray) & Enums.ToUInt(inBitMask)) != 0;
+        }
+
+        /// <summary>
+        /// Returns if the given uint contains all of the given mask.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool ContainsAll(uint inBitArray, uint inBitMask)
+        {
+            return (inBitArray & inBitMask) == inBitMask;
+        }
+
+        /// <summary>
+        /// Returns if the given int contains all of the given mask.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool ContainsAll(int inBitArray, int inBitMask)
+        {
+            return (inBitArray & inBitMask) == inBitMask;
+        }
+
+        /// <summary>
+        /// Returns if the given enum contains any of the given mask.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool ContainsAll<T>(T inBitArray, T inBitMask)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            uint mask = Enums.ToUInt(inBitMask);
+            return (Enums.ToUInt(inBitArray) & mask) == mask;
         }
 
         /// <summary>
         /// Toggles the given bit in the given uint to on.
         /// </summary>
+        [MethodImpl(256)]
         static public void Add(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1U << inBitIndex);
@@ -65,14 +132,32 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to on.
         /// </summary>
+        [MethodImpl(256)]
         static public void Add(ref int ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1 << inBitIndex);
         }
 
         /// <summary>
+        /// Toggles the given mask in the given enum to on.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Add<T>(ref T ioBitArray, T inMask)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            ioBitArray = Enums.ToEnum<T>(Enums.ToUInt(ioBitArray) | Enums.ToUInt(inMask));
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given uint to off.
         /// </summary>
+        [MethodImpl(256)]
         static public void Remove(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1U << inBitIndex);
@@ -81,14 +166,32 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to off.
         /// </summary>
+        [MethodImpl(256)]
         static public void Remove(ref int ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1 << inBitIndex);
         }
 
         /// <summary>
+        /// Toggles the given mask in the given enum to off.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Remove<T>(ref T ioBitArray, T inMask)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            ioBitArray = Enums.ToEnum<T>(Enums.ToUInt(ioBitArray) & ~Enums.ToUInt(inMask));
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given uint to the given state.
         /// </summary>
+        [MethodImpl(256)]
         static public void Set(ref uint ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
@@ -100,12 +203,32 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to the given state.
         /// </summary>
+        [MethodImpl(256)]
         static public void Set(ref int ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
                 Add(ref ioBitArray, inBitIndex);
             else
                 Remove(ref ioBitArray, inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given int to the given state.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Set<T>(ref T ioBitArray, T inMask, bool inbState)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            if (inbState)
+                Add(ref ioBitArray, inMask);
+            else
+                Remove(ref ioBitArray, inMask);
         }
 
         /// <summary>
@@ -147,18 +270,32 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the bit index of the given bit array, if it contains a single set bit.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int IndexOf<T>(T inBitArray)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            return IndexOf(Enums.ToUInt(inBitArray));
+        }
+
+        /// <summary>
         /// Returns the number of set bits in the given bit array.
         /// </summary>
         static public int Count(int inBitArray)
         {
             int count = 0;
-            int mask = 1;
-            for(int i = 0; i < 32; ++i)
+            while(inBitArray != 0)
             {
-                if ((inBitArray & mask) != 0)
-                    ++count;
-                
-                mask <<= 1;
+                if ((inBitArray & 1) == 1)
+                    count++;
+                inBitArray >>= 1;
             }
             return count;
         }
@@ -169,15 +306,29 @@ namespace BeauUtil
         static public int Count(uint inBitArray)
         {
             int count = 0;
-            uint mask = 1;
-            for(int i = 0; i < 32; ++i)
+            while(inBitArray != 0)
             {
-                if ((inBitArray & mask) != 0)
-                    ++count;
-                
-                mask <<= 1;
+                if ((inBitArray & 1) == 1)
+                    count++;
+                inBitArray >>= 1;
             }
             return count;
+        }
+
+        /// <summary>
+        /// Returns the number of set bits in the given enum.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int Count<T>(T inBitArray)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            return Count(Enums.ToUInt(inBitArray));
         }
     }
 }

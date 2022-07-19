@@ -24,6 +24,48 @@ namespace BeauUtil.UnitTests
                 bool bMatch = Bits.Contains(fullMask, i);
                 Assert.True(bMatch);
             }
+
+            int someMask = 1 | 2 | 16;
+            Assert.True(Bits.Count(someMask) == 3);
+        }
+
+        private enum TestEnum : byte
+        {
+            A0 = 0,
+            A1,
+            A2,
+            A3,
+            A4 = 255,
+            A5 = 90,
+            A6 = 160
+        }
+
+        [Flags]
+        private enum TestFlagEnum : byte
+        {
+            F0 = 1,
+            F1 = 2,
+            F2 = 4,
+            F3 = 8,
+            F4 = 16
+        }
+
+        [Test]
+        static public void EnumsTest()
+        {
+            Assert.True(Enums.ToInt(TestEnum.A4) == (int) TestEnum.A4);
+            Assert.True(Enums.ToInt(TestEnum.A6) == (int) TestEnum.A6);
+
+            int a5 = Enums.ToInt(TestEnum.A5);
+            TestEnum a5e = Enums.ToEnum<TestEnum>(a5);
+            Assert.True(a5e == TestEnum.A5);
+
+            TestFlagEnum f = TestFlagEnum.F0 | TestFlagEnum.F1;
+            Assert.True(Bits.ContainsAny(f, TestFlagEnum.F1));
+            Assert.False(Bits.ContainsAny(f, TestFlagEnum.F4));
+
+            Bits.Add(ref f, TestFlagEnum.F4);
+            Assert.True(Bits.ContainsAny(f, TestFlagEnum.F4));
         }
 
         [Test]
