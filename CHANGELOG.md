@@ -1,3 +1,25 @@
+### Version 0.7.7
+**18 July 2022**
+
+StringSlice.Split improvements for thread safety and better configurability
+
+#### Features
+* Added `StringSlice.Split` configuration option to limit number of slices
+* New `Enums` utility class to convert generic enums to/from integral types
+* Added methods in `Bits` utility class to operate on generic flag enums
+* New `Batch` utility class to group items together by batch id and dispatch callbacks on sets
+
+#### Breaking Changes
+* `Bits.ContainsMask` renamed to `Bits.ContainsAny`
+* `CharStreamParams` factory methods contain an additional `Owner` argument, to ensure garbage collection doesn't sweep up source of pinned buffers
+
+#### Fixes
+* Using `Colors.Hex` in a static initializer will no longer crash
+
+#### Improvements
+* Improved thread safety of `StringSlice.Split` operations involving `ISplitter`
+* `StringUtils.ArgsList.Splitter` can now specify if quotes should be stripped from arguments
+
 ### Version 0.7.6
 **12 July 2022**
 
