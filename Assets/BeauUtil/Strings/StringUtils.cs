@@ -1037,30 +1037,26 @@ namespace BeauUtil
             /// </summary>
             public sealed class Splitter : StringSlice.ISplitter
             {
+                private const int QUOTE_FLAG = 1;
+
                 private readonly bool m_Unescape;
-                private bool m_QuoteMode;
 
                 public Splitter(bool inbUnescape = false)
                 {
                     m_Unescape = inbUnescape;
                 }
 
-                public void Reset()
-                {
-                    m_QuoteMode = false;
-                }
-
-                public bool Evaluate(string inString, int inIndex, out int outAdvance)
+                public bool Evaluate(string inString, int inIndex, int inSliceCount, ref int ioState, out int outAdvance)
                 {
                     outAdvance = 0;
                     char c = inString[inIndex];
                     if (c == ',')
                     {
-                        return !m_QuoteMode;
+                        return ioState == 0;
                     }
                     else if (c == '"')
                     {
-                        if (m_QuoteMode)
+                        if (ioState == QUOTE_FLAG)
                         {
                             if (inIndex < inString.Length - 1 && inString[inIndex + 1] == '"')
                             {
@@ -1068,21 +1064,21 @@ namespace BeauUtil
                             }
                             else
                             {
-                                m_QuoteMode = !m_QuoteMode;
+                                ioState = 0;
                             }
                         }
                         else
                         {
-                            m_QuoteMode = true;
+                            ioState = QUOTE_FLAG;
                         }
                     }
 
                     return false;
                 }
 
-                public StringSlice Process(StringSlice inSlice)
+                public StringSlice Process(StringSlice inSlice, int inState)
                 {
-                    StringSlice slice = inSlice.TrimStart().Trim(QuoteTrim);
+                    StringSlice slice = inSlice.TrimStart().Trim(DefaultQuoteChar);
 
                     // if this contains escaped CSV sequences, unescape it here
                     if (m_Unescape && (slice.Contains("\\") || slice.Contains("\"\"")))
@@ -1091,8 +1087,6 @@ namespace BeauUtil
                     }
                     return slice;
                 }
-
-                static private readonly char[] QuoteTrim = { '"' };
             }
 
             /// <summary>
@@ -1136,6 +1130,16 @@ namespace BeauUtil
         /// </summary>
         static public class ArgsList
         {
+            /// <summary>
+            /// Trims quotes from the start and end of a string.
+            /// </summary>
+            static public StringSlice TrimQuotes(StringSlice inString)
+            {
+                if (inString.Length >= 2 && inString[0] == '"' && inString[inString.Length - 1] == '"')
+                    return inString.Substring(1, inString.Length - 2);
+                return inString;
+            }
+
             /// <summary>
             /// Returns if the given string contains at least two delimiter-separated arguments.
             /// </summary>
@@ -1202,6 +1206,9 @@ namespace BeauUtil
             /// </summary>
             public sealed class Splitter : StringSlice.ISplitter
             {
+                private const int QUOTE_FLAG = 1 << 31;
+                private const int GROUP_MASK = 1 << 30 - 1;
+
                 [ThreadStatic] static private Splitter s_Instance;
 
                 static public Splitter Instance
@@ -1209,53 +1216,62 @@ namespace BeauUtil
                     get { return s_Instance ?? (s_Instance = new Splitter()); }
                 }
 
+                private readonly bool m_TrimQuotes;
                 private readonly bool m_Unescape;
                 private readonly char m_Delimiter;
-                private bool m_QuoteMode;
-                private int m_GroupingDepth;
 
                 public Splitter(bool inbUnescape = false)
                 {
                     m_Delimiter = ',';
                     m_Unescape = inbUnescape;
+                    m_TrimQuotes = true;
                 }
 
                 public Splitter(char inDelimiter, bool inbUnescape = false)
                 {
                     m_Delimiter = inDelimiter;
                     m_Unescape = inbUnescape;
+                    m_TrimQuotes = true;
                 }
 
-                public void Reset()
+                public Splitter(char inDelimiter, bool inbTrimQuotes, bool inbUnescape)
                 {
-                    m_QuoteMode = false;
+                    m_TrimQuotes = inbTrimQuotes;
+                    m_Unescape = inbUnescape;
+                    m_Delimiter = inDelimiter;
                 }
 
-                public bool Evaluate(string inString, int inIndex, out int outAdvance)
+                public bool Evaluate(string inString, int inIndex, int inSliceCount, ref int ioState, out int outAdvance)
                 {
                     outAdvance = 0;
                     char c = inString[inIndex];
 
+                    bool quote;
+                    int depth;
+                    DeconstructState(ioState, out quote, out depth);
+
                     if (c == m_Delimiter)
-                        return !m_QuoteMode && m_GroupingDepth <= 0;
+                        return !quote && depth <= 0;
 
                     switch(c)
                     {
                         case '(':
                         case '[':
                         case '{':
-                            if (!m_QuoteMode)
+                            if (!quote)
                             {
-                                m_GroupingDepth++;
+                                depth++;
+                                ioState = ConstructState(quote, depth);
                             }
                             break;
 
                         case ')':
                         case ']':
                         case '}':
-                            if (!m_QuoteMode)
+                            if (!quote)
                             {
-                                --m_GroupingDepth;
+                                --depth;
+                                ioState = ConstructState(quote, depth);
                             }
                             break;
 
@@ -1266,7 +1282,8 @@ namespace BeauUtil
                             }
                             else
                             {
-                                m_QuoteMode = !m_QuoteMode;
+                                quote = !quote;
+                                ioState = ConstructState(quote, depth);
                             }
                             break;
                     }
@@ -1274,13 +1291,13 @@ namespace BeauUtil
                     return false;
                 }
 
-                public StringSlice Process(StringSlice inSlice)
+                public StringSlice Process(StringSlice inSlice, int inState)
                 {
                     StringSlice slice = inSlice.Trim();
 
-                    if (slice.Length >= 2 && slice.StartsWith('"') && slice.EndsWith('"'))
+                    if (m_TrimQuotes)
                     {
-                        slice = slice.Substring(1, slice.Length - 2);
+                        slice = TrimQuotes(slice);
                     }
 
                     // if this contains escaped CSV sequences, unescape it here
@@ -1288,10 +1305,20 @@ namespace BeauUtil
                     {
                         return slice.Unescape(Escaper.Instance);
                     }
+
                     return slice;
                 }
+            
+                static private void DeconstructState(int inState, out bool outbQuote, out int outDepth)
+                {
+                    outbQuote = (inState & QUOTE_FLAG) != 0;
+                    outDepth = inState & GROUP_MASK;
+                }
 
-                static private readonly char[] QuoteTrim = { '"' };
+                static private int ConstructState(bool inbQuote, int inDepth)
+                {
+                    return (inbQuote ? QUOTE_FLAG : 0) | (inDepth & GROUP_MASK);
+                }
             }
 
             /// <summary>
@@ -1370,5 +1397,10 @@ namespace BeauUtil
         /// Default newline characters
         /// </summary>
         static public readonly char[] DefaultNewLineChars = new char[] { '\n', '\r' };
+
+        /// <summary>
+        /// Default quote character
+        /// </summary>
+        static public readonly char[] DefaultQuoteChar = new char[] { '"' };
     }
 }

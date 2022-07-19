@@ -136,6 +136,15 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
+        static public void CanSplitArgsWithVaradic()
+        {
+            StringSlice args = "Some args, \"this is a cool thing\", player == true, whatever == 0, this >= 2";
+            StringUtils.ArgsList.Splitter argsSplitter = new StringUtils.ArgsList.Splitter(',', false, false);
+            StringSlice[] split = args.Split(argsSplitter, new StringSliceOptions(StringSplitOptions.None, 3));
+            Assert.True(split.Length == 3, "Bounded string split doesn't work");
+        }
+
+        [Test]
         static public void TestStringHash32()
         {
             StringHashing.ClearReverseLookup();

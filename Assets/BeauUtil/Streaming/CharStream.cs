@@ -69,7 +69,7 @@ namespace BeauUtil.Streaming
                     break;
 
                 case CharStreamSourceType.String:
-                    LoadString((string) inParams.Source);
+                    LoadString((string) inParams.Source, inParams.Owner);
                     break;
 
                 case CharStreamSourceType.CustomTextAsset:
@@ -81,11 +81,11 @@ namespace BeauUtil.Streaming
                     break;
 
                 case CharStreamSourceType.ByteArr:
-                    LoadBytes((byte[]) inParams.Source);
+                    LoadBytes((byte[]) inParams.Source, inParams.Owner);
                     break;
 
                 case CharStreamSourceType.CharArr:
-                    LoadChars((char[]) inParams.Source);
+                    LoadChars((char[]) inParams.Source, inParams.Owner);
                     break;
             }
         }
@@ -110,7 +110,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Loads this CharStream with the given string.
         /// </summary>
-        public void LoadString(string inString)
+        public void LoadString(string inString, object inOwner = null)
         {
             if (Type != 0)
             {
@@ -128,6 +128,7 @@ namespace BeauUtil.Streaming
             Type = CharStreamType.CharPtr;
             Ownership = CharStreamResourceOwnership.UnpinData;
             PinnedDataHandle = pinned;
+            Source = inOwner;
         }
 
         /// <summary>
@@ -191,7 +192,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Loads this CharStream from the given byte array.
         /// </summary>
-        public void LoadBytes(byte[] inBytes)
+        public void LoadBytes(byte[] inBytes, object inOwner = null)
         {
             if (Type != 0)
             {
@@ -210,6 +211,7 @@ namespace BeauUtil.Streaming
             }
 
             DataOffset = 0;
+            Source = inOwner;
             Type = CharStreamType.BytePtr;
             Decoder = Decoder ?? Encoding.UTF8.GetDecoder();
         }
@@ -243,7 +245,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Loads this CharStream from the given char array.
         /// </summary>
-        public void LoadChars(char[] inChars)
+        public void LoadChars(char[] inChars, object inOwner = null)
         {
             if (Type != 0)
             {
@@ -262,6 +264,7 @@ namespace BeauUtil.Streaming
             }
 
             DataOffset = 0;
+            Source = inOwner;
             Type = CharStreamType.CharPtr;
         }
 
@@ -307,10 +310,10 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Creates a CharStream from the given string.
         /// </summary>
-        static public CharStream FromString(string inString)
+        static public CharStream FromString(string inString, object inSource = null)
         {
             CharStream stream = default;
-            stream.LoadString(inString);
+            stream.LoadString(inString, inSource);
             return stream;
         }
 
@@ -337,20 +340,20 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Creates a CharStream from the given byte array.
         /// </summary>
-        static public CharStream FromBytes(byte[] inBytes)
+        static public CharStream FromBytes(byte[] inBytes, object inSource = null)
         {
             CharStream stream = default;
-            stream.LoadBytes(inBytes);
+            stream.LoadBytes(inBytes, inSource);
             return stream;
         }
 
         /// <summary>
         /// Creates a CharStream from the given char array.
         /// </summary>
-        static public CharStream FromChars(char[] inChars)
+        static public CharStream FromChars(char[] inChars, object inSource = null)
         {
             CharStream stream = default;
-            stream.LoadChars(inChars);
+            stream.LoadChars(inChars, inSource);
             return stream;
         }
 
@@ -918,6 +921,7 @@ namespace BeauUtil.Streaming
     {
         internal string Name;
         internal object Source;
+        internal object Owner;
         internal unsafe void* DataPtr;
         internal int DataLength;
         internal CharStreamSourceType Type;
@@ -944,6 +948,7 @@ namespace BeauUtil.Streaming
             }
             stream.DataLength = 0;
             stream.Name = inName;
+            stream.Owner = null;
             
             return stream;
         }
@@ -951,7 +956,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Will create a CharStream from the given string.
         /// </summary>
-        static public CharStreamParams FromString(string inString, string inName = null)
+        static public CharStreamParams FromString(string inString, object inOwner = null, string inName = null)
         {
             CharStreamParams stream;
             stream.Type = CharStreamSourceType.String;
@@ -965,6 +970,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inName;
+            stream.Owner = inOwner;
 
             return stream;
         }
@@ -989,6 +995,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inCustomAsset.name;
+            stream.Owner = null;
 
             return stream;
         }
@@ -1013,6 +1020,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inTextAsset.name;
+            stream.Owner = null;
 
             return stream;
         }
@@ -1020,7 +1028,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Will create a CharStream from the given byte array.
         /// </summary>
-        static public CharStreamParams FromBytes(byte[] inBytes, string inName = null)
+        static public CharStreamParams FromBytes(byte[] inBytes, object inOwner = null, string inName = null)
         {
             if (inBytes == null)
                 return default(CharStreamParams);
@@ -1037,6 +1045,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inName;
+            stream.Owner = inOwner;
 
             return stream;
         }
@@ -1044,7 +1053,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Will create a CharStream from the given char array.
         /// </summary>
-        static public CharStreamParams FromChars(char[] inChars, string inName = null)
+        static public CharStreamParams FromChars(char[] inChars, object inOwner = null, string inName = null)
         {
             if (inChars == null)
                 return default(CharStreamParams);
@@ -1061,6 +1070,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inName;
+            stream.Owner = inOwner;
 
             return stream;
         }

@@ -158,7 +158,7 @@ namespace BeauUtil.Tags
         public TempList8<StringSlice> ExtractStringArgs()
         {
             TempList8<StringSlice> args = default(TempList8<StringSlice>);
-            StringArgument.Split(s_CommaSplitter ?? (s_CommaSplitter = new StringUtils.ArgsList.Splitter()), StringSplitOptions.None, ref args);
+            StringArgument.Split(StringUtils.ArgsList.Splitter.Instance, StringSplitOptions.None, ref args);
             return args;
         }
 
@@ -174,7 +174,5 @@ namespace BeauUtil.Tags
             Argument1 = Variant.Null;
             AdditionalData = null;
         }
-
-        [ThreadStatic] static private StringUtils.ArgsList.Splitter s_CommaSplitter;
     }
 }

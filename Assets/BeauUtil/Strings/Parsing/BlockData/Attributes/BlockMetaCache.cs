@@ -252,7 +252,7 @@ namespace BeauUtil.Blocks
 
             #region Invoke
 
-            internal bool Invoke(object inThis, StringSlice inData, SplitResources inSplitResources)
+            internal bool Invoke(object inThis, StringSlice inData)
             {
                 if ((m_Flags & InvocationFlags.Static) != 0)
                 {
@@ -265,7 +265,7 @@ namespace BeauUtil.Blocks
                 }
                 if ((m_Flags & InvocationFlags.Method) != 0)
                 {
-                    return InvokeMethod(inThis, inData, inSplitResources);
+                    return InvokeMethod(inThis, inData);
                 }
                 if ((m_Flags & InvocationFlags.Property) != 0)
                 {
@@ -295,35 +295,31 @@ namespace BeauUtil.Blocks
                 }
             }
 
-            private bool InvokeMethod(object inThis, StringSlice inData, SplitResources inSplitResources)
+            private bool InvokeMethod(object inThis, StringSlice inData)
             {
                 if (m_Parameters.Length > 0)
                 {
-                    lock(inSplitResources.LockObj)
+                    TempList8<StringSlice> argList = default;
+                    if (m_RequiredParamCount == 1 && m_Parameters.Length == 1)
                     {
-                        inSplitResources.ArgList.Clear();
+                        if (!StringParser.TryConvertTo(inData, m_Parameters[0].ParameterType, out m_MethodParams[0]))
+                            return false;
+                    }
+                    else
+                    {
+                        int providedArgCount = inData.Split(StringUtils.ArgsList.Splitter.Instance, StringSplitOptions.None, ref argList);
+                        if (providedArgCount < m_RequiredParamCount || providedArgCount > m_Parameters.Length)
+                            return false;
 
-                        if (m_RequiredParamCount == 1 && m_Parameters.Length == 1)
+                        for(int i = 0; i < providedArgCount; ++i)
                         {
-                            if (!StringParser.TryConvertTo(inData, m_Parameters[0].ParameterType, out m_MethodParams[0]))
+                            if (!StringParser.TryConvertTo(argList[i], m_Parameters[i].ParameterType, out m_MethodParams[i]))
                                 return false;
                         }
-                        else
+
+                        for(int i = providedArgCount; i < m_Parameters.Length; ++i)
                         {
-                            int providedArgCount = inData.Split(inSplitResources.Splitter, StringSplitOptions.None, inSplitResources.ArgList);
-                            if (providedArgCount < m_RequiredParamCount || providedArgCount > m_Parameters.Length)
-                                return false;
-
-                            for(int i = 0; i < providedArgCount; ++i)
-                            {
-                                if (!StringParser.TryConvertTo(inSplitResources.ArgList[i], m_Parameters[i].ParameterType, out m_MethodParams[i]))
-                                    return false;
-                            }
-
-                            for(int i = providedArgCount; i < m_Parameters.Length; ++i)
-                            {
-                                m_MethodParams[i] = m_DefaultParams[i];
-                            }
+                            m_MethodParams[i] = m_DefaultParams[i];
                         }
                     }
                 }
@@ -378,26 +374,10 @@ namespace BeauUtil.Blocks
             internal BlockContentMode Mode;
             internal char LineSeparator;
         }
-
-        internal class SplitResources
-        {
-            internal readonly object LockObj;
-            internal readonly List<StringSlice> ArgList;
-            internal readonly StringUtils.ArgsList.Splitter Splitter;
-
-            internal SplitResources()
-            {
-                LockObj = new object();
-                ArgList = new List<StringSlice>(8);
-                Splitter = new StringUtils.ArgsList.Splitter(true);
-            }
-        }
     
         #endregion // Types
 
         private readonly Dictionary<Type, TypeInfo> m_TypeCache = new Dictionary<Type, TypeInfo>(32);
-
-        internal readonly SplitResources SharedResources = new SplitResources();
 
         /// <summary>
         /// Attempts to evaluate a command on an object.
@@ -412,7 +392,7 @@ namespace BeauUtil.Blocks
                 if (!info.TryGetMetaInfo(inData, out meta))
                     return false;
 
-                return meta.Invoke(inObject, inData.Data, SharedResources);
+                return meta.Invoke(inObject, inData.Data);
             }
 
             return false;

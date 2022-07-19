@@ -407,62 +407,58 @@ namespace BeauUtil
         public interface ISplitter
         {
             /// <summary>
-            /// Resets the splitter's state.
-            /// </summary>
-            void Reset();
-
-            /// <summary>
             /// Evaluates whether or not to split on a given character.
             /// </summary>
             /// <param name="inString">String to evaluate.</param>
             /// <param name="inIndex">Current evaluation index.</param>
+            /// <param name="inSliceCount">Number of slices currently found.</param>
             /// <param name="outAdvance">Output for any additional characters to advance.</param>
-            bool Evaluate(string inString, int inIndex, out int outAdvance);
+            bool Evaluate(string inString, int inIndex, int inSliceCount, ref int ioState, out int outAdvance);
 
             /// <summary>
             /// Post-process for a given slice. Useful for trimming and unescaping.
             /// </summary>
-            StringSlice Process(StringSlice inSlice);
+            StringSlice Process(StringSlice inSlice, int ioState);
         }
 
         #region Slice
 
-        public StringSlice[] Split(char[] inSeparator, StringSplitOptions inSplitOptions)
+        public StringSlice[] Split(char[] inSeparator, StringSliceOptions inSplitOptions)
         {
             return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions);
         }
 
-        public StringSlice[] Split(ISplitter inSplitter, StringSplitOptions inSplitOptions)
+        public StringSlice[] Split(ISplitter inSplitter, StringSliceOptions inSplitOptions)
         {
             return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions);
         }
 
-        public int Split(char[] inSeparator, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        public int Split(char[] inSeparator, StringSliceOptions inSplitOptions, IList<StringSlice> outSlices)
         {
             return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions, outSlices);
         }
 
-        public int Split(ISplitter inSplitter, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        public int Split(ISplitter inSplitter, StringSliceOptions inSplitOptions, IList<StringSlice> outSlices)
         {
             return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, outSlices);
         }
 
-        public int Split<T>(char[] inSeparator, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
+        public int Split<T>(char[] inSeparator, StringSliceOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions, ref outSlices);
         }
 
-        public int Split<T>(ISplitter inSplitter, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
+        public int Split<T>(ISplitter inSplitter, StringSliceOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions, ref outSlices);
         }
 
-        public IEnumerable<StringSlice> EnumeratedSplit(char[] inSeparator, StringSplitOptions inSplitOptions)
+        public IEnumerable<StringSlice> EnumeratedSplit(char[] inSeparator, StringSliceOptions inSplitOptions)
         {
             return EnumerableSplit(m_Source, m_StartIndex, Length, inSeparator, inSplitOptions);
         }
 
-        public IEnumerable<StringSlice> EnumeratedSplit(ISplitter inSplitter, StringSplitOptions inSplitOptions)
+        public IEnumerable<StringSlice> EnumeratedSplit(ISplitter inSplitter, StringSliceOptions inSplitOptions)
         {
             return EnumerableSplit(m_Source, m_StartIndex, Length, inSplitter, inSplitOptions);
         }
@@ -471,42 +467,42 @@ namespace BeauUtil
 
         #region Static
 
-        static public StringSlice[] Split(string inString, char[] inSeparator, StringSplitOptions inSplitOptions)
+        static public StringSlice[] Split(string inString, char[] inSeparator, StringSliceOptions inSplitOptions)
         {
             return Split(inString, 0, inString.Length, inSeparator, inSplitOptions);
         }
 
-        static public StringSlice[] Split(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions)
+        static public StringSlice[] Split(string inString, ISplitter inSplitter, StringSliceOptions inSplitOptions)
         {
             return Split(inString, 0, inString.Length, inSplitter, inSplitOptions);
         }
 
-        static public int Split(string inString, char[] inSeparator, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        static public int Split(string inString, char[] inSeparator, StringSliceOptions inSplitOptions, IList<StringSlice> outSlices)
         {
             return Split(inString, 0, inString.Length, inSeparator, inSplitOptions, outSlices);
         }
 
-        static public int Split(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        static public int Split(string inString, ISplitter inSplitter, StringSliceOptions inSplitOptions, IList<StringSlice> outSlices)
         {
             return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, outSlices);
         }
 
-        static public int Split<T>(string inString, char[] inSeparator, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
+        static public int Split<T>(string inString, char[] inSeparator, StringSliceOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(inString, 0, inString.Length, inSeparator, inSplitOptions, ref outSlices);
         }
 
-        static public int Split<T>(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
+        static public int Split<T>(string inString, ISplitter inSplitter, StringSliceOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
             return Split(inString, 0, inString.Length, inSplitter, inSplitOptions, ref outSlices);
         }
 
-        static public IEnumerable<StringSlice> EnumeratedSplit(string inString, char[] inSeparator, StringSplitOptions inSplitOptions)
+        static public IEnumerable<StringSlice> EnumeratedSplit(string inString, char[] inSeparator, StringSliceOptions inSplitOptions)
         {
             return EnumerableSplit(inString, 0, inString.Length, inSeparator, inSplitOptions);
         }
 
-        static public IEnumerable<StringSlice> EnumeratedSplit(string inString, ISplitter inSplitter, StringSplitOptions inSplitOptions)
+        static public IEnumerable<StringSlice> EnumeratedSplit(string inString, ISplitter inSplitter, StringSliceOptions inSplitOptions)
         {
             return EnumerableSplit(inString, 0, inString.Length, inSplitter, inSplitOptions);
         }
@@ -924,50 +920,66 @@ namespace BeauUtil
             return StringHashing.AppendHash64(inHash, m_Source, m_StartIndex, Length, inbReverseLookup);
         }
 
-        static private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
+        static unsafe private bool MatchStart(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
         {
-            if (inLengthMatch > inLength)
+            if (inLengthMatch > inLength || inStart + inLength > inString.Length || inStartMatch + inLengthMatch > inMatch.Length)
                 return false;
 
-            for (int i = 0; i < inLengthMatch; ++i)
+            fixed(char* str = inString)
+            fixed(char* match = inMatch)
             {
-                char a = inString[inStart + i];
-                char b = inMatch[inStartMatch + i];
-                if (!inbIgnoreCase)
+                char* a = str + inStart;
+                char* b = match + inStartMatch;
+                char* end = b + inLengthMatch;
+
+                if (inbIgnoreCase)
                 {
-                    if (a != b)
-                        return false;
+                    while(b != end)
+                    {
+                        if (char.ToLowerInvariant(*a++) != char.ToLowerInvariant(*b++))
+                            return false;
+                    }
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
-                        return false;
+                    while(b != end)
+                    {
+                        if (*a++ != *b++)
+                            return false;
+                    }
                 }
             }
 
             return true;
         }
 
-        static private bool MatchEnd(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
+        static private unsafe bool MatchEnd(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
         {
-            if (inLengthMatch > inLength)
+            if (inLengthMatch > inLength || inStart + inLength > inString.Length || inStartMatch + inLengthMatch > inMatch.Length)
                 return false;
 
-            int endA = inStart + inLength - 1;
-            int endB = inStartMatch + inLengthMatch - 1;
-            for (int i = 0; i < inLengthMatch; ++i)
+            fixed(char* str = inString)
+            fixed(char* match = inMatch)
             {
-                char a = inString[endA - i];
-                char b = inMatch[endB - i];
-                if (!inbIgnoreCase)
+                char* a = str + inStart + inLength - inLengthMatch;
+                char* b = match + inStartMatch;
+                char* end = b + inLengthMatch;
+
+                if (inbIgnoreCase)
                 {
-                    if (a != b)
-                        return false;
+                    while(b != end)
+                    {
+                        if (char.ToLowerInvariant(*a++) != char.ToLowerInvariant(*b++))
+                            return false;
+                    }
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
-                        return false;
+                    while(b != end)
+                    {
+                        if (*a++ != *b++)
+                            return false;
+                    }
                 }
             }
 
@@ -998,28 +1010,28 @@ namespace BeauUtil
             return true;
         }
 
-        static private StringSlice[] Split(string inString, int inStartIdx, int inLength, char[] inSeparator, StringSplitOptions inSplitOptions)
+        static private StringSlice[] Split(string inString, int inStartIdx, int inLength, char[] inSeparator, StringSliceOptions inOptions)
         {
             List<StringSlice> slices = new List<StringSlice>();
-            Split(inString, inStartIdx, inLength, inSeparator, inSplitOptions, slices);
+            Split(inString, inStartIdx, inLength, inSeparator, inOptions, slices);
             return slices.ToArray();
         }
 
-        static private StringSlice[] Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions)
+        static private StringSlice[] Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSliceOptions inOptions)
         {
             List<StringSlice> slices = new List<StringSlice>();
-            Split(inString, inStartIdx, inLength, inSplitter, inSplitOptions, slices);
+            Split(inString, inStartIdx, inLength, inSplitter, inOptions, slices);
             return slices.ToArray();
         }
 
-        static private int Split(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        static private int Split(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSliceOptions inOptions, IList<StringSlice> outSlices)
         {
-            if (inString == null)
+            if (inString == null || inOptions.MaxSlices <= 0)
                 return 0;
 
-            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+            bool bRemoveEmpty = (inOptions.Split & StringSplitOptions.RemoveEmptyEntries) != 0;
 
-            if (inSeparators == null || inSeparators.Length == 0)
+            if (inSeparators == null || inSeparators.Length == 0 || inOptions.MaxSlices == 1)
             {
                 if (!bRemoveEmpty || inLength > 0)
                 {
@@ -1056,6 +1068,13 @@ namespace BeauUtil
                     }
 
                     startIdx = realIdx + 1;
+
+                    if (slices >= inOptions.MaxSlices - 1)
+                    {
+                        currentLength = inLength - charIdx - 1;
+                        break;
+                    }
+
                     currentLength = 0;
                 }
                 else
@@ -1074,12 +1093,12 @@ namespace BeauUtil
             return slices;
         }
 
-        static private int Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions, IList<StringSlice> outSlices)
+        static private int Split(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSliceOptions inOptions, IList<StringSlice> outSlices)
         {
-            if (inString == null)
+            if (inString == null || inOptions.MaxSlices <= 0)
                 return 0;
 
-            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+            bool bRemoveEmpty = (inOptions.Split & StringSplitOptions.RemoveEmptyEntries) != 0;
 
             if (inSplitter == null)
             {
@@ -1092,7 +1111,19 @@ namespace BeauUtil
                 return 0;
             }
 
-            inSplitter.Reset();
+            if (inOptions.MaxSlices == 1)
+            {
+                StringSlice slice = inSplitter.Process(new StringSlice(inString, inStartIdx, inLength), 0);
+                if (!bRemoveEmpty || inLength > 0)
+                {
+                    outSlices.Add(slice);
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            int splitterState = 0;
 
             int startIdx = inStartIdx;
             int currentLength = 0;
@@ -1103,7 +1134,7 @@ namespace BeauUtil
                 int realIdx = inStartIdx + charIdx;
 
                 int evalAdvance;
-                bool bSplit = inSplitter.Evaluate(inString, realIdx, out evalAdvance);
+                bool bSplit = inSplitter.Evaluate(inString, realIdx, slices, ref splitterState, out evalAdvance);
 
                 charIdx += evalAdvance;
                 currentLength += evalAdvance;
@@ -1113,7 +1144,7 @@ namespace BeauUtil
                     if (!bRemoveEmpty || currentLength > 0)
                     {
                         StringSlice slice = new StringSlice(inString, startIdx, currentLength);
-                        slice = inSplitter.Process(slice);
+                        slice = inSplitter.Process(slice, splitterState);
                         if (!bRemoveEmpty || slice.Length > 0)
                         {
                             outSlices.Add(slice);
@@ -1122,6 +1153,13 @@ namespace BeauUtil
                     }
 
                     startIdx = realIdx + 1 + evalAdvance;
+
+                    if (slices >= inOptions.MaxSlices - 1)
+                    {
+                        currentLength = inLength - charIdx - 1;
+                        break;
+                    }
+
                     currentLength = 0;
                 }
                 else
@@ -1133,7 +1171,7 @@ namespace BeauUtil
             if (currentLength > 0)
             {
                 StringSlice slice = new StringSlice(inString, startIdx, currentLength);
-                slice = inSplitter.Process(slice);
+                slice = inSplitter.Process(slice, splitterState);
                 if (!bRemoveEmpty || slice.Length > 0)
                 {
                     outSlices.Add(slice);
@@ -1144,14 +1182,14 @@ namespace BeauUtil
             return slices;
         }
 
-        static private int Split<T>(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
+        static private int Split<T>(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSliceOptions inOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
-            if (inString == null)
+            if (inString == null || inOptions.MaxSlices <= 0)
                 return 0;
 
-            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+            bool bRemoveEmpty = (inOptions.Split & StringSplitOptions.RemoveEmptyEntries) != 0;
 
-            if (inSeparators == null || inSeparators.Length == 0)
+            if (inSeparators == null || inSeparators.Length == 0 || inOptions.MaxSlices == 1)
             {
                 if (!bRemoveEmpty || inLength > 0)
                 {
@@ -1188,6 +1226,13 @@ namespace BeauUtil
                     }
 
                     startIdx = realIdx + 1;
+                    
+                    if (slices >= inOptions.MaxSlices - 1)
+                    {
+                        currentLength = inLength - charIdx - 1;
+                        break;
+                    }
+
                     currentLength = 0;
                 }
                 else
@@ -1206,14 +1251,14 @@ namespace BeauUtil
             return slices;
         }
 
-        static private int Split<T>(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions, ref T outSlices) where T : ITempList<StringSlice>
+        static private int Split<T>(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSliceOptions inOptions, ref T outSlices) where T : ITempList<StringSlice>
         {
-            if (inString == null)
+            if (inString == null || inOptions.MaxSlices <= 0)
                 return 0;
 
-            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+            bool bRemoveEmpty = (inOptions.Split & StringSplitOptions.RemoveEmptyEntries) != 0;
 
-            if (inSplitter == null)
+            if (inSplitter == null || inOptions.MaxSlices == 1)
             {
                 if (!bRemoveEmpty || inLength > 0)
                 {
@@ -1224,7 +1269,19 @@ namespace BeauUtil
                 return 0;
             }
 
-            inSplitter.Reset();
+            if (inOptions.MaxSlices == 1)
+            {
+                StringSlice slice = inSplitter.Process(new StringSlice(inString, inStartIdx, inLength), 0);
+                if (!bRemoveEmpty || inLength > 0)
+                {
+                    outSlices.Add(slice);
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            int splitterState = 0;
 
             int startIdx = inStartIdx;
             int currentLength = 0;
@@ -1235,7 +1292,7 @@ namespace BeauUtil
                 int realIdx = inStartIdx + charIdx;
 
                 int evalAdvance;
-                bool bSplit = inSplitter.Evaluate(inString, realIdx, out evalAdvance);
+                bool bSplit = inSplitter.Evaluate(inString, realIdx, slices, ref splitterState, out evalAdvance);
 
                 charIdx += evalAdvance;
                 currentLength += evalAdvance;
@@ -1245,7 +1302,7 @@ namespace BeauUtil
                     if (!bRemoveEmpty || currentLength > 0)
                     {
                         StringSlice slice = new StringSlice(inString, startIdx, currentLength);
-                        slice = inSplitter.Process(slice);
+                        slice = inSplitter.Process(slice, splitterState);
                         if (!bRemoveEmpty || slice.Length > 0)
                         {
                             outSlices.Add(slice);
@@ -1254,6 +1311,13 @@ namespace BeauUtil
                     }
 
                     startIdx = realIdx + 1 + evalAdvance;
+                    
+                    if (slices >= inOptions.MaxSlices - 1)
+                    {
+                        currentLength = inLength - charIdx - 1;
+                        break;
+                    }
+
                     currentLength = 0;
                 }
                 else
@@ -1265,7 +1329,7 @@ namespace BeauUtil
             if (currentLength > 0 && slices < outSlices.Capacity)
             {
                 StringSlice slice = new StringSlice(inString, startIdx, currentLength);
-                slice = inSplitter.Process(slice);
+                slice = inSplitter.Process(slice, splitterState);
                 if (!bRemoveEmpty || slice.Length > 0)
                 {
                     outSlices.Add(slice);
@@ -1276,14 +1340,14 @@ namespace BeauUtil
             return slices;
         }
 
-        static private IEnumerable<StringSlice> EnumerableSplit(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSplitOptions inSplitOptions)
+        static private IEnumerable<StringSlice> EnumerableSplit(string inString, int inStartIdx, int inLength, char[] inSeparators, StringSliceOptions inOptions)
         {
-            if (inString == null)
+            if (inString == null || inOptions.MaxSlices <= 0)
                 yield break;
 
-            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+            bool bRemoveEmpty = (inOptions.Split & StringSplitOptions.RemoveEmptyEntries) != 0;
 
-            if (inSeparators == null || inSeparators.Length == 0)
+            if (inSeparators == null || inSeparators.Length == 0 || inOptions.MaxSlices == 1)
             {
                 if (!bRemoveEmpty || inLength > 0)
                 {
@@ -1296,6 +1360,7 @@ namespace BeauUtil
 
             int startIdx = inStartIdx;
             int currentLength = 0;
+            int slices = 0;
 
             for (int charIdx = 0; charIdx < inLength; ++charIdx)
             {
@@ -1313,9 +1378,17 @@ namespace BeauUtil
                     {
                         StringSlice slice = new StringSlice(inString, startIdx, currentLength);
                         yield return slice;
+                        slices++;
                     }
 
                     startIdx = realIdx + 1;
+                    
+                    if (slices >= inOptions.MaxSlices - 1)
+                    {
+                        currentLength = inLength - charIdx - 1;
+                        break;
+                    }
+
                     currentLength = 0;
                 }
                 else
@@ -1331,12 +1404,12 @@ namespace BeauUtil
             }
         }
 
-        static private IEnumerable<StringSlice> EnumerableSplit(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSplitOptions inSplitOptions)
+        static private IEnumerable<StringSlice> EnumerableSplit(string inString, int inStartIdx, int inLength, ISplitter inSplitter, StringSliceOptions inOptions)
         {
-            if (inString == null)
+            if (inString == null || inOptions.MaxSlices <= 0)
                 yield break;
 
-            bool bRemoveEmpty = (inSplitOptions & StringSplitOptions.RemoveEmptyEntries) != 0;
+            bool bRemoveEmpty = (inOptions.Split & StringSplitOptions.RemoveEmptyEntries) != 0;
 
             if (inSplitter == null)
             {
@@ -1347,17 +1420,28 @@ namespace BeauUtil
                 yield break;
             }
 
-            inSplitter.Reset();
+            if (inOptions.MaxSlices == 1)
+            {
+                StringSlice slice = inSplitter.Process(new StringSlice(inString, inStartIdx, inLength), 0);
+                if (!bRemoveEmpty || inLength > 0)
+                {
+                    yield return slice;
+                }
+                yield break;
+            }
+
+            int splitterState = 0;
 
             int startIdx = inStartIdx;
             int currentLength = 0;
+            int slices = 0;
 
             for (int charIdx = 0; charIdx < inLength; ++charIdx)
             {
                 int realIdx = inStartIdx + charIdx;
 
                 int evalAdvance;
-                bool bSplit = inSplitter.Evaluate(inString, realIdx, out evalAdvance);
+                bool bSplit = inSplitter.Evaluate(inString, realIdx, slices, ref splitterState, out evalAdvance);
 
                 charIdx += evalAdvance;
                 currentLength += evalAdvance;
@@ -1367,14 +1451,22 @@ namespace BeauUtil
                     if (!bRemoveEmpty || currentLength > 0)
                     {
                         StringSlice slice = new StringSlice(inString, startIdx, currentLength);
-                        slice = inSplitter.Process(slice);
+                        slice = inSplitter.Process(slice, splitterState);
                         if (!bRemoveEmpty || slice.Length > 0)
                         {
                             yield return slice;
+                            slices++;
                         }
                     }
 
                     startIdx = realIdx + 1 + evalAdvance;
+                    
+                    if (slices >= inOptions.MaxSlices - 1)
+                    {
+                        currentLength = inLength - charIdx - 1;
+                        break;
+                    }
+
                     currentLength = 0;
                 }
                 else
@@ -1386,7 +1478,7 @@ namespace BeauUtil
             if (currentLength > 0)
             {
                 StringSlice slice = new StringSlice(inString, startIdx, currentLength);
-                slice = inSplitter.Process(slice);
+                slice = inSplitter.Process(slice, splitterState);
                 if (!bRemoveEmpty || slice.Length > 0)
                 {
                     yield return slice;
@@ -1454,7 +1546,7 @@ namespace BeauUtil
         }
 
         [Flags]
-        private enum TrimType
+        internal enum TrimType
         {
             None = 0,
             Start = 0x01,
@@ -1463,7 +1555,7 @@ namespace BeauUtil
         }
 
         // Taken from String.WhitespaceChars
-        static private readonly char[] TrimWhitespaceChars = new char[]
+        static internal readonly char[] TrimWhitespaceChars = new char[]
         {
             (char) 0x9, (char) 0xA, (char) 0xB, (char) 0xC, (char) 0xD, (char) 0x20, (char) 0x85,
             (char) 0xA0, (char) 0x1680,
@@ -1474,5 +1566,27 @@ namespace BeauUtil
         };
 
         #endregion // Internal
+    }
+
+    /// <summary>
+    /// String slicing options.
+    /// </summary>
+    public struct StringSliceOptions
+    {
+        public readonly StringSplitOptions Split;
+        public readonly int MaxSlices;
+
+        static public readonly StringSliceOptions Default = new StringSliceOptions(StringSplitOptions.None, int.MaxValue);
+
+        public StringSliceOptions(StringSplitOptions inOptions, int inMaxSlices = int.MaxValue)
+        {
+            Split = inOptions;
+            MaxSlices = inMaxSlices;
+        }
+
+        static public implicit operator StringSliceOptions(StringSplitOptions inSplit)
+        {
+            return new StringSliceOptions(inSplit);
+        }
     }
 }

@@ -153,5 +153,66 @@ namespace BeauUtil.UnitTests
                 100f * d / iter,
                 iter);
         }
+    
+        [Test]
+        static public void BatchTest()
+        {
+            int lastBatchId = -1;
+            int[] sums = new int[6];
+            Batch.ProcessDelegate<BatchItem, int> processDelegate = (items, id, args) => {
+                Assert.GreaterOrEqual(id, lastBatchId);
+                lastBatchId = id;
+                Debug.LogFormat("Batch {0} with {1} items", id, items.Length);
+                for(int i = 0; i < items.Length; i++) {
+                    Debug.LogFormat("Batch {0}, item {1}, arg {2}", id, items[i].Id, args);
+                    sums[id] += items[i].Id;
+                }
+            };
+            Batch.Processor<BatchItem, int> processor = new Batch.Processor<BatchItem, int>(processDelegate, 4);
+            RingBuffer<BatchItem> allItems = new RingBuffer<BatchItem>(32);
+            allItems.PushBack(new BatchItem(1, 1));
+            allItems.PushBack(new BatchItem(2, 3));
+            allItems.PushBack(new BatchItem(3, 2));
+            allItems.PushBack(new BatchItem(4, 3));
+            allItems.PushBack(new BatchItem(5, 2));
+            allItems.PushBack(new BatchItem(6, 4));
+            allItems.PushBack(new BatchItem(7, 4));
+            allItems.PushBack(new BatchItem(8, 5));
+            allItems.PushBack(new BatchItem(9, 0));
+            allItems.PushBack(new BatchItem(10, 2));
+            allItems.PushBack(new BatchItem(11, 3));
+            allItems.PushBack(new BatchItem(12, 2));
+            allItems.PushBack(new BatchItem(13, 1));
+            allItems.PushBack(new BatchItem(14, 5));
+            allItems.PushBack(new BatchItem(15, 3));
+            allItems.PushBack(new BatchItem(16, 4));
+            allItems.PushBack(new BatchItem(17, 0));
+            allItems.PushBack(new BatchItem(18, 2));
+
+            Batch.Sort(allItems);
+            processor.Prep(allItems, 5);
+            processor.ProcessAll();
+
+            Debug.LogFormat("Sums: {0} {1} {2} {3} {4} {5}", sums[0], sums[1], sums[2], sums[3], sums[4], sums[5]);
+
+            Assert.True(sums[0] == 26, "Sum of 0 index is incorrect");
+            Assert.True(sums[1] == 14, "Sum of 1 index is incorrect");
+            Assert.True(sums[2] == 48, "Sum of 2 index is incorrect");
+            Assert.True(sums[3] == 32, "Sum of 3 index is incorrect");
+            Assert.True(sums[4] == 29, "Sum of 4 index is incorrect");
+            Assert.True(sums[5] == 22, "Sum of 5 index is incorrect");
+        }
+
+        private struct BatchItem : IBatchId
+        {
+            public int Id;
+            public int BatchId { get; private set; }
+
+            public BatchItem(int inId, int inBatchId)
+            {
+                Id = inId;
+                BatchId = inBatchId;
+            }
+        }
     }
 }

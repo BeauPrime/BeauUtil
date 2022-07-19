@@ -567,7 +567,7 @@ namespace BeauUtil.Blocks
                 {
                     if (contentSetter.Mode == BlockContentMode.LineByLine || inbCloseBlock)
                     {
-                        bHandled = contentSetter.Invoke(ioParser.CurrentBlock, inContent.Flush(), ioState.Cache.SharedResources);
+                        bHandled = contentSetter.Invoke(ioParser.CurrentBlock, inContent.Flush());
                     }
                     else
                     {
@@ -663,7 +663,7 @@ namespace BeauUtil.Blocks
                     {
                         ioState.ContentBuilder.TrimEnd(TrimCharsWithSpace);
                         string contentString = ioState.ContentBuilder.Flush();
-                        ioState.BlockError |= !contentSetter.Invoke(ioParser.CurrentBlock, contentString, ioState.Cache.SharedResources);
+                        ioState.BlockError |= !contentSetter.Invoke(ioParser.CurrentBlock, contentString);
                         ioState.Error |= ioState.BlockError;
                     }
                 }

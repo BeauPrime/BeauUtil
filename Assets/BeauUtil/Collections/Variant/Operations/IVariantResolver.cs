@@ -83,7 +83,7 @@ namespace BeauUtil.Variants
             if (inModifyData.IsWhitespace)
                 return true;
             
-            StringSlice.ISplitter splitter = QuoteAwareSplitter ?? (QuoteAwareSplitter = new StringUtils.ArgsList.Splitter(false));
+            StringSlice.ISplitter splitter = StringUtils.ArgsList.Splitter.Instance;
             bool bSuccess = true;
             VariantModification mod;
             foreach(var group in inModifyData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
@@ -103,7 +103,7 @@ namespace BeauUtil.Variants
             if (inEvalData.IsWhitespace)
                 return true;
             
-            StringSlice.ISplitter splitter = QuoteAwareSplitter ?? (QuoteAwareSplitter = new StringUtils.ArgsList.Splitter(false));
+            StringSlice.ISplitter splitter = StringUtils.ArgsList.Splitter.Instance;
             VariantComparison comp;
             foreach(var group in inEvalData.EnumeratedSplit(splitter, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -113,7 +113,5 @@ namespace BeauUtil.Variants
 
             return true;
         }
-
-        [ThreadStatic] static private StringUtils.ArgsList.Splitter QuoteAwareSplitter;
     }
 }
