@@ -39,6 +39,32 @@ namespace BeauUtil
             byte b = *((byte*) inData);
         }
 
+        #if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Reinterprets a value as a value of another type.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TTo Reinterpret<TFrom, TTo>(TFrom inValue)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+        {
+            return *(TTo*)(&inValue);
+        }
+
+        /// <summary>
+        /// Reinterprets a value as a value of another type.
+        /// </summary>
+        [MethodImpl(256)]
+        static public TTo Reinterpret<TFrom, TTo>(TFrom* inValuePtr)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+        {
+            return *(TTo*)(inValuePtr);
+        }
+
+        #endif // UNMANAGED_CONSTRAINT
+
         #region Alignment
 
         private struct AlignHelper<T>
