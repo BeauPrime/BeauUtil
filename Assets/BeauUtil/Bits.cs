@@ -236,18 +236,10 @@ namespace BeauUtil
         /// </summary>
         static public int IndexOf(int inBitArray)
         {
-            if (inBitArray == 0)
-                return -1;
-            if ((inBitArray & (inBitArray - 1)) != 0)
-                return -1;
-
-            int shiftCount = 0;
-            while (inBitArray != 1)
+            unsafe
             {
-                inBitArray >>= 1;
-                ++shiftCount;
+                return IndexOf(*(uint*)(&inBitArray));
             }
-            return shiftCount;
         }
 
         /// <summary>
@@ -290,14 +282,10 @@ namespace BeauUtil
         /// </summary>
         static public int Count(int inBitArray)
         {
-            int count = 0;
-            while(inBitArray != 0)
+            unsafe
             {
-                if ((inBitArray & 1) == 1)
-                    count++;
-                inBitArray >>= 1;
+                return Count(*(uint*)(&inBitArray));
             }
-            return count;
         }
 
         /// <summary>
@@ -308,8 +296,7 @@ namespace BeauUtil
             int count = 0;
             while(inBitArray != 0)
             {
-                if ((inBitArray & 1) == 1)
-                    count++;
+                count += (int) (inBitArray & 1);
                 inBitArray >>= 1;
             }
             return count;

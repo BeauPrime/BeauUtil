@@ -25,6 +25,8 @@ namespace BeauUtil.UnitTests
                 Assert.True(bMatch);
             }
 
+            Bits.Count(-1);
+
             int someMask = 1 | 2 | 16;
             Assert.True(Bits.Count(someMask) == 3);
         }
