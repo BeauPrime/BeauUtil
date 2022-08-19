@@ -1,3 +1,9 @@
+### Version 0.7.10
+**19 Aug 2022**
+
+Hotfix for `CameraRenderScale.PixelHeight` setter
+Improved consistency `CameraFOVPlane.SetTargetPreserveFOV`
+
 ### Version 0.7.9
 **19 July 2022**
 
