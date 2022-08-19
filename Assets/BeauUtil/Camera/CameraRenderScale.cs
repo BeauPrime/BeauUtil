@@ -93,7 +93,7 @@ namespace BeauUtil
         public int PixelHeight
         {
             get { return m_PixelHeight; }
-            set { m_Scale = Mathf.Clamp(value, 1, SystemInfo.maxTextureSize); }
+            set { m_PixelHeight = Mathf.Clamp(value, 1, SystemInfo.maxTextureSize); }
         }
 
         private CameraRenderScale()

@@ -9,6 +9,7 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -96,11 +97,13 @@ namespace BeauUtil
             set { m_Target = value; }
         }
 
+        [MethodImpl(256)]
         public float ZoomedHeight()
         {
             return ZoomedHeight(m_Zoom);
         }
 
+        [MethodImpl(256)]
         public float ZoomedHeight(float inZoom)
         {
             return Mathf.Clamp(m_Height / inZoom, 0.01f, 10000f);
@@ -118,9 +121,11 @@ namespace BeauUtil
             }
 
             m_Target = inTarget;
+            float distanceForFOV = CameraHelper.DistanceForHeightAndFOV(ZoomedHeight(), m_Camera.fieldOfView);
             float newDist;
             m_Camera.TryGetDistanceToObjectPlane(inTarget, out newDist);
-            m_Zoom = m_Zoom * m_LastDistance / newDist;
+            m_Zoom = m_Zoom * distanceForFOV / newDist;
+			m_LastDistance = newDist;
         }
 
         /// <summary>
