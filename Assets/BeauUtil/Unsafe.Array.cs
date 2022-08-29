@@ -44,7 +44,29 @@ namespace BeauUtil
         /// Copies memory from one buffer to another.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArray<T>(T* inSrc, long inSrcCount, T* inDest, long inDestCount)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, inDestCount * size, inSrcCount * size);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArray<T>(T* inSrc, int inCount, T* inDest)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T* inSrc, long inCount, T* inDest)
             where T : unmanaged
         {
             int size = sizeof(T);
@@ -68,7 +90,32 @@ namespace BeauUtil
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(T* inSrc, long inSrcCount, T** inDest, long* inDestCountRemaining)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, *inDestCountRemaining * size, inSrcCount * size);
+            *inDest += inSrcCount;
+            *inDestCountRemaining -= inSrcCount;
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArrayIncrement<T>(T* inSrc, int inCount, T** inDest)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+            *inDest += inCount;
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(T* inSrc, long inCount, T** inDest)
             where T : unmanaged
         {
             int size = sizeof(T);
@@ -96,7 +143,35 @@ namespace BeauUtil
         /// Copies memory from a buffer to an array.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArray<T>(T* inSrc, long inSrcCount, T[] inDest)
+            where T : unmanaged
+        {
+            fixed(T* destPtr = inDest)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
+            where T : unmanaged
+        {
+            fixed(T* destPtr = inDest)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(inSrc, destPtr + inDestOffset, (inDest.Length - inDestOffset) * size, inSrcCount * size);
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T* inSrc, long inSrcCount, T[] inDest, long inDestOffset)
             where T : unmanaged
         {
             fixed(T* destPtr = inDest)
@@ -122,7 +197,27 @@ namespace BeauUtil
         /// Copies memory from an array to a buffer.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, T* inDest, long inDestCount)
+            where T : unmanaged
+        {
+            CopyArray<T>(inSrc, 0, inSrc.Length, inDest, inDestCount);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, T* inDest, int inDestCount)
+            where T : unmanaged
+        {
+            CopyArray<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCount);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, long inSrcOffset, T* inDest, long inDestCount)
             where T : unmanaged
         {
             CopyArray<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCount);
@@ -143,10 +238,34 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, long inSrcOffset, long inSrcCount, T* inDest, long inDestCount)
+            where T : unmanaged
+        {
+            fixed(T* srcPtr = inSrc)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, inSrcCount * size);
+            }
+        }
+
+        /// <summary>
         /// Copies memory from an array to a buffer and increments the destination pointer.
         /// </summary>
         [MethodImpl(256)]
         static public void CopyArrayIncrement<T>(T[] inSrc, T** inDest, int* inDestCountRemaining)
+            where T : unmanaged
+        {
+            CopyArrayIncrement<T>(inSrc, 0, inSrc.Length, inDest, inDestCountRemaining);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(T[] inSrc, T** inDest, long* inDestCountRemaining)
             where T : unmanaged
         {
             CopyArrayIncrement<T>(inSrc, 0, inSrc.Length, inDest, inDestCountRemaining);
@@ -165,7 +284,32 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, T** inDest, long* inDestCountRemaining)
+            where T : unmanaged
+        {
+            CopyArrayIncrement<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCountRemaining);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
         static public void CopyArrayIncrement<T>(T[] inSrc, int inSrcOffset, int inSrcCount, T** inDest, int* inDestCountRemaining)
+            where T : unmanaged
+        {
+            fixed(T* srcPtr = inSrc)
+            {
+                int size = sizeof(T);
+                Buffer.MemoryCopy(srcPtr + inSrcOffset, *inDest, *inDestCountRemaining * size, inSrcCount * size);
+                *inDest += inSrcCount;
+                *inDestCountRemaining -= inSrcCount;
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, long inSrcCount, T** inDest, long* inDestCountRemaining)
             where T : unmanaged
         {
             fixed(T* srcPtr = inSrc)
@@ -196,7 +340,29 @@ namespace BeauUtil
         /// Copies memory from one buffer to another.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArray<T>(void* inSrc, long inSrcCount, void* inDest, long inDestCount)
+            where T : struct
+        {
+            int size = SizeOf<T>();
+            Buffer.MemoryCopy(inSrc, inDest, inDestCount * size, inSrcCount * size);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArray<T>(void* inSrc, int inCount, void* inDest)
+            where T : struct
+        {
+            int size = SizeOf<T>();
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(void* inSrc, long inCount, void* inDest)
             where T : struct
         {
             int size = SizeOf<T>();
@@ -220,7 +386,32 @@ namespace BeauUtil
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(void* inSrc, long inSrcCount, void** inDest, long* inDestCountRemaining)
+            where T : struct
+        {
+            int size = SizeOf<T>();
+            Buffer.MemoryCopy(inSrc, inDest, *inDestCountRemaining * size, inSrcCount * size);
+            *((byte**) inDest) += inSrcCount * size;
+            *inDestCountRemaining -= inSrcCount;
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArrayIncrement<T>(void* inSrc, int inCount, void** inDest)
+            where T : struct
+        {
+            int size = SizeOf<T>();
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+            *((byte**) inDest) += inCount * size;
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(void* inSrc, long inCount, void** inDest)
             where T : struct
         {
             int size = SizeOf<T>();
@@ -243,7 +434,32 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(void* inSrc, long inSrcCount, T[] inDest)
+            where T : struct
+        {
+            CopyArray<T>(inSrc, inSrcCount, inDest, 0);
+        }
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
         static public void CopyArray<T>(void* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
+            where T : struct
+        {
+            using(var pin = PinArray(inDest))
+            {
+                void* destPtr = pin.ElementAddress(inDestOffset);
+                int size = pin.ElementSize;
+                Buffer.MemoryCopy(inSrc, destPtr, (inDest.Length - inDestOffset) * size, inSrcCount * size);
+            }
+        }
+
+
+        /// <summary>
+        /// Copies memory from a buffer to an array.
+        /// </summary>
+        static public void CopyArray<T>(void* inSrc, long inSrcCount, T[] inDest, long inDestOffset)
             where T : struct
         {
             using(var pin = PinArray(inDest))
@@ -270,6 +486,16 @@ namespace BeauUtil
         /// Copies memory from an array to a buffer.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, void* inDest, long inDestCount)
+            where T : struct
+        {
+            CopyArray<T>(inSrc, 0, inSrc.Length, inDest, inDestCount);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, void* inDest, int inDestCount)
             where T : struct
         {
@@ -279,7 +505,31 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArray<T>(T[] inSrc, long inSrcOffset, void* inDest, long inDestCount)
+            where T : struct
+        {
+            CopyArray<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCount);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, void* inDest, int inDestCount)
+            where T : struct
+        {
+            using(var pin = PinArray(inSrc))
+            {
+                void* srcPtr = pin.ElementAddress(inSrcOffset);
+                int size = pin.ElementSize;
+                Buffer.MemoryCopy(srcPtr, inDest, inDestCount * size, inSrcCount * size);
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void CopyArray<T>(T[] inSrc, long inSrcOffset, long inSrcCount, void* inDest, long inDestCount)
             where T : struct
         {
             using(var pin = PinArray(inSrc))
@@ -304,6 +554,16 @@ namespace BeauUtil
         /// Copies memory from an array to a buffer.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(T[] inSrc, void** inDest, long* inDestCount)
+            where T : struct
+        {
+            CopyArrayIncrement<T>(inSrc, 0, inSrc.Length, inDest, inDestCount);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyArrayIncrement<T>(T[] inSrc, int inSrcOffset, void** inDest, int* inDestCountRemaining)
             where T : struct
         {
@@ -313,7 +573,33 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
+        [MethodImpl(256)]
+        static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, void** inDest, long* inDestCountRemaining)
+            where T : struct
+        {
+            CopyArrayIncrement<T>(inSrc, inSrcOffset, inSrc.Length - inSrcOffset, inDest, inDestCountRemaining);
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
         static public void CopyArrayIncrement<T>(T[] inSrc, int inSrcOffset, int inSrcCount, void** inDest, int* inDestCountRemaining)
+            where T : struct
+        {
+            using(var pin = PinArray(inSrc))
+            {
+                void* srcPtr = pin.ElementAddress(inSrcOffset);
+                int size = pin.ElementSize;
+                Buffer.MemoryCopy(srcPtr, inDest, *inDestCountRemaining * size, inSrcCount * size);
+                *((byte**) inDest) += inSrcCount * size;
+                *inDestCountRemaining -= inSrcCount;
+            }
+        }
+
+        /// <summary>
+        /// Copies memory from an array to a buffer.
+        /// </summary>
+        static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, long inSrcCount, void** inDest, long* inDestCountRemaining)
             where T : struct
         {
             using(var pin = PinArray(inSrc))
@@ -341,7 +627,25 @@ namespace BeauUtil
         /// Copies memory from one buffer to another.
         /// </summary>
         [MethodImpl(256)]
+        static public void Copy(void* inSrc, long inSrcSize, void* inDest, long inDestSize)
+        {
+            Buffer.MemoryCopy(inSrc, inDest, inDestSize, inSrcSize);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
         static public void Copy(void* inSrc, int inSize, void* inDest)
+        {
+            Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Copy(void* inSrc, long inSize, void* inDest)
         {
             Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
         }
@@ -361,7 +665,28 @@ namespace BeauUtil
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
         [MethodImpl(256)]
+        static public void CopyIncrement(void* inSrc, long inSrcSize, void** inDest, long* inDestSizeRemaining)
+        {
+            Buffer.MemoryCopy(inSrc, *inDest, *inDestSizeRemaining, inSrcSize);
+            (*(byte**)inDest) += inSrcSize;
+            *inDestSizeRemaining -= inSrcSize;
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
         static public void CopyIncrement(void* inSrc, int inSize, void** inDest)
+        {
+            Buffer.MemoryCopy(inSrc, *inDest, inSize, inSize);
+            (*(byte**)inDest) += inSize;
+        }
+
+        /// <summary>
+        /// Copies memory from one buffer to another and increments the destination pointer.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void CopyIncrement(void* inSrc, long inSize, void** inDest)
         {
             Buffer.MemoryCopy(inSrc, *inDest, inSize, inSize);
             (*(byte**)inDest) += inSize;

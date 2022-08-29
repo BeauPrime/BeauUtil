@@ -1,0 +1,186 @@
+# basePath inv
+
+:: cash.name
+Credit
+
+:: cash.name.plural
+Credits
+
+:: cash.description
+Common currency. Most merchants will accept this.
+
+:: exp.name
+Science Point
+
+:: exp.name.plural
+Science Points
+
+:: exp.description
+Measurement of progress in the wider scientific community.
+
+:: stressTank.name
+Stress Tank
+
+:: stressTank.description
+Experimentation tank. Allows you to learn the ideal ranges for an organism's survival.
+
+:: measurementTank.name
+Measurement Tank
+
+:: measurementTank.description
+Experimentation tank. Allows you to learn the rates at which organisms interact with their environment and each other.
+
+:: measurementTankStabilizerToggle.name
+Stabilizer Controls
+
+:: measurementTankStabilizerToggle.description
+Stabilizer controls for the Measurement Tank. Allows you to toggle the water stabilizer on the Measurement Tank.
+
+:: scanner.name
+Scan Mode
+
+:: scanner.description
+Submarine tool. Allows you to scan your environment to identify organisms and obtain information.
+
+:: tagger.name
+Population Count Mode
+
+:: tagger.description
+Submarine tool. Allows you to count up individual organisms to learn their current population levels.
+
+:: microscope.name
+Microscope
+
+:: microscope.description
+Submarine tool. Allows you to view microscopic entities while in a dive site.
+
+:: probeHacker.name
+Probe Decryptor
+
+:: probeHacker.description
+Passive application. Allows you to scan probes to obtain historical information about dive sites.
+
+:: waterChemistry.name
+Water Chemistry Decoder
+
+:: waterChemistry.description
+Passive application. Allows you to view water chemistry data in modeling.
+
+:: temp.bigStatue.name
+Ornate Statue
+
+:: temp.bigStatue.desc
+Large fancy statue. Good as a vanity item, but otherwise useless.
+
+:: hull.name
+Pressure Hull
+
+:: hull.description
+Thick armor to protect the submarine from the depths.
+
+:: engine.name
+Boost Engine
+
+:: engine.description
+A more powerful engine to allow the submarine to travel through difficult currents.
+
+:: iceBreaker.name
+Ice Breaker
+
+:: iceBreaker.description
+A drill to pierce through frozen water.
+
+:: propGuard.name
+Propeller Guard
+
+:: propGuard.description
+A metal shell to prevent damage to the propeller.
+
+:: flashlight.name
+Flashlight
+
+:: flashlight.description
+A light to guide you through the dark.
+
+:: autoFeeder.name
+Auto Feeder
+
+:: autoFeeder.description
+Auto Feeder controls for the Measurement Tank. Allows you to toggle automatic feeding of organisms.
+
+:: observationTank.name
+Observation Tank
+
+:: observationTank.description
+Experimentation tank. Allows you to learn how various organisms interact with each other.
+
+:: visualModel.name
+Visual Modeling
+
+:: visualModel.description
+Modeling tool. Create a visual representation of how various organisms interact with each other in their ecosystem.
+
+:: predictionModel.name
+Numerical Modeling
+
+:: predictionModel.description
+Modeling tool. Allows you to model the historical state of an ecosystem, as well as predict the future state of an ecosystem based on its current trends.
+
+:: interveneModel.name
+Intervention Modeling
+
+:: interveneModel.description
+Modeling tool. Predict an ecosystem's future success if certain changes are made to it.
+
+:: syncModel.name
+Sync Model
+
+:: syncModel.description
+Modeling tool used to create conceptual webs of an ecosystem
+
+# basePath shop
+
+:: upgradeTable.tooltip
+Exploration Tools
+
+:: itemsTable.tooltip
+Scientific Instruments
+
+:: upgradeTable.label
+Exploration
+Tools
+
+:: itemsTable.label
+Scientific
+Instruments
+
+:: soldOut.tag
+Purchased
+
+:: shopkeep.tooltip
+Ezra
+
+:: category.exploration
+Exploration
+
+:: category.science
+Science
+
+:: subcategory.observation
+Observation
+
+:: subcategory.navigation
+Navigation
+
+:: locked
+Locked
+
+:: purchased
+Purchased
+
+:: subcategory.experimentation
+Experimentation
+
+:: subcategory.modeling
+Modeling
+

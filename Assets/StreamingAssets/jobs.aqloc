@@ -1,0 +1,1269 @@
+# basePath jobs
+
+:: kelp-welcome.name
+Welcome to the Kelp Forest
+
+:: kelp-welcome.desc
+Identify the species in the kelp forest and use your onboard lab to learn more about the food webs there.
+
+:: kelp-welcome.task.gotoSiteC
+Take the sub out into the Giant Kelp Forest
+
+:: kelp-welcome.task.scanGiantKelp
+Scan Giant Kelp
+
+:: kelp-welcome.task.scanUrchin
+Scan an Urchin
+
+:: kelp-welcome.task.scanOtter
+Scan a Sea Otter
+
+:: kelp-welcome.task.collectWarmKelpForrest
+Collect Data from the Probe
+
+:: kelp-welcome.task.returnToShip
+Take the sub to the surface to board the ship
+
+:: kelp-welcome.task.runExperiment
+Use the {map-name}Experiment Lab{/map-name} to find interactions between species
+
+:: kelp-welcome.task.reportBack
+Report Back to {nameof @drKelp} at the {nameof RS-Kelp}
+
+:: kelp-welcome.argue.claimLabel
+What is the food web between Kelp, Urchins, and Otters at {h}Site C{/h}?
+
+:: kelp-bull-kelp-forest.name
+Exploring a new Kelp Forest at Site A
+
+:: kelp-bull-kelp-forest.desc
+Now that you know the basics of scanning for species and observing their behaviors, I need you to explore the ecosystem at {h}Site A{/h}.
+
+:: kelp-bull-kelp-forest.task.siteA
+Scan the {h}Bull kelp{/h} of the Bull Kelp Forest at {h}Site A{/h}
+
+:: kelp-bull-kelp-forest.task.foodweb
+Use the {map-name}Experiment Lab{/map-name} to determine the {h}Cool Kelp Forest{/h} food web
+
+:: kelp-bull-kelp-forest.task.reportBack
+Report back to {nameof @drKelp} at the {nameof RS-Kelp}
+
+:: kelp-bull-kelp-forest.argue.claimLabel
+What eats Bull Kelp?
+
+:: kelp-urchin-barren.name
+Predicting the Future of Site B
+
+:: kelp-urchin-barren.desc
+The urchins are taking over {h}Site B{/h}, turning it into what we call an {h}Urchin Barren{/h}. I need you to use the modeling tool to determine the likely fate of the ecosystem there.
+
+:: kelp-urchin-barren.task.gotoSiteB
+Travel to {h}Site B{/h}
+
+:: kelp-urchin-barren.task.getTagged
+Collect population data from the {h}Site B{/h} Organisms
+
+:: kelp-urchin-barren.task.getProbeData
+Collect data from the {h}Site B{/h} Research Probe
+
+:: kelp-urchin-barren.task.predictSiteB
+Build a Model to Predict the future for {h}Site B{/h}
+
+:: kelp-urchin-barren.task.reportBack
+Report back with your prediction
+
+:: kelp-urchin-barren.argue.claimLabel
+What is causing the population of Giant Kelp at {h}Site B{/h} to decrease?
+
+:: kelp-save-urchin-barren.name
+*Saving the Urchin Barren
+
+:: kelp-save-urchin-barren.desc
+Let's use everything you have learned so far to save the Urchin Barren. Use the model you made to try out potential interventions and simulate the long term outcomes. Tell me if you find any potential solutions for restoring {h}Site B{/h}.
+
+:: kelp-save-urchin-barren.task.makeAPlan
+Build a Model to restore the kelp forest at {h}Site B{/h}
+
+:: kelp-save-urchin-barren.task.return
+Go to the {nameof RS-Kelp} and tell {nameof @drKelp} what you discovered
+
+:: kelp-save-urchin-barren.argue.claimHopeless
+There is no way to save the Urchin Barren
+
+:: kelp-save-urchin-barren.argue.claimOtters
+Site B can be fixed by adding {pluralnameof SeaOtter}!
+
+:: coral-stressed.name
+Stressed Coral
+
+:: coral-stressed.desc
+Site R is in trouble. We need you to figure out why the Coral are stressed.
+
+:: coral-stressed.task.SiteR
+Visit {h}Site R{/h} and observe the Coral
+
+:: coral-stressed.task.stressCoral
+Use a Stress Tank to determine what's affecting the Staghorn Coral
+
+:: coral-stressed.task.coralLight
+Collect historical light data from {h}Site R{/h}
+
+:: coral-stressed.task.reportBack
+Tell {nameof @profCoral} what's up with the Staghorn Coral
+
+:: coral-stressed.argue.coralNeedsLightClaim
+The coral needs more light.
+
+:: coral-stressed.argue.waterIsAcidicClaim
+The water is too acidic for the coral.
+
+:: coral-stressed.argue.waterIsHotClaim
+The temperature is too warm for the coral.
+
+:: coral-stressed.argue.sargassumTakesLightClaim
+The sargassum is blocking the light.
+
+:: coral-casting-shade.name
+Casting Shade
+
+:: coral-casting-shade.desc
+We need your help figuring out exactly how the Sargassum is hurting the coral at {h}Site R{/h}. You will need to do measurement experiments, then synthesize what you learn into a descriptive model.
+
+:: coral-casting-shade.task.popProbe
+Acquire Historic Population Data from Probe at {h}Site R{/h}
+
+:: coral-casting-shade.task.sargLight
+Conduct a Measurement Experiment to determine the environmental impact of the {nameof Sargassum}
+
+:: coral-casting-shade.task.sargModel
+Model the impact of the {nameof Sargassum} on the {nameof StaghornCoral}
+
+:: coral-casting-shade.task.sargArgue
+Report back to {nameof @profCoral}
+
+:: coral-casting-shade.argue.claimEvidence
+Evidence that Sargassum negatively affects Coral:
+
+:: eat-seaweed.name
+Eat the Seaweed
+
+:: eat-seaweed.desc
+We don't know how Sargassum fits into the food web at {h}Site R{/h}. Find out if anything might eat it up and get it out of here.
+Should the Sargassum be cleared out from the environment?
+
+:: eat-seaweed.task.getScans
+Scan organisms at {h}Site R{/h}
+
+:: eat-seaweed.task.urchinSarg
+Find an organism that eats Sargassum
+
+:: eat-seaweed.task.urchinSargArgue
+Present your findings
+
+:: coral-casting-shade.argue.claimNoRemoval
+The Sargassum can stay.
+
+:: coral-casting-shade.argue.claimRemoveSarg
+We need to remove the Sargassum.
+
+:: eat-seaweed.argue.claimLabel
+Urchins can clear the Sargassum.
+
+:: coral-urchin-friends.name
+Will Urchins Fix the Problem?
+
+:: coral-urchin-friends.desc
+We heard about how you used modeling and simulation to propose a solution to the Urchin Barren. What would happen if we introduced Urchins at {h}Site R{/h}?
+Are the Urchins friends or foes?
+
+:: coral-urchin-friends.task.coralUrchinModel
+Assess Model of Urchins in {h}Site R{/h}
+
+:: coral-urchin-friends.task.urchinStressed
+Find out whether urchins would be stressed in the reef
+
+:: coral-urchin-friends.task.siteRModel
+Build a Model to Predict the Future of {h}Site R{/h}
+
+:: coral-urchin-friends.task.present
+Present your findings
+
+:: coral-urchin-friends.argue.claimLabelWrong
+Urchins should not be added to {h}Site R{/h}
+
+:: coral-urchin-friends.argue.claimLabel
+It's fine to add Urchins to {h}Site R{/h}
+
+:: coral-fishy-bizz.name
+Fishy Business
+
+:: coral-fishy-bizz.desc
+{h}Site V{/h} is a very popular fishing spot for Grouper. We need to set some guidelines for how much Red Grouper can be fished without harming the Grouper. How many fishermen can we allow to fish there at one time?
+
+:: coral-fishy-bizz.task.getScans
+Scan Fishers and Grouper at {h}Site V{/h}
+
+:: coral-fishy-bizz.task.getModel
+Build a model to determine how many boats can be licensed to fish at one time.
+
+:: coral-fishy-bizz.task.reportBack
+Report back with your prediction
+
+:: coral-fishy-bizz.argue.claimLabel
+We need to significantly reduce the number of Fishers in this area.
+
+:: bayou-save-our-shrimp.name
+SOS: Save Our Shrimp
+
+:: bayou-save-our-shrimp.desc
+Why is the shrimp catch going down?
+
+:: bayou-save-our-shrimp.task.getScans
+Gather environment data + Shrimp population
+
+:: bayou-save-our-shrimp.task.reportBack
+Report about the Shrimp populations.
+
+:: bayou-shrimp-tastrophe.name
+Shrimp-Tastrophe!
+
+:: bayou-shrimp-tastrophe.desc
+The oxygen levels seemed pretty low.  What implications might that have concerning the shrimp situation?
+
+:: bayou-shrimp-tastrophe.task.measureOxygen
+See if there's a significant relationship between shrimp and oxygen levels.
+
+:: bayou-shrimp-tastrophe.task.reportBack
+Report back about the shrimp oxygen consumption.
+
+:: bayou-oxygen-tracking.name
+Oxygen tracking
+
+:: bayou-oxygen-tracking.desc
+See if your new tools can help you figure out the lack of oxygen in the Trawling Bay!
+
+:: bayou-oxygen-tracking.task.scanNewCritters
+See if there's anything new to find in the Trawling Bay.
+
+:: bayou-oxygen-tracking.task.measureOxygenUsage
+See how these new species would each affect oxygen levels.
+
+:: bayou-oxygen-tracking.task.createModel
+Model your findings to see who might've had the biggest effect over the oxygen levels.
+
+:: bayou-oxygen-tracking.task.reportBack
+Report back with the model.
+
+:: coral-turtle-population.name
+Turtle Population
+
+:: coral-turtle-population.desc
+We need help monitoring the populations of turtles here at Site V, the reef edge. Can you help us get the current population?
+
+:: coral-turtle-population.task.SiteV
+Travel outside to the Reef Edge at {h}Site V{/h}
+
+:: coral-turtle-population.task.scanTurtle
+Find and scan a Loggerhead Turtle
+
+:: coral-turtle-population.task.turtleModel
+Count the Turtle population at {h}Site V{/h}: Reef Edge
+
+:: coral-turtle-population.task.reportBack
+Share the current Turtle Population
+
+:: coral-turtle-population.argue.turtlePopulationClaim
+What is the Loggerhead Turtle population at the Reef's Edge?
+
+:: coral-turtle-stability.name
+Turtle Stability
+
+:: coral-turtle-stability.task.SiteV
+Scan the species at {h}Site V{/h}: Reef Edge
+
+:: coral-turtle-stability.task.turtleModel
+Make a visual model of the Turtle food web using the Modeling Lab
+
+:: coral-turtle-stability.task.scanTurtle
+Conduct experiments to determine everything that the turtles eat
+
+:: coral-turtle-stability.task.reportBack
+Report Back with a Visual Model of the Turtle Food Web
+
+:: coral-turtle-stability.argue.claimLabel
+There are multiple food sources for the turtles.
+
+:: kelp-energy.name
+Energy in the Kelp Forest System
+
+:: kelp-energy.desc
+We want to build a visual model of food energy in the warm kelp forest.
+
+:: kelp-energy.task.model
+Use the Modeling Lab to Visualize the food web for the {nameof WarmKelpForest}.
+
+:: kelp-energy.argue.claimLabel
+Giant Kelp provides the energy in this system.
+
+:: kelp-start-refuge.name
+Start a Refuge
+
+:: kelp-start-refuge.desc
+We need to figure out what conditions would make a good kelp {h}refuge{/h} (a refuge is a rescue area).
+Potential sites for our refuge:
+
+{h}Site 1{/h} - Temp 02°C | Light 60%
+{h}Site 2{/h} - Temp 20°C | Light 100%
+{h}Site 3{/h} - Temp 13°C | Light 100%
+
+We want to be able to create a stress-free environment where all kinds of kelp can thrive and reproduce.
+
+:: kelp-start-refuge.argue.claimLabel
+Potential Site 3 is the most suitable location for a Kelp refuge.
+
+:: kelp-refuge-failure.name
+Refuge Failure
+
+:: kelp-refuge-failure.desc
+Our refuge didn't turn out as planned. It seems the Bull Kelp stopped growing. We think it may have something to do with the rate each species reproduces, but need you to figure it out and provide a model.
+
+:: kelp-refuge-failure.argue.claimLabel
+The Bull Kelp population is reproducing at a slower rate than expected.
+
+:: kelp-mussel-fest.name
+Mussel Fest
+
+:: kelp-mussel-fest.desc
+People think the mussels are funny shaped. What is happening to them?
+
+:: kelp-mussel-fest.argue.claimLabelReasonStress
+Provide information about the mussel stress ranges
+
+:: kelp-mussel-fest.argue.claimLabelReasonChemistry
+Provide information about the temperature, PH, and light levels at the site
+
+:: kelp-mussel-fest.task.report
+Talk with {nameof @drKelp} to figure out what is happening with the mussels
+
+:: kelp-start-refuge.task.getBullKelpStress
+Determine stress ranges for bull kelp.
+
+:: kelp-start-refuge.task.getGiantKelpStress
+Determine stress ranges for giant kelp.
+
+:: kelp-start-refuge.task.argueSite
+Argue for which site we should use as the refuge.
+
+:: kelp-refuge-failure.task.visitSite
+Visit the Kelp Refuge at Site D
+
+:: kelp-refuge-failure.task.histPop
+Collect Historical Kelp Population Data from Refuge Site
+
+:: kelp-refuge-failure.task.growthRates
+Measure the normal and stressed reproduction rates of Giant Kelp
+
+:: kelp-refuge-failure.task.growthRatesBull
+Measure the normal and stressed reproduction rates of Bull Kelp
+
+:: kelp-refuge-failure.task.newModel
+Model Bull Kelp and Giant Kelp at the Refuge Site
+
+:: kelp-mussel-fest.task.scanMussels
+Scan mussels in {h}Site C{/h}
+
+:: kelp-mussel-fest.task.waterData
+Get historic water data from {h}Site C{/h}
+
+:: kelp-mussel-fest.task.stressParam
+Experiment to determine if something is stressing the mussels
+
+:: coral-turtle-stability.task.goToSite
+Travel outside to {h}Site V{/h}: Reef Edge
+
+:: coral-casting-shade.task.scanSarg
+Scan the {nameof Sargassum} at {h}Site R{/h}
+
+:: coral-casting-shade.task.chemHistory
+Acquire Historic Water Chemistry and Light Data from Probe at {h}Site R{/h}
+
+:: coral-casting-shade.task.sargGrowthRate
+Conduct a Measurement Experiment to determine the reproduction rate of the {nameof Sargassum}
+
+:: coral-casting-shade.task.sargUsesLight
+Perform a Measurement Experiment to Determine how Sargassum Blocks Light
+
+:: coral-casting-shade.task.coralGrowthRate
+Perform an experiment to measure the reproduction rate of the {nameof StaghornCoral}
+
+:: coral-casting-shade.task.coralGrowthStressed
+Perform an experiment to measure the reproduction rate of the {nameof StaghornCoral} when stressed.
+
+:: coral-fishy-bizz.task.rhistoricalPopulations
+Collect Historical Populations from Probe at {h}Site V{/h}
+
+:: kelp-urchin-farm.name
+Urchin Farm
+
+:: kelp-urchin-farm.desc
+We want to farm urchin. Yes, on purpose. They'll be in cages. Don't worry. I need to know which kelp to feed them. Which do they eat the least of?
+
+:: kelp-urchin-farm.task.urchinEatBull
+Measure how quickly Urchins eat Bull Kelp
+
+:: kelp-urchin-farm.task.urchinEatGiant
+Measure how quickly Urchins eat Giant Kelp
+
+:: kelp-urchin-farm.task.reportBack
+Report your findings in the {nameof RS-Kelp}
+
+:: kelp-urchin-farm.argue.claimEitherWorkLabel
+Defend your claim about how quickly Urchins eat different types of Kelp.
+
+:: coral-ocean-plastics.name
+Ocean Plastics
+
+:: coral-ocean-plastics.desc
+You scanned plastic in the Reef! This can't do. What will happen if it makes its way to the Reef Edge?
+
+:: coral-ocean-plastics.task.whatTurtlesEat
+Use the Observation tank to discover everything turtles eat in the reef.
+
+:: coral-ocean-plastic.argue.claimLabel1
+The Loggerhead turtle will be impacted is plastic enters the reef
+
+:: coral-ocean-plastic.argue.claimLabel2
+The Staghorn coral will be impacted is plastic enters the reef
+
+:: coral-ocean-plastic.argue.claimLabel3
+The Queen conch will be impacted is plastic enters the reef
+
+:: coral-ocean-plastic.argue.claimLabel4
+Everything will be impacted is plastic enters the reef
+
+:: coral-ocean-plastics.task.reportBack
+Report your findings back to {nameof @profCoral}.
+
+:: coral-ocean-plastics.task.copepodReefEdge
+Travel to the Reef Edge at {h}Site V{/h} and scan the Copepod.
+
+:: coral-ocean-plastics.task.turtleReefEdge
+Travel to the Reef Edge at {h}Site V{/h} and scan the Loggerhead Turtle.
+
+:: coral-ocean-plastics.task.grassReefEdge
+Travel to the Reef Edge at {h}Site V{/h} and scan the Turtle Grass.
+
+:: coral-ocean-plastics.task.queenReefEdge
+Travel to the Reef Edge at {h}Site V{/h} and scan the Queen Conch.
+
+:: coral-ocean-plastics.task.shrimpReefEdge
+Travel to the Reef Edge at {h}Site V{/h} and scan the White Shrimp.
+
+:: kelp-refuge-failure.task.getPaid
+Report back to {nameof @drKelp}
+
+:: coral-turtle-stability.desc
+We need to know why the turtles are so successful here by creating a food web model of everything they eat.
+
+:: kelp-urchin-barren-viz.name
+An Urchin Barren Visualization
+
+:: kelp-urchin-barren-predict.name
+Predicting the Future of the Urchin Barren
+
+:: kelp-urchin-barren-viz.desc
+The {h}Urchin Barren{/h} looks like a doomed ecosystem. If the kelp population goes to zero, nothing will be able to survive there. Is there some new species there that's eating up all the kelp? I need a visual model of the ecosystem to understand it.
+
+:: kelp-urchin-barren-predict.desc
+The urchins are taking over {h}Site B{/h}, turning it into what we call an {h}Urchin Barren{/h}. I need you to use the modeling tool to determine the likely fate of the ecosystem there.
+
+:: kelp-urchin-barren-viz.task.predictSiteB
+Build a visual model of {h}Site B{/h}
+
+:: kelp-urchin-barren-viz.task.reportBack
+Report back with your visual model
+
+:: kelp-urchin-barren-viz.task.getProbeData
+Collect historical populations from the Research Probe
+
+:: kelp-urchin-barren-viz.task.getTagged
+Count all the current populations at {h}Site B{/h}
+
+:: kelp-urchin-barren-viz.task.gotoSiteB
+Travel to {h}Site B{/h}
+
+:: kelp-urchin-barren-viz.task.visualSiteB
+Build a {h}visual model{/h} of Site B
+
+:: kelp-urchin-barren-viz.argue.claimLabel
+Present your visual model of {h}Site B{/h}
+
+:: kelp-refuge-failure-simulation.desc
+We need to know the extent of the problem so we can decide how much time and resources we want to devote to solving it. What would happen if we let the refuge continue as-is?
+
+:: kelp-refuge-failure-simulation.name
+Refuge Failure Simulation
+
+:: kelp-refuge-failure-simulation.task.createModel
+Create a Predictive Model of Giant Kelp and Bull Kelp that shows the light decreasing
+
+:: kelp-refuge-failure-simulation.task.shareModel
+Share your model containing what would happen if the refuge is left as-is
+
+:: kelp-refuge-failure-simulation.argue.claimLabel
+The Bull Kelp population will decrease drastically in a short time.
+
+:: kelp-urchin-barren-predict.task.reportBack
+Report back with your prediction
+
+:: kelp-urchin-barren-predict.task.predictSiteB
+Build a Model to Predict the future for {h}Site B{/h}
+
+:: kelp-urchin-barren-predict.argue.claimLabel
+Share your prediction for the future of {h}Site B{/h}
+
+:: bayou-displaced-reef.name
+Displaced Reef
+
+:: bayou-displaced-reef.desc
+It started small, but the reef keeps growing here. How is a reef developing on top of an oil rig!? Can you report back on this?
+
+:: bayou-displaced-reef.task.getScans
+Scan the species of {h}Site O{/h}
+
+:: bayou-displaced-reef.task.visitSiteO
+Head outside and explore {h}Site O{/h}.
+
+:: bayou-displaced-reef.task.getCounts
+Count the populations at {h}Site O{/h}
+
+:: bayou-displaced-reef.task.reportBack
+Report back to {nameof @profBayou} with your findings
+
+:: bayou-displaced-reef.argue.claimLabel
+Share your population estimate of Loggerhead Turtles at {h}Site O{/h}
+
+:: coral-ocean-plastics.task.speciesReefEdge
+Use the Observation tank to discover everything turtles eat.
+
+:: coral-ocean-plastics.task.scanReefEdge
+Travel to the Reef Edge at {h}Site V{/h} and scan the organisms there
+
+:: bayou-turtle-danger.name
+Turtle Danger
+
+:: bayou-turtle-danger.desc
+Is the reef dangerous to the Loggerhead turtles?  Are there any new predators?
+
+:: bayou-turtle-danger.task.modelSiteO
+Observe which {h}Site O{/h} species Loggerhead Turtles eat
+
+:: bayou-turtle-danger.task.reportBack
+Report your findings back to {nameof @profBayou}
+
+:: bayou-turtle-danger.argue.claimLabel1
+The turtle populations are safe.
+
+:: bayou-turtle-danger.argue.claimLabel2
+The turtle populations are not safe.
+
+:: bayou-turtle-danger2.name
+**Turtle Danger (pt 2)
+
+:: bayou-turtle-danger2.desc
+How are loggerhead populations responding to the presence of the reef? "My colleague pointed out that predators aren't the only danger -- competition could also endanger the turtle population."
+
+:: bayou-turtle-danger2.task.reportBack
+Bring your validated model back to {nameof @profBayou}
+
+:: bayou-turtle-danger2.task.historicalData
+Get historical population data for the species at {h}Site O{/h}
+
+:: bayou-turtle-danger2.task.measureSiteO
+Use your measurement tank to collect data for a Sync model of {h}Site O{/h}
+
+:: bayou-turtle-danger2.task.syncModel
+Use Experiments and the Modeling Tool to create a model that matches {h}Site O{/h}'s population data
+
+:: bayou-turtle-danger.task.visualModelO
+Create a visual model of the Loggerhead Turtle's food web at {h}Site O{/h}
+
+:: bayou-turtle-danger2.argue.claimLabel
+Turtle populations are stable.
+
+:: bayou-reef-decision.name
+**Reef Decision
+
+:: bayou-reef-decision.desc
+We would like to see what would happen to turtle populations if the reef were removed.
+
+:: bayou-reef-decision.task.reportBack
+Report your findings back to {nameof @profBayou}
+
+:: bayou-reef-decision.task.intervene
+Create an intervention model you can use to argue whether or not we should remove the rig from the reef.
+
+:: bayou-reef-decision.argue.claimLabel1
+The rig should be removed from the reef.
+
+:: bayou-reef-decision.argue.claimLabel2
+The rig should be left to remain in the reef.
+
+:: bayou-hide-n-seek.task.reportBack
+Report back to {nameof @profBayou} with your findings
+
+:: bayou-hide-n-seek.task.jellyScan
+Head back out to {h}Site O{/h} and scan around to find the elusive jellyfish.
+
+:: bayou-hide-n-seek.task.jellyObservation
+Observe whether Loggerhead Turtles interact with Moon Jellies.
+
+:: bayou-hide-n-seek.task.jellyRates
+Use your {item}measurement tank{/item} to find the rates at which {pluralnameof LoggerheadTurtle} eat {pluralnameof MoonJelly}
+
+:: bayou-hide-n-seek.task.jellyPredict
+Create a prediction model of your findings for the jellyfish.
+
+:: bayou-hide-n-seek.name
+Hide 'n Seek
+
+:: bayou-hide-n-seek.desc
+We want to see what might happen in the future for the turtles, and we need to make sure we're not missing anything.
+
+:: bayou-hide-n-seek.argue.claimLabel1
+The turtle population will remain stable
+
+:: bayou-hide-n-seek.argue.claimLabel2
+The turtle population will start increasing
+
+:: bayou-hide-n-seek.argue.claimLabel3
+The turtle population will begin to decrease
+
+:: bayou-hide-n-seek.argue.claimLabelx
+
+
+:: coral-lionfish-conspiracy.name
+Lionfish Conspiracy
+
+:: coral-lionfish-conspiracy.desc
+Why is no one talking about the lionfish? There's a reason they prefer the reef ecosystem.  They must be interacting with the coral. What do they do?!
+
+:: lionfish-conspiracy.task.scanNew
+Scan any new organisms at {h}Site S{/h}
+
+:: lionfish-conspiracy.task.observeInteractions
+Observe how Lionfish interact with their environment
+
+:: lionfish-conspiracy.task.arguePredator
+Argue that Lionfish are predators of other fish
+
+:: coral-lionfish-conspiracy.argue.claimEvidence
+Lionfish are predators that eat other fish
+
+:: coral-hunting-lions.name
+** Hunting Lions
+
+:: coral-hunting-lions.desc
+Interested in hunting, eh? We need to model how hunting might work so we can figure out whether to allow it -- or perhaps even advocate for it
+
+:: coral-hunting-lions.task.scanSpear
+Identify how hunters hunt Lionfish
+
+:: coral-hunting-lions.task.argueIncentive
+Argue for a hunting incentive
+
+:: coral-hunting-lions.task.scanHistory
+Scan the historical populations and water chemistry data of {h}Site S{/h}
+
+:: coral-hunting-lions.task.scanCritters
+Scan any unscanned organisms at {h}Site S{/h}
+
+:: coral-hunting-lions.task.countPopulation
+Count the organism populations at {h}Site S{/h}
+
+:: coral-hunting-lions.task.observeEatRules
+Obtain all rules regarding what eats what at {h}Site S{/h}
+
+:: coral-hunting-lions.task.obtainStressRules
+Obtain all stress rules for organisms at {h}Site S{/h}
+
+:: coral-hunting-lions.task.measureStressEatRates
+Measure the eating rates of all organisms at {h}Site S{/h} when stressed
+
+:: coral-hunting-lions.task.measureStressReproduceRates
+Measure the reproduction rates of all organisms at {h}Site S{/h}
+
+:: coral-hunting-lions.task.obtainChemistry
+Measure the effects of organisms on their environment
+
+:: coral-hunting-lions.task.predictModel
+Model the future of {h}Site S{/h} according to existing trends
+
+:: coral-hunting-lions.task.interveneModel
+Model the future of {h}Site S{/h} if hunters are allowed to hunt Lionfish
+
+:: coral-hunting-lions.argue.claimEvidence
+Decreasing the lionfish population would improve the {h}Site S{/h}
+
+:: coral-fake-fix.name
+Fake Reef Fix
+
+:: coral-fake-fix.desc
+We're trying to determine why this reef has been struggling, so we installed artificial reefs in an effort to fix it. Report back on the reef's status.
+
+:: coral-fake-fix.task.findReef
+Find the artificial reef at {h}Site S{/h}
+
+:: coral-fake-fix.task.scanProbes
+Collect population probe data
+
+:: coral-fake-fix.task.countPopulation
+Count current coral and artificial reef populations
+
+:: coral-fake-fix.task.argue
+Report to the {nameof RS-Coral} about whether the fake reef helped the coral population
+
+:: coral-fake-fix.argue.claimLabel
+The artificial reef has not helped coral populations
+
+:: coral-fake-fix.argue.claimLabelIncorrect
+The artificial reef has helped coral populations at {h}Site S{/h}
+
+:: coral-much-algae.name
+So Much Algae
+
+:: coral-much-algae.desc
+Another researcher reported that the coral is covered in turf algae. Those lionfish scare me, so I avoid that area as much as possible. Can you double check and see if you can figure out why there is so much algae?
+
+:: coral-much-algae.task.scanAll
+Scan all species at {h}Site S{/h}
+
+:: coral-much-algae.task.observeEatAlgae
+Find what eats {nameof TurfAlgae}
+
+:: coral-much-algae.task.measureEatRate
+Measure the rate at which {nameof BlueTang} eats {nameof TurfAlgae}
+
+:: coral-much-algae.task.modelPopulations
+{map-name}Model{/map-name} Blue Tang and Turf Algae populations.
+
+:: coral-much-algae.task.reportBack
+Argue why there is so much Turf Algae
+
+:: coral-much-algae.argue.claimLabel
+There are not enough fish to balance the Turf Algae population
+
+:: coral-much-algae.argue.claimLabelIncorrect
+The Lionfish are making the Turf Algae reproduce faster
+
+:: kelp-mussel-fest-solution.name
+Mussel Fest Solution
+
+:: kelp-mussel-fest-solution.desc
+Other than the weird shape, are the Mussels at {h}Site C{/h} being adversely affected? We're particularly interested in how their reproduction rate has changed. The local restaurants want to keep serving mussels!
+
+:: kelp-mussel-fest-solution.task.stressedRate
+Measure Mussel reproduction rates when stressed
+
+:: kelp-mussel-fest-solution.task.unstressedRate
+Measure Mussel reproduction rates when not stressed
+
+:: kelp-mussel-fest-solution.task.reportChange
+Report whether Mussel reproduction rates have changed
+
+:: kelp-mussel-fest-solution.argue.claimLabel
+Explain how Mussel reproduction rate is affected by stress in {h}Site C{/h}
+
+:: kelp-refuge-failure.task.lightRatesGiant
+Measure the rate at which Giant Kelp consume light
+
+:: kelp-refuge-failure.task.lightRatesBull
+Measure the rate at which Bull Kelp consume light
+
+:: arctic-missing-whale.name
+Missing Whale!
+
+:: arctic-missing-whale.desc
+Some researchers down south counted the pod on arrival and one is missing. They think she got lost up here.
+
+:: arctic-missing-whale.task.findWhale
+Search {h}Site W{/h} for signs of Linda the missing whale
+
+:: arctic-missing-whale.task.reportBack
+Report back with your findings
+
+:: arctic-whale-csi.name
+***Whale CSI
+
+:: arctic-whale-csi.desc
+Find out what happened to the whale. I'll give you some info on whales and a microscope if you accept this.
+
+:: arctic-whale-csi.task.scanAndTag
+Scan and Count Salmon, Shark, and Cod
+
+:: arctic-whale-csi.task.scanIceAlgae
+Search the ice for signs of microscopic life
+
+:: arctic-whale-csi.task.reportBack
+Report back with your findings
+
+:: arctic-time-of-death.name
+**Time Of Death
+
+:: arctic-time-of-death.desc
+How long ago did the missing whale die? We can use the decomposition model to determine her time of death.
+
+:: arctic-time-of-death.task.getPopulations
+Scan and Count all organisms at {h}Site W{/h}
+
+:: arctic-time-of-death.task.reportBack
+Report back with your findings
+
+:: arctic-missing-whale.task.findTracker
+Search {h}Site W{/h} to find the missing whale tracker
+
+:: arctic-missing-whale.argue.claimLabel
+Evidence of Linda
+
+:: arctic-disappearing-act.name
+Disappearing Act
+
+:: arctic-disappearing-act.desc
+Whale falls are rare! We should use this opportunity to learn more about how organisms interact with them. What is causing the whale's decay?
+
+:: arctic-disappearing-act.task.reportBack
+Report your findings back to {nameof @profArctic}
+
+:: arctic-disappearing-act.task.scanCritters
+Scan all critters feasting on the whale fall in {h}Site W{/h}
+
+:: arctic-missing-whale.task.foundDetritus
+Count the amount of detritus found on the whale carcass
+
+:: arctic-disappearing-act.argue.claimLabel
+Present your visual model of the species interactions at {h}Site W{/h}
+
+:: arctic-cause-of-death.desc
+What killed her? We have two hypotheses. It was either something about the water, or lack of a food source, since whales have no natural predators.
+
+:: arctic-cause-of-death.name
+Cause of Death
+
+:: arctic-cause-of-death.task.enviornmentData
+Collect environmental data at {h}Site W{/h}
+
+:: arctic-cause-of-death.task.currPopData
+Collect the current population data at {h}Site W{/h}
+
+:: arctic-cause-of-death.task.histPopData
+Collect the historic population data at {h}Site W{/h}
+
+:: arctic-cause-of-death.task.report
+Report your findings back to {nameof @profArctic}
+
+:: arctic-time-of-death.task.report
+Report your findings back to {nameof @profArctic} when you're ready.
+
+:: arctic-time-of-death.task.getPops
+Report your findings back to {nameof @profArctic}
+
+:: arctic-time-of-death.task.popData
+Collect the current and historic population data at {h}Site W{/h}
+
+:: arctic-time-of-death.argue.claimLabel1
+The whale fall is in stage 1
+
+:: arctic-time-of-death.argue.claimLabel2
+The whale fall is in stage 2
+
+:: arctic-time-of-death.argue.claimLabel3
+The whale fall is in stage 3
+
+:: arctic-cause-of-death.argue.claimLabel1
+There was a problem in the food supply.
+
+:: arctic-cause-of-death.argue.claimLabel2
+Something in Linda's environment harmed her.
+
+:: arctic-underneath.name
+Under the Ice?
+
+:: arctic-underneath.desc
+It seems you found a new site when you were carried beneath the ice. What sorts of creatures live in {h}Site X{/h}?
+
+:: arctic-underneath.task.report
+Report your findings back to {nameof @profArctic}
+
+:: arctic-underneath.task.explore
+Count the populations of all species under the ice
+
+:: arctic-underneath.argue.claimLabel
+What sorts of creatures live beneath the ice?
+
+:: arctic-stationary-survival.name
+Stationary Survival
+
+:: arctic-stationary-survival.desc
+We didn't think an ecosystem would be able to survive with such a low amount of light under the ice. Yet, some species are thriving!  How is this possible? Where is the energy coming from if not the sun?
+
+:: arctic-stationary-survival.task.report
+Report back with your findings
+
+:: arctic-stationary-survival.task.visualModel
+Construct a {h}visual model{/h} of how the species at {h}Site X{/h} survive.
+
+:: arctic-stationary-survival.argue.claimLabel
+How do the creatures of {h}Site X{/h} survive beneath the ice?
+
+:: arctic-isolated-instance.name
+* Isolated Instance
+
+:: arctic-isolated-instance.desc
+We're seeing a lot of Glass Sponges at {h}Site X{/h}, but none at {h}Site Z{/h}. Is {h}Site X{/h} the only place these sponges can live? What is preventing them from living at {h}Site Z{/h}?
+
+:: arctic-isolated-instance.argue.claimLabelStress
+The Sponges are stressed by the light levels.
+
+:: arctic-isolated-instance.argue.claimLabelPredator
+A predator is eating the Sponges.
+
+:: arctic-isolated-instance.argue.claimLabelFinal
+Present evidence explaining why Sea Sponges are not found in {h}Site Z{/h}.
+
+:: arctic-isolated-instance.task.scanAll
+Scan all species at {h}Site Z{/h}
+
+:: arctic-isolated-instance.task.experimentPredatorAll
+See if predators from Site Y eat Glass Sponges
+
+:: arctic-isolated-instance.task.experimentPredatorZ
+Observe which organisms {h}Site Z{/h} predators eat
+
+:: arctic-isolated-instance.task.discussFindings
+Discuss your findings with {nameof @profArctic}
+
+:: arctic-isolated-instance.task.determineStress
+Determine Glass Sponge stress levels
+
+:: arctic-isolated-instance.task.findPredator
+Search a site between Site X and Site Z for predators of Glass Sponges
+
+:: arctic-isolated-instance.task.scanSponge
+Scan a Glass Sponge at {h}Site X{/h}
+
+:: arctic-isolated-instance.task.countPopulations
+Count the Cushion Star population at {h}Site Y{/h}
+
+:: arctic-disappearing-act.task.modelInteractions
+Model all species interactions
+
+:: kelp-refuge-failure.task.histChem
+Collect Historical Water Chemistry Data from Refuge Site
+
+:: bayou-turtle-danger.task.scanCyano
+Scan the {nameof Cyanobacteria} at {h}Site O{/h} using the {item}Microscope{/item}
+
+:: bayou-turtle-danger.task.countCyano
+Count the {nameof Cyanobacteria} population at {h}Site O{/h}
+
+:: arctic-cause-of-death.task.environmentData
+Collect environmental data history at {h}Site W{/h}
+
+:: kelp-shop-welcome.name
+Ready for Send Off
+
+:: kelp-shop-welcome.desc
+Prepare for send off by upgrading your ship.
+
+:: kelp-shop-welcome.task.gotoShop
+Visit the {map-name}Shop{/map-name}
+
+:: kelp-shop-welcome.task.getTagger
+Purchase the {nameof ROVTagger}
+
+:: kelp-shop-welcome.task.geVisualModel
+Purchase {nameof VisualModel}
+
+:: coral-much-algae.task.histPop
+Gather historical population data from the probe at Site S
+
+:: coral-check-up.name
+** Tang Check-Up
+
+:: coral-check-up.desc
+I've been considering that model you made, and it seems the accuracy of this model is too low for us to draw real conclusions. We need to collect more data about the {nameof BlueTang} at {h}Site S{/h}
+
+:: coral-check-up.task.findStress
+Find {nameof BlueTang} stress ranges
+
+:: coral-check-up.task.findMicro
+Identify any microscopic organisms at {h}Site S{/h}
+
+:: coral-check-up.task.observeIck
+Observe the effect of {nameof Ick} on {nameof BlueTang} in the {item}Observation Tank{/item}
+
+:: coral-check-up.task.improveDescribe
+Improve {h}Site S{/h} {item}Descriptive model{/item} based on new data
+
+:: coral-check-up.task.reviseVisual
+Revise Site S {item}models{/item} based on new data
+
+:: coral-check-up.task.report
+Report your findings
+
+:: coral-check-up.task.countIck
+Count {nameof Ick} populations
+
+:: coral-check-up.argue.claimLabel
+The Ick are stressing the Blue Tang
+
+:: coral-check-up.task.measureIck
+Measure Tang's reproduction and eating rates when stressed using the {map-name}Measurement Tank{/map-name}
+
+:: bayou-displaced-reef.task.makeModel
+Compile your data into a {h}visual model{/h} to display the creatures found here.
+
+:: coral-ocean-plastics.task.makeModel
+Create a visual model including plastic.
+
+:: arctic-isolated-instance.task.checkCrab
+Place Glass Sponges in the Observation Tank with Snow Crabs
+
+:: arctic-isolated-instance.task.checkShark
+Place Glass Sponges in the Observation Tank with Salmon Sharks
+
+:: arctic-isolated-instance.task.checkSeal
+Place Glass Sponges in the Observation Tank with Ribbon Seals
+
+:: kelp-start-refuge.desc.short
+Which site would make a good kelp refuge:
+{h}Site 1{/h}:[Temp 02°C | Light 60%]; {h}Site 2{/h}:[Temp 20°C | Light 100%]; {h}Site 3{/h}:[Temp 13°C | Light 100%]
+
+:: coral-hunting-lions.task.measureEatRates
+Measure the eating rates of all organisms at {h}Site S{/h}
+
+:: arctic-isolated-instance.task.reportFinal
+Present your findings to {nameof @profArctic}
+
+:: arctic-isolated-instance.task.scanProbe
+Scan the Site Z water chemistry probe.
+
+:: coral-much-algae.desc.short
+Another researcher reported that the coral is covered in {nameof TurfAlgae}. Develop a hypothesis for the cause of the increasing Turf Algae.
+
+:: bayou-turtle-danger2.task.measureStress
+Find the {item}stress ranges{/item} for the creatures of {h}Site O{/h}
+
+:: bayou-methanogen.name
+Methanogen
+
+:: bayou-methanogen.desc
+These species... they are unlike anything we've seen. We can't figure out how to keep them alive in the lab. How do they survive down there?
+
+:: bayou-methanogen.desc.short
+How do {nameof Methanogen} they survive down in {h}Site N{/h}?
+
+:: bayou-methanogen.task.eatRules
+Measure {nameof Methanogen} eat rules.
+
+:: bayou-methanogen.task.stressRanges
+Measure {nameof Methanogen} stress ranges.
+
+:: bayou-methanogen.task.report
+Report back to {nameof @profBayou}
+
+:: bayou-methanogen.task.waterChem
+Measure the effect the {nameof Methanogen} has on it's enviornment
+
+:: bayou-methanogen.task.reproduce
+Measure the reproduction rate of the {nameof Methanogen}
+
+:: bayou-methanogen.argue.claimLabel1
+The {nameof Methanogen} are immune to heat.
+
+:: bayou-methanogen.argue.claimLabel2
+The {nameof Methanogen} metabolize methane.
+
+:: bayou-boom-cause.name
+Boom Cause
+
+:: bayou-boom-cause.desc
+We need to identify what caused the explosion. Investigate the site to determine if something is interfering with the structure.
+
+:: bayou-boom-cause.task.methaneScan
+Scan the critters of {h}Site N{/h}
+
+:: bayou-boom-cause.task.reportBack
+Report back to {nameof @profBayou}
+
+:: bayou-boom-cause.argue.claimLabel1
+There's methane here.
+
+:: bayou-boom-cause.task.methaneTag
+Tag the methane of {h}Site N{/h}
+
+:: bayou-boom-cause.argue.claimLabel2
+{pluralnameof Fishers} blew it up.
+
+:: arctic-seal-habbits.name
+Seal Habits
+
+:: arctic-seal-habbits.desc
+The {pluralnameof RibbonSeal} have been almost a myth for decades because we have struggled to properly observe them. They live in the {m}Ephemeral Impass{/m} within the ice shelf, which are unique spaces due to the microscopic species that live there. Can you find the seals and gather data on their habitat?
+
+:: arctic-seal-habbits.desc.short
+Find the {pluralnameof RIbbonSeal} and gather data on their habitat.
+
+:: arctic-seal-habbits.task.find
+Scan a {nameof RibbonSeal}
+
+:: arctic-seal-habbits.task.find2
+Locate the habitat of the {pluralnameof RibbonSeal}
+
+:: arctic-seal-habbits.task.find3
+Find any {h}microscopic species{/h} in the Ribbon Seal habitat
+
+:: arctic-seal-habbits.task.count
+Count the population of the {pluralnameof RibbonSeal}
+
+:: arctic-seal-habbits.task.report
+Report back to {nameof @profArctic}
+
+:: arctic-above-n-below.name
+Above and Below
+
+:: arctic-above-n-below.desc
+I saw in the probe data that there are bottom-dwellers and other creatures living in the {m}Ephemeral Impass{/m}. Do they interact with the {pluralnameof RibbonSeal}?
+
+:: arctic-above-n-below.desc.short
+How do bottom-dwellers and other creatures living in the {m}Ephemeral Impass{/m} interact with the {pluralnameof RibbonSeal}?
+
+:: bayou-alt-energy
+Alternative Energy
+
+:: bayou-alt-energy.desc
+It's so dark. Where is this energy even coming from?
+
+:: bayou-alt-energy.task.scanCritters
+Scan the critters of {h}Site N{/h}
+
+:: bayou-alt-energy.task.wormEat
+Observe how the species of {h}Site N{/h} interact
+
+:: bayou-alt-energy.task.getModel
+Create a visual model of the energy in {h}Site N{/h}
+
+:: bayou-alt-energy.task.reportBack
+Report back to {nameof @profBayou}
+
+:: bayou-alt-energy.argue.claimLabel_1
+Methane from the vents is the energy source of {h}Site N{/h}.
+
+:: bayou-alt-energy.argue.claimLabel_2
+Falling detritus is the energy source of {h}Site N{/h}.
+
+:: bayou-alt-energy.argue.claimLabel_3
+Heat from the vents is the energy sourceof {h}Site N{/h}.
+
+:: arctic-salmon-competition.name
+** Salmon Competition
+
+:: arctic-salmon-competition.desc
+Well, you really have proven useful. We have been trying to make a model about Salmon summering in the arctic. We aren't happy with how our model is working, but maybe your information about cod could be used to improve it.
+
+:: arctic-salmon-competition.task.observeCod
+Determine Cod interations within the ecosystem
+
+:: arctic-in-ice.name
+In the Ice
+
+:: arctic-in-ice.desc
+We've spotted cod hanging around the ice shelf in {nameof RS-4Z} outside. Cod aren't really our interest, but you're welcome to investigate what they're doing.
+
+:: arctic-salmon-monitoring.name
+Salmon Monitoring
+
+:: arctic-salmon-monitoring.desc
+Our whole job is to monitor the salmon out here. We don't typically get help for it, so we weren't expecting any. Uh... I suppose you can double check our salmon counts?
+
+:: arctic-salmon-monitoring.task.countSalmon
+Count the Salmon populations in the {m}Frosted Sea{/m}
+
+:: arctic-in-ice.task.scanAlgae
+Determine what is drawing the Cod to the ice shelf in {nameof RS-4Z}
+
+:: arctic-picky-eaters.name
+Picky Eaters
+
+:: arctic-picky-eaters.desc
+My mechanic is complaining about having to clean out excess ice algae from the tanks after we've studied the feeding behaviors of Cod. Can you figure out if Cod really do eat less Ice Algae than other food sources?
+
+:: arctic-picky-eaters.task.obtainRateAlgae
+Figure out how much Ice Algae is eaten by Arctic Cod
+
+:: arctic-salmon-monitoring.task.reportBack
+Report back with your Salmon counts
+
+:: arctic-salmon-monitoring.argue.claimLabel
+Present the Salmon population count at Site Z
+
+:: arctic-picky-eaters.task.obtainRateDiatoms
+Figure out how much Diatoms are eaten by Arctic Cod
+
+:: arctic-picky-eaters.task.reportBack
+Report back
+
+:: arctic-picky-eaters.argue.claimLabelDiatoms
+Diatoms are more nutritious than Ice Algae
+
+:: arctic-picky-eaters.argue.claimLabelAlgae
+Ice Algae is more nutritious than Diatoms
+
+:: arctic-salmon-competition.task.modelFish
+Construct a Numerical model of how Cod and Salmon impact one another
+
+:: arctic-salmon-competition.task.reportBack
+Report back
+
+:: arctic-salmon-competition.argue.claimLabelNoImpact
+Cod and Salmon do not impact each other
+
+:: arctic-salmon-competition.argue.claimLabelImbalance
+Cod and Salmon are unbalanced in the ecosystem
+
+:: arctic-salmon-competition.argue.claimImproved
+Present an improved Numerical model
+
+:: arctic-in-ice.task.countAlgae
+Count Ice Algae populations at the ice shelf
+
+:: arctic-in-ice.task.observeEat
+Confirm whether Cod eat Ice Algae
+
+:: arctic-in-ice.task.reportBack
+Report back
+
+:: coral-casting-shade.task.coralLight
+Conduct a Measurement Experiment to determine the effect of the {nameof StaghornCoral} on its environment.
+
+:: bayou-test-model.name
+***Test Model
+
+:: bayou-test-model.desc
+We would like to see what would happen to turtle populations if the reef were removed.
+
+:: bayou-test-model.task.sync
+Create the model
+
+:: arctic-in-ice.argue.claimLabelEat
+Provide a reason why Arctic Cod are found near the ice shelf
+
+:: arctic-in-ice.argue.claimLabelPop
+Show how much Ice Algae is at the site
+
+:: kelp-shop-welcome.task.returnShip
+Return to the helm
+
+:: coral-turtle-population.task.countTurtle
+Count the Turtle population at {h}Site V{/h}: Reef Edge
+

@@ -11,21 +11,21 @@ namespace BeauUtil.Streaming
         private ulong m_LastKnownContentLength;
         private ulong m_ReceivedBytes;
 
-        private object m_DataContext;
-        private int m_DataContextFlags;
-        private DataHandler m_SafeDataHandler;
-        private UnsafeDataHandler m_UnsafeHandler;
+        private readonly object m_DataContext;
+        private readonly int m_DataContextFlags;
+        private readonly DataHandler m_SafeDataHandler;
+        private readonly UnsafeDataHandler m_UnsafeHandler;
 
-        public DownloadHandlerStream(byte[] inPreallocatedBuffer, DataHandler inHandler, object inHandlerContext = null, int inContextFlags = 0)
-            : base(inPreallocatedBuffer)
+        public DownloadHandlerStream(byte[] inChunkBuffer, DataHandler inHandler, object inHandlerContext = null, int inContextFlags = 0)
+            : base(inChunkBuffer)
         {
             m_SafeDataHandler = inHandler;
             m_DataContext = inHandlerContext;
             m_DataContextFlags = inContextFlags;
         }
 
-        public DownloadHandlerStream(byte[] inPreallocatedBuffer, UnsafeDataHandler inHandler, object inHandlerContext = null, int inContextFlags = 0)
-            : base(inPreallocatedBuffer)
+        public DownloadHandlerStream(byte[] inChunkBuffer, UnsafeDataHandler inHandler, object inHandlerContext = null, int inContextFlags = 0)
+            : base(inChunkBuffer)
         {
             m_UnsafeHandler = inHandler;
             m_DataContext = inHandlerContext;

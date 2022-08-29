@@ -18,6 +18,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace BeauUtil
 {
@@ -443,5 +444,131 @@ namespace BeauUtil
         }
 
         #endregion // Pinning
+    
+        #region Debug
+
+        private const string HexChars = "0123456789ABCDEF";
+
+        /// <summary>
+        /// Dumps the given memory contents to string.
+        /// </summary>
+        static public string DumpMemory(void* inBuffer, int inSize, char inSeparator = (char) 0, int inSeparatorInterval = 0)
+        {
+            int stringLength = inSize * 2;
+            
+            int separatorCount = 0;
+            if (inSeparatorInterval > 0)
+            {
+                separatorCount = (inSize - 1) / inSeparatorInterval;
+                stringLength += separatorCount;
+            }
+
+            if (stringLength <= 256)
+            {
+                byte* bytes = (byte*) inBuffer;
+                byte val;
+                char* charBuffer = stackalloc char[stringLength];
+                char* writeHead = charBuffer;
+
+                for(int i = 0; i < inSize; i++)
+                {
+                    if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
+                    {
+                        *writeHead++ = inSeparator;
+                    }
+                    val = *bytes++;
+                    *writeHead++ = HexChars[val / 16];
+                    *writeHead++ = HexChars[val % 16];
+                }
+
+                return new string(charBuffer, 0, stringLength);
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder(stringLength);
+                DumpMemory(inBuffer, inSize, sb, inSeparator, inSeparatorInterval);
+                return sb.Flush();
+            }
+        }
+
+        /// <summary>
+        /// Dumps the given memory contents to string.
+        /// </summary>
+        static public string DumpMemory(void* inBuffer, long inSize, char inSeparator = (char) 0, int inSeparatorInterval = 0)
+        {
+            long stringLength = inSize * 2;
+            
+            long separatorCount = 0;
+            if (inSeparatorInterval > 0)
+            {
+                separatorCount = (inSize - 1) / inSeparatorInterval;
+                stringLength += separatorCount;
+            }
+
+            if (stringLength <= 256)
+            {
+                byte* bytes = (byte*) inBuffer;
+                byte val;
+                char* charBuffer = stackalloc char[(int) stringLength];
+                char* writeHead = charBuffer;
+
+                for(int i = 0; i < inSize; i++)
+                {
+                    if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
+                    {
+                        *writeHead++ = inSeparator;
+                    }
+                    val = *bytes++;
+                    *writeHead++ = HexChars[val / 16];
+                    *writeHead++ = HexChars[val % 16];
+                }
+
+                return new string(charBuffer, 0, (int) stringLength);
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder((int) stringLength);
+                DumpMemory(inBuffer, inSize, sb, inSeparator, inSeparatorInterval);
+                return sb.Flush();
+            }
+        }
+
+        /// <summary>
+        /// Dumps the given memory contents to a StringBuilder.
+        /// </summary>
+        static public void DumpMemory(void* inBuffer, int inSize, StringBuilder ioStringBuilder, char inSeparator = (char) 0, int inSeparatorInterval = 0)
+        {
+            byte* bytes = (byte*) inBuffer;
+            byte val;
+            for(int i = 0; i < inSize; i++)
+            {
+                if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
+                {
+                    ioStringBuilder.Append(inSeparator);
+                }
+                val = *bytes++;
+                ioStringBuilder.Append(HexChars[val / 16]).Append(HexChars[val % 16]);
+            }
+        }
+
+        /// <summary>
+        /// Dumps the given memory contents to a StringBuilder.
+        /// </summary>
+        static public void DumpMemory(void* inBuffer, long inSize, StringBuilder ioStringBuilder, char inSeparator = (char) 0, int inSeparatorInterval = 0)
+        {
+            byte* bytes = (byte*) inBuffer;
+            byte val;
+            for(long i = 0; i < inSize; i++)
+            {
+                if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
+                {
+                    ioStringBuilder.Append(inSeparator);
+                }
+                val = *bytes++;
+                ioStringBuilder.Append(HexChars[val / 16]).Append(HexChars[val % 16]);
+            }
+        }
+
+        #endregion // Debug
     }
 }
