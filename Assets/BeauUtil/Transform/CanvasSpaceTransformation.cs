@@ -74,14 +74,26 @@ namespace BeauUtil
                 outWorld = inOffset.EvaluateWorld(inTransform);
                 return true;
             }
-            
-            Vector3 screenSpace = TransformHelper.ScreenPosition(inTransform, inWorldCamera, inOffset);
+
+            Vector3 worldSpace = inOffset.EvaluateWorld(inTransform);
+            Vector3 screenSpace;
+            if (inWorldCamera != null && !inWorldCamera.orthographic)
+            {
+                Vector3 cameraRelative = inWorldCamera.transform.InverseTransformPoint(worldSpace);
+                float frustumHeight = CameraHelper.HeightForDistanceAndFOV(Math.Abs(cameraRelative.z), inWorldCamera.fieldOfView);
+                float frustumWidth = frustumHeight * inWorldCamera.aspect;
+                Vector3 viewportPos = new Vector3(cameraRelative.x / frustumWidth + 0.5f, cameraRelative.y / frustumHeight + 0.5f, Math.Abs(cameraRelative.z));
+                screenSpace = inWorldCamera.ViewportToScreenPoint(viewportPos);
+            }
+            else
+            {
+                screenSpace = RectTransformUtility.WorldToScreenPoint(inWorldCamera, worldSpace);
+            }
+
             return RectTransformUtility.ScreenPointToWorldPointInRectangle(CanvasSpace, screenSpace, CanvasCamera, out outWorld);
         }
 
         #endregion // Convert To World Space
-
-        #region Convert to Local Space
 
         public bool TryConvertToLocalSpace(Transform inTransform, out Vector3 outLocal)
         {
@@ -107,7 +119,5 @@ namespace BeauUtil
             }
             return bAvailable;
         }
-
-        #endregion // Convert to Local Space
     }
 }

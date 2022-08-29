@@ -27,6 +27,7 @@ namespace BeauUtil
         public class PinBeginEvent : UnityEvent<Transform, bool, Vector3> { }
         public class PinEvent : UnityEvent<Transform> { }
         public class PinPositionEvent : UnityEvent<Transform, Vector3> { }
+        public class PinClampEvent : UnityEvent<Transform, RectEdges> { }
 
         #endregion // Types
 
@@ -36,6 +37,10 @@ namespace BeauUtil
         [SerializeField] private TransformOffset m_TargetWorldOffset;
         [Space]
         [SerializeField] private Vector2 m_LocalOffset = default(Vector2);
+
+        [Header("Clamp")]
+        [SerializeField] private bool m_ClampToParentRect = false;
+        [SerializeField, ShowIfField("m_ClampToParentRect")] private Vector2 m_ParentRectClampOffset = default(Vector2);
 
         [Header("Behavior")]
 
@@ -48,6 +53,7 @@ namespace BeauUtil
         [SerializeField] private PinEvent m_OnPinAppear = new PinEvent();
         [SerializeField] private PinEvent m_OnPinDisappear = new PinEvent();
         [SerializeField] private PinPositionEvent m_OnPinUpdate = new PinPositionEvent();
+        [SerializeField] private PinClampEvent m_OnClampUpdate = new PinClampEvent();
         [SerializeField] private PinEvent m_OnPinEnd = new PinEvent();
 
         #endregion // Inspector
@@ -60,6 +66,7 @@ namespace BeauUtil
         [NonSerialized] private Transform m_AppliedPinTarget;
         [NonSerialized] private Vector3 m_CurrentPinPosition;
         [NonSerialized] private bool m_PinOnScreen;
+        [NonSerialized] private RectEdges m_ClampedEdges;
         #if UNITY_EDITOR
         [NonSerialized] private Vector2 m_AppliedLocalOffset;
         #endif // UNITY_EDITOR
@@ -68,7 +75,10 @@ namespace BeauUtil
         public PinEvent OnPinAppear { get { return m_OnPinAppear; } }
         public PinEvent OnPinDisappear { get { return m_OnPinDisappear; } }
         public PinPositionEvent OnPinUpdate { get { return m_OnPinUpdate; } }
+        public PinClampEvent OnClampUpdate { get { return m_OnClampUpdate;}}
         public PinEvent OnPinEnd { get { return m_OnPinEnd; } }
+
+        public RectEdges LastClampedEdges { get { return m_ClampedEdges; } }
 
         #region Unity Events
 
@@ -170,6 +180,7 @@ namespace BeauUtil
             }
             else if (!m_AppliedPinTarget.IsReferenceNull())
             {
+                RectEdges oldEdges = m_ClampedEdges;
                 bool bNowOnScreen = RecalculatePosition();
                 if (bNowOnScreen != m_PinOnScreen)
                 {
@@ -185,9 +196,17 @@ namespace BeauUtil
 
                 ApplyPosition();
                 
-                if (m_PinOnScreen && ShouldProcess)
+                if (ShouldProcess)
                 {
-                    m_OnPinUpdate.Invoke(m_AppliedPinTarget, m_CurrentPinPosition);
+                    if (m_PinOnScreen)
+                    {
+                        m_OnPinUpdate.Invoke(m_AppliedPinTarget, m_CurrentPinPosition);
+                    }
+
+                    if (m_ClampedEdges != oldEdges)
+                    {
+                        m_OnClampUpdate.Invoke(m_AppliedPinTarget, m_ClampedEdges);
+                    }
                 }
             }
         }
@@ -284,7 +303,42 @@ namespace BeauUtil
 
             bool bFound = m_CanvasTransformer.TryConvertToLocalSpace(m_CurrentTarget, out m_CurrentPinPosition);
             if (bFound)
+            {
                 m_CurrentPinPosition += new Vector3(m_LocalOffset.x, m_LocalOffset.y, 0);
+                RectTransform parent = m_SelfRectTransform.parent as RectTransform;
+                if (m_ClampToParentRect && parent != null)
+                {
+                    m_ClampedEdges = 0;
+
+                    Rect rect = parent.rect;
+                    rect.x += m_ParentRectClampOffset.x / 2;
+                    rect.y += m_ParentRectClampOffset.y / 2;
+                    rect.width -= m_ParentRectClampOffset.x;
+                    rect.height -= m_ParentRectClampOffset.y;
+
+                    if (m_CurrentPinPosition.x < rect.xMin)
+                    {
+                        m_CurrentPinPosition.x = rect.xMin;
+                        m_ClampedEdges |= RectEdges.Left;
+                    }
+                    else if (m_CurrentPinPosition.x > rect.xMax)
+                    {
+                        m_CurrentPinPosition.x = rect.xMax;
+                        m_ClampedEdges |= RectEdges.Right;
+                    }
+
+                    if (m_CurrentPinPosition.y < rect.yMin)
+                    {
+                        m_CurrentPinPosition.y = rect.yMin;
+                        m_ClampedEdges |= RectEdges.Bottom;
+                    }
+                    else if (m_CurrentPinPosition.y > rect.yMax)
+                    {
+                        m_CurrentPinPosition.y = rect.yMax;
+                        m_ClampedEdges |= RectEdges.Top;
+                    }
+                }
+            }
             return bFound;
         }
 

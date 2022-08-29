@@ -174,7 +174,7 @@ namespace BeauUtil
         /// </summary>
         static public float HeightForDistanceAndFOV(float inDistance, float inFOV)
         {
-            return (float) (2f * Math.Tan(inFOV / 2 * Mathf.Deg2Rad) / inDistance);
+            return (float) (2f * Math.Tan(inFOV / 2 * Mathf.Deg2Rad) * inDistance);
         }
     }
 }
