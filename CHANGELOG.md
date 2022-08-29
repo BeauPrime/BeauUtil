@@ -1,3 +1,9 @@
+### Version 0.7.11
+**29 Aug 2022**
+
+
+Reduced memory usage of debug font
+
 ### Version 0.7.10
 **19 Aug 2022**
 

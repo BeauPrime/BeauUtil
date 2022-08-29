@@ -28,6 +28,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the screen position of this transform using the default camera.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 ScreenPosition(this Transform inTransform)
         {
             return ScreenPosition(inTransform, Camera.main);
@@ -36,6 +37,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the screen position of this transform, offset by the given offsets, using the default camera.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 ScreenPosition(this Transform inTransform, TransformOffset inOffset)
         {
             return ScreenPosition(inTransform, Camera.main, inOffset);
@@ -44,6 +46,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the screen position of this transform using the given camera.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 ScreenPosition(this Transform inTransform, Camera inCamera)
         {
             return RectTransformUtility.WorldToScreenPoint(inCamera, inTransform.position);
@@ -52,12 +55,53 @@ namespace BeauUtil
         /// <summary>
         /// Returns the screen position of this transform, offset by the given offsets, using the given camera.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 ScreenPosition(this Transform inTransform, Camera inCamera, TransformOffset inOffset)
         {
             return RectTransformUtility.WorldToScreenPoint(inCamera, inOffset.EvaluateWorld(inTransform));
         }
 
         #endregion // Screen Position
+
+        #region Viewport  Position
+
+        /// <summary>
+        /// Returns the screen position of this transform using the default camera.
+        /// </summary>
+        [MethodImpl(256)]
+        static public Vector3 ViewportPosition(this Transform inTransform)
+        {
+            return ViewportPosition(inTransform, Camera.main);
+        }
+
+        /// <summary>
+        /// Returns the screen position of this transform, offset by the given offsets, using the default camera.
+        /// </summary>
+        [MethodImpl(256)]
+        static public Vector3 ViewportPosition(this Transform inTransform, TransformOffset inOffset)
+        {
+            return ViewportPosition(inTransform, Camera.main, inOffset);
+        }
+
+        /// <summary>
+        /// Returns the screen position of this transform using the given camera.
+        /// </summary>
+        [MethodImpl(256)]
+        static public Vector3 ViewportPosition(this Transform inTransform, Camera inCamera)
+        {
+            return RectTransformUtility.WorldToScreenPoint(inCamera, inTransform.position);
+        }
+
+        /// <summary>
+        /// Returns the screen position of this transform, offset by the given offsets, using the given camera.
+        /// </summary>
+        [MethodImpl(256)]
+        static public Vector3 ViewportPosition(this Transform inTransform, Camera inCamera, TransformOffset inOffset)
+        {
+            return RectTransformUtility.WorldToScreenPoint(inCamera, inOffset.EvaluateWorld(inTransform));
+        }
+
+        #endregion // Viewport Position
 
         #region RectTransform
 
@@ -115,6 +159,7 @@ namespace BeauUtil
         /// This will search based on GameObject layer.
         /// This will skip cameras that are currently inactive.
         /// </summary>
+        [MethodImpl(256)]
         static public bool TryGetCameraFromLayer(this Transform inTransform, out Camera outCamera)
         {
             return TryGetCameraFromLayer(inTransform, false, out outCamera);

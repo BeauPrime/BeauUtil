@@ -52,6 +52,22 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if the given enum contains any of the given mask.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool Contains<T>(T inBitArray, T inBitMask)
+        #if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+        #elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+        #else
+            where T : struct, IConvertible
+        #endif // HAS_ENUM_CONSTRAINT
+        {
+            return ContainsAny<T>(inBitArray, inBitMask);
+        }
+
+        /// <summary>
         /// Returns if the given uint contains any of the given mask.
         /// </summary>
         [MethodImpl(256)]
@@ -104,7 +120,7 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Returns if the given enum contains any of the given mask.
+        /// Returns if the given enum contains all of the given mask.
         /// </summary>
         [MethodImpl(256)]
         static public bool ContainsAll<T>(T inBitArray, T inBitMask)

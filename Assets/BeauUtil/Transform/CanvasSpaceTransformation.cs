@@ -81,6 +81,8 @@ namespace BeauUtil
 
         #endregion // Convert To World Space
 
+        #region Convert to Local Space
+
         public bool TryConvertToLocalSpace(Transform inTransform, out Vector3 outLocal)
         {
             return TryConvertToLocalSpace(inTransform, WorldCamera, WorldOffset, out outLocal);
@@ -105,5 +107,7 @@ namespace BeauUtil
             }
             return bAvailable;
         }
+
+        #endregion // Convert to Local Space
     }
 }
