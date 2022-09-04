@@ -524,6 +524,7 @@ namespace BeauUtil.Blocks
             }
 
             FlushBlock(ioParser, ioState, false);
+            ioState.Error |= ioState.BlockError;
             ioState.CurrentState = BlockState.BlockDone;
             ioParser.CurrentBlock = null;
             return true;
@@ -676,6 +677,7 @@ namespace BeauUtil.Blocks
                 validatable.Validate();
             
             ioParser.Generator.CompleteBlock(ioParser, ioParser.Package, ioParser.CurrentBlock, ioState.BlockError);
+            ioState.Error |= ioState.BlockError;
         }
 
         #endregion // Parse Commands
