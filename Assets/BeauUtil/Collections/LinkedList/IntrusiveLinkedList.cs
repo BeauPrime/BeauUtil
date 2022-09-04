@@ -7,7 +7,7 @@
  * Purpose: An intrusively tracked linked list.
  */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 #define DEVELOPMENT
 #endif
 

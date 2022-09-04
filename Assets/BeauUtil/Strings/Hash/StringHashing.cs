@@ -7,9 +7,9 @@
  * Purpose: Shared string hashing code.
  */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
 #define PRESERVE_DEBUG_SYMBOLS
-#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

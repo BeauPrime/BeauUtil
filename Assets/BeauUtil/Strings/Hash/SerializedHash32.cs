@@ -7,9 +7,9 @@
  * Purpose: Serializable string hash struct.
  */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD || DEVELOPMENT
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
 #define PRESERVE_DEBUG_SYMBOLS
-#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
 #if CSHARP_7_3_OR_NEWER
 #define EXPANDED_REFS
@@ -66,24 +66,12 @@ namespace BeauUtil
 
         public StringHash32 Hash()
         {
-            #if PRESERVE_DEBUG_SYMBOLS
-            if (!string.IsNullOrEmpty(m_Source))
-                return new StringHash32(m_Source);
             return new StringHash32(m_HashValue);
-            #else
-            return new StringHash32(m_HashValue);
-            #endif // PRESERVE_DEBUG_SYMBOLS
         }
 
         public string ToDebugString()
         {
-            #if PRESERVE_DEBUG_SYMBOLS
-            if (!string.IsNullOrEmpty(m_Source))
-                return m_Source;
-            return new StringHash32(m_HashValue).ToDebugString();
-            #else
             return Hash().ToDebugString();
-            #endif // PRESERVE_DEBUG_SYMBOLS
         }
 
         public override string ToString()
@@ -134,21 +122,23 @@ namespace BeauUtil
 
         public void OnBeforeSerialize()
 		{
-            if (m_HashValue == 0 && !string.IsNullOrEmpty(m_Source))
-                m_HashValue = StringHashing.Hash32(m_Source, 0, m_Source.Length);
-
-            #if !DEVELOPMENT_BUILD && !DEVELOPMENT
-
-            // TODO: Figure out a way of selectively stripping strings from the non-debug builds
-            // if (!BuildPipeline.isBuildingPlayer)
-            //     return;
-            
-			// m_Source = string.Empty;
-
-            #endif // !DEVELOPMENT_BUILD && !DEVELOPMENT
+            uint hash = new StringHash32(m_Source).HashValue;
+            if (m_HashValue != hash)
+            {
+                UnityEngine.Debug.LogWarningFormat("[SerializedHash32] Hash of {0} was different across multiple machines (old {1} vs new {2})", m_Source, m_HashValue, hash);
+                m_HashValue = hash;
+            }
 		}
 
-		public void OnAfterDeserialize() { }
+        public void OnAfterDeserialize()
+        {
+            uint hash = new StringHash32(m_Source).HashValue;
+            if (m_HashValue != hash)
+            {
+                UnityEngine.Debug.LogWarningFormat("[SerializedHash32] Hash of {0} was different across multiple machines (old {1} vs new {2})", m_Source, m_HashValue, hash);
+                m_HashValue = hash;
+            }
+        }
 
         [CustomPropertyDrawer(typeof(SerializedHash32))]
         private class Drawer : PropertyDrawer

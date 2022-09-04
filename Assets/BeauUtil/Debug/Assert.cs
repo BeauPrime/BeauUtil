@@ -7,9 +7,9 @@
  * Purpose: Conditionally-compiled assertions.
  */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 #define DEVELOPMENT
-#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
 #if UNITY_WEBGL && !UNITY_EDITOR
 #define DISABLE_STACK_TRACE
@@ -476,7 +476,7 @@ namespace BeauUtil.Debugger
 
         static private ErrorResult ShowErrorMessage(string inMessage)
         {
-            #if UNITY_EDITOR
+            #if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
             if (EditorApplication.isPlaying && !s_Broken && s_FailureMode == FailureMode.User)
             {
                 int result = EditorUtility.DisplayDialogComplex("Assert Failed", inMessage, "Ignore", "Ignore All", "Break");
@@ -485,7 +485,7 @@ namespace BeauUtil.Debugger
                 if (result == 1)
                     return ErrorResult.IgnoreAll;
             }
-            #endif // UNITY_EDITOR
+            #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
 
             return ErrorResult.Break;
         }

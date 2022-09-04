@@ -7,7 +7,7 @@
  * Purpose: Non-drawing graphic with optional debug rendering.
 */
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 #define DEVELOPMENT
 #endif
 
