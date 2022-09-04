@@ -1,3 +1,10 @@
+### Version 0.7.12
+**4 Sept 2022**
+
+Hotfix for incorrect `SerializedHash32` hashes being masked in editor
+Hotfix for BlockParser block error state not propagating correctly
+Added support for `IGNORE_UNITY_EDITOR` define to disable debug checks in editor
+
 ### Version 0.7.11
 **29 Aug 2022**
 
