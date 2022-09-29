@@ -156,14 +156,14 @@ namespace BeauUtil.UnitTests
         {
             StringBuilder builder = new StringBuilder();
             builder.Append("this is ")
-                .AppendNoAlloc(-17.99, 2)
-                .AppendNoAlloc(0.3, 2);
+                .AppendNoAlloc(-17.99, 2, 5)
+                .AppendNoAlloc(0.3, 2, 2);
             
             string flushed = builder.Flush();
 
             builder.Append("this is ")
-                .Append((-17.99).ToString("0.00"))
-                .Append((0.3).ToString("0.00"));
+                .Append((-17.99).ToString("00000.00"))
+                .Append((0.3).ToString("00.00"));
             string expected = builder.Flush();
 
             Assert.AreEqual(expected, flushed);

@@ -8,31 +8,21 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Equality Comparer using solely ReferenceEquals.
     /// </summary>
-    public sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
+    public sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T>, IEqualityComparer
     {
-        static private ReferenceEqualityComparer<T> s_Instance;
-
         /// <summary>
-        /// Default instance of ReferenceEqualityComparer.
+        /// Default ReferenceEqualityComparer for this type.
         /// </summary>
-        static public ReferenceEqualityComparer<T> Default
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    s_Instance = new ReferenceEqualityComparer<T>();
-                }
-                return s_Instance;
-            }
-        }
+        static public readonly ReferenceEqualityComparer<T> Default = new ReferenceEqualityComparer<T>();
 
         public bool Equals(T x, T y)
         {
@@ -41,7 +31,7 @@ namespace BeauUtil
 
         public int GetHashCode(T obj)
         {
-            return Object.ReferenceEquals(obj, null) ? 0 : obj.GetHashCode();
+            return RuntimeHelpers.GetHashCode(obj);
         }
 
         public int IndexOf(T[] inArray, T inValue, int inStartIndex, int inCount)
@@ -70,6 +60,14 @@ namespace BeauUtil
             }
 
             return -1;
+        }
+
+        bool IEqualityComparer.Equals(object x, object y) {
+            return object.Equals(x, y);
+        }
+
+        int IEqualityComparer.GetHashCode(object obj) {
+            return RuntimeHelpers.GetHashCode(obj);
         }
     }
 }

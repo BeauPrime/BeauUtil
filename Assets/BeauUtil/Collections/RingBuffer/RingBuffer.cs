@@ -45,7 +45,7 @@ namespace BeauUtil
         { }
 
         public RingBuffer(int inCapacity, RingBufferMode inMode)
-            : this(inCapacity, inMode, EqualityComparer<T>.Default)
+            : this(inCapacity, inMode, CompareUtils.DefaultComparer<T>())
         { }
 
         public RingBuffer(int inCapacity, RingBufferMode inMode, IEqualityComparer<T> inComparer)
