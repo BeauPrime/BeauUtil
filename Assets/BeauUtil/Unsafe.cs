@@ -447,8 +447,6 @@ namespace BeauUtil
     
         #region Debug
 
-        private const string HexChars = "0123456789ABCDEF";
-
         /// <summary>
         /// Dumps the given memory contents to string.
         /// </summary>
@@ -477,8 +475,8 @@ namespace BeauUtil
                         *writeHead++ = inSeparator;
                     }
                     val = *bytes++;
-                    *writeHead++ = HexChars[val / 16];
-                    *writeHead++ = HexChars[val % 16];
+                    *writeHead++ = StringUtils.HexCharsUpper[val / 16];
+                    *writeHead++ = StringUtils.HexCharsUpper[val % 16];
                 }
 
                 return new string(charBuffer, 0, stringLength);
@@ -519,8 +517,8 @@ namespace BeauUtil
                         *writeHead++ = inSeparator;
                     }
                     val = *bytes++;
-                    *writeHead++ = HexChars[val / 16];
-                    *writeHead++ = HexChars[val % 16];
+                    *writeHead++ = StringUtils.HexCharsUpper[val / 16];
+                    *writeHead++ = StringUtils.HexCharsUpper[val % 16];
                 }
 
                 return new string(charBuffer, 0, (int) stringLength);
@@ -547,7 +545,7 @@ namespace BeauUtil
                     ioStringBuilder.Append(inSeparator);
                 }
                 val = *bytes++;
-                ioStringBuilder.Append(HexChars[val / 16]).Append(HexChars[val % 16]);
+                ioStringBuilder.Append(StringUtils.HexCharsUpper[val / 16]).Append(StringUtils.HexCharsUpper[val % 16]);
             }
         }
 
@@ -565,7 +563,7 @@ namespace BeauUtil
                     ioStringBuilder.Append(inSeparator);
                 }
                 val = *bytes++;
-                ioStringBuilder.Append(HexChars[val / 16]).Append(HexChars[val % 16]);
+                ioStringBuilder.Append(StringUtils.HexCharsUpper[val / 16]).Append(StringUtils.HexCharsUpper[val % 16]);
             }
         }
 

@@ -97,8 +97,9 @@ namespace BeauUtil.Debugger
                 }
                 else 
                 {
-                    m_StatsBuilder.Append(frame.Framerate.ToString("0.00")).Append(" fps");
-                    m_FramerateText.SetText(m_StatsBuilder.Flush());
+                    m_StatsBuilder.Length = 0;
+                    m_StatsBuilder.AppendNoAlloc(frame.Framerate, 0, 2).Append(" fps");
+                    m_FramerateText.SetText(m_StatsBuilder);
                 }
             }
             if (m_FrameMSText)
@@ -109,8 +110,9 @@ namespace BeauUtil.Debugger
                 }
                 else
                 {
-                    m_StatsBuilder.Append(frame.AvgFrameMS.ToString("0.00")).Append(" ms");
-                    m_FrameMSText.SetText(m_StatsBuilder.Flush());
+                    m_StatsBuilder.Length = 0;
+                    m_StatsBuilder.AppendNoAlloc(frame.AvgFrameMS, 0, 2).Append(" ms");
+                    m_FrameMSText.SetText(m_StatsBuilder);
                 }
             }
             if (m_CameraMSText)
@@ -121,8 +123,9 @@ namespace BeauUtil.Debugger
                 }
                 else
                 {
-                    m_StatsBuilder.Append(frame.AvgRenderMS.ToString("0.00")).Append(" ms");
-                    m_CameraMSText.SetText(m_StatsBuilder.Flush());
+                    m_StatsBuilder.Length = 0;
+                    m_StatsBuilder.AppendNoAlloc(frame.AvgRenderMS, 0, 2).Append(" ms");
+                    m_CameraMSText.SetText(m_StatsBuilder);
                 }
             }
             if (m_MemoryText)
@@ -133,10 +136,12 @@ namespace BeauUtil.Debugger
                 }
                 else
                 {
-                    m_StatsBuilder.Append(frame.MemoryUsageMB.ToString("0.00")).Append(" MB");
-                    m_MemoryText.SetText(m_StatsBuilder.Flush());
+                    m_StatsBuilder.Length = 0;
+                    m_StatsBuilder.AppendNoAlloc(frame.MemoryUsageMB, 0, 2).Append(" MB");
+                    m_MemoryText.SetText(m_StatsBuilder);
                 }
             }
+            m_StatsBuilder.Length = 0;
         }
     }
 }

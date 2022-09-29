@@ -679,7 +679,7 @@ namespace BeauUtil
             bool bEnd = inFilter[filterLength - 1] == inWildcard;
             if (bStart || bEnd)
             {
-                string filterStr = inFilter;
+                StringSlice filterStr = inFilter;
                 int startIdx = 0;
                 if (bStart)
                 {
@@ -694,7 +694,7 @@ namespace BeauUtil
                 filterStr = filterStr.Substring(startIdx, filterLength);
                 if (bStart && bEnd)
                 {
-                    return inString.Contains(filterStr, inbIgnoreCase);
+                    return inString.Contains(filterStr.ToString(), inbIgnoreCase);
                 }
                 if (bStart)
                 {
@@ -772,6 +772,39 @@ namespace BeauUtil
             return true;
         }
 
+        /// <summary>
+        /// Returns if the given StringSlice contains the given string at the given index.
+        /// </summary>
+        static public bool AttemptMatch(this StringSlice inString, int inIndex, StringSlice inMatch, bool inbIgnoreCase = false)
+        {
+            if (inString.IsEmpty)
+                return false;
+
+            if (inMatch.IsEmpty)
+                return false;
+
+            if (inIndex < 0 || inIndex + inMatch.Length > inString.Length)
+                return false;
+
+            for (int i = 0; i < inMatch.Length; ++i)
+            {
+                char a = inString[inIndex + i];
+                char b = inMatch[i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
         #endregion // Pattern Matching
 
         #region StringBuilder
@@ -804,6 +837,342 @@ namespace BeauUtil
             inSlice.AppendTo(ioBuilder);
             return ioBuilder;
         }
+
+        #region NoAlloc Append
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, long inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, long inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ulong inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ulong inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, int inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, int inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, uint inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, uint inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, short inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, short inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ushort inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ushort inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, byte inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, byte inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, sbyte inValue)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
+        }
+
+        /// <summary>
+        /// Appends an integer to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, sbyte inValue, int inPadLeft)
+        {
+            return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
+        }
+
+        // TODO: Enable once rounding behavior when no precision specified is implemented
+        // /// <summary>
+        // /// Appends a floating point value to the given StringBuilder, without calling ToString()
+        // /// </summary>
+        // [MethodImpl(256)]
+        // static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, float inValue)
+        // {
+        //     return Numbers.AppendNumber(ioBuilder, inValue, 0, -1);
+        // }
+
+        // /// <summary>
+        // /// Appends a floating point value to the given StringBuilder, without calling ToString()
+        // /// </summary>
+        // [MethodImpl(256)]
+        // static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, double inValue)
+        // {
+        //     return Numbers.AppendNumber(ioBuilder, inValue, 0, -1);
+        // }
+
+        /// <summary>
+        /// Appends a floating point value to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, float inValue, int inPrecision, int inPadLeft = 0)
+        {
+            return Numbers.AppendNumber(ioBuilder, inValue, inPadLeft, inPrecision);
+        }
+
+        /// <summary>
+        /// Appends a floating point value to the given StringBuilder, without calling ToString()
+        /// </summary>
+        [MethodImpl(256)]
+        static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, double inValue, int inPrecision, int inPadLeft = 0)
+        {
+            return Numbers.AppendNumber(ioBuilder, inValue, inPadLeft, inPrecision);
+        }
+
+        static internal class Numbers
+        {
+            private const int NoAllocNumberBufferSize = 32;
+            private const int MaxPadding = 20;
+            private const int MaxPrecision = 10;
+            private const int DefaultPrecision = 10;
+
+            private const int MantissaBits = 52;
+            private const ulong MantissaMask = (1L << MantissaBits) - 1;
+
+            private const int ExponentBits = 11;
+            private const int ExponentMask = (1 << ExponentBits) - 1;
+            private const int ExponentBias = (1 << (ExponentBits - 1)) - 1;
+
+            static private readonly double[] s_RoundOffsets = new double[] { 0.5, 0.05, 0.005, 0.0005, 0.00005, 0.000005, 0.0000005, 0.00000005, 0.000000005, 0.0000000005, 0.00000000005 };
+
+            static internal unsafe StringBuilder AppendIntegerBase10(StringBuilder inBuilder, long inValue, int inPadLeft)
+            {
+                inPadLeft = inPadLeft < 0 ? 0 : (inPadLeft > MaxPadding ? MaxPadding : inPadLeft);
+
+                char* buffer = stackalloc char[NoAllocNumberBufferSize];
+                int idx = NoAllocNumberBufferSize - 1;
+                int minIdx = idx - inPadLeft;
+                bool negative = inValue < 0;
+                if (negative)
+                {
+                    inValue = -inValue;
+                }
+                do
+                {
+                    buffer[idx--] = (char) ('0' + (inValue % 10));
+                    inValue /= 10;
+                }
+                while(inValue != 0 || idx > minIdx);
+
+                if (negative)
+                {
+                    buffer[idx--] = '-';
+                }
+
+                return inBuilder.Append(buffer + idx + 1, NoAllocNumberBufferSize - 1 - idx);
+            }
+
+            static internal unsafe StringBuilder AppendIntegerBase10(StringBuilder inBuilder, ulong inValue, int inPadLeft)
+            {
+                inPadLeft = inPadLeft < 0 ? 0 : (inPadLeft > MaxPadding ? MaxPadding : inPadLeft);
+
+                char* buffer = stackalloc char[NoAllocNumberBufferSize];
+                int idx = NoAllocNumberBufferSize - 1;
+                int minIdx = idx - inPadLeft;
+                do
+                {
+                    buffer[idx--] = (char) ('0' + (inValue % 10));
+                    inValue /= 10;
+                }
+                while(inValue != 0 || idx > minIdx);
+
+                return inBuilder.Append(buffer + idx + 1, NoAllocNumberBufferSize - 1 - idx);
+            }
+
+            static internal unsafe StringBuilder AppendIntegerBase16(StringBuilder inBuilder, ulong inValue, int inPadLeft, bool inUppercase)
+            {
+                inPadLeft = inPadLeft < 0 ? 0 : (inPadLeft > MaxPadding ? MaxPadding : inPadLeft);
+
+                string hexChars = inUppercase ? HexCharsUpper : HexCharsLower;
+
+                char* buffer = stackalloc char[NoAllocNumberBufferSize];
+                int idx = NoAllocNumberBufferSize - 1;
+                int minIdx = idx - inPadLeft;
+                do
+                {
+                    buffer[idx--] = hexChars[(int) (inValue & 0xF)];
+                    inValue >>= 4;
+                }
+                while(inValue != 0 || idx > minIdx);
+
+                return inBuilder.Append(buffer + idx + 1, NoAllocNumberBufferSize - 1 - idx);
+            }
+
+            static internal unsafe StringBuilder AppendNumber(StringBuilder inBuilder, double inValue, int inPadLeft, int inPrecision)
+            {
+                if (double.IsNaN(inValue))
+                {
+                    return inBuilder.Append("NaN");
+                }
+                else if (double.IsPositiveInfinity(inValue))
+                {
+                    return inBuilder.Append("Infinity");
+                }
+                else if (double.IsNegativeInfinity(inValue))
+                {
+                    return inBuilder.Append("-Infinity");
+                }
+
+                if (inValue < 0)
+                {
+                    inBuilder.Append('-');
+                    inValue = -inValue;
+                }
+
+                if (inPrecision > MaxPrecision)
+                {
+                    inPrecision = MaxPrecision;
+                }
+
+                if (inPrecision >= 0)
+                {
+                    inValue += s_RoundOffsets[inPrecision];
+                }
+                else
+                {
+                    // TODO: Implement proper rounding
+                }
+
+                long integerValue = (long) inValue;
+                AppendIntegerBase10(inBuilder, integerValue, inPadLeft);
+
+                if (inPrecision == 0)
+                {
+                    return inBuilder;
+                }
+
+                inValue -= integerValue;
+
+                if (inPrecision < 0 && inValue == 0)
+                {
+                    return inBuilder;
+                }
+
+                int minLength = inPrecision;
+                int maxLength = inPrecision < 0 ? DefaultPrecision : inPrecision;
+
+                inBuilder.Append('.');
+
+                int charsWritten = 0;
+                int digit;
+                do
+                {
+                    inValue = inValue * 10;
+                    digit = ((int) inValue % 10);
+                    inBuilder.Append((char) ('0' + digit));
+                    inValue -= digit;
+                    charsWritten++;
+                }
+                while(charsWritten < minLength || (charsWritten < maxLength && (inValue != 0)));
+
+                return inBuilder;
+            }
+
+        }
+
+        #endregion // NoAlloc Append
 
         /// <summary>
         /// Returns if the given StringBuilder contains the given string at the given index.
@@ -1405,5 +1774,15 @@ namespace BeauUtil
         /// Default quote character
         /// </summary>
         static public readonly char[] DefaultQuoteChar = new char[] { '"' };
+
+        /// <summary>
+        /// Hexadecimal character set.
+        /// </summary>
+        public const string HexCharsUpper = "0123456789ABCDEF";
+
+        /// <summary>
+        /// Hexadecimal character set (lowercase).
+        /// </summary>
+        public const string HexCharsLower = "0123456789abcdef";
     }
 }

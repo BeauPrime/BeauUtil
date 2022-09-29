@@ -30,6 +30,7 @@ namespace BeauUtil
         private T[] m_Data;
         private int m_Capacity;
         private RingBufferMode m_BufferMode;
+        private IEqualityComparer<T> m_Comparer;
 
         private int m_Head;
         private int m_Tail;
@@ -44,6 +45,10 @@ namespace BeauUtil
         { }
 
         public RingBuffer(int inCapacity, RingBufferMode inMode)
+            : this(inCapacity, inMode, EqualityComparer<T>.Default)
+        { }
+
+        public RingBuffer(int inCapacity, RingBufferMode inMode, IEqualityComparer<T> inComparer)
         {
             if (inCapacity < 0)
                 throw new ArgumentOutOfRangeException("inCapacity");
@@ -55,6 +60,8 @@ namespace BeauUtil
             m_Head = 0;
             m_Tail = 0;
             m_Count = 0;
+
+            m_Comparer = inComparer;
         }
 
         #region Properties
@@ -82,6 +89,15 @@ namespace BeauUtil
         {
             get { return m_BufferMode; }
             set { m_BufferMode = value; }
+        }
+
+        /// <summary>
+        /// Equality comparer. Used for comparing elements during IndexOf operations.
+        /// </summary>
+        public IEqualityComparer<T> EqualityComparer
+        {
+            get { return m_Comparer; }
+            set { m_Comparer = value; }
         }
 
         #endregion // Properties
@@ -120,7 +136,7 @@ namespace BeauUtil
             if (m_Count <= 0)
                 return -1;
 
-            var eq = EqualityComparer<T>.Default;
+            var eq = m_Comparer;
             int ptr = m_Head;
             int idx = 0;
             int count = m_Count;

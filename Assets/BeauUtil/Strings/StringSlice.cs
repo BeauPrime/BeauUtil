@@ -230,6 +230,22 @@ namespace BeauUtil
             return MatchStart(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
+        public bool StartsWith(StringSlice inItem)
+        {
+            if (m_Source == null || inItem.m_Source == null)
+                return false;
+
+            return MatchStart(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, false);
+        }
+
+        public bool StartsWith(StringSlice inItem, bool inbIgnoreCase)
+        {
+            if (m_Source == null || inItem.m_Source == null)
+                return false;
+
+            return MatchStart(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, inbIgnoreCase);
+        }
+
         public bool Contains(string inItem)
         {
             return IndexOf(inItem) >= 0;
@@ -254,6 +270,22 @@ namespace BeauUtil
                 return false;
 
             return MatchEnd(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
+        }
+
+        public bool EndsWith(StringSlice inItem)
+        {
+            if (m_Source == null || inItem.m_Source == null)
+                return false;
+
+            return MatchEnd(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, false);
+        }
+
+        public bool EndsWith(StringSlice inItem, bool inbIgnoreCase)
+        {
+            if (m_Source == null || inItem.m_Source == null)
+                return false;
+
+            return MatchEnd(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, inbIgnoreCase);
         }
 
         public int IndexOf(string inItem)

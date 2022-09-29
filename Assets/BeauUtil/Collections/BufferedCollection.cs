@@ -37,15 +37,24 @@ namespace BeauUtil
         private int m_EnumeratorCount;
         private int m_MinChangeIndex = int.MaxValue;
         private int m_MaxChangeIndex = int.MinValue;
+        private IEqualityComparer<T> m_Comparer;
 
         public BufferedCollection()
         {
             m_Entries = new RingBuffer<Entry>();
+            m_Comparer = EqualityComparer<T>.Default;
         }
 
         public BufferedCollection(int inCapacity)
         {
             m_Entries = new RingBuffer<Entry>(inCapacity, RingBufferMode.Expand);
+            m_Comparer = EqualityComparer<T>.Default;
+        }
+
+        public BufferedCollection(int inCapacity, IEqualityComparer<T> inComparer)
+        {
+            m_Entries = new RingBuffer<Entry>(inCapacity, RingBufferMode.Expand);
+            m_Comparer = inComparer;
         }
 
         /// <summary>
@@ -251,7 +260,7 @@ namespace BeauUtil
 
         private int IndexOf(T inItem)
         {
-            EqualityComparer<T> eq = EqualityComparer<T>.Default;
+            var eq = m_Comparer;
             for(int i = m_Entries.Count - 1; i >= 0; --i)
             {
                 if (eq.Equals(m_Entries[i].Item, inItem))

@@ -7,12 +7,13 @@
  * Purpose: Profiling blocks.
  */
 
-#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
+#if ENABLE_PROFILER && ((UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT)
 #define ENABLE_PROFILING_BEAUUTIL
-#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
+#endif // ENABLE_PROFILER && ((UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT)
 
 using System;
 using System.Diagnostics;
+using UnityEngine.Profiling;
 
 namespace BeauUtil.Debugger
 {
@@ -65,5 +66,38 @@ namespace BeauUtil.Debugger
         }
 
         #endregion // Time
+
+        #region Unity Samples
+
+        /// <summary>
+        /// Returns a profiling block for the Unity Profiler.
+        /// </summary>
+        static public SampleBlock Sample(string inLabel)
+        {
+            #if ENABLE_PROFILING_BEAUUTIL
+            return new SampleBlock(inLabel);
+            #else
+            return default;
+            #endif // ENABLE_PROFILING_BEAUUTIL
+        }
+
+        public struct SampleBlock : IDisposable
+        {
+            #if ENABLE_PROFILING_BEAUUTIL
+            internal SampleBlock(string inLabel)
+            {
+                Profiler.BeginSample(inLabel);
+            }
+
+            public void Dispose()
+            {
+                Profiler.EndSample();
+            }
+            #else
+            public void Dispose() { }
+            #endif // ENABLE_PROFILING_BEAUUTIL
+        }
+
+        #endregion // Unity Samples
     }
 }

@@ -136,6 +136,40 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
+        static public void CanAppendIntegerNoAlloc()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append("this is ")
+                .AppendNoAlloc(4, 2);
+            
+            string flushed = builder.Flush();
+
+            builder.Append("this is ")
+                .Append(4.ToString("00"));
+            string expected = builder.Flush();
+
+            Assert.AreEqual(expected, flushed);
+        }
+
+        [Test]
+        static public void CanAppendFloatNoAlloc()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append("this is ")
+                .AppendNoAlloc(-17.99, 2)
+                .AppendNoAlloc(0.3, 2);
+            
+            string flushed = builder.Flush();
+
+            builder.Append("this is ")
+                .Append((-17.99).ToString("0.00"))
+                .Append((0.3).ToString("0.00"));
+            string expected = builder.Flush();
+
+            Assert.AreEqual(expected, flushed);
+        }
+
+        [Test]
         static public void CanSplitArgsWithVaradic()
         {
             StringSlice args = "Some args, \"this is a cool thing\", player == true, whatever == 0, this >= 2";
