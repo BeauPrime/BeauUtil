@@ -385,6 +385,22 @@ namespace BeauUtil
 
         #region Internal
 
+        public void AppendTo(StringBuilder ioBuilder)
+        {
+            if (Length <= 0)
+                return;
+
+            unsafe
+            {
+                char* copy = stackalloc char[Length];
+                for(int i = 0; i < Length; i++)
+                {
+                    copy[i] = m_Source[m_StartIndex + i];
+                }
+                ioBuilder.Append(copy, Length);
+            }
+        }
+
         static private bool MatchStart(StringBuilder inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
         {
             if (inLengthMatch > inLength)

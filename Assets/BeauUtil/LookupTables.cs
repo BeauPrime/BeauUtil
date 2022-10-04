@@ -40,5 +40,17 @@ namespace BeauUtil
                 return s_IntegerTable[inValue - INTEGER_MIN];
             return inValue.ToString();
         }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [-100, 100]
+        /// </summary>
+        static public string ToStringLookup(this uint inValue)
+        {
+            if (inValue <= INTEGER_MAX)
+                return s_IntegerTable[inValue - INTEGER_MIN];
+            return inValue.ToString();
+        }
     }
 }

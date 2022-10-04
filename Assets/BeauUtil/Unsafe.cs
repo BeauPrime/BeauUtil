@@ -16,6 +16,7 @@
 #endif // UNITY_2018_1_OR_NEWER
 
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -339,6 +340,8 @@ namespace BeauUtil
 
         #region Pinning
 
+        static private FieldInfo s_StringBuilderChunkField;
+
         /// <summary>
         /// Handle and address for a pinned array.
         /// </summary>
@@ -353,7 +356,7 @@ namespace BeauUtil
             public T* Address;
             #else
             public void* Address;
-            internal int ElementSize;
+            internal int Stride;
             #endif // UNMANAGED_CONSTRAINT
 
             internal GCHandle Handle;
@@ -366,7 +369,7 @@ namespace BeauUtil
                 Address = (T*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
                 #else
                 Address = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
-                ElementSize = SizeOf<T>();
+                Stride = SizeOf<T>();
                 #endif // UNMANAGED_CONSTRAINT
             }
 
@@ -378,7 +381,7 @@ namespace BeauUtil
                 Address = (T*) Handle.AddrOfPinnedObject();
                 #else
                 Address = (void*) Handle.AddrOfPinnedObject();
-                ElementSize = SizeOf<T>();
+                Stride = SizeOf<T>();
                 #endif // UNMANAGED_CONSTRAINT
             }
 
@@ -390,7 +393,7 @@ namespace BeauUtil
             #else
             public void* ElementAddress(int inIndex)
             {
-                return (byte*) Address + ElementSize * inIndex;
+                return (byte*) Address + Stride * inIndex;
             }
             #endif // UNMANAGED_CONSTRAINT
 
@@ -438,9 +441,31 @@ namespace BeauUtil
         static public PinnedArrayHandle<char> PinString(string inString)
         {
             if (inString == null)
-                throw new ArgumentNullException("inArray", "Cannot pin null array");
+                throw new ArgumentNullException("inString", "Cannot pin null string");
 
             return new PinnedArrayHandle<char>(inString);
+        }
+
+        /// <summary>
+        /// Pins the given StringBuilder in memory.
+        /// </summary>
+        static public PinnedArrayHandle<char> PinString(StringBuilder inString)
+        {
+            if (inString == null)
+                throw new ArgumentNullException("inString", "Cannot pin null StringBuilder");
+
+            if (inString.Length > 8000)
+                throw new ArgumentException("inString", "Cannot pin a StringBuilder with more than one chunk");
+
+            if (s_StringBuilderChunkField == null)
+            {
+                s_StringBuilderChunkField = typeof(StringBuilder).GetField("m_ChunkChars", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (s_StringBuilderChunkField == null)
+                    throw new InvalidOperationException("StringBuilder pin not supported");
+            }
+
+            char[] chunkChars = (char[]) s_StringBuilderChunkField.GetValue(inString);
+            return new PinnedArrayHandle<char>(chunkChars);
         }
 
         #endregion // Pinning

@@ -46,12 +46,14 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Creates a new text node.
         /// </summary>
-        static public TagNodeData TextNode(uint inCharOffset, uint inCharCount)
+        static public TagNodeData TextNode(ushort inCharOffset, ushort inCharCount, ushort inRichCharOffset, ushort inRichCharCount)
         {
             TagNodeData node = new TagNodeData();
             node.Type = TagNodeType.Text;
             node.Text.VisibleCharacterOffset = inCharOffset;
             node.Text.VisibleCharacterCount = inCharCount;
+            node.Text.RichCharacterOffset = inRichCharOffset;
+            node.Text.RichCharacterCount = inRichCharCount;
             return node;
         }
 

@@ -1,5 +1,6 @@
 {
     "name": "BeauUtil",
+    "rootNamespace": "",
     "references": [
         "Unity.TextMeshPro",
         "BeauData",
@@ -22,6 +23,11 @@
             "name": "com.unity.render-pipelines.universal",
             "expression": "0.0.1",
             "define": "USING_URP"
+        },
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "0.0.1",
+            "define": "ENABLE_TEXTMESHPRO"
         }
     ],
     "noEngineReferences": false

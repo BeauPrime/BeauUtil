@@ -838,6 +838,18 @@ namespace BeauUtil
             return ioBuilder;
         }
 
+        /// <summary>
+        /// Appends a StringBuilderSlice to the given StringBuilder.
+        /// </summary>
+        static public StringBuilder AppendSlice(this StringBuilder ioBuilder, StringBuilderSlice inSlice)
+        {
+            if (ioBuilder == null)
+                throw new ArgumentNullException("ioBuilder");
+
+            inSlice.AppendTo(ioBuilder);
+            return ioBuilder;
+        }
+
         #region NoAlloc Append
 
         /// <summary>

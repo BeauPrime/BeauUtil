@@ -133,7 +133,7 @@ namespace BeauUtil.Tags
             if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
             {
                 // if we're not considering rich text, and we have no processors, there's nothing to do here
-                outTarget.AddNode(TagNodeData.TextNode(0, (uint) inInput.Length));
+                outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
                 outbModified = false;
                 return;
             }
@@ -346,7 +346,7 @@ namespace BeauUtil.Tags
 
             if (copySlice.Length > 0)
             {
-                ioState.Target.AddText((uint) ioState.StrippedOutput.Length, (uint) copySlice.Length);
+                ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, (ushort) copySlice.Length, (ushort) ioState.RichOutput.Length, (ushort) copySlice.Length);
                 copySlice.AppendTo(ioState.RichOutput);
                 copySlice.AppendTo(ioState.StrippedOutput);
             }
@@ -369,7 +369,7 @@ namespace BeauUtil.Tags
 
             if (inString.Length > 0)
             {
-                ioState.Target.AddText((uint) ioState.StrippedOutput.Length, (uint) inString.Length);
+                ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, (ushort) inString.Length, (ushort) ioState.RichOutput.Length, (ushort) inString.Length);
                 inString.AppendTo(ioState.StrippedOutput);
             }
         }
@@ -381,6 +381,7 @@ namespace BeauUtil.Tags
                 return;
             
             StringSlice copySlice = ioState.Input.Substring(ioState.CopyStart, copyLength);
+            ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, 0, (ushort) ioState.RichOutput.Length, (ushort) copyLength);
             copySlice.AppendTo(ioState.RichOutput);
             ioState.CopyStart += copyLength;
 
@@ -399,7 +400,7 @@ namespace BeauUtil.Tags
 
             if (inString.Length > 0)
             {
-                ioState.Target.AddText((uint) ioState.StrippedOutput.Length, (uint) inString.Length);
+                ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, (ushort) inString.Length, (ushort) ioState.RichOutput.Length, (ushort) inString.Length);
                 inString.AppendTo(ioState.RichOutput);
                 inString.AppendTo(ioState.StrippedOutput);
             }

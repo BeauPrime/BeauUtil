@@ -3,7 +3,7 @@
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
- * File:    MathUtil.cs
+ * File:    MathUtils.cs
  * Purpose: Math utility functions.
 */
 
@@ -16,7 +16,7 @@ namespace BeauUtil
     /// <summary>
     /// Contains math utility functions.
     /// </summary>
-    static public class MathUtil
+    static public class MathUtils
     {
         /// <summary>
         /// Square root of 2.

@@ -122,21 +122,27 @@ namespace BeauUtil
 
         public void OnBeforeSerialize()
 		{
-            uint hash = new StringHash32(m_Source).HashValue;
-            if (m_HashValue != hash)
+            if (!string.IsNullOrEmpty(m_Source))
             {
-                UnityEngine.Debug.LogWarningFormat("[SerializedHash32] Hash of {0} was different across multiple machines (old {1} vs new {2})", m_Source, m_HashValue, hash);
-                m_HashValue = hash;
+                uint hash = new StringHash32(m_Source).HashValue;
+                if (m_HashValue != hash)
+                {
+                    UnityEngine.Debug.LogWarningFormat("[SerializedHash32] Inconsistent hash for '{0}': expected {1}, had {2}", m_Source, hash, m_HashValue);
+                    m_HashValue = hash;
+                }
             }
 		}
 
         public void OnAfterDeserialize()
         {
-            uint hash = new StringHash32(m_Source).HashValue;
-            if (m_HashValue != hash)
+            if (!string.IsNullOrEmpty(m_Source))
             {
-                UnityEngine.Debug.LogWarningFormat("[SerializedHash32] Hash of {0} was different across multiple machines (old {1} vs new {2})", m_Source, m_HashValue, hash);
-                m_HashValue = hash;
+                uint hash = new StringHash32(m_Source).HashValue;
+                if (m_HashValue != hash)
+                {
+                    UnityEngine.Debug.LogWarningFormat("[SerializedHash32] Inconsistent hash for '{0}': expected {1}, had {2}", m_Source, hash, m_HashValue);
+                    m_HashValue = hash;
+                }
             }
         }
 

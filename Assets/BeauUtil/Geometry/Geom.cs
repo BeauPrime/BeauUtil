@@ -28,7 +28,7 @@ namespace BeauUtil
             float v = inCircleCoords.y;
             float u2 = u * u;
             float v2 = v * v;
-            float twoSqrt2 = 2 * MathUtil.SQRT_2;
+            float twoSqrt2 = 2 * MathUtils.SQRT_2;
             float uSubTerm = 2 + u2 - v2;
             float vSubTerm = 2 - u2 + v2;
             float uTerm1 = uSubTerm + u * twoSqrt2;

@@ -23,12 +23,22 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Starting index of visible characters.
         /// </summary>
-        public uint VisibleCharacterOffset;
+        public ushort VisibleCharacterOffset;
 
         /// <summary>
         /// Number of visible characters to type out.
         /// </summary>
-        public uint VisibleCharacterCount;
+        public ushort VisibleCharacterCount;
+
+        /// <summary>
+        /// Starting index of rich text characters.
+        /// </summary>
+        public ushort RichCharacterOffset;
+
+        /// <summary>
+        /// Starting index of rich text characters.
+        /// </summary>
+        public ushort RichCharacterCount;
 
         /// <summary>
         /// Resets arguments.
@@ -37,6 +47,8 @@ namespace BeauUtil.Tags
         {
             VisibleCharacterOffset = 0;
             VisibleCharacterCount = 0;
+            RichCharacterOffset = 0;
+            RichCharacterCount = 0;
         }
     }
 }

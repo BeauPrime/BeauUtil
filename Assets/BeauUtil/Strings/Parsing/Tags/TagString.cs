@@ -90,9 +90,9 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds text characters.
         /// </summary>
-        public void AddText(uint inVisibleCharacterOffset, uint inVisibleCharacterCount)
+        public void AddText(ushort inVisibleCharacterOffset, ushort inVisibleCharacterCount, ushort inRichCharacterOffset, ushort inRichCharacterCount)
         {
-            if (inVisibleCharacterCount == 0)
+            if (inVisibleCharacterCount == 0 && inRichCharacterCount == 0)
                 return;
 
             if (m_Nodes == null)
@@ -100,13 +100,16 @@ namespace BeauUtil.Tags
                 m_Nodes = new TagNodeData[InitialNodeCount];
             }
 
-            if (m_NodeCount == 0 || m_Nodes[m_NodeCount - 1].Type != TagNodeType.Text)
+            TagNodeData last = m_NodeCount > 0 ? m_Nodes[m_NodeCount - 1] : default(TagNodeData);
+            if (m_NodeCount == 0 || last.Type != TagNodeType.Text)
             {
-                AddNode(TagNodeData.TextNode(inVisibleCharacterOffset, inVisibleCharacterCount));
+                AddNode(TagNodeData.TextNode(inVisibleCharacterOffset, inVisibleCharacterCount, inRichCharacterOffset, inRichCharacterCount));
             }
             else
             {
-                m_Nodes[m_NodeCount - 1].Text.VisibleCharacterCount += inVisibleCharacterCount;
+                last.Text.VisibleCharacterCount += inVisibleCharacterCount;
+                last.Text.RichCharacterCount += inRichCharacterCount;
+                m_Nodes[m_NodeCount - 1] = last;
             }
         }
 
