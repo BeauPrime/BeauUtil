@@ -136,7 +136,7 @@ namespace BeauUtil
 
         public int IndexOf(T item)
         {
-            var eq = EqualityComparer<T>.Default;
+            var eq = CompareUtils.DefaultComparer<T>();
             for(int i = 0; i < m_Count; ++i)
             {
                 if (eq.Equals(GetSlow(i), item))

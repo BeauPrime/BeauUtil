@@ -115,13 +115,13 @@ namespace BeauUtil.UnitTests
         {
             string firstString = "Some things are better left unsaid.";
 
-            Assert.True(StringUtils.WildcardMatch(firstString, "*"), "Single wildcard match does not work");
-            Assert.True(StringUtils.WildcardMatch(firstString, "**"), "All wildcard match does not work");
-            Assert.False(StringUtils.WildcardMatch(firstString, "unsaid"), "Non-wildcard match does not work");
-            Assert.True(StringUtils.WildcardMatch(firstString, "*unsaid."), "Cannot test leading wildcard");
-            Assert.True(StringUtils.WildcardMatch(firstString, "Some*"), "Cannot test trailing wildcard");
-            Assert.True(StringUtils.WildcardMatch(firstString, "* things*"), "Cannot test leading and trailing wildcard combination");
-            Assert.False(StringUtils.WildcardMatch(firstString, "* things w*"), "Cannot test leading and trailing wildcard combination");
+            Assert.True(WildcardMatch.Match(firstString, "*"), "Single wildcard match does not work");
+            Assert.True(WildcardMatch.Match(firstString, "**"), "All wildcard match does not work");
+            Assert.False(WildcardMatch.Match(firstString, "unsaid"), "Non-wildcard match does not work");
+            Assert.True(WildcardMatch.Match(firstString, "*unsaid."), "Cannot test leading wildcard");
+            Assert.True(WildcardMatch.Match(firstString, "Some*"), "Cannot test trailing wildcard");
+            Assert.True(WildcardMatch.Match(firstString, "* things*"), "Cannot test leading and trailing wildcard combination");
+            Assert.False(WildcardMatch.Match(firstString, "* things w*"), "Cannot test leading and trailing wildcard combination");
         }
 
         [Test]

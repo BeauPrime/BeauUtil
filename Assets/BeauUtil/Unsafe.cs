@@ -16,6 +16,7 @@
 #endif // UNITY_2018_1_OR_NEWER
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -51,18 +52,46 @@ namespace BeauUtil
             where TFrom : unmanaged
             where TTo : unmanaged
         {
-            return *(TTo*)(&inValue);
+            byte* buffer = stackalloc byte[Math.Max(sizeof(TFrom), sizeof(TTo))];
+            *((TFrom*) buffer) = inValue;
+            return *((TTo*) buffer);
         }
 
         /// <summary>
-        /// Reinterprets a value as a value of another type.
+        /// Reinterprets an indirect value as a value of another type.
         /// </summary>
         [MethodImpl(256)]
         static public TTo Reinterpret<TFrom, TTo>(TFrom* inValuePtr)
             where TFrom : unmanaged
             where TTo : unmanaged
         {
-            return *(TTo*)(inValuePtr);
+            byte* buffer = stackalloc byte[Math.Max(sizeof(TFrom), sizeof(TTo))];
+            *((TFrom*) buffer) = *inValuePtr;
+            return *((TTo*) buffer);
+        }
+
+        /// <summary>
+        /// Reinterprets a value as a value of another type.
+        /// Behavior is undefined if <c>sizeof(TTo) > sizeof(TFrom)</c>
+        /// </summary>
+        [MethodImpl(256)]
+        static public TTo FastReinterpret<TFrom, TTo>(TFrom inValue)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+        {
+            return *((TTo*) &inValue);
+        }
+
+        /// <summary>
+        /// Reinterprets an indirect value as a value of another type.
+        /// Behavior is undefined if <c>sizeof(TTo) > sizeof(TFrom)</c>
+        /// </summary>
+        [MethodImpl(256)]
+        static public TTo FastReinterpret<TFrom, TTo>(TFrom* inValuePtr)
+            where TFrom : unmanaged
+            where TTo : unmanaged
+        {
+            return *((TTo*) inValuePtr);
         }
 
         #endif // UNMANAGED_CONSTRAINT
@@ -342,6 +371,11 @@ namespace BeauUtil
 
         static private FieldInfo s_StringBuilderChunkField;
 
+        static private class PinFieldCache<T>
+        {
+            static internal FieldInfo ListItemsField;
+        }
+
         /// <summary>
         /// Handle and address for a pinned array.
         /// </summary>
@@ -358,10 +392,16 @@ namespace BeauUtil
             public void* Address;
             internal int Stride;
             #endif // UNMANAGED_CONSTRAINT
+            public int Length;
 
             internal GCHandle Handle;
 
             internal PinnedArrayHandle(T[] inSource)
+                : this(inSource, inSource.Length)
+            {
+            }
+
+            internal PinnedArrayHandle(T[] inSource, int inLength)
             {
                 Handle = GCHandle.Alloc(inSource, GCHandleType.Pinned);
 
@@ -371,6 +411,8 @@ namespace BeauUtil
                 Address = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
                 Stride = SizeOf<T>();
                 #endif // UNMANAGED_CONSTRAINT
+
+                Length = inLength;
             }
 
             internal PinnedArrayHandle(string inSource)
@@ -383,6 +425,8 @@ namespace BeauUtil
                 Address = (void*) Handle.AddrOfPinnedObject();
                 Stride = SizeOf<T>();
                 #endif // UNMANAGED_CONSTRAINT
+
+                Length = inSource.Length;
             }
 
             #if UNMANAGED_CONSTRAINT
@@ -433,6 +477,30 @@ namespace BeauUtil
                 throw new ArgumentNullException("inArray", "Cannot pin null array");
 
             return new PinnedArrayHandle<T>(inArray);
+        }
+
+        /// <summary>
+        /// Pins the given list in memory.
+        /// </summary>
+        static public PinnedArrayHandle<T> PinList<T>(List<T> inList)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged
+#else
+            where T : struct
+#endif // UNMANAGED_CONSTRAINT
+        {
+            if (inList == null)
+                throw new ArgumentNullException("inList", "Cannot pin null list");
+
+            if (PinFieldCache<T>.ListItemsField == null)
+            {
+                PinFieldCache<T>.ListItemsField = typeof(List<T>).GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (PinFieldCache<T>.ListItemsField == null)
+                    throw new InvalidOperationException("List pin not supported");
+            }
+
+            T[] items = (T[]) PinFieldCache<T>.ListItemsField.GetValue(inList);
+            return new PinnedArrayHandle<T>(items, inList.Count);
         }
 
         /// <summary>

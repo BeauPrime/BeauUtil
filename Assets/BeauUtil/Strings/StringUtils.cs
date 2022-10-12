@@ -613,100 +613,6 @@ namespace BeauUtil
         #region Pattern Matching
 
         /// <summary>
-        /// Determines if a string matches any of the given filters.
-        /// Wildcard characters are supported at the start and end of the filter.
-        /// </summary>
-        /// <remarks>
-        /// This does not yet support wildcards in the middle of the filter.
-        /// </remarks>
-        static public bool WildcardMatch(StringSlice inString, string[] inFilters, char inWildcard = '*', bool inbIgnoreCase = false)
-        {
-            if (inFilters.Length == 0)
-                return false;
-
-            for (int i = 0; i < inFilters.Length; ++i)
-            {
-                if (WildcardMatch(inString, inFilters[i], inWildcard, inbIgnoreCase))
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Determines if a string matches any of the given filters.
-        /// Wildcard characters are supported at the start and end of the filter.
-        /// </summary>
-        /// <remarks>
-        /// This does not yet support wildcards in the middle of the filter.
-        /// </remarks>
-        static public bool WildcardMatch(StringSlice inString, ICollection<string> inFilters, char inWildcard = '*', bool inbIgnoreCase = false)
-        {
-            if (inFilters.Count == 0)
-                return false;
-
-            foreach (var filter in inFilters)
-            {
-                if (WildcardMatch(inString, filter, inWildcard, inbIgnoreCase))
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Determines if a string matches the given filter.
-        /// Wildcard characters are supported at the start and end of the filter.
-        /// </summary>
-        /// <remarks>
-        /// This does not yet support wildcards in the middle of the filter.
-        /// </remarks>
-        static public bool WildcardMatch(StringSlice inString, string inFilter, char inWildcard = '*', bool inbIgnoreCase = false)
-        {
-            if (string.IsNullOrEmpty(inFilter))
-            {
-                return inString.IsEmpty;
-            }
-
-            int filterLength = inFilter.Length;
-            if (filterLength == 1 && inFilter[0] == inWildcard)
-                return true;
-
-            if (filterLength == 2 && inFilter[0] == inWildcard && inFilter[1] == inWildcard)
-                return true;
-
-            bool bStart = inFilter[0] == inWildcard;
-            bool bEnd = inFilter[filterLength - 1] == inWildcard;
-            if (bStart || bEnd)
-            {
-                StringSlice filterStr = inFilter;
-                int startIdx = 0;
-                if (bStart)
-                {
-                    ++startIdx;
-                    --filterLength;
-                }
-                if (bEnd)
-                {
-                    --filterLength;
-                }
-
-                filterStr = filterStr.Substring(startIdx, filterLength);
-                if (bStart && bEnd)
-                {
-                    return inString.Contains(filterStr.ToString(), inbIgnoreCase);
-                }
-                if (bStart)
-                {
-                    return inString.EndsWith(filterStr, inbIgnoreCase);
-                }
-                return inString.StartsWith(filterStr, inbIgnoreCase);
-            }
-
-            return inString.Equals(inFilter, inbIgnoreCase);
-        }
-
-        /// <summary>
         /// Returns if the given string contains the given string at the given index.
         /// </summary>
         static public bool AttemptMatch(this string inString, int inIndex, string inMatch, bool inbIgnoreCase = false)
@@ -731,7 +637,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -764,7 +670,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -797,7 +703,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -1218,7 +1124,7 @@ namespace BeauUtil
                 {
                     char a = inBuilder[inIndex + i];
                     char b = inMatch[i];
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -1258,7 +1164,7 @@ namespace BeauUtil
                 {
                     char a = inBuilder[inIndex - matchLength + 1 + i];
                     char b = inMatch[i];
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -1338,7 +1244,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the first index of the given string.
         /// </summary>
-        static public int IndexOf(this StringBuilder inBuilder, string inString, int inStartIndex, int inCount)
+        static public int IndexOf(this StringBuilder inBuilder, string inString, int inStartIndex, int inCount, bool inbIgnoreCase = false)
         {
             if (string.IsNullOrEmpty(inString))
                 return -1;
@@ -1350,7 +1256,7 @@ namespace BeauUtil
             int end = inStartIndex + inCount - inString.Length;
             for(int i = inStartIndex; i < end; i++)
             {
-                if (inBuilder[i] == first && AttemptMatch(inBuilder, i, inString))
+                if (inBuilder[i] == first && AttemptMatch(inBuilder, i, inString, inbIgnoreCase))
                     return i;
             }
 
@@ -1361,9 +1267,9 @@ namespace BeauUtil
         /// Returns the first index of the given string.
         /// </summary>
         [MethodImpl(256)]
-        static public int IndexOf(this StringBuilder inBuilder, string inString)
+        static public int IndexOf(this StringBuilder inBuilder, string inString, bool inbIgnoreCase = false)
         {
-            return IndexOf(inBuilder, inString, 0, inBuilder.Length);
+            return IndexOf(inBuilder, inString, 0, inBuilder.Length, inbIgnoreCase);
         }
 
         #endregion // StringBuilder
@@ -1748,15 +1654,6 @@ namespace BeauUtil
         /// </summary>
         static public class RichText
         {
-            static private readonly string[] s_KnownRichTags = new string[]
-            {
-                "align", "alpha", "color", "b", "i", "cspace", "font", "indent",
-                "line-height", "line-indent", "link", "lowercase", "uppercase", "smallcaps", "allcaps",
-                "margin", "margin-left", "margin-right", "mark", "mspace", "noparse", "nobr", "page", "pos",
-                "size", "space", "sprite", "s", "u", "style", "sub", "sup",
-                "voffset", "width", "material", "quad"
-            };
-
             static private readonly string[] s_VisibleRichTags = new string[]
             {
                 "sprite", "quad"
@@ -1774,7 +1671,14 @@ namespace BeauUtil
             /// List of all recognized rich tags.
             /// This includes Unity's Rich Tags and TextMesh Pro's rich tags.
             /// </summary>
-            static public IReadOnlyList<string> RecognizedRichTags { get { return s_KnownRichTags; } }
+            static public readonly string[] RecognizedRichTags = new string[]
+            {
+                 "align", "alpha", "color", "b", "i", "cspace", "font", "indent",
+                "line-height", "line-indent", "link", "lowercase", "uppercase", "smallcaps", "allcaps",
+                "margin", "margin-left", "margin-right", "mark", "mspace", "noparse", "nobr", "page", "pos",
+                "size", "space", "sprite", "s", "u", "style", "sub", "sup",
+                "voffset", "width", "material", "quad"
+            };
         }
 
         /// <summary>
@@ -1796,5 +1700,25 @@ namespace BeauUtil
         /// Hexadecimal character set (lowercase).
         /// </summary>
         public const string HexCharsLower = "0123456789abcdef";
+
+        /// <summary>
+        /// Uppercase alphabet.
+        /// </summary>
+        public const string UppercaseAlpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        /// <summary>
+        /// Fast StringUtils.ToUpperInvariant.
+        /// </summary>
+        static public char ToUpperInvariant(char inCharacter)
+        {
+            int charInt = inCharacter;
+            if (charInt >= 128)
+                return StringUtils.ToUpperInvariant(inCharacter);
+            
+            if (charInt < 'a' || charInt > 'z')
+                return inCharacter;
+            
+            return UppercaseAlpha[charInt - 'a'];
+        }
     }
 }

@@ -23,7 +23,7 @@ namespace BeauUtil
         private Action m_CallbackNoArgs;
         private Action<T> m_CallbackNativeArg;
         private MulticastDelegate m_CallbackWithCastedArg;
-        private CastedAction m_CastedArgInvoker;
+        private CastedAction<T> m_CastedArgInvoker;
 
         private CastableAction(Action inAction)
         {
@@ -49,7 +49,7 @@ namespace BeauUtil
             m_CallbackNoArgs = null;
         }
 
-        private CastableAction(MulticastDelegate inCastedDelegate, CastedAction inCastedInvoker)
+        private CastableAction(MulticastDelegate inCastedDelegate, CastedAction<T> inCastedInvoker)
         {
             if (inCastedDelegate == null)
                 throw new ArgumentNullException("inCastedDelegate");
@@ -64,7 +64,7 @@ namespace BeauUtil
         }
 
         public bool IsEmpty {
-            get { return m_Mode != CallbackMode.Unassigned; }
+            get { return m_Mode == CallbackMode.Unassigned; }
         }
 
         public void Invoke(T inArg)
@@ -123,7 +123,7 @@ namespace BeauUtil
             m_Mode = CallbackMode.CastedArg;
             m_CallbackNativeArg = null;
             m_CallbackWithCastedArg = inAction;
-            m_CastedArgInvoker = CastedActionInvoker<U>.Invoker;
+            m_CastedArgInvoker = CastedActionInvoker<T, U>.Invoker;
             m_CallbackNoArgs = null;
         }
 
@@ -255,7 +255,7 @@ namespace BeauUtil
 
         static public CastableAction<T> Create<U>(Action<U> inAction)
         {
-            return new CastableAction<T>(inAction, CastedActionInvoker<U>.Invoker);
+            return new CastableAction<T>(inAction, CastedActionInvoker<T, U>.Invoker);
         }
 
         #endregion // Create
@@ -275,11 +275,11 @@ namespace BeauUtil
         #endregion // Operators
     }
 
-    internal delegate void CastedAction(MulticastDelegate inDelegate, object inInput);
+    internal delegate void CastedAction<TInput>(MulticastDelegate inDelegate, TInput inInput);
 
-    internal static class CastedActionInvoker<TOutput>
+    internal static class CastedActionInvoker<TInput, TOutput>
     {
-        static internal CastedAction Invoker
+        static internal CastedAction<TInput> Invoker
         {
             get
             {
@@ -287,11 +287,11 @@ namespace BeauUtil
             }
         }
 
-        static private CastedAction s_Callback;
+        static private CastedAction<TInput> s_Callback;
 
-        static private void CastedInvoke(MulticastDelegate inDelegate, object inInput)
+        static private void CastedInvoke(MulticastDelegate inDelegate, TInput inInput)
         {
-            ((Action<TOutput>) inDelegate).Invoke((TOutput) inInput);
+            ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));
         }
     }
 }

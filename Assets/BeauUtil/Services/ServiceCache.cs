@@ -540,7 +540,7 @@ namespace BeauUtil.Services
             if (Array.IndexOf(IgnoredTypes, inType) >= 0)
                 return true;
 
-            if (StringUtils.WildcardMatch(inType.Name, IgnoredTypePatterns))
+            if (WildcardMatch.Match(inType.Name, IgnoredTypePatterns))
                 return true;
 
             return false;

@@ -696,32 +696,32 @@ namespace BeauUtil
         {
             if ((inTypeMask & AssemblyType.System) == AssemblyType.System)
             {
-                if (StringUtils.WildcardMatch(inName, SystemAssemblyFilters))
+                if (WildcardMatch.Match(inName, SystemAssemblyFilters))
                     return true;
             }
             if ((inTypeMask & AssemblyType.Microsoft) == AssemblyType.Microsoft)
             {
-                if (StringUtils.WildcardMatch(inName, MicrosoftAssemblyFilters))
+                if (WildcardMatch.Match(inName, MicrosoftAssemblyFilters))
                     return true;
             }
             if ((inTypeMask & AssemblyType.Mono) == AssemblyType.Mono)
             {
-                if (StringUtils.WildcardMatch(inName, MonoAssemblyFilters))
+                if (WildcardMatch.Match(inName, MonoAssemblyFilters))
                     return true;
             }
             if ((inTypeMask & AssemblyType.NUnit) == AssemblyType.NUnit)
             {
-                if (StringUtils.WildcardMatch(inName, NUnitAssemblyFilters))
+                if (WildcardMatch.Match(inName, NUnitAssemblyFilters))
                     return true;
             }
             if ((inTypeMask & AssemblyType.Unity) == AssemblyType.Unity)
             {
-                if (StringUtils.WildcardMatch(inName, UnityAssemblyFilters))
+                if (WildcardMatch.Match(inName, UnityAssemblyFilters))
                     return true;
             }
             if ((inTypeMask & AssemblyType.UnityDefaultUser) == AssemblyType.UnityDefaultUser)
             {
-                if (StringUtils.WildcardMatch(inName, UnityDefaultUserAssemblyFilters))
+                if (WildcardMatch.Match(inName, UnityDefaultUserAssemblyFilters))
                     return true;
             }
 

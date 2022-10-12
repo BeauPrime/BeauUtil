@@ -27,7 +27,12 @@ namespace BeauUtil
         /// </summary>
         public readonly int Length;
 
-        public StringSlice(string inString) : this(inString, 0, inString != null ? inString.Length : 0) { }
+        public StringSlice(string inString)
+        {
+            m_Source = inString;
+            m_StartIndex = 0;
+            Length = inString != null ? inString.Length : 0; 
+        }
 
         public StringSlice(string inString, int inStartIdx) : this(inString, inStartIdx, inString != null ? inString.Length - inStartIdx : 0) { }
 
@@ -937,6 +942,11 @@ namespace BeauUtil
             return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
+        internal uint CalculateHash32CaseInsensitive()
+        {
+            return StringHashing.StoreHash32CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
         internal uint AppendHash32(uint inHash, bool inbReverseLookup)
         {
             return StringHashing.AppendHash32(inHash, m_Source, m_StartIndex, Length, inbReverseLookup);
@@ -945,6 +955,11 @@ namespace BeauUtil
         internal ulong CalculateHash64()
         {
             return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong CalculateHash64CaseInsensitive()
+        {
+            return StringHashing.StoreHash64CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
         internal ulong AppendHash64(ulong inHash, bool inbReverseLookup)
@@ -968,7 +983,7 @@ namespace BeauUtil
                 {
                     while(b != end)
                     {
-                        if (char.ToLowerInvariant(*a++) != char.ToLowerInvariant(*b++))
+                        if (StringUtils.ToUpperInvariant(*a++) != StringUtils.ToUpperInvariant(*b++))
                             return false;
                     }
                 }
@@ -1001,7 +1016,7 @@ namespace BeauUtil
                 {
                     while(b != end)
                     {
-                        if (char.ToLowerInvariant(*a++) != char.ToLowerInvariant(*b++))
+                        if (StringUtils.ToUpperInvariant(*a++) != StringUtils.ToUpperInvariant(*b++))
                             return false;
                     }
                 }
@@ -1034,7 +1049,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }

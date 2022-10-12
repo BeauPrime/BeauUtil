@@ -79,6 +79,30 @@ namespace BeauUtil
             return new StringHash32(inSlice.AppendHash32(m_HashValue, false));
         }
 
+        /// <summary>
+        /// Constructs a case-insensitive hash.
+        /// </summary>
+        static public StringHash32 CaseInsensitive(string inString)
+        {
+            return new StringHash32(StringHashing.StoreHash32CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash.
+        /// </summary>
+        static public StringHash32 CaseInsensitive(StringSlice inSlice)
+        {
+            return new StringHash32(inSlice.CalculateHash32CaseInsensitive());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash.
+        /// </summary>
+        static public StringHash32 CaseInsensitive(StringBuilderSlice inSlice)
+        {
+            return new StringHash32(inSlice.CalculateHash32CaseInsensitive());
+        }
+
         static public readonly StringHash32 Null = new StringHash32();
 
         #region IEquatable
@@ -136,6 +160,16 @@ namespace BeauUtil
         static public bool operator!=(StringHash32 left, StringHash32 right)
         {
             return left.m_HashValue != right.m_HashValue;
+        }
+
+        static public bool operator==(StringHash32 left, uint right)
+        {
+            return left.m_HashValue == right;
+        }
+
+        static public bool operator!=(StringHash32 left, uint right)
+        {
+            return left.m_HashValue != right;
         }
 
         static public implicit operator StringHash32(StringSlice inSlice)

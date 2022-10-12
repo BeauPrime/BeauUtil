@@ -56,6 +56,27 @@ namespace BeauUtil
             return hash;
         }
 
+        static unsafe internal uint Hash32CaseInsensitive(string inString, int inOffset, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            uint hash = 2166136261;
+            
+            // unsafe method
+            fixed(char* ptr = inString)
+            {
+                char* inc = ptr + inOffset;
+                while(--inLength >= 0)
+                {
+                    hash = (hash ^ StringUtils.ToUpperInvariant(*inc++)) * 16777619;
+                }
+            }
+            
+            return hash;
+        }
+
         static internal uint Hash32(StringBuilder inString, int inOffset, int inLength)
         {
             if (inLength <= 0)
@@ -68,6 +89,23 @@ namespace BeauUtil
             while(--inLength >= 0)
             {
                 hash = (hash ^ inString[idx++]) * 16777619;
+            }
+            
+            return hash;
+        }
+
+        static internal uint Hash32CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            uint hash = 2166136261;
+            
+            int idx = inOffset;
+            while(--inLength >= 0)
+            {
+                hash = (hash ^ StringUtils.ToUpperInvariant(inString[idx++])) * 16777619;
             }
             
             return hash;
@@ -115,6 +153,27 @@ namespace BeauUtil
             return hash;
         }
 
+        static unsafe internal ulong Hash64CaseInsensitive(string inString, int inOffset, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            ulong hash = 14695981039346656037;
+            
+            // unsafe method
+            fixed(char* ptr = inString)
+            {
+                char* inc = ptr + inOffset;
+                while(--inLength >= 0)
+                {
+                    hash = (hash ^ StringUtils.ToUpperInvariant(*inc++)) * 1099511628211;
+                }
+            }
+            
+            return hash;
+        }
+
         static internal ulong Hash64(StringBuilder inString, int inOffset, int inLength)
         {
             if (inLength <= 0)
@@ -128,6 +187,24 @@ namespace BeauUtil
             while(--inLength >= 0)
             {
                 hash = (hash ^ inString[idx++]) * 1099511628211;
+            }
+            
+            return hash;
+        }
+
+        static internal ulong Hash64CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            ulong hash = 14695981039346656037;
+            
+            // unsafe method
+            int idx = inOffset;
+            while(--inLength >= 0)
+            {
+                hash = (hash ^ StringUtils.ToUpperInvariant(inString[idx++])) * 1099511628211;
             }
             
             return hash;
@@ -293,6 +370,32 @@ namespace BeauUtil
             return hash;
         }
 
+        static internal uint StoreHash32CaseInsensitive(string inString, int inOffset, int inLength)
+        {
+            uint hash = Hash32CaseInsensitive(inString, inOffset, inLength);
+            if (inLength > 0 && s_ReverseLookupEnabled)
+            {
+                StringSlice current = new StringSlice(inString, inOffset, inLength);
+
+                string existing;
+                if (s_ReverseLookup32.TryGetValue(hash, out existing))
+                {
+                    if (!current.Equals(existing, true))
+                    {
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current, 32, hash);
+                        else
+                            UnityEngine.Debug.LogErrorFormat("[StringHashing] 32-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X8"));
+                    }
+                }
+                else
+                {
+                    s_ReverseLookup32.Add(hash, current.ToString().ToUpperInvariant());
+                }
+            }
+            return hash;
+        }
+
         static internal uint StoreHash32(StringBuilder inString, int inOffset, int inLength)
         {
             uint hash = Hash32(inString, inOffset, inLength);
@@ -314,6 +417,32 @@ namespace BeauUtil
                 else
                 {
                     s_ReverseLookup32.Add(hash, current.ToString());
+                }
+            }
+            return hash;
+        }
+
+        static internal uint StoreHash32CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
+        {
+            uint hash = Hash32CaseInsensitive(inString, inOffset, inLength);
+            if (inLength > 0 && s_ReverseLookupEnabled)
+            {
+                StringBuilderSlice current = new StringBuilderSlice(inString, inOffset, inLength);
+
+                string existing;
+                if (s_ReverseLookup32.TryGetValue(hash, out existing))
+                {
+                    if (!current.Equals(existing, true))
+                    {
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current.ToString(), 32, hash);
+                        else
+                            UnityEngine.Debug.LogErrorFormat("[StringHashing] 32-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X8"));
+                    }
+                }
+                else
+                {
+                    s_ReverseLookup32.Add(hash, current.ToString().ToUpperInvariant());
                 }
             }
             return hash;
@@ -399,6 +528,32 @@ namespace BeauUtil
             return hash;
         }
 
+        static internal ulong StoreHash64CaseInsensitive(string inString, int inOffset, int inLength)
+        {
+            ulong hash = Hash64CaseInsensitive(inString, inOffset, inLength);
+            if (inLength > 0 && s_ReverseLookupEnabled)
+            {
+                StringSlice current = new StringSlice(inString, inOffset, inLength);
+
+                string existing;
+                if (s_ReverseLookup64.TryGetValue(hash, out existing))
+                {
+                    if (!current.Equals(existing, true))
+                    {
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current, 64, hash);
+                        else
+                            UnityEngine.Debug.LogErrorFormat("[StringHashing] 64-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X16"));
+                    }
+                }
+                else
+                {
+                    s_ReverseLookup64.Add(hash, current.ToString().ToUpperInvariant());
+                }
+            }
+            return hash;
+        }
+
         static internal ulong StoreHash64(StringBuilder inString, int inOffset, int inLength)
         {
             ulong hash = Hash64(inString, inOffset, inLength);
@@ -420,6 +575,32 @@ namespace BeauUtil
                 else
                 {
                     s_ReverseLookup64.Add(hash, current.ToString());
+                }
+            }
+            return hash;
+        }
+
+        static internal ulong StoreHash64CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
+        {
+            ulong hash = Hash64CaseInsensitive(inString, inOffset, inLength);
+            if (inLength > 0 && s_ReverseLookupEnabled)
+            {
+                StringBuilderSlice current = new StringBuilderSlice(inString, inOffset, inLength);
+
+                string existing;
+                if (s_ReverseLookup64.TryGetValue(hash, out existing))
+                {
+                    if (!current.Equals(existing, true))
+                    {
+                        if (s_OnCollision != null)
+                            s_OnCollision(existing, current.ToString(), 64, hash);
+                        else
+                            UnityEngine.Debug.LogErrorFormat("[StringHashing] 64-bit collision detected: '{0}' and '{1}' share hash {2}", existing, current, hash.ToString("X16"));
+                    }
+                }
+                else
+                {
+                    s_ReverseLookup64.Add(hash, current.ToString().ToUpperInvariant());
                 }
             }
             return hash;
@@ -488,9 +669,21 @@ namespace BeauUtil
         }
 
         [MethodImpl(256)]
+        static internal uint StoreHash32CaseInsensitive(string inString, int inOffset, int inLength)
+        {
+            return Hash32CaseInsensitive(inString, inOffset, inLength);
+        }
+
+        [MethodImpl(256)]
         static internal uint StoreHash32(StringBuilder inString, int inOffset, int inLength)
         {
             return Hash32(inString, inOffset, inLength);
+        }
+
+        [MethodImpl(256)]
+        static internal uint StoreHash32CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
+        {
+            return Hash32CaseInsensitive(inString, inOffset, inLength);
         }
 
         [MethodImpl(256)]
@@ -512,9 +705,21 @@ namespace BeauUtil
         }
 
         [MethodImpl(256)]
+        static internal ulong StoreHash64CaseInsensitive(string inString, int inOffset, int inLength)
+        {
+            return Hash64CaseInsensitive(inString, inOffset, inLength);
+        }
+
+        [MethodImpl(256)]
         static internal ulong StoreHash64(StringBuilder inString, int inOffset, int inLength)
         {
             return Hash64(inString, inOffset, inLength);
+        }
+
+        [MethodImpl(256)]
+        static internal ulong StoreHash64CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
+        {
+            return Hash64CaseInsensitive(inString, inOffset, inLength);
         }
 
         [MethodImpl(256)]

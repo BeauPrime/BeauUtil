@@ -201,7 +201,7 @@ namespace BeauUtil
             if (Tags.Tags.Count > 0)
                 specificity += Tags.Tags.Capacity - Tags.Tags.Count;
 
-            specificity += MatchRule.CalculateSpecificity(Name.Pattern, true);
+            specificity += WildcardMatch.Specificity(Name.Pattern, '*', true);
 
             if (CustomFunc != null)
                 specificity += 10;

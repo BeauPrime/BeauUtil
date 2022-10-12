@@ -97,12 +97,12 @@ namespace BeauUtil
             {
                 if (!string.IsNullOrEmpty(Name))
                 {
-                    return StringUtils.WildcardMatch(inScene.Name, Name);
+                    return WildcardMatch.Match(inScene.Name, Name);
                 }
 
                 if (!string.IsNullOrEmpty(Path))
                 {
-                    return StringUtils.WildcardMatch(inScene.Path, Path);
+                    return WildcardMatch.Match(inScene.Path, Path);
                 }
 
                 return false;
@@ -253,7 +253,7 @@ namespace BeauUtil
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.Name, inNameFilter))
+                if (WildcardMatch.Match(scene.Name, inNameFilter))
                     yield return scene;
             }
         }
@@ -265,7 +265,7 @@ namespace BeauUtil
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.Name, inNameFilter))
+                if (WildcardMatch.Match(scene.Name, inNameFilter))
                     return scene;
             }
 
@@ -279,7 +279,7 @@ namespace BeauUtil
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.Path, inPathFilter))
+                if (WildcardMatch.Match(scene.Path, inPathFilter))
                     yield return scene;
             }
         }
@@ -291,7 +291,7 @@ namespace BeauUtil
         {
             foreach(var scene in FindScenes(inCategories))
             {
-                if (StringUtils.WildcardMatch(scene.Path, inPathFilter))
+                if (WildcardMatch.Match(scene.Path, inPathFilter))
                     return scene;
             }
 

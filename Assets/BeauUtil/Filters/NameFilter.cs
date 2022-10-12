@@ -23,7 +23,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(Pattern))
                 return true;
 
-            return StringUtils.WildcardMatch(inObject.name, Pattern);
+            return WildcardMatch.Match(inObject.name, Pattern);
         }
     }
 }

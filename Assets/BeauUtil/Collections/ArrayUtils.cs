@@ -290,7 +290,7 @@ namespace BeauUtil
             if (inA.Length != inB.Length)
                 return false;
 
-            var comparer = EqualityComparer<T>.Default;
+            var comparer = CompareUtils.DefaultComparer<T>();
 
             for(int i = 0, len = inA.Length; i < len; ++i)
             {

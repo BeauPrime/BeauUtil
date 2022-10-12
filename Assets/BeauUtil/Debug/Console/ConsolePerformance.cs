@@ -98,7 +98,7 @@ namespace BeauUtil.Debugger
                 else 
                 {
                     m_StatsBuilder.Length = 0;
-                    m_StatsBuilder.AppendNoAlloc(frame.Framerate, 0, 2).Append(" fps");
+                    m_StatsBuilder.AppendNoAlloc(frame.Framerate, 2).Append(" fps");
                     m_FramerateText.SetText(m_StatsBuilder);
                 }
             }
@@ -111,7 +111,7 @@ namespace BeauUtil.Debugger
                 else
                 {
                     m_StatsBuilder.Length = 0;
-                    m_StatsBuilder.AppendNoAlloc(frame.AvgFrameMS, 0, 2).Append(" ms");
+                    m_StatsBuilder.AppendNoAlloc(frame.AvgFrameMS, 2).Append(" ms");
                     m_FrameMSText.SetText(m_StatsBuilder);
                 }
             }
@@ -124,7 +124,7 @@ namespace BeauUtil.Debugger
                 else
                 {
                     m_StatsBuilder.Length = 0;
-                    m_StatsBuilder.AppendNoAlloc(frame.AvgRenderMS, 0, 2).Append(" ms");
+                    m_StatsBuilder.AppendNoAlloc(frame.AvgRenderMS, 2).Append(" ms");
                     m_CameraMSText.SetText(m_StatsBuilder);
                 }
             }
@@ -137,7 +137,7 @@ namespace BeauUtil.Debugger
                 else
                 {
                     m_StatsBuilder.Length = 0;
-                    m_StatsBuilder.AppendNoAlloc(frame.MemoryUsageMB, 0, 2).Append(" MB");
+                    m_StatsBuilder.AppendNoAlloc(frame.MemoryUsageMB, 2).Append(" MB");
                     m_MemoryText.SetText(m_StatsBuilder);
                 }
             }

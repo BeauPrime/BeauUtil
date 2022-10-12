@@ -190,6 +190,16 @@ namespace BeauUtil
             return MatchEnd(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
+        public bool Contains(string inItem)
+        {
+            return Length >= inItem.Length && StringUtils.IndexOf(m_Source, inItem, m_StartIndex, Length, false) >= 0;
+        }
+
+        public bool Contains(string inItem, bool inbIgnoreCase)
+        {
+            return Length >= inItem.Length && StringUtils.IndexOf(m_Source, inItem, m_StartIndex, Length, inbIgnoreCase) >= 0;
+        }
+
         #endregion // String
 
         #endregion // Search
@@ -401,6 +411,26 @@ namespace BeauUtil
             }
         }
 
+        internal uint CalculateHash32()
+        {
+            return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
+        }
+
+        internal uint CalculateHash32CaseInsensitive()
+        {
+            return StringHashing.StoreHash32CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong CalculateHash64()
+        {
+            return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong CalculateHash64CaseInsensitive()
+        {
+            return StringHashing.StoreHash64CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
         static private bool MatchStart(StringBuilder inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
         {
             if (inLengthMatch > inLength)
@@ -417,7 +447,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -443,7 +473,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -467,7 +497,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }
@@ -491,7 +521,7 @@ namespace BeauUtil
                 }
                 else
                 {
-                    if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
                         return false;
                 }
             }

@@ -13,7 +13,7 @@ namespace BeauUtil.Examples
     public class TextPackage : IDataBlockPackage<TextBlock>
     {
         private string m_Name;
-        private Dictionary<string, TextBlock> m_Blocks = new Dictionary<string, TextBlock>();
+        private Dictionary<string, TextBlock> m_Blocks = new Dictionary<string, TextBlock>(StringComparer.Ordinal);
 
         public TextPackage(string inName)
         {

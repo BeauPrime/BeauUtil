@@ -5,6 +5,7 @@ using UnityEngine;
 using BeauUtil.Graph;
 
 using Log = BeauUtil.Debugger.Log;
+using System.Collections.Generic;
 
 namespace BeauUtil.UnitTests
 {
@@ -110,6 +111,42 @@ namespace BeauUtil.UnitTests
             {
                 Assert.GreaterOrEqual(buffer[i], buffer[i - 1]);
             }
+        }
+
+        [Test]
+        static public void CanPinStringBuilder()
+        {
+            StringBuilder sb = new StringBuilder(1024);
+            sb.Append("abcdef");
+            using(var pin = Unsafe.PinString(sb))
+            {
+                pin.Address[0] = 'g';
+                pin.Address[4] = '9';
+            }
+            string result = sb.Flush();
+            Assert.AreEqual(result, "gbcd9f");
+        }
+
+        [Test]
+        static public void CanPinList()
+        {
+            List<Vector3> list = new List<Vector3>();
+            list.Add(Vector3.up);
+            list.Add(Vector3.up);
+            list.Add(Vector3.up);
+            list.Add(Vector3.down);
+            list.Add(Vector3.left);
+            list.Add(Vector3.right);
+            list.Add(Vector3.left);
+            list.Add(Vector3.left);
+            using(var pin = Unsafe.PinList(list))
+            {
+                pin.Address[2] = Vector3.down;
+                pin.Address[7] = Vector3.right;
+            }
+            Assert.AreEqual(list[7], Vector3.right);
+            Assert.AreEqual(list[1], Vector3.up);
+            Assert.AreEqual(list[2], Vector3.down);
         }
     }
 }

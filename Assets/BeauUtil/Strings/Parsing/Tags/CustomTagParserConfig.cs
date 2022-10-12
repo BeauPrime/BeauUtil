@@ -16,28 +16,34 @@ namespace BeauUtil.Tags
     /// <summary>
     /// Customizable tag parser configuration object.
     /// </summary>
-    public class CustomTagParserConfig : IReplaceProcessor, IEventProcessor
+    public sealed class CustomTagParserConfig : IReplaceProcessor, IEventProcessor
     {
         private readonly MatchRuleSet<ReplaceRule> m_ReplaceRules = new MatchRuleSet<ReplaceRule>(16);
         private readonly Dictionary<int, string> m_CharReplace = new Dictionary<int, string>(4);
         private readonly IReplaceProcessor m_ReplaceInheritFrom;
+        private readonly ReplaceRule.Builder m_ReplaceBuilder;
 
         private readonly MatchRuleSet<EventRule> m_EventRules = new MatchRuleSet<EventRule>(16);
         private readonly IEventProcessor m_EventInheritFrom;
+        private readonly EventRule.Builder m_EventBuilder;
 
         private bool m_Locked = false;
 
         public CustomTagParserConfig()
         {
+            m_ReplaceBuilder = new ReplaceRule.Builder(m_ReplaceRules);
+            m_EventBuilder = new EventRule.Builder(m_EventRules);
         }
 
         public CustomTagParserConfig(CustomTagParserConfig inInherit)
+            : this()
         {
             m_ReplaceInheritFrom = inInherit;
             m_EventInheritFrom = inInherit;
         }
 
         public CustomTagParserConfig(IReplaceProcessor inInheritReplace, IEventProcessor inInheritEvent)
+            : this()
         {
             m_ReplaceInheritFrom = inInheritReplace;
             m_EventInheritFrom = inInheritEvent;
@@ -56,10 +62,7 @@ namespace BeauUtil.Tags
 
         #region Text Replace
 
-        /// <summary>
-        /// Rule for replacing tags with text.
-        /// </summary>
-        public class ReplaceRule : MatchRule<ReplaceRule>
+        public class ReplaceRule
         {
             private bool m_HandleClosing;
             private string m_ConstantText;
@@ -75,141 +78,6 @@ namespace BeauUtil.Tags
             private ReplaceSourceContextDelegate m_ReplaceSourceContextClosingCallback;
 
             private TryReplaceDelegate m_TryReplaceCallback;
-
-            #region Builder
-
-            internal ReplaceRule(string inId)
-            {
-                SetId(inId);
-            }
-
-            /// <summary>
-            /// Tags will be replaced using the given callback.
-            /// </summary>
-            public ReplaceRule TryReplaceWith(TryReplaceDelegate inTryReplace)
-            {
-                m_ConstantText = null;
-                m_ConstantClosingText = null;
-                m_ReplaceCallback = null;
-                m_ReplaceClosingCallback = null;
-                m_ReplaceWithContextCallback = null;
-                m_ReplaceWithContextClosingCallback = null;
-                m_ReplaceSourceContextCallback = null;
-                m_ReplaceSourceContextClosingCallback = null;
-                m_TryReplaceCallback = inTryReplace;
-                m_HandleClosing = false;
-                return this;
-            }
-
-            /// <summary>
-            /// Tags will be replaced with the given string.
-            /// </summary>
-            public ReplaceRule ReplaceWith(string inText)
-            {
-                m_ConstantText = inText;
-                m_ReplaceCallback = null;
-                m_ReplaceWithContextCallback = null;
-                m_ReplaceSourceContextCallback = null;
-                m_TryReplaceCallback = null;
-                return this;
-            }
-
-            /// <summary>
-            /// Tags will be replaced with the result of the given callback.
-            /// </summary>
-            public ReplaceRule ReplaceWith(ReplaceDelegate inDelegate)
-            {
-                m_ConstantText = null;
-                m_ReplaceCallback = inDelegate;
-                m_ReplaceWithContextCallback = null;
-                m_ReplaceSourceContextCallback = null;
-                m_TryReplaceCallback = null;
-                return this;
-            }
-
-            /// <summary>
-            /// Tags will be replaced with the result of the given string.
-            /// </summary>
-            public ReplaceRule ReplaceWith(ReplaceWithContextDelegate inContextDelegate)
-            {
-                m_ConstantText = null;
-                m_ReplaceCallback = null;
-                m_ReplaceWithContextCallback = inContextDelegate;
-                m_ReplaceSourceContextCallback = null;
-                m_TryReplaceCallback = null;
-                return this;
-            }
-
-            /// <summary>
-            /// Tags will be replaced with the result of the given string.
-            /// </summary>
-            public ReplaceRule ReplaceWith(ReplaceSourceContextDelegate inSourceContextDelegate)
-            {
-                m_ConstantText = null;
-                m_ReplaceCallback = null;
-                m_ReplaceWithContextCallback = null;
-                m_ReplaceSourceContextCallback = inSourceContextDelegate;
-                m_TryReplaceCallback = null;
-                return this;
-            }
-
-            /// <summary>
-            /// Closing tags will be replaced with the given string.
-            /// </summary>
-            public ReplaceRule CloseWith(string inText)
-            {
-                m_ConstantClosingText = inText;
-                m_ReplaceClosingCallback = null;
-                m_ReplaceWithContextClosingCallback = null;
-                m_ReplaceSourceContextClosingCallback = null;
-                m_TryReplaceCallback = null;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            /// <summary>
-            /// Closing tags will be replaced with the result of the given callback.
-            /// </summary>
-            public ReplaceRule CloseWith(ReplaceDelegate inDelegate)
-            {
-                m_ConstantClosingText = null;
-                m_ReplaceClosingCallback = inDelegate;
-                m_ReplaceWithContextClosingCallback = null;
-                m_ReplaceSourceContextClosingCallback = null;
-                m_TryReplaceCallback = null;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            /// <summary>
-            /// Closing tags will be replaced with the result of the given string.
-            /// </summary>
-            public ReplaceRule CloseWith(ReplaceWithContextDelegate inContextDelegate)
-            {
-                m_ConstantClosingText = null;
-                m_ReplaceClosingCallback = null;
-                m_ReplaceWithContextClosingCallback = inContextDelegate;
-                m_ReplaceSourceContextClosingCallback = null;
-                m_TryReplaceCallback = null;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            /// <summary>
-            /// Closing tags will be replaced with the result of the given string.
-            /// </summary>
-            public ReplaceRule CloseWith(ReplaceSourceContextDelegate inContextSourceDelegate)
-            {
-                m_ConstantClosingText = null;
-                m_ReplaceClosingCallback = null;
-                m_ReplaceWithContextClosingCallback = null;
-                m_ReplaceSourceContextClosingCallback = inContextSourceDelegate;
-                m_TryReplaceCallback = null;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            #endregion // Builder
 
             internal bool Evaluate(TagData inTag, StringSlice inSource, object inContext, out string outReplace)
             {
@@ -263,27 +131,164 @@ namespace BeauUtil.Tags
                 outReplace = m_ConstantText ?? string.Empty;
                 return true;
             }
+        
+            #region Builder
+
+            public sealed class Builder : MatchRuleBuilder<ReplaceRule, Builder>
+            {
+                internal Builder(MatchRuleSet<ReplaceRule> inRuleSet)
+                    : base(inRuleSet)
+                { }
+
+                /// <summary>
+                /// Tags will be replaced using the given callback.
+                /// </summary>
+                public Builder TryReplaceWith(TryReplaceDelegate inTryReplace)
+                {
+                    m_Rule.m_ConstantText = null;
+                    m_Rule.m_ConstantClosingText = null;
+                    m_Rule.m_ReplaceCallback = null;
+                    m_Rule.m_ReplaceClosingCallback = null;
+                    m_Rule.m_ReplaceWithContextCallback = null;
+                    m_Rule.m_ReplaceWithContextClosingCallback = null;
+                    m_Rule.m_ReplaceSourceContextCallback = null;
+                    m_Rule.m_ReplaceSourceContextClosingCallback = null;
+                    m_Rule.m_TryReplaceCallback = inTryReplace;
+                    m_Rule.m_HandleClosing = false;
+                    return this;
+                }
+
+                /// <summary>
+                /// Tags will be replaced with the given string.
+                /// </summary>
+                public Builder ReplaceWith(string inText)
+                {
+                    m_Rule.m_ConstantText = inText;
+                    m_Rule.m_ReplaceCallback = null;
+                    m_Rule.m_ReplaceWithContextCallback = null;
+                    m_Rule.m_ReplaceSourceContextCallback = null;
+                    m_Rule.m_TryReplaceCallback = null;
+                    return this;
+                }
+
+                /// <summary>
+                /// Tags will be replaced with the result of the given callback.
+                /// </summary>
+                public Builder ReplaceWith(ReplaceDelegate inDelegate)
+                {
+                    m_Rule.m_ConstantText = null;
+                    m_Rule.m_ReplaceCallback = inDelegate;
+                    m_Rule.m_ReplaceWithContextCallback = null;
+                    m_Rule.m_ReplaceSourceContextCallback = null;
+                    m_Rule.m_TryReplaceCallback = null;
+                    return this;
+                }
+
+                /// <summary>
+                /// Tags will be replaced with the result of the given string.
+                /// </summary>
+                public Builder ReplaceWith(ReplaceWithContextDelegate inContextDelegate)
+                {
+                    m_Rule.m_ConstantText = null;
+                    m_Rule.m_ReplaceCallback = null;
+                    m_Rule.m_ReplaceWithContextCallback = inContextDelegate;
+                    m_Rule.m_ReplaceSourceContextCallback = null;
+                    m_Rule.m_TryReplaceCallback = null;
+                    return this;
+                }
+
+                /// <summary>
+                /// Tags will be replaced with the result of the given string.
+                /// </summary>
+                public Builder ReplaceWith(ReplaceSourceContextDelegate inSourceContextDelegate)
+                {
+                    m_Rule.m_ConstantText = null;
+                    m_Rule.m_ReplaceCallback = null;
+                    m_Rule.m_ReplaceWithContextCallback = null;
+                    m_Rule.m_ReplaceSourceContextCallback = inSourceContextDelegate;
+                    m_Rule.m_TryReplaceCallback = null;
+                    return this;
+                }
+
+                /// <summary>
+                /// Closing tags will be replaced with the given string.
+                /// </summary>
+                public Builder CloseWith(string inText)
+                {
+                    m_Rule.m_ConstantClosingText = inText;
+                    m_Rule.m_ReplaceClosingCallback = null;
+                    m_Rule.m_ReplaceWithContextClosingCallback = null;
+                    m_Rule.m_ReplaceSourceContextClosingCallback = null;
+                    m_Rule.m_TryReplaceCallback = null;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+
+                /// <summary>
+                /// Closing tags will be replaced with the result of the given callback.
+                /// </summary>
+                public Builder CloseWith(ReplaceDelegate inDelegate)
+                {
+                    m_Rule.m_ConstantClosingText = null;
+                    m_Rule.m_ReplaceClosingCallback = inDelegate;
+                    m_Rule.m_ReplaceWithContextClosingCallback = null;
+                    m_Rule.m_ReplaceSourceContextClosingCallback = null;
+                    m_Rule.m_TryReplaceCallback = null;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+
+                /// <summary>
+                /// Closing tags will be replaced with the result of the given string.
+                /// </summary>
+                public Builder CloseWith(ReplaceWithContextDelegate inContextDelegate)
+                {
+                    m_Rule.m_ConstantClosingText = null;
+                    m_Rule.m_ReplaceClosingCallback = null;
+                    m_Rule.m_ReplaceWithContextClosingCallback = inContextDelegate;
+                    m_Rule.m_ReplaceSourceContextClosingCallback = null;
+                    m_Rule.m_TryReplaceCallback = null;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+
+                /// <summary>
+                /// Closing tags will be replaced with the result of the given string.
+                /// </summary>
+                public Builder CloseWith(ReplaceSourceContextDelegate inContextSourceDelegate)
+                {
+                    m_Rule.m_ConstantClosingText = null;
+                    m_Rule.m_ReplaceClosingCallback = null;
+                    m_Rule.m_ReplaceWithContextClosingCallback = null;
+                    m_Rule.m_ReplaceSourceContextClosingCallback = inContextSourceDelegate;
+                    m_Rule.m_TryReplaceCallback = null;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+            }
+
+            #endregion // Builder
         }
 
         /// <summary>
         /// Adds a new replace rule.
         /// </summary>
-        public ReplaceRule AddReplace(string inId)
+        public ReplaceRule.Builder AddReplace(string inId)
         {
             CheckLocked();
 
-            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            ReplaceRule.Builder rule = RestartReplace(inId);
             return rule;
         }
 
         /// <summary>
         /// Adds a new replace rule that replaces with the given text.
         /// </summary>
-        public ReplaceRule AddReplace(string inId, string inReplaceWith)
+        public ReplaceRule.Builder AddReplace(string inId, string inReplaceWith)
         {
             CheckLocked();
 
-            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            ReplaceRule.Builder rule = RestartReplace(inId);
             rule.ReplaceWith(inReplaceWith);
             return rule;
         }
@@ -291,11 +296,11 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new replace rule that replaces with the result of the given callback.
         /// </summary>
-        public ReplaceRule AddReplace(string inId, ReplaceDelegate inReplace)
+        public ReplaceRule.Builder AddReplace(string inId, ReplaceDelegate inReplace)
         {
             CheckLocked();
 
-            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            ReplaceRule.Builder rule = RestartReplace(inId);
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -303,11 +308,11 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new replace rule that replaces with the result of the given callback.
         /// </summary>
-        public ReplaceRule AddReplace(string inId, ReplaceWithContextDelegate inReplace)
+        public ReplaceRule.Builder AddReplace(string inId, ReplaceWithContextDelegate inReplace)
         {
             CheckLocked();
 
-            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            ReplaceRule.Builder rule = RestartReplace(inId);
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -315,11 +320,11 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new replace rule that replaces with the result of the given callback.
         /// </summary>
-        public ReplaceRule AddReplace(string inId, ReplaceSourceContextDelegate inReplace)
+        public ReplaceRule.Builder AddReplace(string inId, ReplaceSourceContextDelegate inReplace)
         {
             CheckLocked();
 
-            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            ReplaceRule.Builder rule = RestartReplace(inId);
             rule.ReplaceWith(inReplace);
             return rule;
         }
@@ -327,11 +332,11 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new replace rule that replaces with the result of the given callback.
         /// </summary>
-        public ReplaceRule AddReplace(string inId, TryReplaceDelegate inReplace)
+        public ReplaceRule.Builder AddReplace(string inId, TryReplaceDelegate inReplace)
         {
             CheckLocked();
 
-            ReplaceRule rule = FindOrCreateReplaceRule(inId);
+            ReplaceRule.Builder rule = RestartReplace(inId);
             rule.TryReplaceWith(inReplace);
             return rule;
         }
@@ -348,6 +353,9 @@ namespace BeauUtil.Tags
 
         public bool TryReplace(TagData inData, StringSlice inSource, object inContext, out string outReplace)
         {
+            if (!m_Locked)
+                m_ReplaceBuilder.Flush();
+
             ReplaceRule rule = m_ReplaceRules.FindMatch(inData.Id);
             if (rule != null)
                 return rule.Evaluate(inData, inSource, inContext, out outReplace);
@@ -375,17 +383,10 @@ namespace BeauUtil.Tags
             return false;
         }
 
-        private ReplaceRule FindOrCreateReplaceRule(string inPattern)
+        private ReplaceRule.Builder RestartReplace(string inPattern)
         {
-            foreach(var rule in m_ReplaceRules)
-            {
-                if (rule.Id() == inPattern)
-                    return rule;
-            }
-
-            ReplaceRule newRule = new ReplaceRule(inPattern);
-            m_ReplaceRules.Add(newRule);
-            return newRule;
+            m_ReplaceBuilder.Restart(inPattern);
+            return m_ReplaceBuilder;
         }
 
         #endregion // Text Replace
@@ -395,7 +396,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Rule for parsing tags into events.
         /// </summary>
-        public class EventRule : MatchRule<EventRule>
+        public sealed class EventRule
         {
             private enum DataMode
             {
@@ -417,115 +418,6 @@ namespace BeauUtil.Tags
             private DataMode m_DataMode;
             private Variant m_DefaultValue;
             private string m_DefaultString;
-
-            #region Builder
-
-            internal EventRule(string inId)
-            {
-                SetId(inId);
-                m_EventId = new StringHash32(inId);
-            }
-
-            /// <summary>
-            /// Processes tags with the given event id.
-            /// </summary>
-            public EventRule ProcessWith(StringHash32 inId)
-            {
-                m_EventId = inId;
-                return this;
-            }
-
-            /// <summary>
-            /// Process tags with the given delegate.
-            /// </summary>
-            public EventRule ProcessWith(EventDelegate inDelegate)
-            {
-                m_EventDelegate = inDelegate;
-                return this;
-            }
-
-            /// <summary>
-            /// Process tags with the given event id and delegate.
-            /// </summary>
-            public EventRule ProcessWith(StringHash32 inId, EventDelegate inDelegate)
-            {
-                m_EventId = inId;
-                m_EventDelegate = inDelegate;
-                return this;
-            }
-
-            /// <summary>
-            /// Processes closing tags with the given id.
-            /// </summary>
-            public EventRule CloseWith(StringHash32 inId)
-            {
-                m_EventClosingId = inId;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            /// <summary>
-            /// Processes closing tags with the given delegate.
-            /// </summary>
-            public EventRule CloseWith(EventDelegate inDelegate)
-            {
-                m_EventClosingDelegate = inDelegate;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            /// <summary>
-            /// Processes closing tags with the given id and delegate.
-            /// </summary>
-            public EventRule CloseWith(StringHash32 inId, EventDelegate inDelegate)
-            {
-                m_EventClosingId = inId;
-                m_EventClosingDelegate = inDelegate;
-                m_HandleClosing = true;
-                return this;
-            }
-
-            /// <summary>
-            /// Preserves additional tag data before processing.
-            /// </summary>
-            public EventRule WithStringData(string inDefault = null)
-            {
-                m_DataMode = DataMode.String;
-                m_DefaultString = inDefault;
-                return this;
-            }
-
-            /// <summary>
-            /// Preserves additional tag data before processing.
-            /// </summary>
-            public EventRule WithFloatData(float inDefault = 0)
-            {
-                m_DataMode = DataMode.Float;
-                m_DefaultValue = inDefault;
-                return this;
-            }
-
-            /// <summary>
-            /// Preserves additional tag data before processing.
-            /// </summary>
-            public EventRule WithBoolData(bool inbDefault = false)
-            {
-                m_DataMode = DataMode.Bool;
-                m_DefaultValue = inbDefault;
-                return this;
-            }
-
-            /// <summary>
-            /// Preserves additional tag data before processing.
-            /// </summary>
-            public EventRule WithStringHashData(StringHash32 inDefault = default(StringHash32))
-            {
-                m_DataMode = DataMode.StringHash;
-                m_DefaultValue = inDefault;
-                return this;
-            }
-
-            #endregion // Builder
 
             internal bool Evaluate(TagData inData, object inContext, out TagEventData outEvent)
             {
@@ -591,27 +483,147 @@ namespace BeauUtil.Tags
                     return true;
                 }
             }
+        
+            #region Builder
+
+            public sealed class Builder : MatchRuleBuilder<EventRule, Builder>
+            {
+                internal Builder(MatchRuleSet<EventRule> inRuleSet)
+                    : base(inRuleSet)
+                { }
+
+                public override void Flush()
+                {
+                    if (m_IdMatch != null && m_Rule.m_EventId.IsEmpty)
+                    {
+                        m_Rule.m_EventId = m_IdMatch;
+                    }
+
+                    base.Flush();
+                }
+
+                /// <summary>
+                /// Processes tags with the given event id.
+                /// </summary>
+                public EventRule.Builder ProcessWith(StringHash32 inId)
+                {
+                    m_Rule.m_EventId = inId;
+                    return this;
+                }
+
+                /// <summary>
+                /// Process tags with the given delegate.
+                /// </summary>
+                public EventRule.Builder ProcessWith(EventDelegate inDelegate)
+                {
+                    m_Rule.m_EventDelegate = inDelegate;
+                    return this;
+                }
+
+                /// <summary>
+                /// Process tags with the given event id and delegate.
+                /// </summary>
+                public EventRule.Builder ProcessWith(StringHash32 inId, EventDelegate inDelegate)
+                {
+                    m_Rule.m_EventId = inId;
+                    m_Rule.m_EventDelegate = inDelegate;
+                    return this;
+                }
+
+                /// <summary>
+                /// Processes closing tags with the given id.
+                /// </summary>
+                public EventRule.Builder CloseWith(StringHash32 inId)
+                {
+                    m_Rule.m_EventClosingId = inId;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+
+                /// <summary>
+                /// Processes closing tags with the given delegate.
+                /// </summary>
+                public EventRule.Builder CloseWith(EventDelegate inDelegate)
+                {
+                    m_Rule.m_EventClosingDelegate = inDelegate;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+
+                /// <summary>
+                /// Processes closing tags with the given id and delegate.
+                /// </summary>
+                public EventRule.Builder CloseWith(StringHash32 inId, EventDelegate inDelegate)
+                {
+                    m_Rule.m_EventClosingId = inId;
+                    m_Rule.m_EventClosingDelegate = inDelegate;
+                    m_Rule.m_HandleClosing = true;
+                    return this;
+                }
+
+                /// <summary>
+                /// Preserves additional tag data before processing.
+                /// </summary>
+                public EventRule.Builder WithStringData(string inDefault = null)
+                {
+                    m_Rule.m_DataMode = DataMode.String;
+                    m_Rule.m_DefaultString = inDefault;
+                    return this;
+                }
+
+                /// <summary>
+                /// Preserves additional tag data before processing.
+                /// </summary>
+                public EventRule.Builder WithFloatData(float inDefault = 0)
+                {
+                    m_Rule.m_DataMode = DataMode.Float;
+                    m_Rule.m_DefaultValue = inDefault;
+                    return this;
+                }
+
+                /// <summary>
+                /// Preserves additional tag data before processing.
+                /// </summary>
+                public EventRule.Builder WithBoolData(bool inbDefault = false)
+                {
+                    m_Rule.m_DataMode = DataMode.Bool;
+                    m_Rule.m_DefaultValue = inbDefault;
+                    return this;
+                }
+
+                /// <summary>
+                /// Preserves additional tag data before processing.
+                /// </summary>
+                public EventRule.Builder WithStringHashData(StringHash32 inDefault = default(StringHash32))
+                {
+                    m_Rule.m_DataMode = DataMode.StringHash;
+                    m_Rule.m_DefaultValue = inDefault;
+                    return this;
+                }
+            }
+
+            #endregion // Builder
         }
 
         /// <summary>
         /// Adds a new event parsing rule.
         /// </summary>
-        public EventRule AddEvent(string inId)
+        public EventRule.Builder AddEvent(string inId)
         {
             CheckLocked();
 
-            EventRule rule = FindOrCreateEventRule(inId);
+            EventRule.Builder rule = RestartEvent(inId);
             return rule;
         }
 
         /// <summary>
         /// Adds a new event parsing rule.
         /// </summary>
-        public EventRule AddEvent(string inId, StringHash32 inEventId)
+        public EventRule.Builder AddEvent(string inId, StringHash32 inEventId)
         {
             CheckLocked();
 
-            EventRule rule = FindOrCreateEventRule(inId);
+            EventRule.Builder rule = RestartEvent(inId);
 
             rule.ProcessWith(inEventId);
             return rule;
@@ -620,11 +632,11 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new event parsing rule processed with the given delegate.
         /// </summary>
-        public EventRule AddEvent(string inId, EventDelegate inDelegate)
+        public EventRule.Builder AddEvent(string inId, EventDelegate inDelegate)
         {
             CheckLocked();
 
-            EventRule rule = new EventRule(inId);
+            EventRule.Builder rule = RestartEvent(inId);
             rule.ProcessWith(inDelegate);
             return rule;
         }
@@ -632,17 +644,20 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a new event parsing rule processed with the given delegate.
         /// </summary>
-        public EventRule AddEvent(string inId, StringHash32 inEventId, EventDelegate inDelegate)
+        public EventRule.Builder AddEvent(string inId, StringHash32 inEventId, EventDelegate inDelegate)
         {
             CheckLocked();
 
-            EventRule rule = new EventRule(inId);
+            EventRule.Builder rule = RestartEvent(inId);
             rule.ProcessWith(inEventId, inDelegate);
             return rule;
         }
 
         public bool TryProcess(TagData inData, object inContext, out TagEventData outEvent)
         {
+            if (!m_Locked)
+                m_EventBuilder.Flush();
+
             EventRule rule = m_EventRules.FindMatch(inData.Id);
             if (rule != null)
                 return rule.Evaluate(inData, inContext, out outEvent);
@@ -656,24 +671,17 @@ namespace BeauUtil.Tags
             return false;
         }
 
-        private EventRule FindOrCreateEventRule(string inPattern)
+        private EventRule.Builder RestartEvent(string inPattern)
         {
-            foreach(var rule in m_EventRules)
-            {
-                if (rule.Id() == inPattern)
-                    return rule;
-            }
-
-            EventRule newRule = new EventRule(inPattern);
-            m_EventRules.Add(newRule);
-            return newRule;
+            m_EventBuilder.Restart(inPattern);
+            return m_EventBuilder;
         }
 
         #endregion // Event
 
         #region Locking
 
-        protected void CheckLocked()
+        private void CheckLocked()
         {
             if (m_Locked)
                 throw new InvalidOperationException("Parser config has marked read-only");
@@ -684,7 +692,12 @@ namespace BeauUtil.Tags
         /// </summary>
         public void Lock()
         {
-            m_Locked = true;
+            if (!m_Locked)
+            {
+                m_ReplaceBuilder.Flush();
+                m_EventBuilder.Flush();
+                m_Locked = true;
+            }
         }
 
         #endregion // Locking

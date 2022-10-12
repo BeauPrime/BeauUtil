@@ -23,7 +23,7 @@ namespace BeauUtil
         private Func<TOutput> m_CallbackNoArgs;
         private Func<TInput, TOutput> m_CallbackNativeArg;
         private MulticastDelegate m_CallbackWithCastedArg;
-        private CastedFunc<TOutput> m_CastedArgInvoker;
+        private CastedFunc<TInput, TOutput> m_CastedArgInvoker;
 
         private CastableFunc(Func<TOutput> inFunc)
         {
@@ -49,7 +49,7 @@ namespace BeauUtil
             m_CallbackNoArgs = null;
         }
 
-        private CastableFunc(MulticastDelegate inCastedDelegate, CastedFunc<TOutput> inCastedInvoker)
+        private CastableFunc(MulticastDelegate inCastedDelegate, CastedFunc<TInput, TOutput> inCastedInvoker)
         {
             if (inCastedDelegate == null)
                 throw new ArgumentNullException("inCastedDelegate");
@@ -64,7 +64,7 @@ namespace BeauUtil
         }
 
         public bool IsEmpty {
-            get { return m_Mode != CallbackMode.Unassigned; }
+            get { return m_Mode == CallbackMode.Unassigned; }
         }
 
         public TOutput Invoke(TInput inArg)
@@ -120,7 +120,7 @@ namespace BeauUtil
             m_Mode = CallbackMode.CastedArg;
             m_CallbackNativeArg = null;
             m_CallbackWithCastedArg = inFunc;
-            m_CastedArgInvoker = CastedFuncInvoker<U, TOutput>.Invoker;
+            m_CastedArgInvoker = CastedFuncInvoker<TInput, U, TOutput>.Invoker;
             m_CallbackNoArgs = null;
         }
 
@@ -252,7 +252,7 @@ namespace BeauUtil
 
         static public CastableFunc<TInput, TOutput> Create<U>(Func<U, TOutput> inFunc)
         {
-            return new CastableFunc<TInput, TOutput>(inFunc, CastedFuncInvoker<U, TOutput>.Invoker);
+            return new CastableFunc<TInput, TOutput>(inFunc, CastedFuncInvoker<TInput, U, TOutput>.Invoker);
         }
 
         #endregion // Create
@@ -272,11 +272,11 @@ namespace BeauUtil
         #endregion // Operators
     }
 
-    internal delegate TOutput CastedFunc<TOutput>(MulticastDelegate inDelegate, object inInput);
+    internal delegate TOutput CastedFunc<TInput, TOutput>(MulticastDelegate inDelegate, TInput inInput);
 
-    internal static class CastedFuncInvoker<TInput, TOutput>
+    internal static class CastedFuncInvoker<TInput, TInputCasted, TOutput>
     {
-        static internal CastedFunc<TOutput> Invoker
+        static internal CastedFunc<TInput, TOutput> Invoker
         {
             get
             {
@@ -284,11 +284,11 @@ namespace BeauUtil
             }
         }
 
-        static private CastedFunc<TOutput> s_Callback;
+        static private CastedFunc<TInput, TOutput> s_Callback;
 
-        static private TOutput CastedInvoke(MulticastDelegate inDelegate, object inInput)
+        static private TOutput CastedInvoke(MulticastDelegate inDelegate, TInput inInput)
         {
-            return ((Func<TInput, TOutput>) inDelegate).Invoke((TInput) inInput);
+            return ((Func<TInputCasted, TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TInputCasted>(inInput));
         }
     }
 }

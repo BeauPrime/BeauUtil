@@ -26,19 +26,6 @@ namespace BeauUtil
     /// </summary>
     static public class Enums
     {
-        [StructLayout(LayoutKind.Explicit, Size = 8)]
-        private struct CastHelper
-        {
-            [FieldOffset(0)] public byte U8;
-            [FieldOffset(0)] public sbyte I8;
-            [FieldOffset(0)] public short I16;
-            [FieldOffset(0)] public ushort U16;
-            [FieldOffset(0)] public int I32;
-            [FieldOffset(0)] public uint U32;
-            [FieldOffset(0)] public long I64;
-            [FieldOffset(0)] public ulong U64;
-        }
-
         #region To Integral
 
         /// <summary>
@@ -57,7 +44,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).U8;
+                return Unsafe.Reinterpret<T, byte>(inValue);
             }
             #else
             return Convert.ToByte(inValue);
@@ -80,7 +67,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).I8;
+                return Unsafe.Reinterpret<T, sbyte>(inValue);
             }
             #else
             return Convert.ToSByte(inValue);
@@ -103,7 +90,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).I16;
+                return Unsafe.Reinterpret<T, short>(inValue);
             }
             #else
             return Convert.ToInt16(inValue);
@@ -126,7 +113,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).U16;
+                return Unsafe.Reinterpret<T, ushort>(inValue);
             }
             #else
             return Convert.ToUInt16(inValue);
@@ -149,7 +136,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).I32;
+                return Unsafe.Reinterpret<T, int>(inValue);
             }
             #else
             return Convert.ToInt32(inValue);
@@ -172,7 +159,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).U32;
+                return Unsafe.Reinterpret<T, uint>(inValue);
             }
             #else
             return Convert.ToUInt32(inValue);
@@ -195,7 +182,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).I64;
+                return Unsafe.Reinterpret<T, long>(inValue);
             }
             #else
             return Convert.ToInt64(inValue);
@@ -218,7 +205,7 @@ namespace BeauUtil
             #if UNMANAGED_CONSTRAINT
             unsafe
             {
-                return (*(CastHelper*)&inValue).U64;
+                return Unsafe.Reinterpret<T, ulong>(inValue);
             }
             #else
             return Convert.ToUInt64(inValue);

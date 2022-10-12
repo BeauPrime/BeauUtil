@@ -49,7 +49,7 @@ namespace BeauUtil
 
         public bool Equals(PriorityValue<T> other)
         {
-            return Priority == other.Priority && EqualityComparer<T>.Default.Equals(Value, other.Value);
+            return Priority == other.Priority && CompareUtils.DefaultComparer<T>().Equals(Value, other.Value);
         }
 
         #endregion // Interfaces
@@ -65,7 +65,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            int hash = EqualityComparer<T>.Default.GetHashCode(Value);
+            int hash = CompareUtils.DefaultComparer<T>().GetHashCode(Value);
             hash = (hash << 2) ^ Priority.GetHashCode();
             return hash;
         }

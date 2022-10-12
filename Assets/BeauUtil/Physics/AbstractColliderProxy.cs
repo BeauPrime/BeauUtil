@@ -351,7 +351,7 @@ namespace BeauUtil
                     return false;
             }
 
-            if (!string.IsNullOrEmpty(m_NameFilter) && !StringUtils.WildcardMatch(go.name, m_NameFilter))
+            if (!string.IsNullOrEmpty(m_NameFilter) && !WildcardMatch.Match(go.name, m_NameFilter))
                 return false;
 
             if (m_RequiredComponentType != null)

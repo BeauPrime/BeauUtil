@@ -1283,7 +1283,7 @@ namespace BeauUtil
         [MethodImpl(256)]
         static public int FromHex(char inChar)
         {
-            inChar = char.ToUpperInvariant(inChar);
+            inChar = StringUtils.ToUpperInvariant(inChar);
             if (IsDigit(inChar))
                 return inChar - '0';
             else if (IsHexAlpha(inChar))
@@ -1297,7 +1297,7 @@ namespace BeauUtil
             char c;
             for(int i = 0; i < inSlice.Length; ++i)
             {
-                c = char.ToUpperInvariant(inSlice[i]);
+                c = StringUtils.ToUpperInvariant(inSlice[i]);
 
                 if (!IsDigit(c) && !IsHexAlpha(c))
                 {
@@ -1320,7 +1320,7 @@ namespace BeauUtil
             char c;
             for(int i = 0; i < inSlice.Length; ++i)
             {
-                c = char.ToUpperInvariant(inSlice[i]);
+                c = StringUtils.ToUpperInvariant(inSlice[i]);
 
                 if (IsDigit(c))
                 {

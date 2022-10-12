@@ -433,9 +433,10 @@ namespace BeauUtil.Tags
                 }
             }
 
-            foreach(var tag in StringUtils.RichText.RecognizedRichTags)
+            string[] recognized = StringUtils.RichText.RecognizedRichTags;
+            for(int i = 0; i < recognized.Length; i++)
             {
-                if (inData.Id.Equals(tag, true))
+                if (inData.Id.Equals(recognized[i], true))
                     return true;
             }
 

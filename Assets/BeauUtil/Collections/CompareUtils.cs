@@ -17,14 +17,19 @@ namespace BeauUtil
     /// </summary>
     static public class CompareUtils
     {
-        static private readonly Type s_ObjectType = typeof(UnityEngine.Object);
+        static private readonly Type s_UnityObjectType = typeof(UnityEngine.Object);
 
         static public IEqualityComparer<T> DefaultComparer<T>()
         {
             IEqualityComparer<T> comparer = Cache<T>.DefaultComparer;
             if (comparer == null)
             {
-                if (s_ObjectType.IsAssignableFrom(typeof(T)))
+                Type type = typeof(T);
+                if (type == typeof(string))
+                {
+                    comparer = (IEqualityComparer<T>) StringComparer.Ordinal;
+                }
+                else if (s_UnityObjectType.IsAssignableFrom(type))
                 {
                     comparer = ReferenceEqualityComparer<T>.Default;
                 }
