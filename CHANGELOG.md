@@ -1,3 +1,11 @@
+## Version 0.7.14
+**11 Oct 2022**
+
+Hotfix for `ConsolePerformance` stats formatting
+Improved `MatchRuleSet` performance and memory consumption
+Fixed `Unsafe.Reinterpret` for cases of casting to a type of greater size
+Implemented case-insensitive hash generation
+
 ## Version 0.7.13
 **3 Oct 2022**
 
