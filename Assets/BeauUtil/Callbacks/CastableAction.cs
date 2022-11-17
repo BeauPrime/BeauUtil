@@ -8,22 +8,21 @@
  */
 
 using System;
+using System.Reflection;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Basic callback. Supports three signatures:
     /// no argument (Action)
-    /// object argument (Action<object>)
-    /// casted object argument (Action<T>)
+    /// object argument (Action<T>)
+    /// casted object argument (Action<U>)
     /// </summary>
-    public struct CastableAction<T> : IEquatable<CastableAction<T>>, IEquatable<Action>, IEquatable<Action<T>>, IEquatable<MulticastDelegate>, IDisposable
+    public struct CastableAction<TInput> : IEquatable<CastableAction<TInput>>, IEquatable<Action>, IEquatable<Action<TInput>>, IEquatable<RefAction<TInput>>, IEquatable<MulticastDelegate>, IDisposable
     {
+        private Delegate m_CallbackObject;
+        private CastedAction<TInput> m_CastedArgInvoker;
         private CallbackMode m_Mode;
-        private Action m_CallbackNoArgs;
-        private Action<T> m_CallbackNativeArg;
-        private MulticastDelegate m_CallbackWithCastedArg;
-        private CastedAction<T> m_CastedArgInvoker;
 
         private CastableAction(Action inAction)
         {
@@ -31,25 +30,31 @@ namespace BeauUtil
                 throw new ArgumentNullException("inAction");
             
             m_Mode = CallbackMode.NoArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = null;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = inAction;
+            m_CallbackObject = inAction;
         }
 
-        private CastableAction(Action<T> inAction)
+        private CastableAction(Action<TInput> inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
 
             m_Mode = CallbackMode.NativeArg;
-            m_CallbackNativeArg = inAction;
-            m_CallbackWithCastedArg = null;
+            m_CallbackObject = inAction;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = null;
         }
 
-        private CastableAction(MulticastDelegate inCastedDelegate, CastedAction<T> inCastedInvoker)
+        private CastableAction(RefAction<TInput> inAction)
+        {
+            if (inAction == null)
+                throw new ArgumentNullException("inAction");
+
+            m_Mode = CallbackMode.NativeArgRef;
+            m_CallbackObject = inAction;
+            m_CastedArgInvoker = null;
+        }
+
+        private CastableAction(MulticastDelegate inCastedDelegate, CastedAction<TInput> inCastedInvoker)
         {
             if (inCastedDelegate == null)
                 throw new ArgumentNullException("inCastedDelegate");
@@ -57,30 +62,69 @@ namespace BeauUtil
                 throw new ArgumentNullException("inCastedInvoker");
 
             m_Mode = CallbackMode.CastedArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = inCastedDelegate;
+            m_CallbackObject = inCastedDelegate;
             m_CastedArgInvoker = inCastedInvoker;
-            m_CallbackNoArgs = null;
         }
 
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Mode == CallbackMode.Unassigned; }
         }
 
-        public void Invoke(T inArg)
+        public object Target
+        {
+            get { return m_CallbackObject?.Target; }
+        }
+
+        public MethodInfo Method
+        {
+            get { return m_CallbackObject?.Method;}
+        }
+
+        public void Invoke(TInput inArg)
         {
             switch(m_Mode)
             {
                 case CallbackMode.NoArg:
-                    m_CallbackNoArgs();
+                    ((Action) m_CallbackObject)();
                     break;
 
                 case CallbackMode.NativeArg:
-                    m_CallbackNativeArg(inArg);
+                    ((Action<TInput>) m_CallbackObject)(inArg);
+                    break;
+
+                case CallbackMode.NativeArgRef:
+                    ((RefAction<TInput>) m_CallbackObject)(ref inArg);
                     break;
 
                 case CallbackMode.CastedArg:
-                    m_CastedArgInvoker(m_CallbackWithCastedArg, inArg);
+                    m_CastedArgInvoker(m_CallbackObject, inArg);
+                    break;
+
+                case CallbackMode.Unassigned:
+                default:
+                    throw new InvalidOperationException("Callback has not been initialized, or has been disposed");
+            }
+        }
+
+        public void Invoke(ref TInput inArg)
+        {
+            switch(m_Mode)
+            {
+                case CallbackMode.NoArg:
+                    ((Action) m_CallbackObject)();
+                    break;
+
+                case CallbackMode.NativeArg:
+                    ((Action<TInput>) m_CallbackObject)(inArg);
+                    break;
+
+                case CallbackMode.NativeArgRef:
+                    ((RefAction<TInput>) m_CallbackObject)(ref inArg);
+                    break;
+
+                case CallbackMode.CastedArg:
+                    m_CastedArgInvoker(m_CallbackObject, inArg);
                     break;
 
                 case CallbackMode.Unassigned:
@@ -97,22 +141,28 @@ namespace BeauUtil
                 throw new ArgumentNullException("inAction");
             
             m_Mode = CallbackMode.NoArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = null;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = inAction;
+            m_CallbackObject = inAction;
         }
 
-        public void Set(Action<T> inAction)
+        public void Set(Action<TInput> inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
 
             m_Mode = CallbackMode.NativeArg;
-            m_CallbackNativeArg = inAction;
-            m_CallbackWithCastedArg = null;
+            m_CallbackObject = inAction;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = null;
+        }
+
+        public void Set(RefAction<TInput> inAction)
+        {
+            if (inAction == null)
+                throw new ArgumentNullException("inAction");
+
+            m_Mode = CallbackMode.NativeArgRef;
+            m_CallbackObject = inAction;
+            m_CastedArgInvoker = null;
         }
 
         public void Set<U>(Action<U> inAction)
@@ -121,10 +171,8 @@ namespace BeauUtil
                 throw new ArgumentNullException("inAction");
 
             m_Mode = CallbackMode.CastedArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = inAction;
-            m_CastedArgInvoker = CastedActionInvoker<T, U>.Invoker;
-            m_CallbackNoArgs = null;
+            m_CallbackObject = inAction;
+            m_CastedArgInvoker = CastedActionInvoker<TInput, U>.Invoker;
         }
 
         #endregion // Set
@@ -134,9 +182,7 @@ namespace BeauUtil
         public void Dispose()
         {
             m_Mode = CallbackMode.Unassigned;
-            m_CallbackNoArgs = null;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = null;
+            m_CallbackObject = null;
             m_CastedArgInvoker = null;
         }
 
@@ -144,33 +190,31 @@ namespace BeauUtil
 
         #region IEquatable
 
-        public bool Equals(CastableAction<T> other)
+        public bool Equals(CastableAction<TInput> other)
         {
             if (m_Mode != other.m_Mode)
                 return false;
 
-            switch(m_Mode)
-            {
-                case CallbackMode.NoArg:
-                    return m_CallbackNoArgs == other.m_CallbackNoArgs;
-
-                case CallbackMode.NativeArg:
-                    return m_CallbackNativeArg == other.m_CallbackNativeArg;
-
-                case CallbackMode.CastedArg:
-                    return (Delegate) m_CallbackWithCastedArg == other.m_CallbackWithCastedArg;
-
-                default:
-                    return true;
-            }
+            if (m_Mode == CallbackMode.Unassigned)
+                return true;
+            
+            return m_CallbackObject == other.m_CallbackObject;
         }
 
-        public bool Equals(Action<T> other)
+        public bool Equals(Action<TInput> other)
         {
             if (other == null)
                 return m_Mode == CallbackMode.Unassigned;
 
-            return m_Mode == CallbackMode.NativeArg && m_CallbackNativeArg == other;
+            return m_Mode == CallbackMode.NativeArg && m_CallbackObject == ((Delegate) other);
+        }
+
+        public bool Equals(RefAction<TInput> other)
+        {
+            if (other == null)
+                return m_Mode == CallbackMode.Unassigned;
+
+            return m_Mode == CallbackMode.NativeArgRef && m_CallbackObject == ((Delegate) other);
         }
 
         public bool Equals(Action other)
@@ -178,27 +222,15 @@ namespace BeauUtil
             if (other == null)
                 return m_Mode == CallbackMode.Unassigned;
 
-            return m_Mode == CallbackMode.NoArg && m_CallbackNoArgs == other;
+            return m_Mode == CallbackMode.NoArg && m_CallbackObject == ((Delegate) other);
         }
 
         public bool Equals(MulticastDelegate other)
         {
             if (other == null)
                 return m_Mode == CallbackMode.Unassigned;
-            
-            Action noArg = other as Action;
-            if (noArg != null)
-            {
-                return Equals(noArg);
-            }
 
-            Action<T> nativeArg = other as Action<T>;
-            if (nativeArg != null)
-            {
-                return Equals(nativeArg);
-            }
-
-            return m_Mode == CallbackMode.CastedArg && (Delegate) m_CallbackWithCastedArg == other;
+            return m_CallbackObject == ((Delegate) other);
         }
 
         #endregion // IEquatable
@@ -208,17 +240,8 @@ namespace BeauUtil
         public override int GetHashCode()
         {
             int hash = m_Mode.GetHashCode();
-            switch(m_Mode)
-            {
-                case CallbackMode.NoArg:
-                    return m_CallbackNoArgs.GetHashCode();
-
-                case CallbackMode.NativeArg:
-                    return m_CallbackNativeArg.GetHashCode();
-
-                case CallbackMode.CastedArg:
-                    return m_CallbackWithCastedArg.GetHashCode();
-            }
+            if (m_CallbackObject != null)
+                hash = (hash << 5) ^ m_CallbackObject.GetHashCode();
             return hash;
         }
 
@@ -227,9 +250,9 @@ namespace BeauUtil
             if (obj == null)
                 return m_Mode == CallbackMode.Unassigned;
 
-            if (obj is CastableAction<T>)
+            if (obj is CastableAction<TInput>)
             {
-                return Equals((CastableAction<T>) obj);
+                return Equals((CastableAction<TInput>) obj);
             }
 
             MulticastDelegate del = obj as MulticastDelegate;
@@ -243,31 +266,36 @@ namespace BeauUtil
 
         #region Create
     
-        static public CastableAction<T> Create(Action inAction)
+        static public CastableAction<TInput> Create(Action inAction)
         {
-            return new CastableAction<T>(inAction);
+            return new CastableAction<TInput>(inAction);
         }
 
-        static public CastableAction<T> Create(Action<T> inAction)
+        static public CastableAction<TInput> Create(Action<TInput> inAction)
         {
-            return new CastableAction<T>(inAction);
+            return new CastableAction<TInput>(inAction);
         }
 
-        static public CastableAction<T> Create<U>(Action<U> inAction)
+        static public CastableAction<TInput> Create(RefAction<TInput> inAction)
         {
-            return new CastableAction<T>(inAction, CastedActionInvoker<T, U>.Invoker);
+            return new CastableAction<TInput>(inAction);
+        }
+
+        static public CastableAction<TInput> Create<U>(Action<U> inAction)
+        {
+            return new CastableAction<TInput>(inAction, CastedActionInvoker<TInput, U>.Invoker);
         }
 
         #endregion // Create
 
         #region Operators
 
-        static public bool operator ==(CastableAction<T> left, CastableAction<T> right)
+        static public bool operator ==(CastableAction<TInput> left, CastableAction<TInput> right)
         {
             return left.Equals(right);
         }
 
-        static public bool operator !=(CastableAction<T> left, CastableAction<T> right)
+        static public bool operator !=(CastableAction<TInput> left, CastableAction<TInput> right)
         {
             return !left.Equals(right);
         }
@@ -275,7 +303,9 @@ namespace BeauUtil
         #endregion // Operators
     }
 
-    internal delegate void CastedAction<TInput>(MulticastDelegate inDelegate, TInput inInput);
+    public delegate void RefAction<T>(ref T inValue);
+
+    internal delegate void CastedAction<TInput>(Delegate inDelegate, TInput inInput);
 
     internal static class CastedActionInvoker<TInput, TOutput>
     {
@@ -289,7 +319,7 @@ namespace BeauUtil
 
         static private CastedAction<TInput> s_Callback;
 
-        static private void CastedInvoke(MulticastDelegate inDelegate, TInput inInput)
+        static private void CastedInvoke(Delegate inDelegate, TInput inInput)
         {
             ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));
         }

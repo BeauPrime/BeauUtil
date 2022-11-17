@@ -96,7 +96,7 @@ namespace BeauUtil.Variants
                         if (inInvoker == null)
                             throw new ArgumentNullException("inInvoker", "No IMethodCache provided - cannot invoke a method call operand");
                         
-                        object obj;
+                        NonBoxedValue obj;
                         if (!inInvoker.TryStaticInvoke(MethodCall, inContext, out obj))
                         {
                             Log.Error("[VariantOperand] Unable to execute {0}", MethodCall);

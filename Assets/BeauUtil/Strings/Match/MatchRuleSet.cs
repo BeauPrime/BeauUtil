@@ -14,6 +14,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
@@ -55,7 +56,7 @@ namespace BeauUtil
         {
             m_RuleBank = new List<TRule>();
             m_PatternBank = new List<WildcardMatch>();
-            m_Entries = new MatchRuleSetEntry[8];
+            m_Entries = Array.Empty<MatchRuleSetEntry>();
         }
 
         public MatchRuleSet(int inCapacity)
@@ -84,7 +85,7 @@ namespace BeauUtil
         {
             EnsureSorted();
 
-            StringHash32 id = inString.Hash32(), idUpper = StringHash32.CaseInsensitive(inString);
+            StringHash32 id = StringHash32.Fast(inString), idUpper = StringHash32.FastCaseInsensitive(inString);
             TRule rule;
             bool bFound = FastMatches(id, idUpper, out rule) || SlowMatches(inString, out rule);
             return rule;
@@ -97,12 +98,14 @@ namespace BeauUtil
         {
             EnsureSorted();
 
-            StringHash32 id = inString.Hash32(), idUpper = StringHash32.CaseInsensitive(inString);
+            StringHash32 id = StringHash32.Fast(inString), idUpper = StringHash32.FastCaseInsensitive(inString);
             TRule rule;
             bool bFound = FastMatches(id, idUpper, out rule) || SlowMatches(inString, out rule);
             return rule;
         }
 
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private bool FastMatches(StringHash32 inHash, StringHash32 inUpperHash, out TRule outRule)
         {
             int idx = 0;
@@ -134,6 +137,8 @@ namespace BeauUtil
             return false;
         }
 
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private bool SlowMatches(StringSlice inString, out TRule outRule)
         {
             MatchRuleSetEntry e;
@@ -154,6 +159,8 @@ namespace BeauUtil
             return false;
         }
 
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private bool SlowMatches(StringBuilderSlice inString, out TRule outRule)
         {
             MatchRuleSetEntry e;
@@ -235,7 +242,7 @@ namespace BeauUtil
                 m_PatternBank.Add(pattern);
             }
 
-            if (m_EntryCount == m_Entries.Length)
+            if (m_EntryCount >= m_Entries.Length)
             {
                 Array.Resize(ref m_Entries, (int) Unsafe.AlignUp8((uint) m_Entries.Length + 1));
             }

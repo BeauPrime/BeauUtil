@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Reflection;
 
 namespace BeauUtil
 {
@@ -17,13 +18,11 @@ namespace BeauUtil
     /// object argument (Func<T, U>)
     /// casted object argument (Func<V, U>)
     /// </summary>
-    public struct CastableFunc<TInput, TOutput> : IEquatable<CastableFunc<TInput, TOutput>>, IEquatable<Func<TOutput>>, IEquatable<Func<TInput, TOutput>>, IEquatable<MulticastDelegate>, IDisposable
+    public struct CastableFunc<TInput, TOutput> : IEquatable<CastableFunc<TInput, TOutput>>, IEquatable<Func<TOutput>>, IEquatable<Func<TInput, TOutput>>, IEquatable<RefFunc<TInput, TOutput>>, IEquatable<MulticastDelegate>, IDisposable
     {
-        private CallbackMode m_Mode;
-        private Func<TOutput> m_CallbackNoArgs;
-        private Func<TInput, TOutput> m_CallbackNativeArg;
-        private MulticastDelegate m_CallbackWithCastedArg;
+        private Delegate m_CallbackObject;
         private CastedFunc<TInput, TOutput> m_CastedArgInvoker;
+        private CallbackMode m_Mode;
 
         private CastableFunc(Func<TOutput> inFunc)
         {
@@ -31,10 +30,8 @@ namespace BeauUtil
                 throw new ArgumentNullException("inFunc");
             
             m_Mode = CallbackMode.NoArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = null;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = inFunc;
+            m_CallbackObject = inFunc;
         }
 
         private CastableFunc(Func<TInput, TOutput> inFunc)
@@ -43,10 +40,18 @@ namespace BeauUtil
                 throw new ArgumentNullException("inFunc");
 
             m_Mode = CallbackMode.NativeArg;
-            m_CallbackNativeArg = inFunc;
-            m_CallbackWithCastedArg = null;
+            m_CallbackObject = inFunc;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = null;
+        }
+
+        private CastableFunc(RefFunc<TInput, TOutput> inFunc)
+        {
+            if (inFunc == null)
+                throw new ArgumentNullException("inFunc");
+
+            m_Mode = CallbackMode.NativeArgRef;
+            m_CallbackObject = inFunc;
+            m_CastedArgInvoker = null;
         }
 
         private CastableFunc(MulticastDelegate inCastedDelegate, CastedFunc<TInput, TOutput> inCastedInvoker)
@@ -57,14 +62,23 @@ namespace BeauUtil
                 throw new ArgumentNullException("inCastedInvoker");
 
             m_Mode = CallbackMode.CastedArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = inCastedDelegate;
+            m_CallbackObject = inCastedDelegate;
             m_CastedArgInvoker = inCastedInvoker;
-            m_CallbackNoArgs = null;
         }
 
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Mode == CallbackMode.Unassigned; }
+        }
+
+        public object Target
+        {
+            get { return m_CallbackObject?.Target; }
+        }
+
+        public MethodInfo Method
+        {
+            get { return m_CallbackObject?.Method;}
         }
 
         public TOutput Invoke(TInput inArg)
@@ -72,13 +86,38 @@ namespace BeauUtil
             switch(m_Mode)
             {
                 case CallbackMode.NoArg:
-                    return m_CallbackNoArgs();
+                    return ((Func<TOutput>) m_CallbackObject)();
 
                 case CallbackMode.NativeArg:
-                    return m_CallbackNativeArg(inArg);
+                    return ((Func<TInput, TOutput>) m_CallbackObject)(inArg);
+
+                case CallbackMode.NativeArgRef:
+                    return ((RefFunc<TInput, TOutput>) m_CallbackObject)(ref inArg);
 
                 case CallbackMode.CastedArg:
-                    return m_CastedArgInvoker(m_CallbackWithCastedArg, inArg);
+                    return m_CastedArgInvoker((MulticastDelegate) m_CallbackObject, inArg);
+
+                case CallbackMode.Unassigned:
+                default:
+                    throw new InvalidOperationException("Function has not been initialized, or has been disposed");
+            }
+        }
+
+        public TOutput Invoke(ref TInput inArg)
+        {
+            switch(m_Mode)
+            {
+                case CallbackMode.NoArg:
+                    return ((Func<TOutput>) m_CallbackObject)();
+
+                case CallbackMode.NativeArg:
+                    return ((Func<TInput, TOutput>) m_CallbackObject)(inArg);
+
+                case CallbackMode.NativeArgRef:
+                    return ((RefFunc<TInput, TOutput>) m_CallbackObject)(ref inArg);
+
+                case CallbackMode.CastedArg:
+                    return m_CastedArgInvoker((MulticastDelegate) m_CallbackObject, inArg);
 
                 case CallbackMode.Unassigned:
                 default:
@@ -94,10 +133,8 @@ namespace BeauUtil
                 throw new ArgumentNullException("inFunc");
             
             m_Mode = CallbackMode.NoArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = null;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = inFunc;
+            m_CallbackObject = inFunc;
         }
 
         public void Set(Func<TInput, TOutput> inFunc)
@@ -106,10 +143,18 @@ namespace BeauUtil
                 throw new ArgumentNullException("inFunc");
 
             m_Mode = CallbackMode.NativeArg;
-            m_CallbackNativeArg = inFunc;
-            m_CallbackWithCastedArg = null;
+            m_CallbackObject = inFunc;
             m_CastedArgInvoker = null;
-            m_CallbackNoArgs = null;
+        }
+
+        public void Set(RefFunc<TInput, TOutput> inFunc)
+        {
+            if (inFunc == null)
+                throw new ArgumentNullException("inFunc");
+
+            m_Mode = CallbackMode.NativeArgRef;
+            m_CallbackObject = inFunc;
+            m_CastedArgInvoker = null;
         }
 
         public void Set<U>(Func<U, TOutput> inFunc)
@@ -118,10 +163,8 @@ namespace BeauUtil
                 throw new ArgumentNullException("inFunc");
 
             m_Mode = CallbackMode.CastedArg;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = inFunc;
+            m_CallbackObject = inFunc;
             m_CastedArgInvoker = CastedFuncInvoker<TInput, U, TOutput>.Invoker;
-            m_CallbackNoArgs = null;
         }
 
         #endregion // Set
@@ -131,9 +174,7 @@ namespace BeauUtil
         public void Dispose()
         {
             m_Mode = CallbackMode.Unassigned;
-            m_CallbackNoArgs = null;
-            m_CallbackNativeArg = null;
-            m_CallbackWithCastedArg = null;
+            m_CallbackObject = null;
             m_CastedArgInvoker = null;
         }
 
@@ -146,20 +187,10 @@ namespace BeauUtil
             if (m_Mode != other.m_Mode)
                 return false;
 
-            switch(m_Mode)
-            {
-                case CallbackMode.NoArg:
-                    return m_CallbackNoArgs == other.m_CallbackNoArgs;
-
-                case CallbackMode.NativeArg:
-                    return m_CallbackNativeArg == other.m_CallbackNativeArg;
-
-                case CallbackMode.CastedArg:
-                    return (Delegate) m_CallbackWithCastedArg == other.m_CallbackWithCastedArg;
-
-                default:
-                    return true;
-            }
+            if (m_Mode == CallbackMode.Unassigned)
+                return true;
+            
+            return m_CallbackObject == other.m_CallbackObject;
         }
 
         public bool Equals(Func<TInput, TOutput> other)
@@ -167,7 +198,15 @@ namespace BeauUtil
             if (other == null)
                 return m_Mode == CallbackMode.Unassigned;
 
-            return m_Mode == CallbackMode.NativeArg && m_CallbackNativeArg == other;
+            return m_Mode == CallbackMode.NativeArg && m_CallbackObject == ((Delegate) other);
+        }
+
+        public bool Equals(RefFunc<TInput, TOutput> other)
+        {
+            if (other == null)
+                return m_Mode == CallbackMode.Unassigned;
+
+            return m_Mode == CallbackMode.NativeArgRef && m_CallbackObject == ((Delegate) other);
         }
 
         public bool Equals(Func<TOutput> other)
@@ -175,7 +214,7 @@ namespace BeauUtil
             if (other == null)
                 return m_Mode == CallbackMode.Unassigned;
 
-            return m_Mode == CallbackMode.NoArg && m_CallbackNoArgs == other;
+            return m_Mode == CallbackMode.NoArg && m_CallbackObject == ((Delegate) other);
         }
 
         public bool Equals(MulticastDelegate other)
@@ -183,19 +222,7 @@ namespace BeauUtil
             if (other == null)
                 return m_Mode == CallbackMode.Unassigned;
             
-            Func<TOutput> noArg = other as Func<TOutput>;
-            if (noArg != null)
-            {
-                return Equals(noArg);
-            }
-
-            Func<TInput, TOutput> nativeArg = other as Func<TInput, TOutput>;
-            if (nativeArg != null)
-            {
-                return Equals(nativeArg);
-            }
-
-            return m_Mode == CallbackMode.CastedArg && (Delegate) m_CallbackWithCastedArg == other;
+            return m_CallbackObject == ((Delegate) other);
         }
 
         #endregion // IEquatable
@@ -205,17 +232,8 @@ namespace BeauUtil
         public override int GetHashCode()
         {
             int hash = m_Mode.GetHashCode();
-            switch(m_Mode)
-            {
-                case CallbackMode.NoArg:
-                    return m_CallbackNoArgs.GetHashCode();
-
-                case CallbackMode.NativeArg:
-                    return m_CallbackNativeArg.GetHashCode();
-
-                case CallbackMode.CastedArg:
-                    return m_CallbackWithCastedArg.GetHashCode();
-            }
+            if (m_CallbackObject != null)
+                hash = (hash << 5) ^ m_CallbackObject.GetHashCode();
             return hash;
         }
 
@@ -250,6 +268,11 @@ namespace BeauUtil
             return new CastableFunc<TInput, TOutput>(inFunc);
         }
 
+        static public CastableFunc<TInput, TOutput> Create(RefFunc<TInput, TOutput> inFunc)
+        {
+            return new CastableFunc<TInput, TOutput>(inFunc);
+        }
+
         static public CastableFunc<TInput, TOutput> Create<U>(Func<U, TOutput> inFunc)
         {
             return new CastableFunc<TInput, TOutput>(inFunc, CastedFuncInvoker<TInput, U, TOutput>.Invoker);
@@ -271,6 +294,8 @@ namespace BeauUtil
 
         #endregion // Operators
     }
+
+    public delegate TOutput RefFunc<TInput, out TOutput>(ref TInput inValue);
 
     internal delegate TOutput CastedFunc<TInput, TOutput>(MulticastDelegate inDelegate, TInput inInput);
 

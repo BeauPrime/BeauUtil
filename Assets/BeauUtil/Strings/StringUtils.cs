@@ -1496,12 +1496,8 @@ namespace BeauUtil
                 private const uint QUOTE_FLAG = 1u << 31;
                 private const uint GROUP_MASK = (1u << 30) - 1;
 
-                [ThreadStatic] static private Splitter s_Instance;
-
-                static public Splitter Instance
-                {
-                    get { return s_Instance ?? (s_Instance = new Splitter()); }
-                }
+                static public Splitter Instance = new Splitter();
+                static public Splitter UnescapedInstance = new Splitter(true);
 
                 private readonly bool m_TrimQuotes;
                 private readonly bool m_Unescape;

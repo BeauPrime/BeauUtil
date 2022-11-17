@@ -39,6 +39,14 @@ namespace BeauUtil
         public PatternType Type;
 
         /// <summary>
+        /// Returns if this is an empty pattern.
+        /// </summary>
+        public bool IsEmpty
+        {
+            get { return string.IsNullOrEmpty(Pattern); }
+        }
+
+        /// <summary>
         /// Returns if the match is an exact string match.
         /// </summary>
         public bool IsFullString

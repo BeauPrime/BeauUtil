@@ -13,6 +13,10 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
+#if ENABLE_TEXTMESHPRO
+using TMPro;
+#endif // ENABLE_TEXTMESHPRO
+
 namespace BeauUtil
 {
     /// <summary>
@@ -70,6 +74,8 @@ namespace BeauUtil
                 return iter.Current;
             return null;
         }
+
+        #region Layout
 
         /// <summary>
         /// Forces this layout group to rebuild itself.
@@ -165,6 +171,8 @@ namespace BeauUtil
                 LayoutRebuilder.MarkLayoutForRebuild(inTransform);
         }
 
+        #endregion // Layout
+
         /// <summary>
         /// Returns if objects at the given RectTransform are interactable.
         /// This will check both for Raycasts and for Interactable on CanvasGroups.
@@ -238,5 +246,78 @@ namespace BeauUtil
 
         [ThreadStatic]
         static private List<Component> s_CachedComponentList;
+
+        #region Text
+
+        private const int DefaultTextBufferSize = 256;
+
+        static private int s_CurrentCharBufferSize = DefaultTextBufferSize;
+        static private char[] s_CurrentCharBuffer = null;
+
+        /// <summary>
+        /// Size of the internal char buffer.
+        /// Used when displaying text from an unsafe buffer.
+        /// </summary>
+        static public int TextBufferSize
+        {
+            get { return s_CurrentCharBufferSize; }
+            set
+            {
+                if (value == s_CurrentCharBufferSize)
+                    return;
+
+                if (value != 0 && (value < 16 || value > ushort.MaxValue + 1))
+                    throw new ArgumentOutOfRangeException("value", "Buffer size must be between 16 and 655356");
+
+                if (value > 0 && !Mathf.IsPowerOfTwo(value))
+                    throw new ArgumentException("Buffer size must be a power of 2", "value");
+
+                s_CurrentCharBufferSize = value;
+                Array.Resize(ref s_CurrentCharBuffer, value);
+            }
+        }
+
+        #region TextMeshPro
+
+        #if ENABLE_TEXTMESHPRO
+
+        /// <summary>
+        /// Sets text on the given TextMeshPro element from an unsafe char buffer.
+        /// If the text length exceeds the current <c>TextHelper.BufferSize</c>, then a string will be allocated.
+        /// Otherwise this will not allocate any extra string memory.
+        /// </summary>
+        /// <remarks>
+        /// Note:   In the editor, TextMeshPro will automatically allocate a string internally,
+        ///         so it can be displayed in the inspector. This does not occur in builds.
+        /// </remarks>
+        static public unsafe void SetText(this TMP_Text inTextMeshPro, char* inCharBuffer, int inCharBufferLength)
+        {
+            if (inCharBuffer == null || inCharBufferLength <= 0)
+            {
+                inTextMeshPro.SetText(string.Empty);
+                return;
+            }
+
+            if (inCharBufferLength > s_CurrentCharBufferSize)
+            {
+                Debug.LogWarningFormat("[TextUtils] Input text of length {0} exceeded buffer size {1} - consider adjusting buffer size", inCharBufferLength.ToString(), s_CurrentCharBufferSize.ToString());
+                inTextMeshPro.SetText(new string(inCharBuffer, 0, inCharBufferLength));
+                return;
+            }
+
+            if (s_CurrentCharBuffer == null)
+            {
+                s_CurrentCharBuffer = new char[s_CurrentCharBufferSize];
+            }
+
+            Unsafe.CopyArray(inCharBuffer, inCharBufferLength, s_CurrentCharBuffer);
+            inTextMeshPro.SetText(s_CurrentCharBuffer, 0, inCharBufferLength);
+        }
+
+        #endif // ENABLE_TEXTMESHPRO
+
+        #endregion // TextMeshPro
+
+        #endregion // Text
     }
 }

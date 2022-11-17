@@ -8,18 +8,17 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Reflection;
+using BeauUtil.Variants;
 
-namespace BeauUtil
-{
+namespace BeauUtil {
     /// <summary>
-    /// Interface for facilitating conversions between 
+    /// Interface for facilitating conversions between strings and objects.
     /// </summary>
     public interface IStringConverter
     {
         bool CanConvertTo(Type inType);
-        bool TryConvertTo(StringSlice inData, Type inType, object inContext, out object outObject);
+        bool TryConvertTo(StringSlice inData, Type inType, object inContext, out NonBoxedValue outObject);
+        bool TryConvertToVariant(StringSlice inData, object inContext, out Variant outVariant);
     }
 
     /// <summary>
@@ -35,9 +34,14 @@ namespace BeauUtil
             return StringParser.CanConvertTo(inType);
         }
 
-        public bool TryConvertTo(StringSlice inData, Type inType, object inContext, out object outObject)
+        public bool TryConvertTo(StringSlice inData, Type inType, object inContext, out NonBoxedValue outObject)
         {
             return StringParser.TryConvertTo(inData, inType, out outObject);
+        }
+
+        public bool TryConvertToVariant(StringSlice inData, object inContext, out Variant outVariant)
+        {
+            return Variant.TryParse(inData, true, out outVariant);
         }
     }
 }

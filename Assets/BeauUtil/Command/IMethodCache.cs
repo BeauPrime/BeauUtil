@@ -28,8 +28,8 @@ namespace BeauUtil
         bool HasStatic(StringHash32 inId);
         bool HasInstance(StringHash32 inId);
 
-        bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, object inContext, out object outResult);
-        bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, object inContext, out object outResult);
+        bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, object inContext, out NonBoxedValue outResult);
+        bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, object inContext, out NonBoxedValue outResult);
     }
 
     /// <summary>
@@ -37,40 +37,40 @@ namespace BeauUtil
     /// </summary>
     static public class MethodCacheExtensions
     {
-        static public bool TryStaticInvoke(this IMethodCache inCache, MethodCall inCall, object inContext, out object outResult)
+        static public bool TryStaticInvoke(this IMethodCache inCache, MethodCall inCall, object inContext, out NonBoxedValue outResult)
         {
             return inCache.TryStaticInvoke(inCall.Id, inCall.Args, inContext, out outResult);
         }
 
-        static public bool TryInvoke(this IMethodCache inCache, object inTarget, MethodCall inCall, object inContext, out object outResult)
+        static public bool TryInvoke(this IMethodCache inCache, object inTarget, MethodCall inCall, object inContext, out NonBoxedValue outResult)
         {
             return inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, inContext, out outResult);
         }
 
-        static public object StaticInvoke(this IMethodCache inCache, StringHash32 inId, StringSlice inArguments, object inContext)
+        static public NonBoxedValue StaticInvoke(this IMethodCache inCache, StringHash32 inId, StringSlice inArguments, object inContext)
         {
-            object result;
+            NonBoxedValue result;
             inCache.TryStaticInvoke(inId, inArguments, inContext, out result);
             return result;
         }
 
-        static public object Invoke(this IMethodCache inCache, object inTarget, StringHash32 inId, StringSlice inArguments, object inContext)
+        static public NonBoxedValue Invoke(this IMethodCache inCache, object inTarget, StringHash32 inId, StringSlice inArguments, object inContext)
         {
-            object result;
+            NonBoxedValue result;
             inCache.TryInvoke(inTarget, inId, inArguments, inContext, out result);
             return result;
         }
 
-        static public object StaticInvoke(this IMethodCache inCache, MethodCall inCall, object inContext)
+        static public NonBoxedValue StaticInvoke(this IMethodCache inCache, MethodCall inCall, object inContext)
         {
-            object result;
+            NonBoxedValue result;
             inCache.TryStaticInvoke(inCall.Id, inCall.Args, inContext, out result);
             return result;
         }
 
-        static public object Invoke(this IMethodCache inCache, object inTarget, MethodCall inCall, object inContext)
+        static public NonBoxedValue Invoke(this IMethodCache inCache, object inTarget, MethodCall inCall, object inContext)
         {
-            object result;
+            NonBoxedValue result;
             inCache.TryInvoke(inTarget, inCall.Id, inCall.Args, inContext, out result);
             return result;
         }

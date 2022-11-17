@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
@@ -575,5 +576,90 @@ namespace BeauUtil
         // }
 
         #endregion // Memory Usage
+    
+        #region Lookups
+
+        private delegate UnityEngine.Object FindDelegate(int inInstanceId);
+        private delegate bool AlivePredicate(int inInstanceId);
+        static private readonly FindDelegate s_FindDelegate;
+        static private readonly AlivePredicate s_AliveDelegate;
+
+        static UnityHelper()
+        {
+            MethodInfo findInfo = typeof(UnityEngine.Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
+            if (findInfo != null)
+            {
+                s_FindDelegate = (FindDelegate) findInfo.CreateDelegate(typeof(FindDelegate));
+            }
+
+            MethodInfo aliveInfo = typeof(UnityEngine.Object).GetMethod("DoesObjectWithInstanceIDExist", BindingFlags.NonPublic | BindingFlags.Static);
+            if (aliveInfo != null)
+            {
+                s_AliveDelegate = (AlivePredicate) aliveInfo.CreateDelegate(typeof(AlivePredicate));
+            }
+        }
+
+        /// <summary>
+        /// Finds the Object instance with the given id.
+        /// </summary>
+        [MethodImpl(256)]
+        static public UnityEngine.Object Find(int inInstanceId)
+        {
+            if (inInstanceId == 0 || s_FindDelegate == null)
+            {
+                return null;
+            }
+            return s_FindDelegate(inInstanceId);
+        }
+
+        /// <summary>
+        /// Finds the Object instance with the given id.
+        /// Will throw an exception if the Object type is not castable.
+        /// </summary>
+        [MethodImpl(256)]
+        static public T Find<T>(int inInstanceId) where T : UnityEngine.Object
+        {
+            if (inInstanceId == 0 || s_FindDelegate == null) {
+                return null;
+            }
+            return (T) s_FindDelegate(inInstanceId);
+        }
+
+        /// <summary>
+        /// Finds the Object instance with the given id.
+        /// </summary>
+        [MethodImpl(256)]
+        static public T SafeFind<T>(int inInstanceId) where T : UnityEngine.Object
+        {
+            if (inInstanceId == 0 || s_FindDelegate == null)
+            {
+                return null;
+            }
+            return s_FindDelegate(inInstanceId) as T;
+        }
+
+        /// <summary>
+        /// Returns if the Object instance with the given id exists.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool IsAlive(int inInstanceId)
+        {
+            if (inInstanceId == 0 || s_AliveDelegate == null)
+            {
+                return false;
+            }
+            return s_AliveDelegate(inInstanceId);
+        }
+
+        /// <summary>
+        /// Returns the instance id for the given Object.
+        /// </summary>
+        [MethodImpl(256)]
+        static public int Id(UnityEngine.Object inObject)
+        {
+            return object.ReferenceEquals(inObject, null) ? 0 : inObject.GetInstanceID();
+        }
+
+        #endregion // Lookups
     }
 }

@@ -32,9 +32,7 @@ namespace BeauUtil.Variants
             for(int i = 0; i < inSlice.Length; ++i)
             {
                 c = inSlice[i];
-                if (char.IsLetterOrDigit(c))
-                    continue;
-                if (c == '_' || c == '.' || c == '-')
+                if (c == '_' || c == '.' || c == '-' || char.IsLetterOrDigit(c))
                     continue;
                 return false;
             }
@@ -44,11 +42,9 @@ namespace BeauUtil.Variants
 
         #region Parsing
 
-        static internal readonly char[] SymbolsRequiringPrecedingWhitespace = new char[] { '_', '-', '.' };
-
         static internal bool CharRequiresWhitespace(char inChar)
         {
-            return char.IsLetterOrDigit(inChar) || Array.IndexOf(SymbolsRequiringPrecedingWhitespace, inChar) >= 0;
+            return inChar == '_' || inChar == '-' || inChar == '.' || char.IsLetterOrDigit(inChar);
         }
 
         static internal bool HasWhitespaceAt(StringSlice inSlice, int inIndex)

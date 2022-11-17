@@ -8,6 +8,7 @@
  */
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -71,6 +72,7 @@ namespace BeauUtil
         /// <summary>
         /// Constrains a rectangle to be contained with another rectangle's edges.
         /// </summary>
+        [MethodImpl(256)]
         static public Rect Constrain(Rect inRect, Rect inRegion, RectEdges inEdges = RectEdges.All)
         {
             Constrain(ref inRect, inRegion, inEdges);
@@ -106,6 +108,7 @@ namespace BeauUtil
         /// <summary>
         /// Constrains a position to be contained with another rectangle's edges.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 Constrain(Vector2 inCenter, Vector2 inSize, Rect inRegion, RectEdges inEdges = RectEdges.All)
         {
             Constrain(ref inCenter, inSize, inRegion, inEdges);
@@ -141,6 +144,7 @@ namespace BeauUtil
         /// <summary>
         /// Expands the given rectangle to encompass the given point.
         /// </summary>
+        [MethodImpl(256)]
         static public Rect Encapsulate(Rect inRect, Vector2 inPosition)
         {
             Rect r = inRect;
@@ -170,6 +174,7 @@ namespace BeauUtil
         /// <summary>
         /// Expands the given rectangle to encompass the given rectangle.
         /// </summary>
+        [MethodImpl(256)]
         static public Rect Encapsulate(Rect inRect, Rect inTarget)
         {
             Rect r = inRect;
@@ -205,6 +210,27 @@ namespace BeauUtil
                 ioRect.height = dy;
         }
 
+        /// <summary>
+        /// Remaps a vector from one rectangle space into another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public Vector2 Remap(Vector2 inVector, Rect inRange1, Rect inRange2)
+        {
+            Vector2 v = inVector;
+            Remap(ref v, inRange1, inRange2);
+            return v;
+        }
+
+        /// <summary>
+        /// Remaps a vector from one rectangle space into another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Remap(ref Vector2 ioVector, Rect inRange1, Rect inRange2)
+        {
+            ioVector.x = MathUtils.Remap(ioVector.x, inRange1.xMin, inRange1.xMax, inRange2.xMin, inRange2.xMax);
+            ioVector.y = MathUtils.Remap(ioVector.y, inRange1.yMin, inRange1.yMax, inRange2.yMin, inRange2.yMax);
+        }
+
         #endregion // Rectangle
 
         #region Normals
@@ -212,6 +238,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a vector in the given direction, with the given length.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 Normalized(float inRadians, float inDistance = 1)
         {
             float x = Mathf.Cos(inRadians) * inDistance;
@@ -222,6 +249,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a vector in the given direction, with the given length.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector3 Normalized(Quaternion inRotation, float inDistance = 1)
         {
             return (inRotation * Vector3.forward) * inDistance;
@@ -236,6 +264,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's y and z coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector3 SwizzleYZ(Vector2 inVector)
         {
             return new Vector3(inVector.x, 0, inVector.y);
@@ -244,6 +273,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's y and z coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector3 SwizzleYZ(Vector3 inVector)
         {
             return new Vector3(inVector.x, inVector.z, inVector.y);
@@ -252,6 +282,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's y and z coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public void SwizzleYZ(ref Vector3 ioVector)
         {
             float z = ioVector.z;
@@ -266,6 +297,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's x and y coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 SwizzleXY(Vector2 inVector)
         {
             return new Vector2(inVector.y, inVector.x);
@@ -274,6 +306,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's x and y coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector3 SwizzleXY(Vector3 inVector)
         {
             return new Vector3(inVector.y, inVector.x, inVector.z);
@@ -282,6 +315,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's x and y coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public void SwizzleXY(ref Vector2 ioVector)
         {
             float y = ioVector.y;
@@ -292,6 +326,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's x and y coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public void SwizzleXY(ref Vector3 ioVector)
         {
             float y = ioVector.y;
@@ -306,6 +341,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's x and z coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector3 SwizzleXZ(Vector3 inVector)
         {
             return new Vector3(inVector.z, inVector.y, inVector.x);
@@ -314,6 +350,7 @@ namespace BeauUtil
         /// <summary>
         /// Swizzles the given vector's x and z coordinates.
         /// </summary>
+        [MethodImpl(256)]
         static public void SwizzleXZ(ref Vector3 ioVector)
         {
             float z = ioVector.z;
@@ -330,6 +367,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the given vector, rotated by the given radians.
         /// </summary>
+        [MethodImpl(256)]
         static public Vector2 Rotate(Vector2 inVector, float inRadians)
         {
             float sin = Mathf.Sin(inRadians);
@@ -342,6 +380,7 @@ namespace BeauUtil
         /// <summary>
         /// Rotates the given vector by the given radians.
         /// </summary>
+        [MethodImpl(256)]
         static public void Rotate(ref Vector2 ioVector, float inRadians)
         {
             float sin = Mathf.Sin(inRadians);
@@ -521,6 +560,30 @@ namespace BeauUtil
             Vector3 size = max - min;
             Vector3 center = min + size * 0.5f;
             return new Bounds(center, size);
+        }
+
+        /// <summary>
+        /// Remaps a vector from one bounds space into another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public Vector3 Remap(Vector3 inVector, Bounds inRange1, Bounds inRange2)
+        {
+            Vector3 v = inVector;
+            Remap(ref v, inRange1, inRange2);
+            return v;
+        }
+
+        /// <summary>
+        /// Remaps a vector from one bounds space into another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public void Remap(ref Vector3 ioVector, Bounds inRange1, Bounds inRange2)
+        {
+            Vector3 min1 = inRange1.min, min2 = inRange2.min,
+                    max1 = inRange1.max, max2 = inRange2.max;
+            ioVector.x = MathUtils.Remap(ioVector.x, min1.x, max1.x, min2.x, max2.x);
+            ioVector.y = MathUtils.Remap(ioVector.y, min1.y, max1.y, min2.y, max2.y);
+            ioVector.z = MathUtils.Remap(ioVector.z, min1.z, max1.z, min2.z, max2.z);
         }
 
         #endregion // Bounds

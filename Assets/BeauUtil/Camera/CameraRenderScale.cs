@@ -34,15 +34,8 @@ namespace BeauUtil
     /// </summary>
     [ExecuteAlways, RequireComponent(typeof(Camera))]
     [AddComponentMenu("BeauUtil/Camera Render Scale"), DisallowMultipleComponent]
-    public class CameraRenderScale : MonoBehaviour
+    public class CameraRenderScale : MonoBehaviour, ICameraPreRenderCallback, ICameraPostRenderCallback
     {
-        private enum ApplyMode
-        {
-            NotApplied,
-            Default,
-            SRP
-        }
-
         public enum ScaleMode
         {
             Scale,
@@ -59,15 +52,8 @@ namespace BeauUtil
 
         #endregion // Inspector
 
-        private readonly Camera.CameraCallback OnCameraPreRender;
-        private readonly Camera.CameraCallback OnCameraPostRender;
-        #if USE_SRP
-        private readonly Action<ScriptableRenderContext, Camera> OnSRPPreRender;
-        private readonly Action<ScriptableRenderContext, Camera> OnSRPPostRender;
-        #endif // USE_SRP
-
         [NonSerialized] private Rect m_OriginalCameraRect;
-        [NonSerialized] private ApplyMode m_AppliedScale = ApplyMode.NotApplied;
+        [NonSerialized] private CameraCallbackSource m_AppliedScale = CameraCallbackSource.None;
 
         /// <summary>
         /// Scaling mode.
@@ -96,39 +82,6 @@ namespace BeauUtil
             set { m_PixelHeight = Mathf.Clamp(value, 1, SystemInfo.maxTextureSize); }
         }
 
-        private CameraRenderScale()
-        {
-            OnCameraPreRender = (c) => {
-                float desiredScale = CalculateDesiredScale();
-                if (desiredScale != 1 && c == m_Camera)
-                {
-                    ApplyScale(ApplyMode.Default, desiredScale);
-                }
-            };
-            OnCameraPostRender = (c) => {
-                if (m_AppliedScale == ApplyMode.Default && c == m_Camera)
-                {
-                    PostApplyScale(ApplyMode.Default);
-                }
-            };
-
-            #if USE_SRP
-            OnSRPPreRender = (rc, c) => {
-                float desiredScale = CalculateDesiredScale();
-                if (desiredScale != 1 && c == m_Camera)
-                {
-                    ApplyScale(ApplyMode.SRP, desiredScale);
-                }
-            };
-            OnSRPPostRender = (rc, c) => {
-                if (m_AppliedScale == ApplyMode.SRP && c == m_Camera)
-                {
-                    PostApplyScale(ApplyMode.SRP);
-                }
-            };
-            #endif // USE_SRP
-        }
-
         #region Unity Events
 
         private void Awake()
@@ -147,58 +100,64 @@ namespace BeauUtil
             }
             #endif // UNITY_EDITOR
 
-            Camera.onPreRender += OnCameraPreRender;
-            Camera.onPostRender += OnCameraPostRender;
-
-            #if USE_SRP
-            RenderPipelineManager.beginCameraRendering += OnSRPPreRender;
-            RenderPipelineManager.endCameraRendering += OnSRPPostRender;
-            #endif // USE_SRP
+            m_Camera.AddOnPreRender(this);
+            m_Camera.AddOnPostRender(this);
         }
 
         private void OnDisable()
         {
-            Camera.onPreRender -= OnCameraPreRender;
-            Camera.onPostRender -= OnCameraPostRender;
-
-            #if USE_SRP
-            RenderPipelineManager.beginCameraRendering -= OnSRPPreRender;
-            RenderPipelineManager.endCameraRendering -= OnSRPPostRender;
-            #endif // USE_SRP
+            m_Camera.RemoveOnPreRender(this);
+            m_Camera.RemoveOnPostRender(this);
         }
 
         private void OnRenderImage(RenderTexture src, RenderTexture dst)
         {
-            if (m_AppliedScale != ApplyMode.SRP)
+            switch(m_AppliedScale)
             {
-                PostApplyScale(ApplyMode.Default);
-                if (m_FilterMode == FilterMode.Point)
+                case CameraCallbackSource.None:
                 {
-                    UnityHelper.BlitPixelPerfect(src, dst, m_Camera);
-                }
-                else
-                {
-                    src.filterMode = m_FilterMode;
                     Graphics.Blit(src, dst);
+                    break;
+                }
+
+                case CameraCallbackSource.Default:
+                {
+                    PostApplyScale(CameraCallbackSource.Default);
+                    if (m_FilterMode == FilterMode.Point)
+                    {
+                        UnityHelper.BlitPixelPerfect(src, dst, m_Camera);
+                    }
+                    else
+                    {
+                        src.filterMode = m_FilterMode;
+                        Graphics.Blit(src, dst);
+                    }
+                    break;
                 }
             }
         }
 
         private float CalculateDesiredScale()
         {
+            int fullHeight = (int) (Screen.height * m_Camera.rect.height);
+            int pixelHeight;
             switch(m_Mode)
             {
                 case ScaleMode.Scale:
                 default:
-                    return m_Scale;
+                    pixelHeight = (int) (fullHeight * m_Scale) & ~(1);
+                    break;
                 case ScaleMode.PixelHeight:
-                    float scale = (float) Mathf.Clamp(m_PixelHeight, 1, SystemInfo.maxTextureSize) / (Screen.height * m_Camera.rect.height);
-                    if (IsUsingSRP())
-                    {
-                        scale = Mathf.Clamp(scale, 0.1f, 2f);
-                    }
-                    return scale;
+                    pixelHeight = m_PixelHeight & (~1);
+                    break;
             }
+
+            float scale = (float) Mathf.Clamp(pixelHeight + 0.9f, 1, SystemInfo.maxTextureSize) / fullHeight;
+            if (IsUsingSRP())
+            {
+                scale = Mathf.Clamp(scale, 0.1f, 2f);
+            }
+            return scale;
         }
 
         #if UNITY_EDITOR
@@ -220,13 +179,13 @@ namespace BeauUtil
 
         #region Callbacks
 
-        private void ApplyScale(ApplyMode inMode, float inScale)
+        private void ApplyScale(CameraCallbackSource inMode, float inScale)
         {
             if (m_AppliedScale != 0)
                 return;
 
             m_AppliedScale = inMode;
-            if (inMode == ApplyMode.SRP)
+            if (inMode == CameraCallbackSource.SRP)
             {
                 #if USE_SRP
                 ApplySRPScale(GraphicsSettings.renderPipelineAsset, inScale);
@@ -242,12 +201,12 @@ namespace BeauUtil
             }
         }
 
-        private void PostApplyScale(ApplyMode inMode)
+        private void PostApplyScale(CameraCallbackSource inMode)
         {
             if (m_AppliedScale != inMode)
                 return;
 
-            if (inMode == ApplyMode.SRP)
+            if (inMode == CameraCallbackSource.SRP)
             {
                 #if USE_SRP
                 ApplySRPScale(GraphicsSettings.renderPipelineAsset, 1);
@@ -257,7 +216,27 @@ namespace BeauUtil
             {
                 m_Camera.rect = m_OriginalCameraRect;
             }
-            m_AppliedScale = ApplyMode.NotApplied;
+            m_AppliedScale = CameraCallbackSource.None;
+        }
+
+        void ICameraPreRenderCallback.OnCameraPreRender(Camera inCamera, CameraCallbackSource inSource)
+        {
+            float desiredScale = CalculateDesiredScale();
+            if (desiredScale != 1)
+            {
+                ApplyScale(inSource, desiredScale);
+            }
+        }
+
+        void ICameraPostRenderCallback.OnCameraPostRender(Camera inCamera, CameraCallbackSource inSource)
+        {
+            if (inSource == CameraCallbackSource.SRP)
+            {
+                if (m_AppliedScale == inSource)
+                {
+                    PostApplyScale(inSource);
+                }
+            }
         }
 
         #endregion // Callbacks

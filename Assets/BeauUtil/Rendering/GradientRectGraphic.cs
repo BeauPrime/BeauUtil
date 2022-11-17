@@ -11,13 +11,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BeauUtil
+namespace BeauUtil.UI
 {
     /// <summary>
     /// Gradient rectangle graphic.
     /// </summary>
     [AddComponentMenu("BeauUtil/Rendering/Gradient Rect Graphic")]
-    public class GradientRectGraphic : MaskableGraphic
+    public class GradientRectGraphic : ShapeGraphic
     {
         private enum CornerMode
         {
@@ -40,10 +40,10 @@ namespace BeauUtil
             var v = new Vector4(r.x, r.y, r.x + r.width, r.y + r.height);
 
             Color c = color;
-            vh.AddVert(new Vector3(v.x, v.y), c * m_BottomLeftColor, new Vector2(0f, 0f));
-            vh.AddVert(new Vector3(v.x, v.w), c * m_TopLeftColor, new Vector2(0f, 1f));
-            vh.AddVert(new Vector3(v.z, v.w), c * m_TopRightColor, new Vector2(1f, 1f));
-            vh.AddVert(new Vector3(v.z, v.y), c * m_BottomRightColor, new Vector2(1f, 0f));
+            vh.AddVert(new Vector3(v.x, v.y), c * m_BottomLeftColor, m_TextureRegion.UVCenter);
+            vh.AddVert(new Vector3(v.x, v.w), c * m_TopLeftColor, m_TextureRegion.UVCenter);
+            vh.AddVert(new Vector3(v.z, v.w), c * m_TopRightColor, m_TextureRegion.UVCenter);
+            vh.AddVert(new Vector3(v.z, v.y), c * m_BottomRightColor, m_TextureRegion.UVCenter);
 
             int offset = (int) m_TriangleGenerationMode;
 

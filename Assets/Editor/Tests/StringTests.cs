@@ -293,8 +293,11 @@ namespace BeauUtil.UnitTests
 
                 Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3} and {4}:{5}", str, typeof(T).Name, bFromString, valFromString, bFromSlice, valFromSlice);
 
-                Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, bFromSlice, bFromString, str);
-                Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, valFromSlice, valFromString, str);
+                if (bFromString)
+                {
+                    Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, bFromSlice, bFromString, str);
+                    Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(T).Name, valFromSlice, valFromString, str);
+                }
             }
         }
 
@@ -319,8 +322,11 @@ namespace BeauUtil.UnitTests
 
                 Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3} and {4}:{5}", str, typeof(float).Name, bFromString, valFromString, bFromSlice, valFromSlice);
 
-                Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(float).Name, bFromSlice, bFromString, str);
-                Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(float).Name, valFromSlice, valFromString, str);
+                if (bFromString)
+                {
+                    Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(float).Name, bFromSlice, bFromString, str);
+                    Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(float).Name, valFromSlice, valFromString, str);
+                }
             }
         }
 
@@ -334,8 +340,11 @@ namespace BeauUtil.UnitTests
 
                 Debug.LogFormat("parsed '{0}' to {1}, got {2}:{3} and {4}:{5}", str, typeof(double).Name, bFromString, valFromString, bFromSlice, valFromSlice);
 
-                Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(double).Name, bFromSlice, bFromString, str);
-                Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(double).Name, valFromSlice, valFromString, str);
+                if (bFromString)
+                {
+                    Assert.AreEqual(bFromString, bFromSlice, "Success<{0}> from slice {1} is different from system {2} for '{3}'", typeof(double).Name, bFromSlice, bFromString, str);
+                    Assert.AreEqual(valFromString, valFromSlice, "Result<{0}> from slice {1} is different from system {2} for '{3}'", typeof(double).Name, valFromSlice, valFromString, str);
+                }
             }
         }
 

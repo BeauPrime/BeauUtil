@@ -10,6 +10,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -83,6 +84,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsEmpty
         {
+            [MethodImpl(256)]
             get { return Length == 0; }
         }
 
@@ -144,6 +146,84 @@ namespace BeauUtil
         }
 
         #endregion // Search
+
+        #region Predicate
+
+        /// <summary>
+        /// Returns if an element passing the given predicate exists.
+        /// </summary>
+        [MethodImpl(256)]
+        public bool Exists(Predicate<T> inPredicate)
+        {
+            return FindIndex(inPredicate) >= 0;
+        }
+
+        /// <summary>
+        /// Returns the index of the first element that passes the given predicate.
+        /// </summary>
+        public int FindIndex(Predicate<T> inPredicate)
+        {
+            if (m_Source == null)
+                return -1;
+
+            for (int i = 0; i < Length; ++i)
+            {
+                if (inPredicate(m_Source[m_StartIndex + i]))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the the first element that passes the given predicate.
+        /// </summary>
+        public T Find(Predicate<T> inPredicate)
+        {
+            int idx = FindIndex(inPredicate);
+            if (idx >= 0)
+                return m_Source[m_StartIndex + idx];
+            return default(T);
+        }
+
+        /// <summary>
+        /// Returns if an element passing the given predicate exists.
+        /// </summary>
+        [MethodImpl(256)]
+        public bool Exists<U>(Predicate<T, U> inPredicate, U inArg)
+        {
+            return FindIndex<U>(inPredicate, inArg) >= 0;
+        }
+
+        /// <summary>
+        /// Returns the index of the first element that passes the given predicate.
+        /// </summary>
+        public int FindIndex<U>(Predicate<T, U> inPredicate, U inArg)
+        {
+            if (m_Source == null)
+                return -1;
+
+            for (int i = 0; i < Length; ++i)
+            {
+                if (inPredicate(m_Source[m_StartIndex + i], inArg))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the the first element that passes the given predicate.
+        /// </summary>
+        public T Find<U>(Predicate<T, U> inPredicate, U inArg)
+        {
+            int idx = FindIndex<U>(inPredicate, inArg);
+            if (idx >= 0)
+                return m_Source[m_StartIndex + idx];
+            return default(T);
+        }
+
+        #endregion // Predicate
 
         #region Export
 

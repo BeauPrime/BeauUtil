@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting;
 using UnityEngine.UI;
 
 namespace BeauUtil
@@ -547,6 +548,7 @@ namespace BeauUtil
 
         #region Unity Events
 
+        [Preserve]
         private void OnDidApplyAnimationProperties()
         {
             Refresh();

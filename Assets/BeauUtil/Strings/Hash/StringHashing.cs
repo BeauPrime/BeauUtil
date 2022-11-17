@@ -47,7 +47,7 @@ namespace BeauUtil
             fixed(char* ptr = inString)
             {
                 char* inc = ptr + inOffset;
-                while(--inLength >= 0)
+                while(inLength-- > 0)
                 {
                     hash = (hash ^ *inc++) * 16777619;
                 }
@@ -68,7 +68,7 @@ namespace BeauUtil
             fixed(char* ptr = inString)
             {
                 char* inc = ptr + inOffset;
-                while(--inLength >= 0)
+                while(inLength-- > 0)
                 {
                     hash = (hash ^ StringUtils.ToUpperInvariant(*inc++)) * 16777619;
                 }
@@ -86,7 +86,7 @@ namespace BeauUtil
             uint hash = 2166136261;
             
             int idx = inOffset;
-            while(--inLength >= 0)
+            while(inLength-- > 0)
             {
                 hash = (hash ^ inString[idx++]) * 16777619;
             }
@@ -103,7 +103,7 @@ namespace BeauUtil
             uint hash = 2166136261;
             
             int idx = inOffset;
-            while(--inLength >= 0)
+            while(inLength-- > 0)
             {
                 hash = (hash ^ StringUtils.ToUpperInvariant(inString[idx++])) * 16777619;
             }
@@ -123,7 +123,7 @@ namespace BeauUtil
             fixed(char* ptr = inString)
             {
                 char* inc = ptr + inOffset;
-                while(--inLength >= 0)
+                while(inLength-- > 0)
                 {
                     hash = (hash ^ *inc++) * 16777619;
                 }
@@ -144,7 +144,7 @@ namespace BeauUtil
             fixed(char* ptr = inString)
             {
                 char* inc = ptr + inOffset;
-                while(--inLength >= 0)
+                while(inLength-- > 0)
                 {
                     hash = (hash ^ *inc++) * 1099511628211;
                 }
@@ -165,7 +165,7 @@ namespace BeauUtil
             fixed(char* ptr = inString)
             {
                 char* inc = ptr + inOffset;
-                while(--inLength >= 0)
+                while(inLength-- > 0)
                 {
                     hash = (hash ^ StringUtils.ToUpperInvariant(*inc++)) * 1099511628211;
                 }
@@ -184,7 +184,7 @@ namespace BeauUtil
             
             // unsafe method
             int idx = inOffset;
-            while(--inLength >= 0)
+            while(inLength-- > 0)
             {
                 hash = (hash ^ inString[idx++]) * 1099511628211;
             }
@@ -202,7 +202,7 @@ namespace BeauUtil
             
             // unsafe method
             int idx = inOffset;
-            while(--inLength >= 0)
+            while(inLength-- > 0)
             {
                 hash = (hash ^ StringUtils.ToUpperInvariant(inString[idx++])) * 1099511628211;
             }
@@ -222,7 +222,7 @@ namespace BeauUtil
             fixed(char* ptr = inString)
             {
                 char* inc = ptr + inOffset;
-                while(--inLength >= 0)
+                while(inLength-- > 0)
                 {
                     hash = (hash ^ *inc++) * 1099511628211;
                 }

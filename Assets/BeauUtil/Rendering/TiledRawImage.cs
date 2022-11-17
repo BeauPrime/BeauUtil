@@ -10,7 +10,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BeauUtil
+namespace BeauUtil.UI
 {
     [AddComponentMenu("BeauUtil/Rendering/Tiled RawImage")]
     public class TiledRawImage : RawImage

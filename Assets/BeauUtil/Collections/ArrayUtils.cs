@@ -214,6 +214,23 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Removes the element at the given index by swapping it with the last element.
+        /// </summary>
+        static public void FastRemoveAt<T>(T[] ioArray, int inLength, int inIndex)
+        {
+            if (ioArray == null || inIndex < 0 || inIndex >= inLength)
+                return;
+
+            int end = inLength - 1;
+            if (inIndex != end)
+            {
+                T endCopy = ioArray[end];
+                ioArray[end] = default(T);
+                ioArray[inIndex] = endCopy;
+            }
+        }
+
+        /// <summary>
         /// Clears all elements from an array.
         /// </summary>
         [MethodImpl(256)]

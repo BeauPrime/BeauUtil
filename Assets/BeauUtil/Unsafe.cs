@@ -42,6 +42,8 @@ namespace BeauUtil
             byte b = *((byte*) inData);
         }
 
+        #region Reinterpret
+
         #if UNMANAGED_CONSTRAINT
 
         /// <summary>
@@ -65,9 +67,7 @@ namespace BeauUtil
             where TFrom : unmanaged
             where TTo : unmanaged
         {
-            byte* buffer = stackalloc byte[Math.Max(sizeof(TFrom), sizeof(TTo))];
-            *((TFrom*) buffer) = *inValuePtr;
-            return *((TTo*) buffer);
+            return *((TTo*) inValuePtr);
         }
 
         /// <summary>
@@ -82,19 +82,9 @@ namespace BeauUtil
             return *((TTo*) &inValue);
         }
 
-        /// <summary>
-        /// Reinterprets an indirect value as a value of another type.
-        /// Behavior is undefined if <c>sizeof(TTo) > sizeof(TFrom)</c>
-        /// </summary>
-        [MethodImpl(256)]
-        static public TTo FastReinterpret<TFrom, TTo>(TFrom* inValuePtr)
-            where TFrom : unmanaged
-            where TTo : unmanaged
-        {
-            return *((TTo*) inValuePtr);
-        }
-
         #endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Reinterpret
 
         #region Alignment
 
@@ -661,5 +651,129 @@ namespace BeauUtil
         }
 
         #endregion // Debug
+    
+        #region Hashing
+
+        /// <summary>
+        /// Hashes the given data.
+        /// </summary>
+        static public uint Hash32(void* inData, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            uint hash = 2166136261;
+            
+            byte* ptr = (byte*) inData;
+            while(inLength-- > 0)
+            {
+                hash = (hash ^ *ptr++) * 16777619;
+            }
+            
+            return hash;
+        }
+
+        /// <summary>
+        /// Hashes the given data.
+        /// </summary>
+        static public ulong Hash64(void* inData, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            ulong hash = 14695981039346656037;
+            
+            byte* ptr = (byte*) inData;
+            while(inLength-- > 0)
+            {
+                hash = (hash ^ *ptr++) * 1099511628211;
+            }
+            
+            return hash;
+        }
+
+        /// <summary>
+        /// Combines one hash with another.
+        /// </summary>
+        static public uint CombineHash32(uint inInitial, void* inData, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            uint hash = inInitial;
+            
+            byte* ptr = (byte*) inData;
+            while(inLength-- > 0)
+            {
+                hash = (hash ^ *ptr++) * 16777619;
+            }
+            
+            return hash;
+        }
+
+        /// <summary>
+        /// Combines one hash with another.
+        /// </summary>
+        static public ulong CombineHash64(ulong inInitial, void* inData, int inLength)
+        {
+            if (inLength <= 0)
+                return 0;
+            
+            // fnv-1a
+            ulong hash = 14695981039346656037;
+            
+            byte* ptr = (byte*) inData;
+            while(inLength-- > 0)
+            {
+                hash = (hash ^ *ptr++) * 1099511628211;
+            }
+            
+            return hash;
+        }
+
+        #if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Hashes the given data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public uint Hash32<T>(T inValue) where T : unmanaged
+        {
+            return Hash32(&inValue, sizeof(T));
+        }
+
+        /// <summary>
+        /// Hashes the given data.
+        /// </summary>
+        [MethodImpl(256)]
+        static public ulong Hash64<T>(T inValue) where T : unmanaged
+        {
+            return Hash64(&inValue, sizeof(T));
+        }
+
+        /// <summary>
+        /// Combines one hash with another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public uint CombineHash32<T>(uint inInitial, T inValue) where T : unmanaged
+        {
+            return CombineHash32(inInitial, &inValue, sizeof(T));
+        }
+
+        /// <summary>
+        /// Combines one hash with another.
+        /// </summary>
+        [MethodImpl(256)]
+        static public ulong CombineHash64<T>(ulong inInitial, T inValue) where T : unmanaged
+        {
+            return CombineHash64(inInitial, &inValue, sizeof(T));
+        }
+
+        #endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Hashing
     }
 }

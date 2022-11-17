@@ -416,9 +416,19 @@ namespace BeauUtil
             return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
+        internal uint CalculateHash32NoCache()
+        {
+            return StringHashing.Hash32(m_Source, m_StartIndex, Length);
+        }
+
         internal uint CalculateHash32CaseInsensitive()
         {
             return StringHashing.StoreHash32CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
+        internal uint CalculateHash32CaseInsensitiveNoCache()
+        {
+            return StringHashing.Hash32CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
         internal ulong CalculateHash64()
@@ -426,9 +436,19 @@ namespace BeauUtil
             return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
         }
 
+        internal ulong CalculateHash64NoCache()
+        {
+            return StringHashing.Hash64(m_Source, m_StartIndex, Length);
+        }
+
         internal ulong CalculateHash64CaseInsensitive()
         {
             return StringHashing.StoreHash64CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong CalculateHash64CaseInsensitiveNoCache()
+        {
+            return StringHashing.Hash64CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
         static private bool MatchStart(StringBuilder inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)

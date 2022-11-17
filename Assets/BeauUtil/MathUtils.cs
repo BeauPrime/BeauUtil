@@ -31,6 +31,7 @@ namespace BeauUtil
         /// <param name="inMax1">Max of first range.</param>
         /// <param name="inMin2">Min of second range.</param>
         /// <param name="inMax2">Max of second range.</param>
+        [MethodImpl(256)]
         static public float Remap(float inValue, float inMin1, float inMax1, float inMin2, float inMax2)
         {
             return (inValue - inMin1) / (inMax1 - inMin1) * (inMax2 - inMin2) + inMin2;
@@ -57,6 +58,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the difference between two angles, in degrees.
         /// </summary>
+        [MethodImpl(256)]
         static public float DegreeAngleDifference(float inDegA, float inDegB)
         {
             return SafeMod(180 + inDegB - inDegA, 360) - 180;
@@ -65,6 +67,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the difference between two angles, in radians.
         /// </summary>
+        [MethodImpl(256)]
         static public float RadianAngleDifference(float inRadA, float inRadB)
         {
             return SafeMod(Mathf.PI + inRadB - inRadA, Mathf.PI * 2) - Mathf.PI;

@@ -7,6 +7,8 @@
  * Purpose: Contains some simple lookup tables to help avoid garbage generation.
  */
 
+using Unity.IL2CPP.CompilerServices;
+
 namespace BeauUtil
 {
     /// <summary>
@@ -34,6 +36,8 @@ namespace BeauUtil
         /// representation of this integer value.
         /// Range [-100, 100]
         /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public string ToStringLookup(this int inValue)
         {
             if (inValue >= INTEGER_MIN && inValue <= INTEGER_MAX)
@@ -46,6 +50,8 @@ namespace BeauUtil
         /// representation of this integer value.
         /// Range [-100, 100]
         /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public string ToStringLookup(this uint inValue)
         {
             if (inValue <= INTEGER_MAX)

@@ -32,6 +32,11 @@ namespace BeauUtil
         private Action<Color> m_ColorSetter;
         private Action<float> m_AlphaSetter;
 
+        public ColorGroupGraphic()
+        {
+            useLegacyMeshGeneration = false;
+        }
+
         public override void CrossFadeColor(Color targetColor, float duration, bool ignoreTimeScale, bool useAlpha, bool useRGB)
         {
             if (!useAlpha && !useRGB)

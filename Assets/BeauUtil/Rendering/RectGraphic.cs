@@ -7,33 +7,59 @@
  * Purpose: Plain rectangle graphic.
 */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BeauUtil
+namespace BeauUtil.UI
 {
     /// <summary>
     /// Plain rectangle graphic.
     /// </summary>
     [AddComponentMenu("BeauUtil/Rendering/Rect Graphic")]
-    public class RectGraphic : MaskableGraphic
+    public class RectGraphic : ShapeGraphic
     {
+        [SerializeField] private bool m_Outline = false;
+        [SerializeField, ShowIfField("m_Outline")] private float m_Thickness = 1;
+
+        public bool Outline
+        {
+            get { return m_Outline; }
+            set
+            {
+                if (m_Outline != value)
+                {
+                    m_Outline = value;
+                    SetVerticesDirty();
+                }
+            }
+        }
+
+        public float OutlineWidth
+        {
+            get { return m_Thickness; }
+            set
+            {
+                if (m_Thickness != value)
+                {
+                    m_Thickness = value;
+                    if (m_Outline)
+                        SetVerticesDirty();
+                }
+            }
+        }
+
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
 
-            var r = GetPixelAdjustedRect();
-            var v = new Vector4(r.x, r.y, r.x + r.width, r.y + r.height);
-
-            Color32 color32 = color;
-            vh.AddVert(new Vector3(v.x, v.y), color32, new Vector2(0f, 0f));
-            vh.AddVert(new Vector3(v.x, v.w), color32, new Vector2(0f, 1f));
-            vh.AddVert(new Vector3(v.z, v.w), color32, new Vector2(1f, 1f));
-            vh.AddVert(new Vector3(v.z, v.y), color32, new Vector2(1f, 0f));
-
-            vh.AddTriangle(0, 1, 2);
-            vh.AddTriangle(2, 3, 0);
+            Rect rect = GetPixelAdjustedRect();
+            
+            if (m_Outline)
+                CanvasMesh.AddRectOutline(vh, rect, m_Thickness, color, m_TextureRegion.UVCenter);
+            else
+                CanvasMesh.AddRect(vh, rect, color, m_TextureRegion.UVCenter);
         }
     }
 }

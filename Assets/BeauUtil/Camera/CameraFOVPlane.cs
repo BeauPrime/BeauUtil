@@ -22,7 +22,7 @@ namespace BeauUtil
     [ExecuteAlways, RequireComponent(typeof(Camera))]
     [AddComponentMenu("BeauUtil/Camera FOV Plane"), DisallowMultipleComponent]
     [DefaultExecutionOrder(100000000)]
-    public class CameraFOVPlane : MonoBehaviour
+    public class CameraFOVPlane : MonoBehaviour, ICameraPreCullCallback
     {
         public struct CameraSettings
         {
@@ -43,23 +43,17 @@ namespace BeauUtil
             }
         }
 
-        public class SettingsEvent : UnityEvent<CameraSettings> { }
-
         #region Inspector
 
         [SerializeField] private Transform m_Target = null;
         [SerializeField] private float m_Height = 10;
         [SerializeField, Range(0.01f, 25)] private float m_Zoom = 1;
 
-        [SerializeField] private SettingsEvent m_OnFOVChanged = new SettingsEvent();
-
         #endregion // Inspector
 
         [NonSerialized] private Transform m_Transform;
         [NonSerialized] private Camera m_Camera;
         [NonSerialized] private float m_LastDistance = 1;
-
-        public SettingsEvent OnFOVChanged { get { return m_OnFOVChanged; } }
 
         private void OnEnable()
         {
@@ -68,6 +62,15 @@ namespace BeauUtil
 
             if (!m_Camera)
                 m_Camera = GetComponent<Camera>();
+
+            if (m_Camera)
+                m_Camera.AddOnPreCull(this);
+        }
+
+        private void OnDisable()
+        {
+            if (m_Camera)
+                m_Camera.RemoveOnPreCull(this);
         }
 
         /// <summary>
@@ -136,12 +139,6 @@ namespace BeauUtil
             outSettings = new CameraSettings(Height, Zoom, m_LastDistance, ZoomedHeight(), m_Camera.fieldOfView);
         }
 
-        private void LateUpdate()
-        {
-            if (m_Camera.enabled)
-                Apply();
-        }
-
         private void Apply()
         {
             float newDist;
@@ -158,11 +155,12 @@ namespace BeauUtil
 
             float height = ZoomedHeight();
             float fov = 2.0f * Mathf.Atan(height * 0.5f / newDist) * Mathf.Rad2Deg;
-            if (fov != m_Camera.fieldOfView)
-            {
-                m_Camera.fieldOfView = fov;
-                m_OnFOVChanged.Invoke(new CameraSettings(Height, Zoom, newDist, height, fov));
-            }
+            m_Camera.fieldOfView = fov;
+        }
+
+        void ICameraPreCullCallback.OnCameraPreCull(Camera inCamera, CameraCallbackSource inSource)
+        {
+            Apply();
         }
     }
 }

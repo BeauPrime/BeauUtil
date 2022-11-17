@@ -80,11 +80,35 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Calculates the string hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash32 Fast(StringSlice inSlice)
+        {
+            return new StringHash32(inSlice.CalculateHash32NoCache());
+        }
+
+        /// <summary>
+        /// Calculates the string hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash32 Fast(StringBuilderSlice inSlice)
+        {
+            return new StringHash32(inSlice.CalculateHash32NoCache());
+        }
+
+        /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
         static public StringHash32 CaseInsensitive(string inString)
         {
             return new StringHash32(StringHashing.StoreHash32CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash32 FastCaseInsensitive(string inString)
+        {
+            return new StringHash32(StringHashing.Hash32CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
         }
 
         /// <summary>
@@ -96,11 +120,27 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash32 FastCaseInsensitive(StringSlice inSlice)
+        {
+            return new StringHash32(inSlice.CalculateHash32CaseInsensitiveNoCache());
+        }
+
+        /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
         static public StringHash32 CaseInsensitive(StringBuilderSlice inSlice)
         {
             return new StringHash32(inSlice.CalculateHash32CaseInsensitive());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash32 FastCaseInsensitive(StringBuilderSlice inSlice)
+        {
+            return new StringHash32(inSlice.CalculateHash32CaseInsensitiveNoCache());
         }
 
         static public readonly StringHash32 Null = new StringHash32();

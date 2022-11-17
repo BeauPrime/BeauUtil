@@ -22,7 +22,7 @@ namespace BeauUtil.Debugger
         [SerializeField] private TMP_Text m_Label = null;
         [SerializeField] private Button m_Button = null;
         [SerializeField] private CanvasGroup m_FullGroup = null;
-        [SerializeField] private Image m_ButtonBG = null;
+        [SerializeField] private Graphic m_ButtonBG = null;
 
         [Header("State")]
         [SerializeField] private Color m_ToggleOffColor = Color.white;

@@ -160,6 +160,69 @@ namespace BeauUtil
             throw new NotSupportedException(string.Format("Member '{0}' of type '{1}' is not settable", inInfo.Name, inInfo.GetType()));
         }
 
+        /// <summary>
+        /// Returns the signature of the given method.
+        /// </summary>
+        static public MethodSignature GetSignature(MethodInfo inInfo)
+        {
+            return new MethodSignature(inInfo);
+        }
+
+        /// <summary>
+        /// Returns if the given method signature matches the provided parameters.
+        /// </summary>
+        static public bool HasSignature(MethodSignature inSignature, Type inReturnType)
+        {
+            return inSignature.Return.ParameterType == inReturnType && inSignature.Parameters.Length == 0;
+        }
+
+        /// <summary>
+        /// Returns if the given method signature matches the provided parameters.
+        /// </summary>
+        static public bool HasSignature(MethodSignature inSignature, Type inReturnType, Type inParameter0)
+        {
+            return inSignature.Return.ParameterType == inReturnType && inSignature.Parameters.Length == 1
+                && inSignature.Parameters[0].ParameterType == inParameter0;
+        }
+
+        /// <summary>
+        /// Returns if the given method signature matches the provided parameters.
+        /// </summary>
+        static public bool HasSignature(MethodSignature inSignature, Type inReturnType, Type inParameter0, Type inParameter1)
+        {
+            return inSignature.Return.ParameterType == inReturnType && inSignature.Parameters.Length == 2
+                && inSignature.Parameters[0].ParameterType == inParameter0
+                && inSignature.Parameters[1].ParameterType == inParameter1;
+        }
+
+        /// <summary>
+        /// Returns if the given method signature matches the provided parameters.
+        /// </summary>
+        static public bool HasSignature(MethodSignature inSignature, Type inReturnType, Type inParameter0, Type inParameter1, Type inParameter2)
+        {
+            return inSignature.Return.ParameterType == inReturnType && inSignature.Parameters.Length == 3
+                && inSignature.Parameters[0].ParameterType == inParameter0
+                && inSignature.Parameters[1].ParameterType == inParameter1
+                && inSignature.Parameters[2].ParameterType == inParameter2;
+        }
+
+        /// <summary>
+        /// Returns if the given method signature matches the provided parameters.
+        /// </summary>
+        static public bool HasSignature(MethodSignature inSignature, Type inReturnType, params Type[] inTypes)
+        {
+            if (inSignature.Return.ParameterType != inReturnType || inSignature.Parameters.Length != inTypes.Length)
+                return false;
+
+            for(int i = 0; i < inTypes.Length; i++)
+            {
+                if (inSignature.Parameters[i].ParameterType != inTypes[i])
+                    return false;
+            }
+
+            return true;
+        }
+
         #endregion // Members
 
         #region Attributes
@@ -814,5 +877,118 @@ namespace BeauUtil
             Attribute = inAttribute;
             Info = inInfo;
         }
+    }
+
+    /// <summary>
+    /// Method signature.
+    /// </summary>
+    public struct MethodSignature
+    {
+        /// <summary>
+        /// Return value information.
+        /// </summary>
+        public readonly ParameterInfo Return;
+        
+        /// <summary>
+        /// Parameter information.
+        /// </summary>
+        public readonly ParameterInfo[] Parameters;
+
+        /// <summary>
+        /// Signature hash.
+        /// </summary>
+        public readonly uint SignatureId;
+
+        internal MethodSignature(MethodInfo inInfo)
+        {
+            Return = inInfo.ReturnParameter;
+            Parameters = inInfo.GetParameters();
+            SignatureId = GetId(Return, Parameters);
+        }
+
+        static internal uint GetId(ParameterInfo inReturn, ParameterInfo[] inParameters)
+        {
+            uint hash = 2166136261;
+            hash = (hash ^ (uint) inReturn.ParameterType.GetHashCode()) * 16777619;
+            for(int i = 0; i < inParameters.Length; i++)
+            {
+                hash = (hash ^ (uint) inParameters[i].ParameterType.GetHashCode()) * 16777619;
+            }
+            return hash;
+        }
+
+        /// <summary>
+        /// Returns the signature id associated with the given delegate type/
+        /// </summary>
+        static public uint GetDelegateId(Type inDelegateType)
+        {
+            MethodInfo method = inDelegateType.GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
+            return GetId(method.ReturnParameter, method.GetParameters());
+        }
+
+        /// <summary>
+        /// Returns the signature id associated with the given return type and parameter types. 
+        /// </summary>
+        static public uint GetId(Type inReturnType)
+        {
+            uint hash = 2166136261;
+            hash = (hash ^ (uint) inReturnType.GetHashCode()) * 16777619;
+            return hash;
+        }
+
+        /// <summary>
+        /// Returns the signature id associated with the given return type and parameter types. 
+        /// </summary>
+        static public uint GetId(Type inReturnType, Type inParameter0)
+        {
+            uint hash = 2166136261;
+            hash = (hash ^ (uint) inReturnType.GetHashCode()) * 16777619;
+            hash = (hash ^ (uint) inParameter0.GetHashCode()) * 16777619;
+            return hash;
+        }
+
+        /// <summary>
+        /// Returns the signature id associated with the given return type and parameter types. 
+        /// </summary>
+        static public uint GetId(Type inReturnType, Type inParameter0, Type inParameter1)
+        {
+            uint hash = 2166136261;
+            hash = (hash ^ (uint) inReturnType.GetHashCode()) * 16777619;
+            hash = (hash ^ (uint) inParameter0.GetHashCode()) * 16777619;
+            hash = (hash ^ (uint) inParameter1.GetHashCode()) * 16777619;
+            return hash;
+        }
+
+        /// <summary>
+        /// Returns the signature id associated with the given return type and parameter types. 
+        /// </summary>
+        static public uint GetId(Type inReturnType, Type inParameter0, Type inParameter1, Type inParameter2)
+        {
+            uint hash = 2166136261;
+            hash = (hash ^ (uint) inReturnType.GetHashCode()) * 16777619;
+            hash = (hash ^ (uint) inParameter0.GetHashCode()) * 16777619;
+            hash = (hash ^ (uint) inParameter1.GetHashCode()) * 16777619;
+            hash = (hash ^ (uint) inParameter2.MetadataToken) * 16777619;
+            return hash;
+        }
+
+        /// <summary>
+        /// Returns the signature id associated with the given return type and parameter types. 
+        /// </summary>
+        static public uint GetId(Type inReturnType, params Type[] inParameters)
+        {
+            uint hash = 2166136261;
+            hash = (hash ^ (uint) inReturnType.GetHashCode()) * 16777619;
+            for(int i = 0; i < inParameters.Length; i++)
+            {
+                hash = (hash ^ (uint) inParameters[i].GetHashCode()) * 16777619;
+            }
+            return hash;
+        }
+
+        /// <summary>
+        /// Signature hash for functions with no return value and no parameters.
+        /// </summary>
+        static public readonly uint VoidNoParameterId = GetId(typeof(void));
     }
 }

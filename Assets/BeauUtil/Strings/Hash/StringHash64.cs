@@ -79,11 +79,35 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Calculates the string hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash64 Fast(StringSlice inSlice)
+        {
+            return new StringHash64(inSlice.CalculateHash64NoCache());
+        }
+
+        /// <summary>
+        /// Calculates the string hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash64 Fast(StringBuilderSlice inSlice)
+        {
+            return new StringHash64(inSlice.CalculateHash64NoCache());
+        }
+
+        /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
         static public StringHash64 CaseInsensitive(string inString)
         {
             return new StringHash64(StringHashing.StoreHash64CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash64 FastCaseInsensitive(string inString)
+        {
+            return new StringHash64(StringHashing.Hash64CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
         }
 
         /// <summary>
@@ -95,11 +119,27 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash64 FastCaseInsensitive(StringSlice inSlice)
+        {
+            return new StringHash64(inSlice.CalculateHash64CaseInsensitiveNoCache());
+        }
+
+        /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
         static public StringHash64 CaseInsensitive(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitive());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        static public StringHash64 FastCaseInsensitive(StringBuilderSlice inSlice)
+        {
+            return new StringHash64(inSlice.CalculateHash64CaseInsensitiveNoCache());
         }
 
         static public readonly StringHash64 Null = new StringHash64();

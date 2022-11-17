@@ -10,6 +10,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -72,7 +73,33 @@ namespace BeauUtil
         /// </summary>
         static public T GetMinElement<T>(T[] inList, int inStartIndex, int inLength, ScoreFunction<T> inDelegate)
         {
-            return GetMinElement(new ListSlice<T>(inList, inStartIndex, inLength), inDelegate);
+            T minVal = default(T);
+            float minScore = float.MaxValue;
+
+            float score;
+            T element;
+            for(int i = 0; i < inLength; ++i)
+            {
+                element = inList[inStartIndex + i];
+                score = inDelegate(element);
+
+                if (score < minScore)
+                {
+                    minScore = score;
+                    minVal = element;
+                }
+            }
+
+            return minVal;
+        }
+
+        /// <summary>
+        /// Returns the minimum-scoring element from the given list.
+        /// </summary>
+        [MethodImpl(256)]
+        static public T GetMinElement<T>(T[] inList, ScoreFunction<T> inDelegate)
+        {
+            return GetMinElement(inList, 0, inList.Length, inDelegate);
         }
 
         /// <summary>
@@ -126,7 +153,32 @@ namespace BeauUtil
         /// </summary>
         static public T GetMaxElement<T>(T[] inList, int inStartIndex, int inLength, ScoreFunction<T> inDelegate)
         {
-            return GetMaxElement(new ListSlice<T>(inList, inStartIndex, inLength), inDelegate);
+            T maxVal = default(T);
+            float maxScore = float.MinValue;
+
+            float score;
+            T element;
+            for(int i = 0; i < inLength; ++i)
+            {
+                element = inList[inStartIndex + i];
+                score = inDelegate(element);
+                if (score > maxScore)
+                {
+                    maxScore = score;
+                    maxVal = element;
+                }
+            }
+
+            return maxVal;
+        }
+
+        /// <summary>
+        /// Returns the maximum-scoring element from the given list.
+        /// </summary>
+        [MethodImpl(256)]
+        static public T GetMaxElement<T>(T[] inList, ScoreFunction<T> inDelegate)
+        {
+            return GetMaxElement(inList, 0, inList.Length, inDelegate);
         }
     }
 }

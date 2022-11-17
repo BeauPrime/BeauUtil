@@ -602,7 +602,7 @@ namespace BeauUtil
                 return false;
             }
 
-            decimal accum = 0;
+            double accum = 0;
             char c;
             for(int i = 0; i < inSlice.Length; ++i)
             {
@@ -686,7 +686,7 @@ namespace BeauUtil
                 return false;
             }
 
-            decimal accum = 0;
+            double accum = 0;
             char c;
             int sign = 1;
             for(int i = 0; i < inSlice.Length; ++i)
@@ -981,6 +981,7 @@ namespace BeauUtil
             {
                 try
                 {
+                    inSlice = inSlice.Trim(StringUtils.DefaultQuoteChar);
                     outValue = Enum.Parse(inType, inSlice.ToString(), false);
                     return true;
                 }
@@ -1214,6 +1215,213 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Attempts to convert a string slice into a value of the given type.
+        /// </summary>
+        static public bool TryConvertTo(StringSlice inSlice, Type inType, out NonBoxedValue outValue)
+        {
+            if (inType.IsEnum)
+            {
+                try
+                {
+                    inSlice = inSlice.Trim(StringUtils.DefaultQuoteChar);
+                    outValue = new NonBoxedValue(Enum.Parse(inType, inSlice.ToString(), false));
+                    return true;
+                }
+                catch
+                {
+                    outValue = null;
+                    return false;
+                }
+            }
+
+            TypeCode tc = Type.GetTypeCode(inType);
+
+            switch(tc)
+            {
+                case TypeCode.Boolean:
+                    {
+                        bool b;
+                        if (TryParseBool(inSlice, out b))
+                        {
+                            outValue = b;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Byte:
+                    {
+                        byte b;
+                        if (TryParseByte(inSlice, out b))
+                        {
+                            outValue = b;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Char:
+                    {
+                        if (inSlice.Length > 0)
+                        {
+                            outValue = inSlice[0];
+                            return true;
+                        }
+
+                        break;
+                    }
+                
+                case TypeCode.Double:
+                    {
+                        double d;
+                        if (TryParseDouble(inSlice, out d))
+                        {
+                            outValue = d;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Int16:
+                    {
+                        short s;
+                        if (TryParseShort(inSlice, out s))
+                        {
+                            outValue = s;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Int32:
+                    {
+                        int i;
+                        if (TryParseInt(inSlice, out i))
+                        {
+                            outValue = i;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Int64:
+                    {
+                        long l;
+                        if (TryParseLong(inSlice, out l))
+                        {
+                            outValue = l;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Object:
+                    {
+                        if (inType == typeof(StringSlice) || inType == typeof(object))
+                        {
+                            outValue = inSlice;
+                            return true;
+                        }
+                        if (inType == typeof(StringHash32))
+                        {
+                            StringHash32 hash;
+                            if (StringHash32.TryParse(inSlice, out hash))
+                            {
+                                outValue = hash;
+                                return true;
+                            }
+                        }
+                        else if (inType == typeof(Variant))
+                        {
+                            Variant v;
+                            if (Variant.TryParse(inSlice, true, out v))
+                            {
+                                outValue = new NonBoxedValue(v);
+                                return true;
+                            }
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.SByte:
+                    {
+                        sbyte s;
+                        if (TryParseSByte(inSlice, out s))
+                        {
+                            outValue = s;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.Single:
+                    {
+                        float f;
+                        if (TryParseFloat(inSlice, out f))
+                        {
+                            outValue = f;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.String:
+                    {
+                        outValue = inSlice.ToString();
+                        return true;
+                    }
+
+                case TypeCode.UInt16:
+                    {
+                        ushort u;
+                        if (TryParseUShort(inSlice, out u))
+                        {
+                            outValue = u;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.UInt32:
+                    {
+                        uint u;
+                        if (TryParseUInt(inSlice, out u))
+                        {
+                            outValue = u;
+                            return true;
+                        }
+
+                        break;
+                    }
+
+                case TypeCode.UInt64:
+                    {
+                        ulong u;
+                        if (TryParseULong(inSlice, out u))
+                        {
+                            outValue = u;
+                            return true;
+                        }
+
+                        break;
+                    }
+            }
+
+            outValue = null;
+            return false;
+        }
+
+        /// <summary>
         /// Parses a string slice into a ulong.
         /// If unable to parse, the given default will be used instead.
         /// </summary>
@@ -1343,7 +1551,7 @@ namespace BeauUtil
 
         static private bool TryParseLongDouble(StringSlice inSlice, out double outDouble)
         {
-            decimal accum = 0;
+            double accum = 0;
             char c;
             int sign = 1;
             int decimalPoints = 0;
@@ -1391,10 +1599,10 @@ namespace BeauUtil
                     return false;
                 }
 
-                accum = (accum * 10) + (c - '0');
+                accum = (accum * 10) + (ulong) (c - '0');
             }
 
-            while(--decimalPoints >= 0)
+            while(decimalPoints-- > 0)
                 accum /= 10;
 
             outDouble = (double) accum * sign;

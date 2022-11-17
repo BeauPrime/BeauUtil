@@ -627,6 +627,16 @@ namespace BeauUtil
             StringUtils.Unescape(m_Source, m_StartIndex, Length, ioBuilder, inCustomUnescape);
         }
 
+        /// <summary>
+        /// Unpacks StringSlice parameters.
+        /// </summary>
+        public void Unpack(out string outString, out int outOffset, out int outLength)
+        {
+            outString = m_Source;
+            outOffset = m_StartIndex;
+            outLength = Length;
+        }
+
         #endregion // Export
 
         #region IReadOnlyList
@@ -942,9 +952,19 @@ namespace BeauUtil
             return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
+        internal uint CalculateHash32NoCache()
+        {
+            return StringHashing.Hash32(m_Source, m_StartIndex, Length);
+        }
+
         internal uint CalculateHash32CaseInsensitive()
         {
             return StringHashing.StoreHash32CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
+        internal uint CalculateHash32CaseInsensitiveNoCache()
+        {
+            return StringHashing.Hash32CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
         internal uint AppendHash32(uint inHash, bool inbReverseLookup)
@@ -957,9 +977,19 @@ namespace BeauUtil
             return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
         }
 
+        internal ulong CalculateHash64NoCache()
+        {
+            return StringHashing.Hash64(m_Source, m_StartIndex, Length);
+        }
+
         internal ulong CalculateHash64CaseInsensitive()
         {
             return StringHashing.StoreHash64CaseInsensitive(m_Source, m_StartIndex, Length);
+        }
+
+        internal ulong CalculateHash64CaseInsensitiveNoCache()
+        {
+            return StringHashing.Hash64CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
         internal ulong AppendHash64(ulong inHash, bool inbReverseLookup)

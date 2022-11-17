@@ -53,10 +53,8 @@ namespace BeauUtil
             return m_Source.Compare(x, y) * m_Sign;
         }
 
-        static public IComparer<T> Wrap(IComparer<T> inComparer, SearchFlags inFlags)
+        static public CompareWrapper<T> Wrap(IComparer<T> inComparer, SearchFlags inFlags)
         {
-            if (inFlags == 0)
-                return inComparer;
             return new CompareWrapper<T>(inComparer, inFlags);
         }
     }

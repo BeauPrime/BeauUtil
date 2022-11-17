@@ -67,6 +67,7 @@ namespace BeauUtil
 
         #endregion // Inspector
 
+        [NonSerialized] protected WildcardMatch m_NameFilterMatch = default(WildcardMatch);
         [NonSerialized] protected readonly List<Occupant> m_Occupants = new List<Occupant>();
         [NonSerialized] protected Type m_RequiredComponentType = null;
         [NonSerialized] protected ComponentLookupDirection m_RequiredComponentLookup;
@@ -80,6 +81,11 @@ namespace BeauUtil
                 m_Collider = GetComponent<TCollider>();
                 if (m_Collider)
                     SetupCollider(m_Collider);
+            }
+
+            if (!string.IsNullOrEmpty(m_NameFilter))
+            {
+                m_NameFilterMatch = WildcardMatch.Compile(m_NameFilter);
             }
         }
 
@@ -143,7 +149,14 @@ namespace BeauUtil
         public string NameFilter
         {
             get { return m_NameFilter; }
-            set { m_NameFilter = value; }
+            set
+            {
+                if (m_NameFilter != value)
+                {
+                    m_NameFilter = value;
+                    m_NameFilterMatch = WildcardMatch.Compile(m_NameFilter);
+                }
+            }
         }
 
         /// <summary>
@@ -269,7 +282,7 @@ namespace BeauUtil
             {
                 if (m_Occupants[i].Collider.IsReferenceEquals(inCollider))
                 {
-                    m_Occupants.RemoveAt(i);
+                    m_Occupants.FastRemoveAt(i);
                     return true;
                 }
             }
@@ -306,11 +319,11 @@ namespace BeauUtil
 
                 if (!collider || !GetColliderEnabled(collider) ||
                     GetRigidbodyForCollider(collider) != rigidbody ||
-                    !CheckFilters(collider, ColliderProxyEventMask.OnIdle) ||
+                    !CheckFiltersFast(collider, ColliderProxyEventMask.OnIdle) ||
                     (!rigidbody.IsReferenceNull() && (!rigidbody || !GetRigidbodyEnabled(rigidbody))))
                 {
                     OnOccupantDiscarded(collider);
-                    m_Occupants.RemoveAt(i);
+                    m_Occupants.FastRemoveAt(i);
                 }
             }
         }
@@ -325,16 +338,18 @@ namespace BeauUtil
             m_Occupants.Clear();
         }
 
-        protected bool CheckFilters(TCollider inCollider, ColliderProxyEventMask inEvent)
+        protected bool CheckFiltersFast(TCollider inCollider, ColliderProxyEventMask inEvent)
         {
             if ((m_FilterEventMask & inEvent) == 0)
                 return true;
 
             GameObject go = inCollider.gameObject;
 
+            // check layer
             if (m_LayerMaskFilter != 0 && ((1 << go.layer) & m_LayerMaskFilter) == 0)
                 return false;
 
+            // check tags
             if (m_CompareTagFilters != null && m_CompareTagFilters.Count > 0)
             {
                 bool bFound = false;
@@ -351,9 +366,42 @@ namespace BeauUtil
                     return false;
             }
 
-            if (!string.IsNullOrEmpty(m_NameFilter) && !WildcardMatch.Match(go.name, m_NameFilter))
+            return true;
+        }
+
+        protected bool CheckFilters(TCollider inCollider, ColliderProxyEventMask inEvent)
+        {
+            if ((m_FilterEventMask & inEvent) == 0)
+                return true;
+
+            GameObject go = inCollider.gameObject;
+
+            // check layer
+            if (m_LayerMaskFilter != 0 && ((1 << go.layer) & m_LayerMaskFilter) == 0)
                 return false;
 
+            // check tags
+            if (m_CompareTagFilters != null && m_CompareTagFilters.Count > 0)
+            {
+                bool bFound = false;
+                for(int i = 0; i < m_CompareTagFilters.Count; ++i)
+                {
+                    if (go.CompareTag(m_CompareTagFilters[i]))
+                    {
+                        bFound = true;
+                        break;
+                    }
+                }
+                
+                if (!bFound)
+                    return false;
+            }
+
+            // check name
+            if (!m_NameFilterMatch.IsEmpty && !m_NameFilterMatch.Match(go.name))
+                return false;
+
+            // check component type
             if (m_RequiredComponentType != null)
             {
                 switch(m_RequiredComponentLookup)

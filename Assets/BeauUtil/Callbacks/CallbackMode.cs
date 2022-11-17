@@ -16,6 +16,7 @@ namespace BeauUtil
         Unassigned,
         NoArg,
         NativeArg,
+        NativeArgRef,
         CastedArg
     }
 }

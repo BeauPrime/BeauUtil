@@ -10,7 +10,7 @@
 using UnityEngine;
 using System;
 
-namespace BeauUtil
+namespace BeauUtil.UI
 {
     [AddComponentMenu("BeauUtil/Rendering/Scroll TiledRawImage")]
     [RequireComponent(typeof(TiledRawImage))]

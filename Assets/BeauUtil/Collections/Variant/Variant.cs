@@ -10,6 +10,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
@@ -693,6 +694,15 @@ namespace BeauUtil.Variants
         }
 
         /// <summary>
+        /// Attempts to convert from a NonBoxedValue to a Variant.
+        /// </summary>
+        [MethodImpl(256)]
+        static public bool TryConvertFrom(NonBoxedValue inNonBoxed, out Variant outVariant)
+        {
+            return inNonBoxed.TryGetVariant(out outVariant);
+        }
+
+        /// <summary>
         /// Attempts to convert from an object to a Variant.
         /// </summary>
         static public bool TryConvertFrom(object inObject, out Variant outVariant)
@@ -819,9 +829,125 @@ namespace BeauUtil.Variants
                 return true;
             }
 
+            if (inType == typeof(NonBoxedValue))
+            {
+                outObject = new NonBoxedValue(inVariant);
+                return true;
+            }
+
             if (inVariant == null)
             {
                 outObject = Null;
+                return true;
+            }
+
+            TypeCode code = System.Type.GetTypeCode(inType);
+
+            switch(code)
+            {
+                case TypeCode.String:
+                    {
+                        outObject = inVariant.ToString();
+                        return true;
+                    }
+
+                case TypeCode.Boolean:
+                    {
+                        outObject = inVariant.AsBool();
+                        return true;
+                    }
+
+                case TypeCode.Byte:
+                    {
+                        outObject = (byte) inVariant.AsUInt();
+                        return true;
+                    }
+
+                case TypeCode.Char:
+                    {
+                        outObject = (char) inVariant.AsInt();
+                        return true;
+                    }
+
+                case TypeCode.Double:
+                    {
+                        outObject  = (double) inVariant.AsFloat();
+                        return true;
+                    }
+
+                case TypeCode.Int16:
+                    {
+                        outObject = (UInt16) inVariant.AsInt();;
+                        return true;
+                    }
+
+                case TypeCode.Int32:
+                    {
+                        outObject = inVariant.AsInt();
+                        return true;
+                    }
+
+                case TypeCode.SByte:
+                    {
+                        outObject = (sbyte) inVariant.AsInt();
+                        return true;
+                    }
+
+                case TypeCode.Single:
+                    {
+                        outObject = (float) inVariant.AsFloat();
+                        return true;
+                    }
+
+                case TypeCode.UInt16:
+                    {
+                        outObject = (ushort) inVariant.AsUInt();
+                        return true;
+                    }
+
+                case TypeCode.UInt32:
+                    {
+                        outObject = inVariant.AsUInt();
+                        return true;
+                    }
+            }
+
+            outObject = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to convert from a Variant to an object.
+        /// </summary>
+        static public bool TryConvertTo(Variant inVariant, Type inType, out NonBoxedValue outObject)
+        {
+            if (inType == typeof(Variant))
+            {
+                outObject = new NonBoxedValue(inVariant);
+                return true;
+            }
+
+            if (inType == typeof(SerializedHash32))
+            {
+                outObject = new NonBoxedValue((SerializedHash32) inVariant.AsStringHash());
+                return true;
+            }
+
+            if (inType == typeof(StringHash32))
+            {
+                outObject = inVariant.AsStringHash();
+                return true;
+            }
+
+            if (inType == typeof(NonBoxedValue))
+            {
+                outObject = new NonBoxedValue(inVariant);
+                return true;
+            }
+
+            if (inVariant == null)
+            {
+                outObject = null;
                 return true;
             }
 

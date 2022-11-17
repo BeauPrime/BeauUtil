@@ -15,6 +15,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -97,7 +99,7 @@ namespace BeauUtil
         public IEqualityComparer<T> EqualityComparer
         {
             get { return m_Comparer; }
-            set { m_Comparer = value; }
+            set { m_Comparer = value ?? CompareUtils.DefaultComparer<T>(); }
         }
 
         #endregion // Properties
@@ -107,6 +109,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the buffer is currently full to capacity.
         /// </summary>
+        [MethodImpl(256)]
         public bool IsFull()
         {
             return m_Count == m_Capacity;
@@ -115,6 +118,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given element is present in the buffer.
         /// </summary>
+        [MethodImpl(256)]
 #if EXPANDED_REFS
         public bool Contains(in T inItem)
 #else
@@ -127,6 +131,8 @@ namespace BeauUtil
         /// <summary>
         /// Returns the index of the given element in the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #if EXPANDED_REFS
         public int IndexOf(in T inItem)
 #else
@@ -240,6 +246,8 @@ namespace BeauUtil
         /// </summary>
         public ref T this[int inIndex]
         {
+            [Il2CppSetOption(Option.NullChecks, false)]
+            [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
             get
             {
                 if (inIndex < 0 || inIndex >= m_Count)
@@ -255,12 +263,17 @@ namespace BeauUtil
         /// </summary>
         public T this[int inIndex]
         {
+            [Il2CppSetOption(Option.NullChecks, false)]
+            [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
             get
             {
                 if (inIndex < 0 || inIndex >= m_Count)
                     throw new ArgumentOutOfRangeException("inIndex");
                 return m_Data[(m_Head + inIndex) % m_Capacity];
             }
+            
+            [Il2CppSetOption(Option.NullChecks, false)]
+            [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
             set
             {
                 if (inIndex < 0 || inIndex >= m_Count)
@@ -274,6 +287,9 @@ namespace BeauUtil
         /// <summary>
         /// Peeks at the value at the front of the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(256)]
         public T PeekFront()
         {
             if (m_Count <= 0)
@@ -285,6 +301,9 @@ namespace BeauUtil
         /// <summary>
         /// Peeks at the value at the back of the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(256)]
         public T PeekBack()
         {
             if (m_Count <= 0)
@@ -300,6 +319,8 @@ namespace BeauUtil
         /// <summary>
         /// Pushes a value to the front of the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #if EXPANDED_REFS
         public void PushFront(in T inValue)
 #else
@@ -334,6 +355,8 @@ namespace BeauUtil
         /// <summary>
         /// Pushes a value to the back of the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #if EXPANDED_REFS
         public void PushBack(in T inValue)
 #else
@@ -373,6 +396,8 @@ namespace BeauUtil
         /// <summary>
         /// Dequeues the next available value from the front of the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public T PopFront()
         {
             if (m_Count <= 0)
@@ -390,6 +415,8 @@ namespace BeauUtil
         /// <summary>
         /// Pops the next available value from the back of the buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public T PopBack()
         {
             if (m_Count <= 0)
@@ -408,6 +435,7 @@ namespace BeauUtil
         /// Removes the given element from the buffer.
         /// Preserves element order at the cost of speed.
         /// </summary>
+        [MethodImpl(256)]
 #if EXPANDED_REFS
         public bool Remove(in T inValue)
 #else
@@ -426,6 +454,7 @@ namespace BeauUtil
         /// Removes the given element from the buffer by swapping.
         /// Does not preserve element order.
         /// </summary>
+        [MethodImpl(256)]
 #if EXPANDED_REFS
         public bool FastRemove(in T inValue)
 #else
@@ -564,6 +593,46 @@ namespace BeauUtil
 
             m_Tail = (m_Tail + m_Capacity - inCount) % m_Capacity;
             m_Count -= inCount;
+        }
+
+        /// <summary>
+        /// Removes elements who pass the given predicate.
+        /// </summary>
+        public int RemoveWhere(Predicate<T> inPredicate)
+        {
+            int removed = 0;
+            if (inPredicate != null)
+            {
+                for(int i = m_Count - 1; i >= 0; i--)
+                {
+                    if (!inPredicate(m_Data[(m_Head + i) % m_Capacity]))
+                    {
+                        FastRemoveAt(i);
+                        removed++;
+                    }
+                }
+            }
+            return removed;
+        }
+
+        /// <summary>
+        /// Removes elements who pass the given predicate.
+        /// </summary>
+        public int RemoveWhere<TArg>(Predicate<T, TArg> inPredicate, TArg inArg)
+        {
+            int removed = 0;
+            if (inPredicate != null)
+            {
+                for(int i = m_Count - 1; i >= 0; i--)
+                {
+                    if (!inPredicate(m_Data[(m_Head + i) % m_Capacity], inArg))
+                    {
+                        FastRemoveAt(i);
+                        removed++;
+                    }
+                }
+            }
+            return removed;
         }
 
         #endregion // Remove
@@ -765,12 +834,12 @@ namespace BeauUtil
             if (m_Count <= 0)
                 return -1;
 
-            inComparer = CompareWrapper<T>.Wrap(inComparer, inFlags);
-
-            if (m_Head < m_Tail)
+            if (m_Head < m_Tail && inFlags == 0)
             {
                 return Array.BinarySearch(m_Data, m_Head, m_Count, inValue, inComparer);
             }
+
+            CompareWrapper<T> comparer = CompareWrapper<T>.Wrap(inComparer, inFlags);
 
             int low = 0;
             int high = m_Count - 1;
@@ -778,7 +847,7 @@ namespace BeauUtil
             while(low <= high)
             {
                 int med = low + ((high - low) >> 1);
-                int comp = inComparer.Compare(m_Data[(m_Head + med) % m_Capacity], inValue);
+                int comp = comparer.Compare(m_Data[(m_Head + med) % m_Capacity], inValue);
                 if (comp == 0)
                     return med;
                 if (comp == -1)
@@ -826,6 +895,138 @@ namespace BeauUtil
         }
 
         #endregion // Search
+
+        #region Predicates
+
+        /// <summary>
+        /// Returns if an element passing the given predicate exists.
+        /// </summary>
+        [MethodImpl(256)]
+        public bool Exists(Predicate<T> inPredicate)
+        {
+            return FindIndex(inPredicate) >= 0;
+        }
+
+        /// <summary>
+        /// Returns the index of the first element that passes the given predicate.
+        /// </summary>
+        public int FindIndex(Predicate<T> inPredicate)
+        {
+            if (m_Count <= 0)
+                return -1;
+
+            int ptr = m_Head;
+            int idx = 0;
+            int count = m_Count;
+            while(idx < count)
+            {
+                if (inPredicate(m_Data[ptr]))
+                    return idx;
+                
+                ptr = (ptr + 1) % m_Capacity;
+                ++idx;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the the first element that passes the given predicate.
+        /// </summary>
+        public T Find(Predicate<T> inPredicate)
+        {
+            int idx = FindIndex(inPredicate);
+            if (idx >= 0)
+                return m_Data[(m_Head + idx) % m_Capacity];
+            return default(T);
+        }
+
+        /// <summary>
+        /// Returns if an element passing the given predicate exists.
+        /// </summary>
+        [MethodImpl(256)]
+        public bool Exists<U>(Predicate<T, U> inPredicate, U inArg)
+        {
+            return FindIndex<U>(inPredicate, inArg) >= 0;
+        }
+
+        /// <summary>
+        /// Returns the index of the first element that passes the given predicate.
+        /// </summary>
+        public int FindIndex<U>(Predicate<T, U> inPredicate, U inArg)
+        {
+            if (m_Count <= 0)
+                return -1;
+
+            int ptr = m_Head;
+            int idx = 0;
+            int count = m_Count;
+            while(idx < count)
+            {
+                if (inPredicate(m_Data[ptr], inArg))
+                    return idx;
+                
+                ptr = (ptr + 1) % m_Capacity;
+                ++idx;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the the first element that passes the given predicate.
+        /// </summary>
+        public T Find<U>(Predicate<T, U> inPredicate, U inArg)
+        {
+            int idx = FindIndex<U>(inPredicate, inArg);
+            if (idx >= 0)
+                return m_Data[(m_Head + idx) % m_Capacity];
+            return default(T);
+        }
+
+        #endregion // Predicates
+
+        #region Iteration
+
+        /// <summary>
+        /// Executes an action for each element in the buffer.
+        /// </summary>
+        public void ForEach(Action<T> inAction)
+        {
+            if (m_Count <= 0)
+                return;
+
+            int ptr = m_Head;
+            int idx = 0;
+            int count = m_Count;
+            while(idx < count)
+            {
+                inAction(m_Data[ptr]);
+                ptr = (ptr + 1) % m_Capacity;
+                ++idx;
+            }
+        }
+
+        /// <summary>
+        /// Executes an action for each element in the buffer.
+        /// </summary>
+        public void ForEach(RefAction<T> inAction)
+        {
+            if (m_Count <= 0)
+                return;
+
+            int ptr = m_Head;
+            int idx = 0;
+            int count = m_Count;
+            while(idx < count)
+            {
+                inAction(ref m_Data[ptr]);
+                ptr = (ptr + 1) % m_Capacity;
+                ++idx;
+            }
+        }
+
+        #endregion // Iteration
 
         #region Interfaces
 
