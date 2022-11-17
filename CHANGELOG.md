@@ -1,3 +1,39 @@
+## Version 0.8.0
+**17 Nov 2022**
+
+### Features
+* Added `RoundedRectGraphic` and `EllipseGraphic`
+* Shape graphics (Rect, RoundedRect, Ellipse, GradientRect) can now use a per-canvas "white pixel" sprite to improve batching
+* Added `UnityHelper.Find`, `UnityHelper.IsAlive`, and `UnityHelper.Id` for locating Unity objects by integer id.
+* Added `Unsafe.Hash32` and `Unsafe.Hash64` to perform FNV-1a hash on arbitrary buffers (and unmanaged structs)
+* Added `NonBoxedValue` for returning an unknown type without boxing built-in numerics
+* Added `CameraHelper.AddOnPreCull`, `CameraHelper.AddOnPreRender`, and `CameraHelper.AddOnPostRender` (along with corresponding `Remove` versions) for consistent camera callback mechanism between the default renderer and URP
+* Added `CastableEvent` for a `CastableAction`-compatible alternative to C#'s `event` mechanism
+
+### Improvements
+* `CastableFunc` and `CastableAction` now support function signatures with the first parameter passed by reference.
+* `StringUtils.ArgsList.Splitter` made immutable and thread-safe
+* Added `StringSlice.Unpack` to extract string and region data
+* Added `StringHash32.Fast` for a non-cached hash (does not record reverse-lookup information)
+* `MatchRuleSet.FindMatch` now uses non-cached hash for lookups
+* Added `Reflect.GetSignature` to return a `MethodSignature` object
+* Added `Geom.Remap(Vector2, Rect, Rect)` and `Geom.Remap(Vector3, Bounds, Bounds)` for remapping points between regions
+* `MethodCache` can now generate delegates for common method signatures instead of relying solely on `MethodInfo.Invoke`
+* Added `RingBuffer.RemoveWhere` to remove elements passing a given predicate
+* Added `RingBuffer.Find`, `RingBuffer.Exists`, and `RingBuffer.FindIndex` for locating elements passing a given predicate
+
+### Fixes
+* `StringParser` numeric parsing no longer allocates memory due to use of `decimal`
+* Scale calculations for `CameraFOVPlane` when in `PixelHeight` mode now account for rounding errors
+
+### Breaking Changes
+* `Unsafe.FastReinterpret(TFrom*)` removed in favor of `Unsafe.Reinterpret(TFrom*)`
+* `TextHelper` functions merged into `CanvasHelper`
+* Added `IStringConverter.TryConvertToVariant` for fast variant conversions
+* `IMethodCache.TryInvoke` now outputs a `NonBoxedValue` instead of `object`
+* `IStringConverter.TryConvertTo` now outputs a `NonBoxedValue` instead of `object`
+* `TiledRawImage`, `ScrollTiledRawImage`, `RectGraphic`, and `GradientRectGraphic` are now under the `BeauUtil.UI` namespace
+
 ## Version 0.7.14
 **11 Oct 2022**
 
