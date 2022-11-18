@@ -8,7 +8,6 @@
 */
 
 using System;
-using UnityEditor.Sprites;
 using UnityEngine;
 
 namespace BeauUtil
@@ -46,7 +45,7 @@ namespace BeauUtil
             Sprite = inSprite;
             if (inSprite.packed && inSprite.packingMode == SpritePackingMode.Tight)
             {
-                UVRect = Geom.BoundsToRect(Geom.MinAABB(SpriteUtility.GetSpriteUVs(inSprite, true)));
+                throw new ArgumentException(string.Format("TextureRegion does not support tightly packed sprites (sprite provided: {0})", inSprite.name), "inSprite");
             }
             else
             {

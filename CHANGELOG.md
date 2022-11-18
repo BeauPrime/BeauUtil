@@ -1,3 +1,9 @@
+## Version 0.8.1
+**18 Nov 2022**
+
+Compilation error hotfix
+`TextureRegion` no longer supports tightly packed sprites
+
 ## Version 0.8.0
 **17 Nov 2022**
 
