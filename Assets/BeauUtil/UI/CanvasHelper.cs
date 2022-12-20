@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Text;
 
 #if ENABLE_TEXTMESHPRO
 using TMPro;
@@ -283,7 +284,7 @@ namespace BeauUtil
 
         /// <summary>
         /// Sets text on the given TextMeshPro element from an unsafe char buffer.
-        /// If the text length exceeds the current <c>TextHelper.BufferSize</c>, then a string will be allocated.
+        /// If the text length exceeds the current <c>CanvasHelper.BufferSize</c>, then a string will be allocated.
         /// Otherwise this will not allocate any extra string memory.
         /// </summary>
         /// <remarks>
@@ -300,7 +301,7 @@ namespace BeauUtil
 
             if (inCharBufferLength > s_CurrentCharBufferSize)
             {
-                Debug.LogWarningFormat("[TextUtils] Input text of length {0} exceeded buffer size {1} - consider adjusting buffer size", inCharBufferLength.ToString(), s_CurrentCharBufferSize.ToString());
+                Debug.LogWarningFormat("[CanvasHelper] Input text of length {0} exceeded buffer size {1} - consider adjusting buffer size", inCharBufferLength.ToString(), s_CurrentCharBufferSize.ToString());
                 inTextMeshPro.SetText(new string(inCharBuffer, 0, inCharBufferLength));
                 return;
             }
@@ -312,6 +313,91 @@ namespace BeauUtil
 
             Unsafe.CopyArray(inCharBuffer, inCharBufferLength, s_CurrentCharBuffer);
             inTextMeshPro.SetText(s_CurrentCharBuffer, 0, inCharBufferLength);
+        }
+
+        /// <summary>
+        /// Sets text on the given TextMeshPro element from a StringSlice.
+        /// If the slice length exceeds the current <c>CanvasHelper.BufferSize</c>, then a string will be allocated.
+        /// Otherwise this will not allocate any extra string memory.
+        /// </summary>
+        /// <remarks>
+        /// Note:   In the editor, TextMeshPro will automatically allocate a string internally,
+        ///         so it can be displayed in the inspector. This does not occur in builds.
+        /// </remarks>
+        static public unsafe void SetText(this TMP_Text inTextMeshPro, StringSlice inSlice)
+        {
+            if (inSlice.IsEmpty)
+            {
+                inTextMeshPro.SetText(string.Empty);
+                return;
+            }
+
+            if (inSlice.Length > s_CurrentCharBufferSize)
+            {
+                Debug.LogWarningFormat("[CanvasHelper] Input text of length {0} exceeded buffer size {1} - consider adjusting buffer size", inSlice.Length.ToString(), s_CurrentCharBufferSize.ToString());
+                inTextMeshPro.SetText(inSlice.ToString());
+                return;
+            }
+
+            if (s_CurrentCharBuffer == null)
+            {
+                s_CurrentCharBuffer = new char[s_CurrentCharBufferSize];
+            }
+
+            string str; int offset, length;
+            inSlice.Unpack(out str, out offset, out length);
+
+            if (length == str.Length)
+            {
+                inTextMeshPro.SetText(str);
+            }
+            else
+            {
+                str.CopyTo(offset, s_CurrentCharBuffer, 0, length);
+                inTextMeshPro.SetText(s_CurrentCharBuffer, 0, length);
+            }
+        }
+
+        /// <summary>
+        /// Sets text on the given TextMeshPro element from a StringBuilderSlice.
+        /// If the slice length exceeds the current <c>CanvasHelper.BufferSize</c>, then a string will be allocated.
+        /// Otherwise this will not allocate any extra string memory.
+        /// </summary>
+        /// <remarks>
+        /// Note:   In the editor, TextMeshPro will automatically allocate a string internally,
+        ///         so it can be displayed in the inspector. This does not occur in builds.
+        /// </remarks>
+        static public unsafe void SetText(this TMP_Text inTextMeshPro, StringBuilderSlice inSlice)
+        {
+            if (inSlice.IsEmpty)
+            {
+                inTextMeshPro.SetText(string.Empty);
+                return;
+            }
+
+            StringBuilder str; int offset, length;
+            inSlice.Unpack(out str, out offset, out length);
+
+            if (length == str.Length)
+            {
+                inTextMeshPro.SetText(str);
+            }
+            else if (length > s_CurrentCharBufferSize)
+            {
+                Debug.LogWarningFormat("[CanvasHelper] Input text of length {0} exceeded buffer size {1} - consider adjusting buffer size", length.ToString(), s_CurrentCharBufferSize.ToString());
+                inTextMeshPro.SetText(inSlice.ToString());
+                return;
+            }
+            else
+            {
+                if (s_CurrentCharBuffer == null)
+                {
+                    s_CurrentCharBuffer = new char[s_CurrentCharBufferSize];
+                }
+                
+                str.CopyTo(offset, s_CurrentCharBuffer, 0, length);
+                inTextMeshPro.SetText(s_CurrentCharBuffer, 0, length);
+            }
         }
 
         #endif // ENABLE_TEXTMESHPRO

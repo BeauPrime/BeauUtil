@@ -116,6 +116,16 @@ namespace BeauUtil
             return new StringHash64(StringHashing.StoreHash64(m_Source, m_StartIndex, Length));
         }
 
+        /// <summary>
+        /// Unpacks StringBuilderSlice parameters.
+        /// </summary>
+        public void Unpack(out StringBuilder outString, out int outOffset, out int outLength)
+        {
+            outString = m_Source;
+            outOffset = m_StartIndex;
+            outLength = Length;
+        }
+
         #region Search
 
         #region Char

@@ -695,7 +695,11 @@ namespace BeauUtil.Tags
             if (!m_Locked)
             {
                 m_ReplaceBuilder.Flush();
+                m_ReplaceRules.EnsureSorted();
+
                 m_EventBuilder.Flush();
+                m_EventRules.EnsureSorted();
+                
                 m_Locked = true;
             }
         }

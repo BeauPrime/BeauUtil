@@ -1,3 +1,20 @@
+## Version 0.8.2
+**19 Dec 2022**
+
+Hotfix for rare `RingBuffer` crash
+New layout event listener
+Initialization optimizations
+
+### Features
+* Added `LayoutListener` component for callbacks when layout building starts/stops
+* Added `ActionEvent` for a parameter-less version of `CastableEvent`
+
+### Improvements
+* Added `StringSlice` and `StringBuilderSlice` versions of `TMP_Text.SetText` extensions
+
+### Fixes
+* Fixed rare `RingBuffer` crash when compressing a full buffer and then pushing
+
 ## Version 0.8.1
 **18 Nov 2022**
 

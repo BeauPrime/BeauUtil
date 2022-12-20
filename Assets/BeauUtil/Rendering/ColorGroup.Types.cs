@@ -121,11 +121,11 @@ namespace BeauUtil
                     return new ColorBlock()
                     {
                         Main = Color.white,
-                            Emissive = Color.white,
+                        Emissive = Color.white,
 
-                            CustomA = Color.white,
-                            CustomB = Color.white,
-                            CustomC = Color.white
+                        CustomA = Color.white,
+                        CustomB = Color.white,
+                        CustomC = Color.white
                     };
                 }
             }

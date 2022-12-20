@@ -127,7 +127,8 @@ namespace BeauUtil.Tags
         {
             bool bModified = false;
             bool bTrackRichText = m_Delimiters.RichText;
-            bool bTrackTags = !bTrackRichText || !HasSameDelims(m_Delimiters, RichTextDelimiters);
+            bool bHasRichDelims = HasSameDelims(m_Delimiters, RichTextDelimiters);
+            bool bTrackTags = !bTrackRichText || !bHasRichDelims;
             bool bIsCurlyBrace = HasSameDelims(m_Delimiters, CurlyBraceDelimiters);
 
             if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
@@ -179,7 +180,7 @@ namespace BeauUtil.Tags
                                 string replace;
                                 if (m_ReplaceProcessor.TryReplace(richTag, richSlice, state.Context, out replace))
                                 {
-                                    if (ContainsPotentialTags(replace, m_Delimiters))
+                                    if (ContainsPotentialTags(replace, m_Delimiters, bHasRichDelims))
                                     {
                                         RestartString(ref state, replace, charIdx + 1);
                                         charIdx = -1;
@@ -252,7 +253,7 @@ namespace BeauUtil.Tags
                             string replace;
                             if (m_ReplaceProcessor.TryReplace(tag, tagSlice, state.Context, out replace))
                             {
-                                if (ContainsPotentialTags(replace, m_Delimiters))
+                                if (ContainsPotentialTags(replace, m_Delimiters, bHasRichDelims))
                                 {
                                     RestartString(ref state, replace, charIdx + 1);
                                     charIdx = -1;
@@ -300,7 +301,7 @@ namespace BeauUtil.Tags
                     if (m_ReplaceProcessor.TryReplace(state.Input[charIdx], inContext, out charCodeReplace))
                     {
                         CopyNonRichText(ref state, charIdx);
-                        if (ContainsPotentialTags(charCodeReplace, m_Delimiters))
+                        if (ContainsPotentialTags(charCodeReplace, m_Delimiters, bHasRichDelims))
                         {
                             RestartString(ref state, charCodeReplace, charIdx + 1);
                             charIdx = -1;
@@ -469,15 +470,14 @@ namespace BeauUtil.Tags
             ioState.CopyStart = 0;
         }
 
-        static protected bool ContainsPotentialTags(StringSlice inSlice, IDelimiterRules inDelimiters)
+        static protected bool ContainsPotentialTags(StringSlice inSlice, IDelimiterRules inDelimiters, bool inbIdenticalDelims)
         {
             if (inDelimiters.RichText)
             {
-                bool bIdenticalDelims = inDelimiters.TagStartDelimiter == "<" && inDelimiters.TagEndDelimiter == ">";
                 if (inSlice.Contains("<") || inSlice.Contains(">"))
                     return true;
 
-                if (bIdenticalDelims)
+                if (inbIdenticalDelims)
                     return false;
             }
 

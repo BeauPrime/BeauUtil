@@ -224,7 +224,7 @@ namespace BeauUtil
             m_Data = newData;
             m_Capacity = inCapacity;
             m_Head = 0;
-            m_Tail = m_Count;
+            m_Tail = m_Count % m_Capacity;
         }
 
         static private int GetDesiredCapacity(int inCurrentCapacity)
@@ -699,6 +699,7 @@ namespace BeauUtil
                 {
                     Array.Copy(m_Data, m_Head, m_Data, 0, m_Count);
                     m_Head = 0;
+                    m_Tail = m_Count % m_Capacity;
                     Array.Clear(m_Data, m_Count, m_Data.Length - m_Count);
                 }
                 return;
@@ -713,7 +714,7 @@ namespace BeauUtil
             Array.Copy(m_Data, m_Head, newData, 0, headLength);
             Array.Copy(m_Data, 0, newData, headLength, tailLength);
             m_Head = 0;
-            m_Tail = m_Count;
+            m_Tail = m_Count % m_Capacity;
 
             m_Data = newData;
         }
@@ -796,7 +797,7 @@ namespace BeauUtil
                 Array.Resize(ref ioDest.m_Data, m_Capacity);
                 int copied = CopyTo(0, ioDest.m_Data, 0, m_Count);
                 ioDest.m_Head = 0;
-                ioDest.m_Tail = m_Count;
+                ioDest.m_Tail = m_Count % m_Capacity;
                 ioDest.m_Count = m_Count;
                 ioDest.m_Capacity = m_Capacity;
                 return copied;

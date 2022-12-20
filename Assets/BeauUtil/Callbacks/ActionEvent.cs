@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2022. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
- * Date:    28 Oct 2022
+ * Date:    19 Dec 2022
  * 
- * File:    CastableEvent.cs
- * Purpose: Invokable list of CastableAction instances.
+ * File:    ActionEvent.cs
+ * Purpose: Invokable list of Action instances.
  */
 
 using System;
@@ -13,26 +13,26 @@ using UnityEngine;
 namespace BeauUtil
 {
     /// <summary>
-    /// Invokable list of CastableAction instances.
+    /// Invokable list of Action instances.
     /// </summary>
-    public class CastableEvent<TInput>
+    public class ActionEvent
     {
         private int m_Length = 0;
-        private CastableAction<TInput>[] m_Actions;
+        private Action[] m_Actions;
         private int[] m_ContextIds = Array.Empty<int>();
 
-        public CastableEvent()
+        public ActionEvent()
         {
-            m_Actions = Array.Empty<CastableAction<TInput>>();
+            m_Actions = Array.Empty<Action>();
             m_ContextIds = Array.Empty<int>();
         }
         
-        public CastableEvent(int inCapacity)
+        public ActionEvent(int inCapacity)
         {
             if (inCapacity < 0)
                 throw new ArgumentOutOfRangeException("inCapacity");
 
-            m_Actions = new CastableAction<TInput>[inCapacity];
+            m_Actions = new Action[inCapacity];
             m_ContextIds = new int[inCapacity];
         }
 
@@ -41,43 +41,13 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public void Register(Action<TInput> inAction, UnityEngine.Object inContext = null)
-        {
-            EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
-            m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
-            m_Length++;
-        }
-
-        /// <summary>
-        /// Registers an action.
-        /// </summary>
-        public void Register(RefAction<TInput> inAction, UnityEngine.Object inContext = null)
-        {
-            EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
-            m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
-            m_Length++;
-        }
-
-        /// <summary>
-        /// Registers an action.
-        /// </summary>
         public void Register(Action inAction, UnityEngine.Object inContext = null)
         {
-            EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
-            m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
-            m_Length++;
-        }
+            if (inAction == null)
+                throw new ArgumentNullException("inAction");
 
-        /// <summary>
-        /// Registers an action.
-        /// </summary>
-        public void Register<U>(Action<U> inAction, UnityEngine.Object inContext = null)
-        {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
+            m_Actions[m_Length] = inAction;
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
@@ -89,42 +59,6 @@ namespace BeauUtil
         /// <summary>
         /// Removes the registered action.
         /// </summary>
-        public void Deregister(Action<TInput> inAction)
-        {
-            if (inAction == null)
-                throw new ArgumentNullException("inAction");
-
-            for(int i = m_Length - 1; i >= 0; i--)
-            {
-                if (m_Actions[i].Equals(inAction))
-                {
-                    RemoveAt(i);
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the registered action.
-        /// </summary>
-        public void Deregister(RefAction<TInput> inAction)
-        {
-            if (inAction == null)
-                throw new ArgumentNullException("inAction");
-
-            for(int i = m_Length - 1; i >= 0; i--)
-            {
-                if (m_Actions[i].Equals(inAction))
-                {
-                    RemoveAt(i);
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the registered action.
-        /// </summary>
         public void Deregister(Action inAction)
         {
             if (inAction == null)
@@ -132,25 +66,7 @@ namespace BeauUtil
 
             for(int i = m_Length - 1; i >= 0; i--)
             {
-                if (m_Actions[i].Equals(inAction))
-                {
-                    RemoveAt(i);
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the registered action.
-        /// </summary>
-        public void Deregister<U>(Action<U> inAction)
-        {
-            if (inAction == null)
-                throw new ArgumentNullException("inAction");
-
-            for(int i = m_Length - 1; i >= 0; i--)
-            {
-                if (m_Actions[i].Equals(inAction))
+                if (m_Actions[i] == inAction)
                 {
                     RemoveAt(i);
                     break;
@@ -231,21 +147,13 @@ namespace BeauUtil
         /// <summary>
         /// Invokes all currently registered actions.
         /// </summary>
-        public void Invoke(TInput inInput)
-        {
-            Invoke(ref inInput);
-        }
-
-        /// <summary>
-        /// Invokes all currently registered actions.
-        /// </summary>
-        public void Invoke(ref TInput inInput)
+        public void Invoke()
         {
             int idx = 0;
             int end = m_Length;
             while(idx < end)
             {
-                m_Actions[idx++].Invoke(ref inInput);
+                m_Actions[idx++].Invoke();
             }
         }
 
