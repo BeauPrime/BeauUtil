@@ -1,3 +1,8 @@
+## Version 0.8.3
+**5 Feb 2023**
+
+Hotfix for CameraRenderScale rounding errors
+
 ## Version 0.8.2
 **19 Dec 2022**
 

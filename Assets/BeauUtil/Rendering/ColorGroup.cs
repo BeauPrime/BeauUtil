@@ -569,7 +569,7 @@ namespace BeauUtil
 
         private void OnValidate()
         {
-            if (!m_ValidateQueued)
+            if (!m_ValidateQueued && isActiveAndEnabled)
             {
                 UnityEditor.EditorApplication.update += this.DeferredOnValidate;
                 m_ValidateQueued = true;

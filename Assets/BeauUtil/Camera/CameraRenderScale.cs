@@ -14,6 +14,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Runtime.CompilerServices;
 
 #if USE_SRP
 using UnityEngine.Rendering;
@@ -48,12 +49,17 @@ namespace BeauUtil
         [SerializeField, Tooltip("Indicates whether to specify scale directly, or as a factor of a desired resolution height")] private ScaleMode m_Mode = ScaleMode.Scale;
         [SerializeField, Tooltip("Render texture scale.")] private float m_Scale = 1;
         [SerializeField, Tooltip("Desired resolution height, in pixels.")] private int m_PixelHeight = 360;
+        [SerializeField, Tooltip("Desired camera position quantization, in pixels.")] private int m_PixelsPerUnit = 0;
         [SerializeField, Tooltip("Filter mode use when upscaling")] private FilterMode m_FilterMode = FilterMode.Bilinear;
 
         #endregion // Inspector
 
+        [NonSerialized] private Transform m_CameraTransform;
         [NonSerialized] private Rect m_OriginalCameraRect;
         [NonSerialized] private CameraCallbackSource m_AppliedScale = CameraCallbackSource.None;
+        [NonSerialized] private bool m_AppliedCameraQuantization;
+        [NonSerialized] private Vector3 m_OriginalCameraPos;
+        [NonSerialized] private bool m_OriginalCameraChanged;
 
         /// <summary>
         /// Scaling mode.
@@ -87,6 +93,7 @@ namespace BeauUtil
         private void Awake()
         {
             m_Camera = GetComponent<Camera>();
+            m_CameraTransform = transform;
             m_OriginalCameraRect = m_Camera.rect;
         }
 
@@ -97,6 +104,7 @@ namespace BeauUtil
                 if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) {
                     return;
                 }
+                m_CameraTransform = transform;
             }
             #endif // UNITY_EDITOR
 
@@ -152,12 +160,28 @@ namespace BeauUtil
                     break;
             }
 
-            float scale = (float) Mathf.Clamp(pixelHeight + 0.9f, 1, SystemInfo.maxTextureSize) / fullHeight;
+            double invScale = 1f / fullHeight;
+            pixelHeight = Mathf.Clamp(pixelHeight, 1, SystemInfo.maxTextureSize);
+
+            double scale = pixelHeight * invScale;
+            scale += ErrorCorrection(fullHeight, pixelHeight, scale) * invScale;
             if (IsUsingSRP())
             {
-                scale = Mathf.Clamp(scale, 0.1f, 2f);
+                scale = Mathf.Clamp((float) scale, 0.1f, 2f);
             }
-            return scale;
+            return (float) scale;
+        }
+
+        [MethodImpl(256)]
+        static private int ErrorCorrection(int fullHeight, int desiredPixelHeight, double scale)
+        {
+            return desiredPixelHeight - (int) Math.Round(fullHeight * scale);
+        }
+
+        [MethodImpl(256)]
+        static private float Quantize(float value, float quantize)
+        {
+            return quantize * (float) Math.Round(value / quantize);
         }
 
         #if UNITY_EDITOR
@@ -226,6 +250,19 @@ namespace BeauUtil
             {
                 ApplyScale(inSource, desiredScale);
             }
+
+            if (!m_AppliedCameraQuantization && m_Mode == ScaleMode.PixelHeight && m_PixelsPerUnit > 0)
+            {
+                m_OriginalCameraPos = m_CameraTransform.position;
+                m_OriginalCameraChanged = m_CameraTransform.hasChanged;
+                float invPixels = 1f / m_PixelsPerUnit;
+                Vector3 pos = m_CameraTransform.position;
+                pos.x = Quantize(pos.x, invPixels);
+                pos.y = Quantize(pos.y, invPixels);
+                pos.z = Quantize(pos.z, invPixels);
+                m_CameraTransform.position = pos;
+                m_AppliedCameraQuantization = true;
+            }
         }
 
         void ICameraPostRenderCallback.OnCameraPostRender(Camera inCamera, CameraCallbackSource inSource)
@@ -236,6 +273,13 @@ namespace BeauUtil
                 {
                     PostApplyScale(inSource);
                 }
+            }
+
+            if (m_AppliedCameraQuantization)
+            {
+                m_CameraTransform.position = m_OriginalCameraPos;
+                m_CameraTransform.hasChanged = m_OriginalCameraChanged;
+                m_AppliedCameraQuantization = false;
             }
         }
 
@@ -276,6 +320,7 @@ namespace BeauUtil
             private SerializedProperty m_ModeProperty;
             private SerializedProperty m_ScaleProperty;
             private SerializedProperty m_PixelHeightProperty;
+            private SerializedProperty m_PixelsPerUnitProperty;
             private SerializedProperty m_FilterModeProperty;
 
             private void OnEnable()
@@ -283,6 +328,7 @@ namespace BeauUtil
                 m_ModeProperty = serializedObject.FindProperty("m_Mode");
                 m_ScaleProperty = serializedObject.FindProperty("m_Scale");
                 m_PixelHeightProperty = serializedObject.FindProperty("m_PixelHeight");
+                m_PixelsPerUnitProperty = serializedObject.FindProperty("m_PixelsPerUnit");
                 m_FilterModeProperty = serializedObject.FindProperty("m_FilterMode");
             }
 
@@ -312,6 +358,11 @@ namespace BeauUtil
                                 if (!m_PixelHeightProperty.hasMultipleDifferentValues)
                                 {
                                     m_PixelHeightProperty.intValue = Mathf.Clamp(m_PixelHeightProperty.intValue, 1, SystemInfo.maxTextureSize);
+                                }
+                                EditorGUILayout.PropertyField(m_PixelsPerUnitProperty);
+                                if (!m_PixelsPerUnitProperty.hasMultipleDifferentValues)
+                                {
+                                    m_PixelsPerUnitProperty.intValue = Mathf.Clamp(m_PixelsPerUnitProperty.intValue, 0, int.MaxValue);
                                 }
                                 break;
                             }

@@ -96,7 +96,7 @@ namespace BeauUtil
 
         #region IDisposable
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             if (m_Value != null)
             {

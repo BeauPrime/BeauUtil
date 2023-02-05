@@ -449,7 +449,7 @@ MonoBehaviour:
   m_Camera: {fileID: 177779758}
   m_Mode: 1
   m_Scale: 1
-  m_PixelHeight: 144
+  m_PixelHeight: 200
   m_FilterMode: 0
 --- !u!114 &177779762
 MonoBehaviour:
@@ -554,13 +554,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 386038748}
-  m_LocalRotation: {x: -0.6339485, y: -0.07094416, z: 0.28059268, w: 0.71717787}
+  m_LocalRotation: {x: -0.6307837, y: 0.09505573, z: 0.45616382, w: 0.62047637}
   m_LocalPosition: {x: -0.01, y: 0, z: 0}
   m_LocalScale: {x: 0.37, y: 2.23, z: -2.2}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 240.4, y: -247.86, z: -94.5}
+  m_LocalEulerAnglesHint: {x: 240.4, y: -247.86, z: -64.59}
 --- !u!850595691 &770986283
 LightingSettings:
   m_ObjectHideFlags: 0
