@@ -1,3 +1,8 @@
+## Version 0.8.4
+**6 March 2023**
+
+Hotfix for inverted `RingBuffer.RemoveWhere` behavior
+
 ## Version 0.8.3
 **5 Feb 2023**
 
