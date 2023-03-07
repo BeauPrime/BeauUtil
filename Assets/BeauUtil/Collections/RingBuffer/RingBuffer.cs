@@ -605,7 +605,7 @@ namespace BeauUtil
             {
                 for(int i = m_Count - 1; i >= 0; i--)
                 {
-                    if (!inPredicate(m_Data[(m_Head + i) % m_Capacity]))
+                    if (inPredicate(m_Data[(m_Head + i) % m_Capacity]))
                     {
                         FastRemoveAt(i);
                         removed++;
@@ -625,7 +625,7 @@ namespace BeauUtil
             {
                 for(int i = m_Count - 1; i >= 0; i--)
                 {
-                    if (!inPredicate(m_Data[(m_Head + i) % m_Capacity], inArg))
+                    if (inPredicate(m_Data[(m_Head + i) % m_Capacity], inArg))
                     {
                         FastRemoveAt(i);
                         removed++;
