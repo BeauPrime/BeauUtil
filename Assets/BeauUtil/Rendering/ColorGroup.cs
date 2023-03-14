@@ -19,7 +19,7 @@ namespace BeauUtil
     /// <summary>
     /// Enables, disables, and tints renderers individually or as a group.
     /// </summary>
-    [DisallowMultipleComponent, ExecuteInEditMode]
+    [DisallowMultipleComponent, ExecuteAlways]
     [AddComponentMenu("BeauUtil/Rendering/Color Group")]
     public sealed partial class ColorGroup : MonoBehaviour, ICanvasRaycastFilter
     {
@@ -569,16 +569,22 @@ namespace BeauUtil
 
         private void OnValidate()
         {
+            if (!Application.IsPlaying(this)) {
+                if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.BuildPipeline.isBuildingPlayer) {
+                    return;
+                }
+            }
+
             if (!m_ValidateQueued && isActiveAndEnabled)
             {
-                UnityEditor.EditorApplication.update += this.DeferredOnValidate;
+                UnityEditor.EditorApplication.delayCall += this.DeferredOnValidate;
                 m_ValidateQueued = true;
             }
         }
 
         private void DeferredOnValidate()
         {
-            if (!this || !m_ValidateQueued)
+            if (!this || !m_ValidateQueued || (!Application.IsPlaying(gameObject) && UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode))
                 return;
 
             StaticInitialize();
@@ -597,6 +603,14 @@ namespace BeauUtil
 
         private void Awake()
         {
+            #if UNITY_EDITOR
+            if (!Application.IsPlaying(this)) {
+                if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.BuildPipeline.isBuildingPlayer) {
+                    return;
+                }
+            }
+            #endif // UNITY_EDITOR
+
             FindParent();
             FindRenderer(true);
             UpdateChildren();
@@ -604,6 +618,14 @@ namespace BeauUtil
 
         private void OnEnable()
         {
+            #if UNITY_EDITOR
+            if (!Application.IsPlaying(this)) {
+                if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.BuildPipeline.isBuildingPlayer) {
+                    return;
+                }
+            }
+            #endif // UNITY_EDITOR
+
             Refresh();
         }
 

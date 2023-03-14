@@ -14,6 +14,7 @@ using UnityEngine.Events;
 namespace BeauUtil
 {
     [AddComponentMenu("BeauUtil/UI/RectTransform Pin Constraint")]
+    [DefaultExecutionOrder(15000)]
     public class RectTransformPinned : RectTransformConstraint
     {
         #region Types

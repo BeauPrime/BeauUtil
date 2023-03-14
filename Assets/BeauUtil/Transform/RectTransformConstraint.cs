@@ -242,7 +242,7 @@ namespace BeauUtil
         #if UNITY_EDITOR
         protected bool ShouldProcess
         {
-            get { return m_PreviewInEditMode || Application.IsPlaying(gameObject); }
+            get { return (m_PreviewInEditMode && !UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) || Application.IsPlaying(gameObject); }
         }
         #else
         protected const bool ShouldProcess = true;

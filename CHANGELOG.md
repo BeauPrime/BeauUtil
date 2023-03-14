@@ -1,3 +1,9 @@
+## Version 0.8.5
+**14 March 2023**
+
+Hotfix for redundant `ColorGroup` update registration and memory leak
+Hotfix for `RectTransformPinned` update order
+
 ## Version 0.8.4
 **6 March 2023**
 
