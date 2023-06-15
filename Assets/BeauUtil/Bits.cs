@@ -36,7 +36,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given uint has the given bit toggled on.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Contains(uint inBitArray, int inBitIndex)
         {
             return (inBitArray & (1U << inBitIndex)) != 0;
@@ -45,7 +45,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given int has the given bit toggled on.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Contains(int inBitArray, int inBitIndex)
         {
             return (inBitArray & (1 << inBitIndex)) != 0;
@@ -54,7 +54,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given enum contains any of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Contains<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -70,7 +70,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given uint contains any of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ContainsAny(uint inBitArray, uint inBitMask)
         {
             return (inBitArray & inBitMask) != 0;
@@ -79,7 +79,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given int contains any of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ContainsAny(int inBitArray, int inBitMask)
         {
             return (inBitArray & inBitMask) != 0;
@@ -88,7 +88,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given enum contains any of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ContainsAny<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -104,7 +104,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given uint contains all of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ContainsAll(uint inBitArray, uint inBitMask)
         {
             return (inBitArray & inBitMask) == inBitMask;
@@ -113,7 +113,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given int contains all of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ContainsAll(int inBitArray, int inBitMask)
         {
             return (inBitArray & inBitMask) == inBitMask;
@@ -122,7 +122,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given enum contains all of the given mask.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ContainsAll<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -139,7 +139,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given uint to on.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Add(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1U << inBitIndex);
@@ -148,7 +148,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to on.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Add(ref int ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1 << inBitIndex);
@@ -157,7 +157,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given mask in the given enum to on.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Add<T>(ref T ioBitArray, T inMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -173,7 +173,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given uint to off.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Remove(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1U << inBitIndex);
@@ -182,7 +182,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to off.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Remove(ref int ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1 << inBitIndex);
@@ -191,7 +191,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given mask in the given enum to off.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Remove<T>(ref T ioBitArray, T inMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -207,7 +207,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given uint to the given state.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref uint ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
@@ -219,7 +219,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to the given state.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref int ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
@@ -231,7 +231,7 @@ namespace BeauUtil
         /// <summary>
         /// Toggles the given bit in the given int to the given state.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set<T>(ref T ioBitArray, T inMask, bool inbState)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -280,7 +280,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the bit index of the given bit array, if it contains a single set bit.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf<T>(T inBitArray)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -312,8 +312,8 @@ namespace BeauUtil
             int count = 0;
             while(inBitArray != 0)
             {
-                count += (int) (inBitArray & 1);
-                inBitArray >>= 1;
+                inBitArray &= (inBitArray - 1);
+                count++;
             }
             return count;
         }
@@ -321,7 +321,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the number of set bits in the given enum.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count<T>(T inBitArray)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum

@@ -15,11 +15,20 @@ namespace BeauUtil.Blocks
     public struct BlockFilePosition
     {
         public readonly string FileName;
+        public readonly string ExtendedFileName;
         public readonly uint LineNumber;
 
         public BlockFilePosition(string inFileName, uint inLineNumber)
         {
             FileName = string.IsNullOrEmpty(inFileName) ? BlockParser.NullFilename : inFileName;
+            ExtendedFileName = FileName;
+            LineNumber = inLineNumber;
+        }
+
+        public BlockFilePosition(string inFileName, string inExtendedFileName, uint inLineNumber)
+        {
+            FileName = string.IsNullOrEmpty(inFileName) ? BlockParser.NullFilename : inFileName;
+            ExtendedFileName = string.IsNullOrEmpty(inExtendedFileName) ? FileName : inExtendedFileName;
             LineNumber = inLineNumber;
         }
 

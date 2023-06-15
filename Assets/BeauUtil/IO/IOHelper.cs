@@ -70,5 +70,33 @@ namespace BeauUtil.IO
             return string.Format("{0}::{1}({2})", inObject.GetType().Name, inObject.name, inObject.GetInstanceID());
             #endif // UNITY_EDITOR
         }
+
+        /// <summary>
+        /// Returns a relative path.
+        /// </summary>
+        static public string GetRelativePath(string inRelativeTo, string inPath)
+        {
+            inPath = inPath.Replace('\\', '/');
+            inRelativeTo = inRelativeTo.Replace('\\', '/');
+
+            if (Path.IsPathRooted(inPath) && inPath.StartsWith(inRelativeTo))
+            {
+                return inPath.Substring(inRelativeTo.Length + 1);
+            }
+
+            return inPath;
+        }
+
+        /// <summary>
+        /// Returns the relative path to the current working directory, or project directory if in the editor.
+        /// </summary>
+        static public string GetRelativePath(string inPath)
+        {
+            #if UNITY_EDITOR
+            return GetRelativePath(Directory.GetParent(UnityEngine.Application.dataPath).FullName, inPath);
+            #else
+            return GetRelativePath(Environment.CurrentDirectory, inPath);
+            #endif // UNITY_EDITOR
+        }
     }
 }

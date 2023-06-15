@@ -603,7 +603,7 @@ namespace BeauUtil.Blocks
                 else
                 {
                     PositionInline = false;
-                    Position = new BlockFilePosition(inFileName, 0);
+                    Position = new BlockFilePosition(inFileName, inStream.FilePath, 0);
                 }
 
                 ParseFlags |= ParseStateFlags.SkipWhitespace;

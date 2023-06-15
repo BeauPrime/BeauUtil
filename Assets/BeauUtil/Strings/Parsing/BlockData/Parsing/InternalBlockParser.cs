@@ -154,7 +154,7 @@ namespace BeauUtil.Blocks
                     {
                         if (!Base.PositionInline)
                         {
-                            Base.Position = new BlockFilePosition(Base.Position.FileName, Base.Position.LineNumber + 1);
+                            Base.Position = new BlockFilePosition(Base.Position.FileName, Base.Position.ExtendedFileName, Base.Position.LineNumber + 1);
                         }
                         Base.ParseFlags |= ParseStateFlags.SkipWhitespace;
                         Base.ParseFlags &= ~ParseStateFlags.InComment;

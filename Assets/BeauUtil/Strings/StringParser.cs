@@ -1488,7 +1488,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the integer value associated with the given hex character.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int FromHex(char inChar)
         {
             inChar = StringUtils.ToUpperInvariant(inChar);
@@ -1661,19 +1661,19 @@ namespace BeauUtil
             return bHasDot ? ReadAsDecimalPlace : ReadAsInteger;
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private bool IsDigit(char inChar)
         {
             return inChar >= '0' && inChar <= '9';
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private bool IsHexAlpha(char inChar)
         {
             return inChar >= 'A' && inChar <= 'F';
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private bool IsSign(char inChar)
         {
             return inChar == Positive || inChar == Negative;

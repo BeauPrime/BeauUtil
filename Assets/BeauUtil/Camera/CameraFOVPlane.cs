@@ -100,13 +100,13 @@ namespace BeauUtil
             set { m_Target = value; }
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float ZoomedHeight()
         {
             return ZoomedHeight(m_Zoom);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float ZoomedHeight(float inZoom)
         {
             return Mathf.Clamp(m_Height / inZoom, 0.01f, 10000f);

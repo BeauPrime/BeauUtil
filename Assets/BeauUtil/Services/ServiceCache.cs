@@ -54,9 +54,9 @@ namespace BeauUtil.Services
                     m_All = new List<IService>(1);
             }
 
-            [MethodImpl(256)] public bool Has() { return m_First != null; }
-            [MethodImpl(256)] public IService Get() { return m_First; }
-            [MethodImpl(256)] public IReadOnlyList<IService> All() { return m_All; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public bool Has() { return m_First != null; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public IService Get() { return m_First; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public IReadOnlyList<IService> All() { return m_All; }
 
             public IEnumerable<T> All<T>()
             {
@@ -209,7 +209,7 @@ namespace BeauUtil.Services
         /// <summary>
         /// Returns the service for the given type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Get<T>()
         {
             return (T) Get(typeof(T));

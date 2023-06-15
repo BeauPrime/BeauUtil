@@ -35,6 +35,7 @@ namespace BeauUtil.Debugger
         [SerializeField] private RectTransform m_DividerPrefab = null;
         [SerializeField] private DMButtonUI m_ButtonPrefab = null;
         [SerializeField] private DMTextUI m_TextPrefab = null;
+        [SerializeField] private DMSliderUI m_SliderPrefab = null;
 
         [Header("Element Transforms")]
         [SerializeField] private RectTransform m_ElementRoot = null;
@@ -55,13 +56,16 @@ namespace BeauUtil.Debugger
         private RingBuffer<RectTransform> m_InactiveDividers = new RingBuffer<RectTransform>();
         private RingBuffer<DMButtonUI> m_InactiveButtons = new RingBuffer<DMButtonUI>();
         private RingBuffer<DMTextUI> m_InactiveTexts = new RingBuffer<DMTextUI>();
+        private RingBuffer<DMSliderUI> m_InactiveSliders = new RingBuffer<DMSliderUI>();
 
         private RingBuffer<RectTransform> m_ActiveDividers = new RingBuffer<RectTransform>();
         private RingBuffer<DMButtonUI> m_ActiveButtons = new RingBuffer<DMButtonUI>();
         private RingBuffer<DMTextUI> m_ActiveTexts = new RingBuffer<DMTextUI>();
+        private RingBuffer<DMSliderUI> m_ActiveSliders = new RingBuffer<DMSliderUI>();
         [NonSerialized] private int m_SiblingIndexStart;
 
         private Action<DMButtonUI> m_CachedButtonOnClick;
+        private Action<DMSliderUI, float> m_CachedSliderOnChange;
 
         private void Awake()
         {
@@ -75,6 +79,7 @@ namespace BeauUtil.Debugger
 
             m_SiblingIndexStart = m_ElementRoot.childCount;
             m_CachedButtonOnClick = m_CachedButtonOnClick ?? OnButtonClicked;
+            m_CachedSliderOnChange = m_CachedSliderOnChange ?? OnSliderChanged;
             m_Header.SetBackCallback(OnBackClicked);
             m_Page.SetPageCallback(OnPageChanged);
             m_Initialized = true;
@@ -104,11 +109,12 @@ namespace BeauUtil.Debugger
             m_MenuStack[m_MenuStack.Count - 1] = m_CurrentMenu;
             m_CurrentPageCount = maxPages;
 
-            m_Header.Init(inMenu.Header, m_MenuStack.Count > 1);
+            m_Header.Init(inMenu.Header, inMenu.MinimumWidth, m_MenuStack.Count > 1);
 
             int usedButtons = 0;
             int usedTexts = 0;
             int usedDividers = 0;
+            int usedSliders = 0;
             int siblingIndex = m_SiblingIndexStart;
 
             int elementOffset = m_CurrentMenu.PageIndex * elementsPerPage;
@@ -123,17 +129,20 @@ namespace BeauUtil.Debugger
                 {
                     case DMElementType.Divider:
                         {
-                            RectTransform divider;
-                            if (usedDividers >= m_ActiveDividers.Count)
+                            if (i > 0 && i < elementCount - 1) // don't show unnecessary dividers
                             {
-                                divider = AllocDivider();
+                                RectTransform divider;
+                                if (usedDividers >= m_ActiveDividers.Count)
+                                {
+                                    divider = AllocDivider();
+                                }
+                                else
+                                {
+                                    divider = m_ActiveDividers[usedDividers];
+                                }
+                                divider.SetSiblingIndex(siblingIndex++);
+                                ++usedDividers;
                             }
-                            else
-                            {
-                                divider = m_ActiveDividers[usedDividers];
-                            }
-                            divider.SetSiblingIndex(siblingIndex++);
-                            ++usedDividers;
                             break;
                         }
 
@@ -172,6 +181,23 @@ namespace BeauUtil.Debugger
                             usedTexts++;
                             break;
                         }
+
+                    case DMElementType.Slider:
+                        {
+                            DMSliderUI slider;
+                            if (usedSliders >= m_ActiveSliders.Count)
+                            {
+                                slider = AllocSlider();
+                            }
+                            else
+                            {
+                                slider = m_ActiveSliders[usedSliders];
+                            }
+                            slider.Initialize(elementIndex, info, m_CachedSliderOnChange, m_IndentSpacing * info.Indent);
+                            slider.transform.SetSiblingIndex(siblingIndex++);
+                            usedSliders++;
+                            break;
+                        }
                 }
             }
 
@@ -200,6 +226,15 @@ namespace BeauUtil.Debugger
                 divider.transform.SetParent(m_ElementPool, false);
                 m_InactiveDividers.PushBack(divider);
                 dividersToRemove--;
+            }
+
+            int slidersToRemove = m_ActiveSliders.Count - usedSliders;
+            while(slidersToRemove > 0)
+            {
+                DMSliderUI slider = m_ActiveSliders.PopBack();
+                slider.transform.SetParent(m_ElementPool, false);
+                m_InactiveSliders.PushBack(slider);
+                slidersToRemove--;
             }
 
             if (maxPages > 1)
@@ -242,11 +277,18 @@ namespace BeauUtil.Debugger
                 m_InactiveDividers.PushBack(divider);
             }
 
+            foreach(var slider in m_ActiveSliders)
+            {
+                slider.transform.SetParent(m_ElementPool, false);
+                m_InactiveSliders.PushBack(slider);
+            }
+
             m_ActiveButtons.Clear();
             m_ActiveTexts.Clear();
             m_ActiveDividers.Clear();
+            m_ActiveSliders.Clear();
 
-            m_Header.Init(new DMHeaderInfo() { Label = string.Empty }, false);
+            m_Header.Init(new DMHeaderInfo() { Label = string.Empty }, 0, false);
         }
 
         private RectTransform AllocDivider()
@@ -292,6 +334,21 @@ namespace BeauUtil.Debugger
             }
             m_ActiveTexts.PushBack(text);
             return text;
+        }
+
+        private DMSliderUI AllocSlider()
+        {
+            DMSliderUI slider;
+            if (!m_InactiveSliders.TryPopBack(out slider))
+            {
+                slider = Instantiate(m_SliderPrefab, m_ElementRoot);
+            }
+            else
+            {
+                slider.transform.SetParent(m_ElementRoot, false);
+            }
+            m_ActiveSliders.PushBack(slider);
+            return slider;
         }
 
         private void GetPageSettings(DMInfo inMenu, out int outMaxPages, out int outElementsPerPage)
@@ -423,7 +480,8 @@ namespace BeauUtil.Debugger
             foreach(var button in m_ActiveButtons)
             {
                 DMElementInfo info = m_CurrentMenu.Menu.Elements[button.ElementIndex];
-                button.UpdateInteractive(DMInfo.EvaluateOptionalPredicate(info.Predicate));
+                button.Interactable.UpdateInteractive(DMInfo.EvaluateOptionalPredicate(info.Predicate));
+
                 switch(info.Type)
                 {
                     case DMElementType.Toggle:
@@ -438,6 +496,13 @@ namespace BeauUtil.Debugger
             {
                 DMTextInfo textInfo = m_CurrentMenu.Menu.Elements[text.ElementIndex].Text;
                 text.UpdateValue(textInfo.Getter());
+            }
+
+            foreach(var slider in m_ActiveSliders)
+            {
+                DMElementInfo info = m_CurrentMenu.Menu.Elements[slider.ElementIndex];
+                slider.Interactable.UpdateInteractive(DMInfo.EvaluateOptionalPredicate(info.Predicate));
+                slider.UpdateValue(info.Slider.Getter(), info.Slider);
             }
         }
 
@@ -472,6 +537,20 @@ namespace BeauUtil.Debugger
                         PushMenu(info.Submenu.Submenu);
                         break;
                     }
+            }
+        }
+
+        private void OnSliderChanged(DMSliderUI inSlider, float inPercentage)
+        {
+            int index = inSlider.ElementIndex;
+            DMElementInfo info = m_CurrentMenu.Menu.Elements[index];
+
+            float realValue = DMSliderRange.GetValue(info.Slider.Range, inPercentage);
+            info.Slider.Setter(realValue);
+            
+            if (inSlider.UpdateValue(realValue, info.Slider))
+            {
+                UpdateElements();
             }
         }
 

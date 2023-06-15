@@ -71,7 +71,7 @@ namespace BeauUtil
         /// Removes an element from the given list by swapping.
         /// Does not preserve order.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void FastRemoveAt<T>(this IList<T> ioList, int inIndex)
         {
             int end = ioList.Count - 1;

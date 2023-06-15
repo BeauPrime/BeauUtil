@@ -32,7 +32,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, int inSrcCount, T* inDest, int inDestCount)
             where T : unmanaged
         {
@@ -43,7 +43,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, long inSrcCount, T* inDest, long inDestCount)
             where T : unmanaged
         {
@@ -54,7 +54,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, int inCount, T* inDest)
             where T : unmanaged
         {
@@ -65,7 +65,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, long inCount, T* inDest)
             where T : unmanaged
         {
@@ -76,7 +76,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T* inSrc, int inSrcCount, T** inDest, int* inDestCountRemaining)
             where T : unmanaged
         {
@@ -89,7 +89,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T* inSrc, long inSrcCount, T** inDest, long* inDestCountRemaining)
             where T : unmanaged
         {
@@ -102,7 +102,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T* inSrc, int inCount, T** inDest)
             where T : unmanaged
         {
@@ -114,7 +114,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T* inSrc, long inCount, T** inDest)
             where T : unmanaged
         {
@@ -128,7 +128,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest)
             where T : unmanaged
         {
@@ -142,7 +142,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, long inSrcCount, T[] inDest)
             where T : unmanaged
         {
@@ -156,7 +156,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
             where T : unmanaged
         {
@@ -170,7 +170,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T* inSrc, long inSrcCount, T[] inDest, long inDestOffset)
             where T : unmanaged
         {
@@ -186,7 +186,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, T* inDest, int inDestCount)
             where T : unmanaged
         {
@@ -196,7 +196,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, T* inDest, long inDestCount)
             where T : unmanaged
         {
@@ -206,7 +206,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, T* inDest, int inDestCount)
             where T : unmanaged
         {
@@ -216,7 +216,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, long inSrcOffset, T* inDest, long inDestCount)
             where T : unmanaged
         {
@@ -226,7 +226,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, T* inDest, int inDestCount)
             where T : unmanaged
         {
@@ -240,7 +240,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, long inSrcOffset, long inSrcCount, T* inDest, long inDestCount)
             where T : unmanaged
         {
@@ -254,7 +254,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, T** inDest, int* inDestCountRemaining)
             where T : unmanaged
         {
@@ -264,7 +264,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, T** inDest, long* inDestCountRemaining)
             where T : unmanaged
         {
@@ -274,7 +274,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, int inSrcOffset, T** inDest, int* inDestCountRemaining)
             where T : unmanaged
         {
@@ -284,7 +284,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, T** inDest, long* inDestCountRemaining)
             where T : unmanaged
         {
@@ -328,7 +328,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(void* inSrc, int inSrcCount, void* inDest, int inDestCount)
             where T : struct
         {
@@ -339,7 +339,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(void* inSrc, long inSrcCount, void* inDest, long inDestCount)
             where T : struct
         {
@@ -350,7 +350,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(void* inSrc, int inCount, void* inDest)
             where T : struct
         {
@@ -361,7 +361,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(void* inSrc, long inCount, void* inDest)
             where T : struct
         {
@@ -372,7 +372,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(void* inSrc, int inSrcCount, void** inDest, int* inDestCountRemaining)
             where T : struct
         {
@@ -385,7 +385,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(void* inSrc, long inSrcCount, void** inDest, long* inDestCountRemaining)
             where T : struct
         {
@@ -398,7 +398,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(void* inSrc, int inCount, void** inDest)
             where T : struct
         {
@@ -410,7 +410,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(void* inSrc, long inCount, void** inDest)
             where T : struct
         {
@@ -424,7 +424,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(void* inSrc, int inSrcCount, T[] inDest)
             where T : struct
         {
@@ -434,7 +434,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from a buffer to an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(void* inSrc, long inSrcCount, T[] inDest)
             where T : struct
         {
@@ -475,7 +475,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, void* inDest, int inDestCount)
             where T : struct
         {
@@ -485,7 +485,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, void* inDest, long inDestCount)
             where T : struct
         {
@@ -495,7 +495,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, void* inDest, int inDestCount)
             where T : struct
         {
@@ -505,7 +505,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArray<T>(T[] inSrc, long inSrcOffset, void* inDest, long inDestCount)
             where T : struct
         {
@@ -543,7 +543,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, void** inDest, int* inDestCount)
             where T : struct
         {
@@ -553,7 +553,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, void** inDest, long* inDestCount)
             where T : struct
         {
@@ -563,7 +563,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, int inSrcOffset, void** inDest, int* inDestCountRemaining)
             where T : struct
         {
@@ -573,7 +573,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from an array to a buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, void** inDest, long* inDestCountRemaining)
             where T : struct
         {
@@ -617,7 +617,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Copy(void* inSrc, int inSrcSize, void* inDest, int inDestSize)
         {
             Buffer.MemoryCopy(inSrc, inDest, inDestSize, inSrcSize);
@@ -626,7 +626,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Copy(void* inSrc, long inSrcSize, void* inDest, long inDestSize)
         {
             Buffer.MemoryCopy(inSrc, inDest, inDestSize, inSrcSize);
@@ -635,7 +635,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Copy(void* inSrc, int inSize, void* inDest)
         {
             Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
@@ -644,7 +644,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Copy(void* inSrc, long inSize, void* inDest)
         {
             Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
@@ -653,7 +653,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyIncrement(void* inSrc, int inSrcSize, void** inDest, int* inDestSizeRemaining)
         {
             Buffer.MemoryCopy(inSrc, *inDest, *inDestSizeRemaining, inSrcSize);
@@ -664,7 +664,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyIncrement(void* inSrc, long inSrcSize, void** inDest, long* inDestSizeRemaining)
         {
             Buffer.MemoryCopy(inSrc, *inDest, *inDestSizeRemaining, inSrcSize);
@@ -675,7 +675,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyIncrement(void* inSrc, int inSize, void** inDest)
         {
             Buffer.MemoryCopy(inSrc, *inDest, inSize, inSize);
@@ -685,7 +685,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void CopyIncrement(void* inSrc, long inSize, void** inDest)
         {
             Buffer.MemoryCopy(inSrc, *inDest, inSize, inSize);
@@ -701,7 +701,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(T* ioBuffer, int inCount)
             where T : unmanaged
         {
@@ -711,7 +711,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given comparer object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(T* ioBuffer, int inCount, IComparer<T> inComparison)
             where T : unmanaged
         {
@@ -721,7 +721,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given comparison function.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(T* ioBuffer, int inCount, Comparison<T> inComparison)
             where T : unmanaged
         {
@@ -731,7 +731,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given comparison function.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(T* ioBuffer, int inCount, ComparisonPtr<T> inComparison)
             where T : unmanaged
         {
@@ -741,7 +741,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given sorting value function.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(T* ioBuffer, int inCount, ComparisonGetSortingValue<T> inSortingValues)
             where T : unmanaged
         {
@@ -751,7 +751,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(T* ioBuffer, int inLowerIndex, int inUpperIndex)
             where T : unmanaged
         {
@@ -1045,7 +1045,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(void* ioBuffer, int inCount)
             where T : struct
         {
@@ -1055,7 +1055,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given comparer object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(void* ioBuffer, int inCount, IComparer<T> inComparison)
             where T : struct
         {
@@ -1065,7 +1065,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given comparison function.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(void* ioBuffer, int inCount, Comparison<T> inComparison)
             where T : struct
         {
@@ -1075,7 +1075,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given comparison function.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(void* ioBuffer, int inCount, ComparisonPtr<T> inComparison)
             where T : struct
         {
@@ -1085,7 +1085,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the given sorting value function.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(void* ioBuffer, int inCount, ComparisonGetSortingValue<T> inSortingValues)
             where T : struct
         {
@@ -1095,7 +1095,7 @@ namespace BeauUtil
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Quicksort<T>(void* ioBuffer, int inLowerIndex, int inUpperIndex)
             where T : struct
         {

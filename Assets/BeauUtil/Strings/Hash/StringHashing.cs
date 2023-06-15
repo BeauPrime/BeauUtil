@@ -662,73 +662,73 @@ namespace BeauUtil
 
         #else
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal uint StoreHash32(string inString, int inOffset, int inLength)
         {
             return Hash32(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal uint StoreHash32CaseInsensitive(string inString, int inOffset, int inLength)
         {
             return Hash32CaseInsensitive(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal uint StoreHash32(StringBuilder inString, int inOffset, int inLength)
         {
             return Hash32(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal uint StoreHash32CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
         {
             return Hash32CaseInsensitive(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal uint AppendHash32(uint inHash, string inString, int inOffset, int inLength, bool inbReverseLookup)
         {
             return Hash32Append(inHash, inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal string ReverseLookup32(uint inHash)
         {
             return inHash == 0 ? string.Empty : ReverseLookupUnavailable;
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal ulong StoreHash64(string inString, int inOffset, int inLength)
         {
             return Hash64(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal ulong StoreHash64CaseInsensitive(string inString, int inOffset, int inLength)
         {
             return Hash64CaseInsensitive(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal ulong StoreHash64(StringBuilder inString, int inOffset, int inLength)
         {
             return Hash64(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal ulong StoreHash64CaseInsensitive(StringBuilder inString, int inOffset, int inLength)
         {
             return Hash64CaseInsensitive(inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal ulong AppendHash64(ulong inHash, string inString, int inOffset, int inLength, bool inbReverseLookup)
         {
             return Hash64Append(inHash, inString, inOffset, inLength);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal string ReverseLookup64(ulong inHash)
         {
             return inHash == 0 ? string.Empty : ReverseLookupUnavailable;

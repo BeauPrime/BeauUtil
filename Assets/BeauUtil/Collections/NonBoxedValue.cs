@@ -196,7 +196,7 @@ namespace BeauUtil
 
         #region Integrals
 
-        [MethodImpl(256)] public bool IsIntegral() { return (m_Type >= ValueType.Int8 && m_Type <= ValueType.UInt64) || m_Type == ValueType.Char; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public bool IsIntegral() { return (m_Type >= ValueType.Int8 && m_Type <= ValueType.UInt64) || m_Type == ValueType.Char; }
 
         public sbyte AsInt8()
         {
@@ -487,7 +487,7 @@ namespace BeauUtil
 
         #region Floats
 
-        [MethodImpl(256)] public bool IsFloat() { return m_Type >= ValueType.Float32 && m_Type <= ValueType.Float64; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public bool IsFloat() { return m_Type >= ValueType.Float32 && m_Type <= ValueType.Float64; }
 
         public float AsFloat()
         {
@@ -727,49 +727,49 @@ namespace BeauUtil
 
         #region Conversions
 
-        [MethodImpl(256)] static public explicit operator sbyte(NonBoxedValue inValue) { return inValue.AsInt8(); }
-        [MethodImpl(256)] static public explicit operator Int16(NonBoxedValue inValue) { return inValue.AsInt16(); }
-        [MethodImpl(256)] static public explicit operator Int32(NonBoxedValue inValue) { return inValue.AsInt32(); }
-        [MethodImpl(256)] static public explicit operator Int64(NonBoxedValue inValue) { return inValue.AsInt64(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator sbyte(NonBoxedValue inValue) { return inValue.AsInt8(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator Int16(NonBoxedValue inValue) { return inValue.AsInt16(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator Int32(NonBoxedValue inValue) { return inValue.AsInt32(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator Int64(NonBoxedValue inValue) { return inValue.AsInt64(); }
 
-        [MethodImpl(256)] static public explicit operator byte(NonBoxedValue inValue) { return inValue.AsUInt8(); }
-        [MethodImpl(256)] static public explicit operator UInt16(NonBoxedValue inValue) { return inValue.AsUInt16(); }
-        [MethodImpl(256)] static public explicit operator UInt32(NonBoxedValue inValue) { return inValue.AsUInt32(); }
-        [MethodImpl(256)] static public explicit operator UInt64(NonBoxedValue inValue) { return inValue.AsUInt64(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator byte(NonBoxedValue inValue) { return inValue.AsUInt8(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator UInt16(NonBoxedValue inValue) { return inValue.AsUInt16(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator UInt32(NonBoxedValue inValue) { return inValue.AsUInt32(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator UInt64(NonBoxedValue inValue) { return inValue.AsUInt64(); }
 
-        [MethodImpl(256)] static public explicit operator float(NonBoxedValue inValue) { return inValue.AsFloat(); }
-        [MethodImpl(256)] static public explicit operator double(NonBoxedValue inValue) { return inValue.AsDouble(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator float(NonBoxedValue inValue) { return inValue.AsFloat(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator double(NonBoxedValue inValue) { return inValue.AsDouble(); }
 
-        [MethodImpl(256)] static public explicit operator char(NonBoxedValue inValue) { return inValue.AsChar(); }
-        [MethodImpl(256)] static public explicit operator bool(NonBoxedValue inValue) { return inValue.AsBool(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator char(NonBoxedValue inValue) { return inValue.AsChar(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator bool(NonBoxedValue inValue) { return inValue.AsBool(); }
 
-        [MethodImpl(256)] static public explicit operator IntPtr(NonBoxedValue inValue) { return inValue.AsPtr(); }
-        [MethodImpl(256)] static public explicit operator StringHash32(NonBoxedValue inValue) { return inValue.AsStringHash(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator IntPtr(NonBoxedValue inValue) { return inValue.AsPtr(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator StringHash32(NonBoxedValue inValue) { return inValue.AsStringHash(); }
 
-        [MethodImpl(256)] static public explicit operator string(NonBoxedValue inValue) { return inValue.AsString(); }
-        [MethodImpl(256)] static public explicit operator StringSlice(NonBoxedValue inValue) { return inValue.AsStringSlice(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator string(NonBoxedValue inValue) { return inValue.AsString(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator StringSlice(NonBoxedValue inValue) { return inValue.AsStringSlice(); }
 
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(sbyte inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(Int16 inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(Int32 inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(Int64 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(sbyte inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(Int16 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(Int32 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(Int64 inValue) { return new NonBoxedValue(inValue); }
 
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(byte inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(UInt16 inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(UInt32 inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(UInt64 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(byte inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(UInt16 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(UInt32 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(UInt64 inValue) { return new NonBoxedValue(inValue); }
 
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(float inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(double inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(float inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(double inValue) { return new NonBoxedValue(inValue); }
 
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(char inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(bool inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(char inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(bool inValue) { return new NonBoxedValue(inValue); }
 
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(IntPtr inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(StringHash32 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(IntPtr inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(StringHash32 inValue) { return new NonBoxedValue(inValue); }
 
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(string inValue) { return new NonBoxedValue(inValue); }
-        [MethodImpl(256)] static public implicit operator NonBoxedValue(StringSlice inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(string inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(StringSlice inValue) { return new NonBoxedValue(inValue); }
 
         #endregion // Conversions
     

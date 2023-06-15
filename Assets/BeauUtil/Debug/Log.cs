@@ -142,7 +142,7 @@ namespace BeauUtil.Debugger
 
         #endregion // Message
 
-        #region Message
+        #region Warn
 
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_WARNINGS_BEAUUTIL")]
         static public void Warn(string inMessage)
@@ -174,9 +174,9 @@ namespace BeauUtil.Debugger
             UnityEngine.Debug.LogWarningFormat(Format(inMessage, inArgs), Array.Empty<object>());
         }
 
-        #endregion // Message
+        #endregion // Warn
 
-        #region Message
+        #region Error
 
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL"), Conditional("ENABLE_LOGGING_ERRORS_BEAUUTIL")]
         static public void Error(string inMessage)
@@ -208,7 +208,7 @@ namespace BeauUtil.Debugger
             UnityEngine.Debug.LogErrorFormat(Format(inMessage, inArgs), Array.Empty<object>());
         }
 
-        #endregion // Message
+        #endregion // Error
 
         #region Stack Traces
 

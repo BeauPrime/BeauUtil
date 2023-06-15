@@ -31,7 +31,7 @@ namespace BeauUtil
         /// <param name="inMax1">Max of first range.</param>
         /// <param name="inMin2">Min of second range.</param>
         /// <param name="inMax2">Max of second range.</param>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float Remap(float inValue, float inMin1, float inMax1, float inMin2, float inMax2)
         {
             return (inValue - inMin1) / (inMax1 - inMin1) * (inMax2 - inMin2) + inMin2;
@@ -40,7 +40,7 @@ namespace BeauUtil
         /// <summary>
         /// Performs a safe modulo that consistently wraps correctly for negative values.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float SafeMod(float inA, float inB)
         {
             return ((inA % inB) + inB) % inB;
@@ -49,7 +49,7 @@ namespace BeauUtil
         /// <summary>
         /// Performs a safe modulo that consistently wraps correctly for negative values.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float SafeMod(int inA, int inB)
         {
             return ((inA % inB) + inB) % inB;
@@ -58,7 +58,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the difference between two angles, in degrees.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float DegreeAngleDifference(float inDegA, float inDegB)
         {
             return SafeMod(180 + inDegB - inDegA, 360) - 180;
@@ -67,10 +67,47 @@ namespace BeauUtil
         /// <summary>
         /// Returns the difference between two angles, in radians.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float RadianAngleDifference(float inRadA, float inRadB)
         {
             return SafeMod(Mathf.PI + inRadB - inRadA, Mathf.PI * 2) - Mathf.PI;
+        }
+
+        /// <summary>
+        /// Quantizes a value to the nearest integer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public float Quantize(float inValue)
+        {
+            return Mathf.Round(inValue);
+        }
+
+
+        /// <summary>
+        /// Quantizes a value to the nearest increment.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public float Quantize(float inValue, float inIncrement)
+        {
+            return inIncrement * Mathf.Round(inValue / inIncrement);
+        }
+
+        /// <summary>
+        /// Quantizes a value to the nearest integer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double Quantize(double inValue)
+        {
+            return Math.Round(inValue);
+        }
+
+        /// <summary>
+        /// Quantizes a value to the nearest increment.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double Quantize(double inValue, double inIncrement)
+        {
+            return inIncrement * Math.Round(inValue / inIncrement);
         }
     }
 }

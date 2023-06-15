@@ -172,13 +172,13 @@ namespace BeauUtil
             return (float) scale;
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private int ErrorCorrection(int fullHeight, int desiredPixelHeight, double scale)
         {
             return desiredPixelHeight - (int) Math.Round(fullHeight * scale);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private float Quantize(float value, float quantize)
         {
             return quantize * (float) Math.Round(value / quantize);

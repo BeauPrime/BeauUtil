@@ -16,7 +16,7 @@ namespace BeauUtil.UnitTests
         static private void Setup()
         {
             Unsafe.TryDestroyArena(ref Allocator);
-            Allocator = Unsafe.CreateArena(1024);
+            Allocator = Unsafe.CreateArena(4096);
         }
 
         [Test]
@@ -147,6 +147,25 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(list[7], Vector3.right);
             Assert.AreEqual(list[1], Vector3.up);
             Assert.AreEqual(list[2], Vector3.down);
+        }
+
+        [Test]
+        static public void StackArena() {
+            byte* allocStack = stackalloc byte[2048];
+            Unsafe.ArenaHandle allocator = Unsafe.CreateArena(allocStack, 2048);
+            Assert.IsTrue(allocator.Validate());
+        }
+
+        [Test]
+        static public void NestedArena() {
+            Setup();
+
+            Unsafe.ArenaHandle nestedArena = Unsafe.CreateArena(Allocator, 1024);
+            Assert.IsTrue(nestedArena.Validate());
+            Assert.IsTrue(Allocator.UsedBytes() > 0);
+            Log.Msg("header size = {0}", Allocator.UsedBytes() - 1024);
+
+            Unsafe.TryDestroyArena(ref Allocator);
         }
     }
 }

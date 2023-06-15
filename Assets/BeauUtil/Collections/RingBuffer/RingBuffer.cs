@@ -109,7 +109,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the buffer is currently full to capacity.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsFull()
         {
             return m_Count == m_Capacity;
@@ -118,7 +118,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given element is present in the buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if EXPANDED_REFS
         public bool Contains(in T inItem)
 #else
@@ -289,7 +289,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T PeekFront()
         {
             if (m_Count <= 0)
@@ -303,7 +303,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T PeekBack()
         {
             if (m_Count <= 0)
@@ -435,7 +435,7 @@ namespace BeauUtil
         /// Removes the given element from the buffer.
         /// Preserves element order at the cost of speed.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if EXPANDED_REFS
         public bool Remove(in T inValue)
 #else
@@ -454,7 +454,7 @@ namespace BeauUtil
         /// Removes the given element from the buffer by swapping.
         /// Does not preserve element order.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if EXPANDED_REFS
         public bool FastRemove(in T inValue)
 #else
@@ -660,7 +660,10 @@ namespace BeauUtil
                 return;
 
             Compress(false);
-            Array.Sort(m_Data, m_Head, m_Count, ArrayUtils.WrapComparison(inComparer));
+            using(var noAllocCompare = ArrayUtils.WrapComparison(inComparer))
+            {
+                Array.Sort(m_Data, m_Head, m_Count, noAllocCompare);
+            }
         }
 
         /// <summary>
@@ -902,7 +905,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if an element passing the given predicate exists.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Exists(Predicate<T> inPredicate)
         {
             return FindIndex(inPredicate) >= 0;
@@ -945,7 +948,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if an element passing the given predicate exists.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Exists<U>(Predicate<T, U> inPredicate, U inArg)
         {
             return FindIndex<U>(inPredicate, inArg) >= 0;

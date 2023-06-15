@@ -103,6 +103,8 @@ MonoBehaviour:
     type: 3}
   m_TextPrefab: {fileID: 5686915459780456224, guid: 0b3c419184176104cba723b096759b37,
     type: 3}
+  m_SliderPrefab: {fileID: 7708431244975882721, guid: ec5fb9f5a7123404885dcbb1e29b3e3f,
+    type: 3}
   m_ElementRoot: {fileID: 7497580269783364986}
   m_ElementPool: {fileID: 2904227557507461967}
   m_IndentSpacing: 16

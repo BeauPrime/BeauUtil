@@ -175,7 +175,7 @@ namespace BeauUtil
         /// <summary>
         /// Escapes a string builder to another string builder.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Escape(StringBuilder inString, StringBuilder ioBuilder)
         {
             Escape(inString, 0, inString.Length, ioBuilder);
@@ -400,7 +400,7 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a string builder to another string builder.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Unescape(StringBuilder inString, StringBuilder ioBuilder)
         {
             Unescape(inString, 0, inString.Length, ioBuilder);
@@ -491,7 +491,7 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a string builder to itself.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void UnescapeInline(StringBuilder ioString)
         {
             UnescapeInline(ioString, 0, ioString.Length);
@@ -761,7 +761,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, long inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -770,7 +770,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, long inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -779,7 +779,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ulong inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -788,7 +788,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ulong inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -797,7 +797,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, int inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -806,7 +806,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, int inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -815,7 +815,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, uint inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -824,7 +824,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, uint inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -833,7 +833,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, short inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -842,7 +842,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, short inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -851,7 +851,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ushort inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -860,7 +860,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, ushort inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -869,7 +869,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, byte inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -878,7 +878,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, byte inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -887,7 +887,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, sbyte inValue)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, 0);
@@ -896,7 +896,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends an integer to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, sbyte inValue, int inPadLeft)
         {
             return Numbers.AppendIntegerBase10(ioBuilder, inValue, inPadLeft);
@@ -906,7 +906,7 @@ namespace BeauUtil
         // /// <summary>
         // /// Appends a floating point value to the given StringBuilder, without calling ToString()
         // /// </summary>
-        // [MethodImpl(256)]
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, float inValue)
         // {
         //     return Numbers.AppendNumber(ioBuilder, inValue, 0, -1);
@@ -915,7 +915,7 @@ namespace BeauUtil
         // /// <summary>
         // /// Appends a floating point value to the given StringBuilder, without calling ToString()
         // /// </summary>
-        // [MethodImpl(256)]
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, double inValue)
         // {
         //     return Numbers.AppendNumber(ioBuilder, inValue, 0, -1);
@@ -924,7 +924,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends a floating point value to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, float inValue, int inPrecision, int inPadLeft = 0)
         {
             return Numbers.AppendNumber(ioBuilder, inValue, inPadLeft, inPrecision);
@@ -933,7 +933,7 @@ namespace BeauUtil
         /// <summary>
         /// Appends a floating point value to the given StringBuilder, without calling ToString()
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendNoAlloc(this StringBuilder ioBuilder, double inValue, int inPrecision, int inPadLeft = 0)
         {
             return Numbers.AppendNumber(ioBuilder, inValue, inPadLeft, inPrecision);
@@ -1235,7 +1235,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the first index of the given character.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(this StringBuilder inBuilder, char inChar)
         {
             return IndexOf(inBuilder, inChar, 0, inBuilder.Length);
@@ -1266,7 +1266,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the first index of the given string.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(this StringBuilder inBuilder, string inString, bool inbIgnoreCase = false)
         {
             return IndexOf(inBuilder, inString, 0, inBuilder.Length, inbIgnoreCase);
@@ -1279,7 +1279,7 @@ namespace BeauUtil
         /// <summary>
         /// Decodes a UTF8 byte buffer into a char buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe int DecodeUFT8(byte* inBuffer, int inCount, char* outCharBuffer, int outCharBufferLength)
         {
             return Encoding.UTF8.GetChars(inBuffer, inCount, outCharBuffer, outCharBufferLength);
@@ -1288,7 +1288,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the maximum size of a char buffer needed to decode a UTF8 byte buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int DecodeSizeUTF8(int inByteCount)
         {
             return Encoding.UTF8.GetMaxCharCount(inByteCount);
@@ -1297,7 +1297,7 @@ namespace BeauUtil
         /// <summary>
         /// Decodes a byte buffer into a UTF-8 char buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe int EncodeUFT8(char* inBuffer, int inCount, byte* outByteBuffer, int outByteBufferLength)
         {
             return Encoding.UTF8.GetBytes(inBuffer, inCount, outByteBuffer, outByteBufferLength);
@@ -1306,7 +1306,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the maximum size of a UTF8 byte buffer needed to encode a char buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int EncodeSizeUTF8(int inCharCount)
         {
             return Encoding.UTF8.GetMaxByteCount(inCharCount);

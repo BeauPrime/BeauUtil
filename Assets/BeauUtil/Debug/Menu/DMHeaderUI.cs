@@ -21,13 +21,18 @@ namespace BeauUtil.Debugger
 
         [SerializeField] private TMP_Text m_HeaderText = null;
         [SerializeField] private Button m_BackButton = null;
+        [SerializeField] private LayoutElement m_Layout = null;
 
         #endregion // Inspector
 
-        public void Init(DMHeaderInfo inHeaderInfo, bool inbHasBack)
+        public void Init(DMHeaderInfo inHeaderInfo, float inMinWidth, bool inbHasBack)
         {
             m_HeaderText.SetText(inHeaderInfo.Label);
             m_BackButton.gameObject.SetActive(inbHasBack);
+            if (m_Layout)
+            {
+                m_Layout.minWidth = inMinWidth > 0 ? inMinWidth : -1;
+            }
         }
 
         public void SetBackCallback(UnityAction inCallback)

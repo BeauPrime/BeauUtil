@@ -49,7 +49,7 @@ namespace BeauUtil
         /// <summary>
         /// Reinterprets a value as a value of another type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TTo Reinterpret<TFrom, TTo>(TFrom inValue)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -62,7 +62,7 @@ namespace BeauUtil
         /// <summary>
         /// Reinterprets an indirect value as a value of another type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TTo Reinterpret<TFrom, TTo>(TFrom* inValuePtr)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -74,7 +74,7 @@ namespace BeauUtil
         /// Reinterprets a value as a value of another type.
         /// Behavior is undefined if <c>sizeof(TTo) > sizeof(TFrom)</c>
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TTo FastReinterpret<TFrom, TTo>(TFrom inValue)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -100,152 +100,152 @@ namespace BeauUtil
         /// <summary>
         /// Returns the alignment of the given type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignOf<T>()
             where T : struct
         {
             return AlignHelper<T>.Alignment;
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp4(uint val)
         {
             return (val + 4u - 1) & ~(4u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp4(ulong val)
         {
             return (val + 4u - 1) & ~(ulong) (4u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignDown4(uint val)
         {
             return (val) & ~(4u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDown4(ulong val)
         {
             return (val) & ~(ulong) (4u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp8(uint val)
         {
             return (val + 8u - 1) & ~(8u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp8(ulong val)
         {
             return (val + 8u - 1) & ~(ulong) (8u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignDown8(uint val)
         {
             return (val) & ~(8u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDown8(ulong val)
         {
             return (val) & ~(ulong) (8u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp16(uint val)
         {
             return (val + 16u - 1) & ~(16u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp16(ulong val)
         {
             return (val + 16u - 1) & ~(ulong) (16u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignDown16(uint val)
         {
             return (val) & ~(16u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDown16(ulong val)
         {
             return (val) & ~(ulong) (16u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp32(uint val)
         {
             return (val + 32u - 1) & ~(32u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp32(ulong val)
         {
             return (val + 32u - 1) & ~(ulong) (32u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignDown32(uint val)
         {
             return (val) & ~(32u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDown32(ulong val)
         {
             return (val) & ~(ulong) (32u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp64(uint val)
         {
             return (val + 64u - 1) & ~(64u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp64(ulong val)
         {
             return (val + 64u - 1) & ~(ulong) (64u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignDown64(uint val)
         {
             return (val) & ~(64u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDown64(ulong val)
         {
             return (val) & ~(ulong) (64u - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUpN(uint val, uint n)
         {
             return (val + n - 1) & ~(n - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUpN(ulong val, uint n)
         {
             return (val + n - 1) & ~(ulong) (n - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignDown(uint val, uint n)
         {
             return (val) & ~(n - 1);
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDownN(ulong val, uint n)
         {
             return (val) & ~(ulong) (n - 1); 
@@ -260,7 +260,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the size of the unmanaged type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int SizeOf<T>()
             where T : unmanaged
         {
@@ -272,7 +272,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the size of the unmanaged type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int SizeOf<T>()
             where T : struct
         {
@@ -292,7 +292,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a pointer to the start of the given native buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T* NativePointer<T>(Unity.Collections.NativeArray<T> inArray)
             where T : unmanaged
         {
@@ -302,7 +302,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a read-only pointer to the start of the given native buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T* NativePointerReadOnly<T>(Unity.Collections.NativeArray<T> inArray)
             where T : unmanaged
         {
@@ -312,11 +312,25 @@ namespace BeauUtil
         /// <summary>
         /// Returns a pointer to the start of the given native slice.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T* NativePointer<T>(Unity.Collections.NativeSlice<T> inSlice)
             where T : unmanaged
         {
             return (T*) Unity.Collections.LowLevel.Unsafe.NativeSliceUnsafeUtility.GetUnsafePtr(inSlice);
+        }
+
+        /// <summary>
+        /// Returns a NativeArray wrapping the given unsafe buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public Unity.Collections.NativeArray<T> NativeArray<T>(T* inBuffer, int inCount)
+            where T : unmanaged
+        {
+            Unity.Collections.NativeArray<T> nativeArray = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(inBuffer, inCount, Unity.Collections.Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, Unity.Collections.LowLevel.Unsafe.AtomicSafetyHandle.GetTempUnsafePtrSliceHandle());
+#endif // ENABLE_UNITY_COLLECTIONS_CHECKS
+            return nativeArray;
         }
 
         #else
@@ -324,7 +338,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a pointer to the start of the given native buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void* NativePointer<T>(Unity.Collections.NativeArray<T> inArray)
             where T : struct
         {
@@ -334,7 +348,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a read-only pointer to the start of the given native buffer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void* NativePointerReadOnly<T>(Unity.Collections.NativeArray<T> inArray)
             where T : struct
         {
@@ -344,7 +358,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns a pointer to the start of the given native slice.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void* NativePointer<T>(Unity.Collections.NativeSlice<T> inSlice)
             where T : struct
         {
@@ -739,7 +753,7 @@ namespace BeauUtil
         /// <summary>
         /// Hashes the given data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint Hash32<T>(T inValue) where T : unmanaged
         {
             return Hash32(&inValue, sizeof(T));
@@ -748,7 +762,7 @@ namespace BeauUtil
         /// <summary>
         /// Hashes the given data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong Hash64<T>(T inValue) where T : unmanaged
         {
             return Hash64(&inValue, sizeof(T));
@@ -757,7 +771,7 @@ namespace BeauUtil
         /// <summary>
         /// Combines one hash with another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint CombineHash32<T>(uint inInitial, T inValue) where T : unmanaged
         {
             return CombineHash32(inInitial, &inValue, sizeof(T));
@@ -766,7 +780,7 @@ namespace BeauUtil
         /// <summary>
         /// Combines one hash with another.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong CombineHash64<T>(ulong inInitial, T inValue) where T : unmanaged
         {
             return CombineHash64(inInitial, &inValue, sizeof(T));

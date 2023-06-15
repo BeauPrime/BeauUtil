@@ -96,7 +96,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the minimum-scoring element from the given list.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T GetMinElement<T>(T[] inList, ScoreFunction<T> inDelegate)
         {
             return GetMinElement(inList, 0, inList.Length, inDelegate);
@@ -175,7 +175,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the maximum-scoring element from the given list.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T GetMaxElement<T>(T[] inList, ScoreFunction<T> inDelegate)
         {
             return GetMaxElement(inList, 0, inList.Length, inDelegate);

@@ -696,7 +696,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Attempts to convert from a NonBoxedValue to a Variant.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool TryConvertFrom(NonBoxedValue inNonBoxed, out Variant outVariant)
         {
             return inNonBoxed.TryGetVariant(out outVariant);

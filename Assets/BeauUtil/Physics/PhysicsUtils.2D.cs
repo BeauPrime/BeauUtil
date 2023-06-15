@@ -283,7 +283,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given Rigidbody2D is colliding with a given layer at its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers)
         {
             return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D));
@@ -304,7 +304,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given Collider2D is colliding with a given layer at its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers)
         {
             return IsOverlapping(inCollider, inLayers, default(ContactFilter2D));
@@ -327,7 +327,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer offset from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset)
         {
             return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D), inOffset);
@@ -352,7 +352,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer offset from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset)
         {
             return IsOverlapping(inCollider, inLayers, default(ContactFilter2D), inOffset);
@@ -379,7 +379,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset)
         {
             return IsCastOverlapping(inRigidbody, inLayers, inOffset, default(ContactFilter2D));
@@ -406,7 +406,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset)
         {
             return IsCastOverlapping(inCollider, inLayers, inOffset, default(ContactFilter2D));
@@ -439,7 +439,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given Rigidbody2D is colliding with a given layer at its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, out Collider2D outFirst)
         {
             return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D), out outFirst);
@@ -461,7 +461,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given Collider2D is colliding with a given layer at its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, out Collider2D outFirst)
         {
             return IsOverlapping(inCollider, inLayers, default(ContactFilter2D), out outFirst);
@@ -485,7 +485,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer offset from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out Collider2D outFIrst)
         {
             return IsOverlapping(inRigidbody, inLayers, default(ContactFilter2D), inOffset, out outFIrst);
@@ -510,7 +510,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer offset from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out Collider2D outFirst)
         {
             return IsOverlapping(inCollider, inLayers, default(ContactFilter2D), inOffset, out outFirst);
@@ -537,7 +537,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out Collider2D outFirst)
         {
             return IsCastOverlapping(inRigidbody, inLayers, inOffset, default(ContactFilter2D), out outFirst);
@@ -564,7 +564,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Rigidbody2D is colliding with a given layer casted from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsCastOverlapping(this Rigidbody2D inRigidbody, LayerMask inLayers, Vector2 inOffset, out RaycastHit2D outFirst)
         {
             return IsCastOverlapping(inRigidbody, inLayers, inOffset, default(ContactFilter2D), out outFirst);
@@ -591,7 +591,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out Collider2D outFirst)
         {
             return IsCastOverlapping(inCollider, inLayers, inOffset, default(ContactFilter2D), out outFirst);
@@ -618,7 +618,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a given Collider2D is colliding with a given layer casted from its current position.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsCastOverlapping(this Collider2D inCollider, LayerMask inLayers, Vector2 inOffset, out RaycastHit2D outFirst)
         {
             return IsCastOverlapping(inCollider, inLayers, inOffset, default(ContactFilter2D), out outFirst);

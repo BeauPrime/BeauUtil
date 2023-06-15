@@ -45,7 +45,7 @@ namespace BeauUtil
         /// Attempts to get the distance from the camera to the point plane.
         /// Note: This is distance from the camera transform, and not the near plane.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool TryGetDistanceToPointPlane(this Camera inCamera, Vector3 inPosition, out float outDistance)
         {
             Vector3 transformed = inCamera.transform.InverseTransformPoint(inPosition);
@@ -57,7 +57,7 @@ namespace BeauUtil
         /// Attempts to get the distance from the camera to the object plane.
         /// Note: This is distance from the camera transform, and not the near plane.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool TryGetDistanceToObjectPlane(this Camera inCamera, Transform inTransform, out float outDistance)
         {
             if (!inTransform)
@@ -96,7 +96,7 @@ namespace BeauUtil
         /// <summary>
         /// Attempts to cast a position from one camera plane to another plane.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool TryCastPositionToTargetPlane(this Camera inCamera, Transform inTransform, Transform inTargetTransform, out Vector3 outNewPosition)
         {
             if (!inTransform)

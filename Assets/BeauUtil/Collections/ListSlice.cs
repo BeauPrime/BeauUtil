@@ -84,7 +84,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsEmpty
         {
-            [MethodImpl(256)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Length == 0; }
         }
 
@@ -152,7 +152,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if an element passing the given predicate exists.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Exists(Predicate<T> inPredicate)
         {
             return FindIndex(inPredicate) >= 0;
@@ -189,7 +189,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if an element passing the given predicate exists.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Exists<U>(Predicate<T, U> inPredicate, U inArg)
         {
             return FindIndex<U>(inPredicate, inArg) >= 0;

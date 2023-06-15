@@ -43,7 +43,7 @@ namespace BeauUtil
             Cache<TInput, TOutput>.ConverterInstance = inConverterInstance;
         }
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TOutput Cast<TInput, TOutput>(TInput inInput)
         {
             var custom = Cache<TInput, TOutput>.ConverterInstance;

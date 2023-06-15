@@ -27,7 +27,7 @@ namespace BeauUtil
         /// Returns if the given object is null by reference.
         /// Avoids calling Unity's overridden equality operator.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsReferenceNull(this UnityEngine.Object inObject)
         {
             return System.Object.ReferenceEquals(inObject, null);
@@ -37,7 +37,7 @@ namespace BeauUtil
         /// Returns if the given object is equal by reference to another object.
         /// Avoids calling Unity's overridden equality operator.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsReferenceEquals(this UnityEngine.Object inObject, UnityEngine.Object inOther)
         {
             return System.Object.ReferenceEquals(inObject, inOther);
@@ -47,7 +47,7 @@ namespace BeauUtil
         /// Returns if the given object reference was destroyed.
         /// This occurs if you have a hanging reference to an object that was destroyed.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsReferenceDestroyed(this UnityEngine.Object inObject)
         {
             return !System.Object.ReferenceEquals(inObject, null) && !inObject;
@@ -602,7 +602,7 @@ namespace BeauUtil
         /// <summary>
         /// Finds the Object instance with the given id.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public UnityEngine.Object Find(int inInstanceId)
         {
             if (inInstanceId == 0 || s_FindDelegate == null)
@@ -616,7 +616,7 @@ namespace BeauUtil
         /// Finds the Object instance with the given id.
         /// Will throw an exception if the Object type is not castable.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T Find<T>(int inInstanceId) where T : UnityEngine.Object
         {
             if (inInstanceId == 0 || s_FindDelegate == null) {
@@ -628,7 +628,7 @@ namespace BeauUtil
         /// <summary>
         /// Finds the Object instance with the given id.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T SafeFind<T>(int inInstanceId) where T : UnityEngine.Object
         {
             if (inInstanceId == 0 || s_FindDelegate == null)
@@ -641,7 +641,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the Object instance with the given id exists.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsAlive(int inInstanceId)
         {
             if (inInstanceId == 0 || s_AliveDelegate == null)
@@ -654,7 +654,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the instance id for the given Object.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Id(UnityEngine.Object inObject)
         {
             return object.ReferenceEquals(inObject, null) ? 0 : inObject.GetInstanceID();

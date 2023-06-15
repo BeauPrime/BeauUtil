@@ -964,7 +964,7 @@ namespace BeauUtil
 #if EXPANDED_REFS
         public void SetVertex(ushort inIndex, in VertexData inAttributes)
 #else
-        public void SetVertex(ushort inIndex, VertexAttributes inAttributes)
+        public void SetVertex(ushort inIndex, VertexData inAttributes)
 #endif // EXPANDED_REFS
         {
             CheckDisposed();
@@ -998,7 +998,7 @@ namespace BeauUtil
 #if EXPANDED_REFS
         private void UnsafeSetVertex(ushort inIndex, in VertexData inAttributes)
 #else
-        private void UnsafeSetVertex(ushort inIndex, VertexAttributes inAttributes)
+        private void UnsafeSetVertex(ushort inIndex, VertexData inAttributes)
 #endif // EXPANDED_REFS
         {
             m_Positions[inIndex] = inAttributes.Position;

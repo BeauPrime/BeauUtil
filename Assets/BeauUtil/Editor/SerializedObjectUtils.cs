@@ -17,7 +17,7 @@ using UnityEditor;
 using UnityEngine;
 
 #if SUPPORTS_PREFABSTAGEUTILITY
-using UnityEditor.Experimental.SceneManagement;
+
 using System.Collections;
 #endif // SUPPORTS_PREFABSTAGEUTILITY
 
@@ -530,7 +530,7 @@ namespace BeauUtil.Editor
                 if (ReferenceEquals(go, null))
                     return false;
 
-                PrefabStage stage = PrefabStageUtility.GetPrefabStage(go);
+                UnityEditor.SceneManagement.PrefabStage stage = UnityEditor.SceneManagement.PrefabStageUtility.GetPrefabStage(go);
                 if (stage == null)
                     return false;
 

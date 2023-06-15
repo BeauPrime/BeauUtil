@@ -13,7 +13,7 @@ namespace BeauUtil
     {
         #region Initialization
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private Color DecodeABGR(uint inValue)
         {
             return Colors.ABGR(inValue);

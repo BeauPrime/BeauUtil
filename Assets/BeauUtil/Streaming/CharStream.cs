@@ -25,7 +25,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BeauUtil.Blocks;
 using BeauUtil.Debugger;
+using BeauUtil.IO;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
 
 namespace BeauUtil.Streaming
 {
@@ -920,6 +925,7 @@ namespace BeauUtil.Streaming
     public struct CharStreamParams
     {
         internal string Name;
+        internal string FilePath;
         internal object Source;
         internal object Owner;
         internal unsafe void* DataPtr;
@@ -949,6 +955,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.Name = inName;
             stream.Owner = null;
+            stream.FilePath = GetFilePath(inStream);
             
             return stream;
         }
@@ -970,6 +977,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inName;
+            stream.FilePath = GetFilePath(inOwner);
             stream.Owner = inOwner;
 
             return stream;
@@ -995,6 +1003,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inCustomAsset.name;
+            stream.FilePath = GetFilePath(inCustomAsset);
             stream.Owner = null;
 
             return stream;
@@ -1020,6 +1029,7 @@ namespace BeauUtil.Streaming
             stream.DataLength = 0;
             stream.UnpackBuffer = null;
             stream.Name = inTextAsset.name;
+            stream.FilePath = GetFilePath(inTextAsset);
             stream.Owner = null;
 
             return stream;
@@ -1046,6 +1056,7 @@ namespace BeauUtil.Streaming
             stream.UnpackBuffer = null;
             stream.Name = inName;
             stream.Owner = inOwner;
+            stream.FilePath = GetFilePath(inOwner);
 
             return stream;
         }
@@ -1071,8 +1082,36 @@ namespace BeauUtil.Streaming
             stream.UnpackBuffer = null;
             stream.Name = inName;
             stream.Owner = inOwner;
+            stream.FilePath = GetFilePath(inOwner);
 
             return stream;
+        }
+
+        static internal string GetFilePath(object inOwner)
+        {
+            if (inOwner == null)
+                return null;
+
+            FileStream fileStr = inOwner as FileStream;
+            if (fileStr != null)
+            {
+                return IOHelper.GetRelativePath(fileStr.Name);
+            }
+
+            #if UNITY_EDITOR
+
+            UnityEngine.Object obj = inOwner as UnityEngine.Object;
+            if (obj != null)
+            {
+                if (AssetDatabase.IsMainAsset(obj) || AssetDatabase.IsSubAsset(obj))
+                {
+                    return IOHelper.GetRelativePath(AssetDatabase.GetAssetPath(obj));
+                }
+            }
+
+            #endif // UNITY_EDITOR
+
+            return null;
         }
     }
 

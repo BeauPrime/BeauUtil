@@ -434,6 +434,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuUI: {fileID: 7391338042710345696}
+  slide: {fileID: 386038752}
 --- !u!114 &177779761
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -450,6 +451,7 @@ MonoBehaviour:
   m_Mode: 1
   m_Scale: 1
   m_PixelHeight: 200
+  m_PixelsPerUnit: 0
   m_FilterMode: 0
 --- !u!114 &177779762
 MonoBehaviour:

@@ -31,7 +31,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to a byte.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public byte ToByte<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -54,7 +54,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to a signed byte.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public sbyte ToSByte<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -77,7 +77,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to a short.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public short ToShort<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -100,7 +100,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to an unsigned short.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ushort ToUShort<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -123,7 +123,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to an integer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int ToInt<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -146,7 +146,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to an unsigned integer.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint ToUInt<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -169,7 +169,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to a long.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public long ToLong<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -192,7 +192,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the enum to an unsigned long.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong ToULong<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -219,7 +219,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given byte to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(byte inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -242,7 +242,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given signed byte to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(sbyte inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -265,7 +265,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given short to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(short inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -288,7 +288,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given unsigned short to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(ushort inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -311,7 +311,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given integer to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(int inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -334,7 +334,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given unsigned integer to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(uint inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -357,7 +357,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given long to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(long inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -380,7 +380,7 @@ namespace BeauUtil
         /// <summary>
         /// Casts the given unsigned long to the enum type.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ToEnum<T>(ulong inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum

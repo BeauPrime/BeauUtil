@@ -16,11 +16,21 @@ namespace BeauUtil.Debugger
     {
         public DMHeaderInfo Header;
         public readonly RingBuffer<DMElementInfo> Elements;
+        public float MinimumWidth;
 
         public DMInfo(string inHeader, int inCapacity = 0)
         {
             Header.Label = inHeader;
             Elements = new RingBuffer<DMElementInfo>(inCapacity, RingBufferMode.Expand);
+        }
+
+        /// <summary>
+        /// Sets the minimum width of this menu.
+        /// </summary>
+        public DMInfo SetMinWidth(float inMinimumWidth)
+        {
+            MinimumWidth = inMinimumWidth;
+            return this;
         }
 
         /// <summary>
@@ -35,7 +45,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Adds a button element to the menu.
         /// </summary>
-        public DMInfo AddButton(string inLabel, DMBUttonCallback inCallback, DMPredicate inPredicate = null, int inIndent = 0)
+        public DMInfo AddButton(string inLabel, DMButtonCallback inCallback, DMPredicate inPredicate = null, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateButton(inLabel, inCallback, inPredicate, inIndent));
             return this;
@@ -74,6 +84,24 @@ namespace BeauUtil.Debugger
         public DMInfo AddText(string inLabel, DMTextDelegate inGetter, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateText(inLabel, inGetter, inIndent));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a slider element to the menu.
+        /// </summary>
+        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, float inMinValue, float inMaxValue, float inIncrement = 0, DMFloatTextDelegate inValueString = null, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueString, inPredicate, inIndent));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a slider element to the menu.
+        /// </summary>
+        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, float inMinValue, float inMaxValue, float inIncrement, string inValueFormat, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueFormat, inPredicate, inIndent));
             return this;
         }
 

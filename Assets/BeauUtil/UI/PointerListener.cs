@@ -54,7 +54,7 @@ namespace BeauUtil.UI
         public bool IsPointerDown() { return m_DownMask != 0; }
         public bool IsPointerDown(int inPointerId) { return (m_DownMask & CalculateMask(inPointerId)) != 0;}
 
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private uint CalculateMask(int inPointerId) { return 1U << ((inPointerId + 32) % 32); }
 
         #region Handlers

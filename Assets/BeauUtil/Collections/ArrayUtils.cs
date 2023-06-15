@@ -149,7 +149,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the index of an element in an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf<T>(T[] inArray, T inItem)
         {
             if (inArray == null || inArray.Length == 0)
@@ -161,7 +161,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns if an element is present in an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Contains<T>(T[] inArray, T inItem)
         {
             return IndexOf(inArray, inItem) >= 0;
@@ -233,7 +233,7 @@ namespace BeauUtil
         /// <summary>
         /// Clears all elements from an array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Clear<T>(ref T[] ioArray)
         {
             if (ioArray != null)
@@ -246,7 +246,7 @@ namespace BeauUtil
         /// <summary>
         /// Reverses the given array.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Reverse<T>(T[] ioArray)
         {
             if (ioArray != null)
@@ -284,7 +284,7 @@ namespace BeauUtil
         /// <summary>
         /// Clears all elements from the array and sets the reference to null.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Dispose<T>(ref T[] ioArray)
         {
             if (ioArray != null)
@@ -322,21 +322,47 @@ namespace BeauUtil
 
         static public ComparisonSorter<T> WrapComparison<T>(Comparison<T> inComparison)
         {
-            return new ComparisonSorter<T>(inComparison);
+            return ComparisonSorter<T>.Alloc(inComparison);
         }
 
-        public struct ComparisonSorter<T> : IComparer<T>
+        public class ComparisonSorter<T> : IComparer<T>, IDisposable
         {
+            static private Stack<ComparisonSorter<T>> s_Pool;
+
             public Comparison<T> Delegate;
 
-            public ComparisonSorter(Comparison<T> inComparison)
-            {
-                Delegate = inComparison;
-            }
+            internal ComparisonSorter() { }
 
             public int Compare(T x, T y)
             {
                 return Delegate(x, y);
+            }
+
+            public void Dispose()
+            {
+                Delegate = null;
+                s_Pool.Push(this);
+            }
+
+            static internal ComparisonSorter<T> Alloc(Comparison<T> inComparison)
+            {
+                ComparisonSorter<T> sorter;
+                if (s_Pool == null)
+                {
+                    s_Pool = new Stack<ComparisonSorter<T>>(4);
+                }
+                
+                if (s_Pool.Count == 0)
+                {
+                    sorter = new ComparisonSorter<T>();
+                }
+                else
+                {
+                    sorter = s_Pool.Pop();
+                }
+
+                sorter.Delegate = inComparison;
+                return sorter;
             }
         }
 

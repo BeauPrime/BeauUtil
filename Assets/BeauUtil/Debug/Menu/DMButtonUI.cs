@@ -19,20 +19,20 @@ namespace BeauUtil.Debugger
         #region Inspector
 
         [SerializeField] private LayoutGroup m_IndentGroup = null;
+        [SerializeField] private RectTransform[] m_IndentRects = null;
         [SerializeField] private TMP_Text m_Label = null;
         [SerializeField] private Button m_Button = null;
-        [SerializeField] private CanvasGroup m_FullGroup = null;
         [SerializeField] private Graphic m_ButtonBG = null;
 
         [Header("State")]
         [SerializeField] private Color m_ToggleOffColor = Color.white;
         [SerializeField] private Color m_ToggleOnColor = Color.yellow;
-        [SerializeField] private float m_DisabledAlpha = 0.5f;
 
         #endregion // Inspector
 
+        [NonSerialized] public DMInteractableUI Interactable;
+
         [NonSerialized] public int ElementIndex;
-        [NonSerialized] private bool m_LastEnabled;
         [NonSerialized] private bool m_LastToggle;
 
         private Action<DMButtonUI> m_OnClick;
@@ -41,18 +41,8 @@ namespace BeauUtil.Debugger
 
         private void Awake()
         {
+            Interactable = GetComponent<DMInteractableUI>();
             m_Button.onClick.AddListener(OnClick);
-        }
-
-        private void SetInteractive(bool inbEnabled, bool inbForce)
-        {
-            if (!inbForce && m_LastEnabled == inbEnabled)
-                return;
-
-            m_LastEnabled = inbEnabled;
-            m_FullGroup.interactable = m_FullGroup.blocksRaycasts = inbEnabled;
-            m_FullGroup.alpha = inbEnabled ? 1 : m_DisabledAlpha;
-            m_ButtonBG.raycastTarget = inbEnabled;
         }
 
         private void SetToggleState(bool inbState, bool inbForce)
@@ -84,7 +74,14 @@ namespace BeauUtil.Debugger
             padding.left = inIndent;
             m_IndentGroup.padding = padding;
 
-            SetInteractive(DMInfo.EvaluateOptionalPredicate(inInfo.Predicate), true);
+            foreach(var element in m_IndentRects)
+            {
+                Vector2 offset = element.offsetMin;
+                offset.x = inIndent;
+                element.offsetMin = offset;
+            }
+
+            Interactable.SetInteractive(DMInfo.EvaluateOptionalPredicate(inInfo.Predicate), true);
 
             switch(inInfo.Type)
             {
@@ -101,14 +98,6 @@ namespace BeauUtil.Debugger
                         break;
                     }
             }
-        }
-
-        /// <summary>
-        /// Updates the interactive state of the button.
-        /// </summary>
-        public void UpdateInteractive(bool inbEnabled)
-        {
-            SetInteractive(inbEnabled, false);
         }
 
         /// <summary>

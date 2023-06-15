@@ -4,6 +4,7 @@ using UnityEngine;
 public class DebugExample : MonoBehaviour
 {
     public DMMenuUI menuUI;
+    public Transform slide;
 
     private bool m_AdvancedLogging;
 
@@ -11,6 +12,7 @@ public class DebugExample : MonoBehaviour
     {
         DMInfo subMenu = new DMInfo("Gameplay");
         subMenu.AddText("Useless Text", () => Time.timeSinceLevelLoad.ToString());
+        subMenu.SetMinWidth(200);
 
         DMInfo rootMenu = new DMInfo("Debug", 8);
         rootMenu
@@ -20,6 +22,8 @@ public class DebugExample : MonoBehaviour
             .AddToggle("Enable Advanced Logging", () => m_AdvancedLogging, (b) => m_AdvancedLogging = b)
                 .AddButton("Advanced Log 1", () => print("advanced log!!1!"), () => m_AdvancedLogging, 1)
                 .AddButton("Advanced Log 2", () => print("advanced log 2!!1!"), () => m_AdvancedLogging, 1)
+            .AddDivider()
+            .AddSlider("Slide X", () => slide.position.x, (f) => slide.position = new Vector3(f, slide.position.y, slide.position.z), -10, 10, 0, "{0:0.0}")
             .AddDivider()
             .AddText("Frame Count", () => Time.frameCount.ToString());
 
