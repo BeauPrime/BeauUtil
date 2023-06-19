@@ -18,6 +18,7 @@ namespace BeauUtil.UnitTests
             }
 
             Assert.AreEqual(fullMask, Bits.All32);
+            Assert.AreEqual(32, Bits.Count(fullMask));
 
             for(int i = 0; i < 32; ++i)
             {
@@ -139,6 +140,36 @@ namespace BeauUtil.UnitTests
             buffer.PushBack(9);
 
             buffer.SetCapacity(16);
+        }
+
+        [Test]
+        static public void RingBufferMoveTest()
+        {
+            RingBuffer<int> buffer = new RingBuffer<int>();
+
+            buffer.PushBack(2);
+            buffer.PushBack(4);
+            buffer.PushBack(3);
+            buffer.PushBack(7);
+
+            buffer.MoveFrontToBack();
+
+            Assert.AreEqual(buffer.PeekFront(), 4);
+            Assert.AreEqual(buffer.PeekBack(), 2);
+
+            buffer.MoveBackToFront();
+            buffer.MoveBackToFront();
+
+            Assert.AreEqual(buffer.PeekFront(), 7);
+            Assert.AreEqual(buffer.PeekBack(), 3);
+
+            buffer.MoveFrontToBackWhere((a, b) => a > b, 5);
+
+            Assert.AreEqual(buffer.PeekFront(), 2);
+
+            buffer.MoveBackToFrontWhere((a, b) => a > b, 2);
+
+            Assert.AreEqual(buffer.PeekFront(), 4);
         }
 
         [Test]

@@ -1,3 +1,26 @@
+## Version 0.8.6
+**19 June 2023**
+
+New `Mesh` construction utilities
+Support for `Slider` control type in `DMMenu`
+
+## Features
+* New `MeshData16<Vertex>` class for interleaved mesh construction
+* Added `Slider` control support to `DMMenu`
+* Added `Push`/`Pop` methods to arena allocator for more fine-grained freeing of memory
+* Added `ArrayUtils.EnsureCapacity` to match `ListUtils.EnsureCapacity`
+
+## Improvements
+* Assert arguments are passed in using generics to avoid boxing
+* Added Quantization methods to `MathUtils`
+* Added endian swap methods to `Unsafe`
+* Added `RingBuffer.MoveFrontToBack` and similar methods for moving elements between head and tail
+
+## Fixes
+* Fixed `RNG.Shuffle(RingBuffer)` call inference issue
+* `UnityHelper.SafeDestroy` can now correctly destroy runtime assets in editor
+* Important attributes like `BindContext`, `BlockMeta` and `BlockContent` now derive from `PreserveAttribute`
+
 ## Version 0.8.5
 **14 March 2023**
 

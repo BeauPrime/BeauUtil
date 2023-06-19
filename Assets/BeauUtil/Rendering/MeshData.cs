@@ -146,7 +146,7 @@ namespace BeauUtil
         /// <summary>
         /// Adds a vertex.
         /// </summary>
-        public MeshData16<TVertex> AddVertex(TVertex inA)
+        public MeshData16<TVertex> AddVertex(in TVertex inA)
         {
             AllocateVertices(1);
             m_VertexBuffer[m_VertexCount++] = inA;
@@ -156,7 +156,7 @@ namespace BeauUtil
         /// <summary>
         /// Adds verticies.
         /// </summary>
-        public MeshData16<TVertex> AddVertices(TVertex inA, TVertex inB)
+        public MeshData16<TVertex> AddVertices(in TVertex inA, in TVertex inB)
         {
             AllocateVertices(2);
             m_VertexBuffer[m_VertexCount++] = inA;
@@ -167,7 +167,7 @@ namespace BeauUtil
         /// <summary>
         /// Adds verticies.
         /// </summary>
-        public MeshData16<TVertex> AddVertices(TVertex inA, TVertex inB, TVertex inC)
+        public MeshData16<TVertex> AddVertices(in TVertex inA, in TVertex inB, in TVertex inC)
         {
             AllocateVertices(3);
             m_VertexBuffer[m_VertexCount++] = inA;
@@ -179,7 +179,7 @@ namespace BeauUtil
         /// <summary>
         /// Adds verticies.
         /// </summary>
-        public MeshData16<TVertex> AddVertices(TVertex inA, TVertex inB, TVertex inC, TVertex inD)
+        public MeshData16<TVertex> AddVertices(in TVertex inA, in TVertex inB, in TVertex inC, in TVertex inD)
         {
             AllocateVertices(4);
             m_VertexBuffer[m_VertexCount++] = inA;
@@ -233,7 +233,7 @@ namespace BeauUtil
         /// <summary>
         /// Adds a triangle to the mesh.
         /// </summary>
-        public MeshData16<TVertex> AddTriangle(TVertex inA, TVertex inB, TVertex inC)
+        public MeshData16<TVertex> AddTriangle(in TVertex inA, in TVertex inB, in TVertex inC)
         {
             AllocateIndices(3);
             int currentVertCount = m_VertexCount;
@@ -251,7 +251,7 @@ namespace BeauUtil
         /// <summary>
         /// Adds a quad to the mesh.
         /// </summary>
-        public MeshData16<TVertex> AddQuad(TVertex inA, TVertex inB, TVertex inC, TVertex inD)
+        public MeshData16<TVertex> AddQuad(in TVertex inA, in TVertex inB, in TVertex inC, in TVertex inD)
         {
             AllocateIndices(6);
             int currentVertCount = m_VertexCount;

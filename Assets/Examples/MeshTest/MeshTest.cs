@@ -10,14 +10,20 @@ public class MeshTest : MonoBehaviour
 
     public int QuadCount;
     public float QuadDistance;
+    public float QuadSize;
+    public int FrameSkip = 3;
 
     public void Awake()
     {
         MeshData = new MeshData16<DefaultSpriteVertexFormat>(16);
+        Application.targetFrameRate = 60;
     }
 
     public void Update()
     {
+        if (FrameSkip > 1 && (Time.frameCount % FrameSkip) != 0)
+            return;
+
         MeshData.Clear();
 
         for (int i = 0; i < QuadCount; i++)
@@ -28,10 +34,12 @@ public class MeshTest : MonoBehaviour
             b.UV = new Vector2(0, 1);
             c.UV = new Vector2(1, 0);
             d.UV = new Vector2(1, 1);
-            a.Position = RNG.Instance.NextVector2(QuadDistance / 2, QuadDistance);
-            b.Position = new Vector2(a.Position.x, -a.Position.y);
-            c.Position = new Vector2(-a.Position.x, a.Position.y);
-            d.Position = new Vector2(-a.Position.x, -a.Position.y);
+            Vector2 center = RNG.Instance.NextVector2(0, QuadDistance);
+            Vector2 size = RNG.Instance.NextVector2(QuadSize / 2, QuadSize);
+            a.Position = center + size;
+            b.Position = center + new Vector2(size.x, -size.y);
+            c.Position = center + new Vector2(-size.x, size.y);
+            d.Position = center + new Vector2(-size.x, -size.y);
             MeshData.AddQuad(a, b, c, d);
         }
 
