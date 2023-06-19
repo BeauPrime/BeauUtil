@@ -327,9 +327,9 @@ namespace BeauUtil
             where T : unmanaged
         {
             Unity.Collections.NativeArray<T> nativeArray = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(inBuffer, inCount, Unity.Collections.Allocator.None);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            #if ENABLE_UNITY_COLLECTIONS_CHECKS
             Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, Unity.Collections.LowLevel.Unsafe.AtomicSafetyHandle.GetTempUnsafePtrSliceHandle());
-#endif // ENABLE_UNITY_COLLECTIONS_CHECKS
+            #endif // ENABLE_UNITY_COLLECTIONS_CHECKS
             return nativeArray;
         }
 
@@ -384,11 +384,11 @@ namespace BeauUtil
         /// Handle and address for a pinned array.
         /// </summary>
         public struct PinnedArrayHandle<T> : IDisposable
-#if UNMANAGED_CONSTRAINT
+            #if UNMANAGED_CONSTRAINT
             where T : unmanaged
-#else
+            #else
             where T : struct
-#endif // UNMANAGED_CONSTRAINT
+            #endif // UNMANAGED_CONSTRAINT
         {
             #if UNMANAGED_CONSTRAINT
             public T* Address;
@@ -471,11 +471,11 @@ namespace BeauUtil
         /// Pins the given array in memory.
         /// </summary>
         static public PinnedArrayHandle<T> PinArray<T>(T[] inArray)
-#if UNMANAGED_CONSTRAINT
+            #if UNMANAGED_CONSTRAINT
             where T : unmanaged
-#else
+            #else
             where T : struct
-#endif // UNMANAGED_CONSTRAINT
+            #endif // UNMANAGED_CONSTRAINT
         {
             if (inArray == null)
                 throw new ArgumentNullException("inArray", "Cannot pin null array");
@@ -487,11 +487,11 @@ namespace BeauUtil
         /// Pins the given list in memory.
         /// </summary>
         static public PinnedArrayHandle<T> PinList<T>(List<T> inList)
-#if UNMANAGED_CONSTRAINT
+            #if UNMANAGED_CONSTRAINT
             where T : unmanaged
-#else
+            #else
             where T : struct
-#endif // UNMANAGED_CONSTRAINT
+            #endif // UNMANAGED_CONSTRAINT
         {
             if (inList == null)
                 throw new ArgumentNullException("inList", "Cannot pin null list");
@@ -786,8 +786,348 @@ namespace BeauUtil
             return CombineHash64(inInitial, &inValue, sizeof(T));
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Hashing
+
+        #region Read/Write
+
+        #if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T Read<T>(byte** ioBufferPtr, int* ioBytesRemaining)
+            where T : unmanaged
+        {
+            int readSize = sizeof(T);
+            if (*ioBytesRemaining < readSize)
+            {
+                throw new InsufficientMemoryException(string.Format("No space left for reading {0} (size {1} vs remaining {2})", typeof(T).FullName, readSize, *ioBytesRemaining));
+            }
+
+            T val = default(T);
+            if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
+            {
+                val = Reinterpret<byte, T>(*ioBufferPtr);
+            }
+            else
+            {
+                Copy(*ioBufferPtr, readSize, &val, readSize);
+            }
+
+            *ioBytesRemaining -= readSize;
+            *ioBufferPtr += readSize;
+            return val;
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Read<T>(ref T ioValue, byte** ioBufferPtr, int* ioBytesRemaining)
+            where T : unmanaged
+        {
+            ioValue = Read<T>(ioBufferPtr, ioBytesRemaining);
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T Read<T>(ref byte* ioBufferPtr, ref int ioBytesRemaining)
+            where T : unmanaged
+        {
+            int readSize = sizeof(T);
+            if (ioBytesRemaining < readSize)
+            {
+                throw new InsufficientMemoryException(string.Format("No space left for reading {0} (size {1} vs remaining {2})", typeof(T).FullName, readSize, ioBytesRemaining));
+            }
+
+            T val = default(T);
+            if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
+            {
+                val = Reinterpret<byte, T>(*ioBufferPtr);
+            }
+            else
+            {
+                Copy(ioBufferPtr, readSize, &val, readSize);
+            }
+
+            ioBytesRemaining -= readSize;
+            ioBufferPtr += readSize;
+            return val;
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Read<T>(ref T ioValue, ref byte* ioBufferPtr, ref int ioBytesRemaining)
+            where T : unmanaged
+        {
+            ioValue = Read<T>(ref ioBufferPtr, ref ioBytesRemaining);
+        }
+
+        /// <summary>
+        /// Reads a UTF-8 string from the given byte buffer.
+        /// </summary>
+        static public string ReadUTF8(byte** ioBufferPtr, int* ioBytesRemaining)
+        {
+            ushort byteLength = Read<ushort>(ioBufferPtr, ioBytesRemaining);
+            if (byteLength > 0)
+            {
+                if (*ioBytesRemaining < byteLength)
+                {
+                    throw new InsufficientMemoryException(string.Format("No space left for reading a UTF8 string (size {0} vs remaining {1})", byteLength, *ioBytesRemaining));
+                }
+
+                char* charBuffer = stackalloc char[byteLength];
+                int charLength = StringUtils.DecodeUFT8(*ioBufferPtr, byteLength, charBuffer, byteLength);
+
+                *ioBufferPtr += byteLength;
+                *ioBytesRemaining -= byteLength;
+
+                return new string(charBuffer, 0, charLength);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Reads a UTF-8 string from the given byte buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Read(ref string ioValue, byte** ioBufferPtr, int* ioBytesRemaining)
+        {
+            ioValue = ReadUTF8(ioBufferPtr, ioBytesRemaining);
+        }
+
+        /// <summary>
+        /// Reads a UTF-8 string from the given byte buffer.
+        /// </summary>
+        static public string ReadUTF8(ref byte* ioBufferPtr, ref int ioBytesRemaining)
+        {
+            ushort byteLength = Read<ushort>(ref ioBufferPtr, ref ioBytesRemaining);
+            if (byteLength > 0)
+            {
+                if (ioBytesRemaining < byteLength)
+                {
+                    throw new InsufficientMemoryException(string.Format("No space left for reading a UTF8 string (size {0} vs remaining {1})", byteLength, ioBytesRemaining));
+                }
+
+                char* charBuffer = stackalloc char[byteLength];
+                int charLength = StringUtils.DecodeUFT8(ioBufferPtr, byteLength, charBuffer, byteLength);
+
+                ioBufferPtr += byteLength;
+                ioBytesRemaining -= byteLength;
+
+                return new string(charBuffer, 0, charLength);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Reads a UTF-8 string from the given byte buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Read(ref string ioValue, ref byte* ioBufferPtr, ref int ioBytesRemaining)
+        {
+            ioValue = ReadUTF8(ref ioBufferPtr, ref ioBytesRemaining);
+        }
+
+        /// <summary>
+        /// Writes a value of the given type to the given byte buffer.
+        /// </summary
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Write<T>(T inValue, byte** ioBufferPtr, int* ioBytesWritten, int inBufferCapacity)
+            where T : unmanaged
+        {
+            int writeSize = sizeof(T);
+            if (*ioBytesWritten + writeSize > inBufferCapacity)
+            {
+                throw new InsufficientMemoryException(string.Format("No space left for writing {0} (size {1} vs remaining {2})", typeof(T).FullName, writeSize, inBufferCapacity - *ioBytesWritten));
+            }
+
+            Copy(&inValue, writeSize, *ioBufferPtr);
+            *ioBytesWritten += writeSize;
+            *ioBufferPtr += writeSize;
+        }
+
+        /// <summary>
+        /// Writes a value of the given type to the given byte buffer.
+        /// </summary
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Write<T>(T inValue, ref byte* ioBufferPtr, ref int ioBytesWritten, int inBufferCapacity)
+            where T : unmanaged
+        {
+            int writeSize = sizeof(T);
+            if (ioBytesWritten + writeSize > inBufferCapacity)
+            {
+                throw new InsufficientMemoryException(string.Format("No space left for writing {0} (size {1} vs remaining {2})", typeof(T).FullName, writeSize, inBufferCapacity - ioBytesWritten));
+            }
+
+            Copy(&inValue, writeSize, ioBufferPtr);
+            ioBytesWritten += writeSize;
+            ioBufferPtr += writeSize;
+        }
+
+        /// <summary>
+        /// Writes a UTF8 string to the given byte buffer.
+        /// </summary>
+        static public void Write(string inValue, byte** ioBufferPtr, int* ioBytesWritten, int inBufferCapacity)
+        {
+            if (string.IsNullOrEmpty(inValue))
+            {
+                Write((ushort) 0, ioBufferPtr, ioBytesWritten, inBufferCapacity);
+                return;
+            }
+
+            int potentialWriteSize = StringUtils.EncodeSizeUTF8(inValue.Length);
+            if (*ioBytesWritten + potentialWriteSize > inBufferCapacity)
+            {
+                throw new InsufficientMemoryException(string.Format("No space left for writing a UTF8 string of size {0} (max size {1} vs remaining {2})", inValue.Length, potentialWriteSize, inBufferCapacity - *ioBytesWritten));
+            }
+
+            byte* lengthMarker = *ioBufferPtr;
+            Write((ushort) inValue.Length, ioBufferPtr, ioBytesWritten, inBufferCapacity);
+            fixed(char* strChars = inValue)
+            {
+                int utf8bytesRaw = StringUtils.EncodeUFT8(strChars, inValue.Length, *ioBufferPtr, inBufferCapacity - *ioBytesWritten);
+                if (utf8bytesRaw > ushort.MaxValue)
+                {
+                    throw new NotSupportedException("String encoded to a byte length greater than ushort.MaxValue - not supported by Unsave.WriteUTF8");
+                }
+                ushort utf8bytes = (ushort) utf8bytesRaw;
+                Copy(&utf8bytes, sizeof(ushort), lengthMarker, sizeof(ushort));
+                *ioBufferPtr += utf8bytes;
+                *ioBytesWritten += utf8bytes;
+            }
+        }
+
+        /// <summary>
+        /// Writes a UTF8 string to the given byte buffer.
+        /// </summary>
+        static public void Write(string inValue, ref byte* ioBufferPtr, ref int ioBytesWritten, int inBufferCapacity) {
+            if (string.IsNullOrEmpty(inValue)) {
+                Write((ushort) 0, ref ioBufferPtr, ref ioBytesWritten, inBufferCapacity);
+                return;
+            }
+
+            int potentialWriteSize = StringUtils.EncodeSizeUTF8(inValue.Length);
+            if (ioBytesWritten + potentialWriteSize > inBufferCapacity) {
+                throw new InsufficientMemoryException(string.Format("No space left for writing a UTF8 string of size {0} (max size {1} vs remaining {2})", inValue.Length, potentialWriteSize, inBufferCapacity - ioBytesWritten));
+            }
+
+            byte* lengthMarker = ioBufferPtr;
+            Write((ushort) inValue.Length, ref ioBufferPtr, ref ioBytesWritten, inBufferCapacity);
+            fixed (char* strChars = inValue) {
+                int utf8bytesRaw = StringUtils.EncodeUFT8(strChars, inValue.Length, ioBufferPtr, inBufferCapacity - ioBytesWritten);
+                if (utf8bytesRaw > ushort.MaxValue) {
+                    throw new NotSupportedException("String encoded to a byte length greater than ushort.MaxValue - not supported by Unsave.WriteUTF8");
+                }
+                ushort utf8bytes = (ushort) utf8bytesRaw;
+                Copy(&utf8bytes, sizeof(ushort), lengthMarker, sizeof(ushort));
+                ioBufferPtr += utf8bytes;
+                ioBytesWritten += utf8bytes;
+            }
+        }
+
+#endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Read/Write
+
+        #region Endianness
+
+        /// <summary>
+        /// Swaps the byte order of the given 2-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref short value) {
+            ushort temp = FastReinterpret<short, ushort>(value);
+            SwapEndian(ref temp);
+            value = FastReinterpret<ushort, short>(temp);
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 2-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref ushort value) {
+            value = (ushort) (((value & 0xFF00u) >> 8) | ((value & 0x00FFu) << 8));
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 4-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref int value) {
+            uint temp = FastReinterpret<int, uint>(value);
+            SwapEndian(ref temp);
+            value = FastReinterpret<uint, int>(temp);
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 4-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref uint value) {
+            value = (uint) (((value & 0xFF000000u) >> 24) | ((value & 0xFF0000u) >> 8) | ((value & 0xFF00u) << 8) | ((value & 0xFFu) << 24));
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 4-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref float value) {
+            uint temp = FastReinterpret<float, uint>(value);
+            SwapEndian(ref temp);
+            value = FastReinterpret<uint, float>(temp);
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 8-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref long value) {
+            ulong temp = FastReinterpret<long, ulong>(value);
+            SwapEndian(ref temp);
+            value = FastReinterpret<ulong, long>(temp);
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 8-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref ulong value) {
+            value = (ulong) (
+                ((value & 0xFF00000000000000u) >> 56)
+                | ((value & 0xFF000000000000u) >> 40)
+                | ((value & 0xFF0000000000u) >> 24)
+                | ((value & 0xFF00000000u) >> 8)
+                | ((value & 0xFF000000u) << 8)
+                | ((value & 0xFF0000u) << 24)
+                | ((value & 0xFF00u) << 40)
+                | ((value & 0xFFu) << 56)
+                );
+        }
+
+        /// <summary>
+        /// Swaps the byte order of the given 8-byte value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SwapEndian(ref double value) {
+            ulong temp = FastReinterpret<double, ulong>(value);
+            SwapEndian(ref temp);
+            value = FastReinterpret<ulong, double>(temp);
+        }
+
+        #endregion // Endianness
     }
 }

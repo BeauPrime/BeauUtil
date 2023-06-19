@@ -8,6 +8,7 @@
  */
 
 using System;
+using UnityEngine.Scripting;
 
 namespace BeauUtil.Blocks
 {
@@ -15,7 +16,7 @@ namespace BeauUtil.Blocks
     /// Attribute marking block content.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class BlockContentAttribute : Attribute
+    public class BlockContentAttribute : PreserveAttribute
     {
         public BlockContentMode Mode { get; private set; }
         public char LineSeparator { get; private set; }

@@ -1390,5 +1390,27 @@ namespace BeauUtil
         #endif // UNMANAGED_CONSTRAINT
 
         #endregion // Sort
+
+        #region Shuffle
+
+        #if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Shuffles the given unsafe buffer.
+        /// </summary>
+        static public void Shuffle<T>(this System.Random inRandom, T* inBuffer, int inLength) where T : unmanaged
+        {
+            int i = inLength, j;
+            while(--i > 0)
+            {
+                T old = inBuffer[i];
+                inBuffer[i] = inBuffer[j = inRandom.Next(0, i + 1)];
+                inBuffer[j] = old;
+            }
+        }
+
+        #endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Shuffle
     }
 }

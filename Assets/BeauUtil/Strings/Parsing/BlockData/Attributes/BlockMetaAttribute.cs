@@ -8,6 +8,7 @@
  */
 
 using System;
+using UnityEngine.Scripting;
 
 namespace BeauUtil.Blocks
 {
@@ -15,7 +16,7 @@ namespace BeauUtil.Blocks
     /// Attribute marking a meta tag for block data.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class BlockMetaAttribute : Attribute
+    public class BlockMetaAttribute : PreserveAttribute
     {
         public string Name { get; internal set; }
 

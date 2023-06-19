@@ -157,6 +157,26 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
+        static public void ArenaRewind() {
+            Setup();
+
+            Allocator.Alloc(56);
+
+            Allocator.Push();
+
+            int size = Allocator.UsedBytes();
+
+            Allocator.Alloc(64);
+            Allocator.Alloc(64);
+
+            Allocator.Pop();
+
+            Assert.AreEqual(size, Allocator.UsedBytes());
+
+            Unsafe.TryDestroyArena(ref Allocator);
+        }
+
+        [Test]
         static public void NestedArena() {
             Setup();
 
@@ -166,6 +186,112 @@ namespace BeauUtil.UnitTests
             Log.Msg("header size = {0}", Allocator.UsedBytes() - 1024);
 
             Unsafe.TryDestroyArena(ref Allocator);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessUint()
+        {
+            uint initialValue = 0xBADDF00D;
+            uint swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessInt()
+        {
+            int initialValue = 0xADDF00D;
+            int swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessFloat()
+        {
+            float initialValue = 8.50423f;
+            float swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessUshort()
+        {
+            ushort initialValue = 0xF00D;
+            ushort swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessShort()
+        {
+            short initialValue = 0xADD;
+            short swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessLong()
+        {
+            long initialValue = 0xABCDEF01FF;
+            long swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessUlong()
+        {
+            ulong initialValue = 0xFBCDEF01FF;
+            ulong swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        [Test]
+        static public void CanSwapEndiannessDouble()
+        {
+            double initialValue = 8.50423;
+            double swappedValue = initialValue;
+            Unsafe.SwapEndian(ref swappedValue);
+            AssertByteOrderIsReversed(initialValue, swappedValue);
+            Unsafe.SwapEndian(ref swappedValue);
+            Assert.IsTrue(initialValue == swappedValue, "Swap of {0} is not equal", initialValue.GetType().FullName);
+        }
+
+        static private void AssertByteOrderIsReversed<T>(T a, T b)
+            where T : unmanaged
+        {
+            int byteSize = sizeof(T);
+            byte* aPtr = (byte*) &a;
+            byte* bPtr = (byte*) &b;
+
+            byte* aNow = aPtr;
+            byte* bNow = bPtr + byteSize - 1;
+
+            for(int i = 0; i < byteSize; i++)
+            {
+                Assert.IsTrue(*aNow == *bNow);
+                aNow++;
+                bNow--;
+            }
         }
     }
 }

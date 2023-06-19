@@ -21,7 +21,7 @@ using UnityEngine;
 
 namespace BeauUtil
 {
-    public class MeshBuilder : IDisposable
+    public class MeshBuilder : IMeshData, IDisposable
     {
         #region Vertex Types
 
@@ -217,15 +217,21 @@ namespace BeauUtil
             if (!m_Dirty)
                 return false;
 
-            UpdateMesh(m_Mesh);
+            Upload(m_Mesh);
             m_Dirty = false;
             return true;
+        }
+
+        [Obsolete("UpdateMesh has been renamed to Upload, to better align with IMeshData")]
+        public void UpdateMesh(Mesh ioMesh)
+        {
+            Upload(ioMesh);
         }
 
         /// <summary>
         /// Updates the given mesh mesh to match this mesh.
         /// </summary>
-        public void UpdateMesh(Mesh ioMesh)
+        public void Upload(Mesh ioMesh)
         {
             CheckDisposed();
 

@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -316,6 +317,38 @@ namespace BeauUtil
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Ensures a certain capacity for the array.
+        /// </summary>
+        static public void EnsureCapacity<T>(ref T[] ioArray, int inCapacity)
+        {
+            if (ioArray == null)
+            {
+                ioArray = new T[inCapacity];
+            }
+            else if (ioArray.Length < inCapacity)
+            {
+                Array.Resize(ref ioArray, inCapacity);
+            }
+        }
+
+        /// <summary>
+        /// Ensures a certain capacity for the array, making sure it is a power of 2.
+        /// </summary>
+        static public void EnsureCapacityPow2<T>(ref T[] ioArray, int inCapacity)
+        {
+            if (ioArray != null && ioArray.Length >= inCapacity)
+                return;
+
+            if ((inCapacity & (inCapacity - 1)) == 0)
+            {
+                EnsureCapacity(ref ioArray, inCapacity);
+                return;
+            }
+
+            EnsureCapacity(ref ioArray, Mathf.NextPowerOfTwo(inCapacity));
         }
 
         #region Sorting

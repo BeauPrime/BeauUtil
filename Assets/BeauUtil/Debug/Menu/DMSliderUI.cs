@@ -48,6 +48,8 @@ namespace BeauUtil.Debugger
             padding.left = m_OriginalIndent + inIndent;
             m_IndentGroup.padding = padding;
 
+            Interactable.SetInteractive(DMInfo.EvaluateOptionalPredicate(inInfo.Predicate), true);
+
             m_Label.SetText(inInfo.Label);
 
             m_OnValueChanged = inOnUpdated;

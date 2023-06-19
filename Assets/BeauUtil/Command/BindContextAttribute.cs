@@ -8,6 +8,7 @@
  */
 
 using System;
+using UnityEngine.Scripting;
 
 namespace BeauUtil
 {
@@ -15,7 +16,7 @@ namespace BeauUtil
     /// Binds the provided context to this parameter.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public class BindContextAttribute : Attribute
+    public class BindContextAttribute : PreserveAttribute
     {
         public virtual object Bind(object inSource)
         {

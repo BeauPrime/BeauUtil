@@ -19,7 +19,7 @@ namespace BeauUtil.Services
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, Inherited = true)]
     [Preserve]
-    public class ServiceDependencyAttribute : Attribute
+    public class ServiceDependencyAttribute : PreserveAttribute
     {
         public Type[] Dependencies { get; private set; }
 

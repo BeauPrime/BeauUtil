@@ -471,7 +471,7 @@ namespace BeauUtil
         /// <summary>
         /// Shuffles the given array.
         /// </summary>
-        static public void Shuffle<T>(this Random inRandom, IRingBuffer<T> inBuffer)
+        static public void Shuffle<T>(this Random inRandom, RingBuffer<T> inBuffer)
         {
             int i = inBuffer.Count;
             int j;
@@ -516,7 +516,7 @@ namespace BeauUtil
         /// <summary>
         /// Shuffles a region within the given array.
         /// </summary>
-        static public void Shuffle<T>(this Random inRandom, IRingBuffer<T> inBuffer, int inIndex, int inLength)
+        static public void Shuffle<T>(this Random inRandom, RingBuffer<T> inBuffer, int inIndex, int inLength)
         {
             int i = Math.Min(inIndex + inLength, inBuffer.Count);
             int j;

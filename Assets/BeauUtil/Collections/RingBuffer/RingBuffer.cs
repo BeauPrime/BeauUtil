@@ -637,6 +637,168 @@ namespace BeauUtil
 
         #endregion // Remove
 
+        #region Cycling
+
+        /// <summary>
+        /// Moves the element at the front of the buffer to the back.
+        /// </summary>
+        public void MoveFrontToBack()
+        {
+            if (m_Count <= 1)
+                return;
+
+            T value = m_Data[m_Head];
+            m_Data[m_Head] = default(T);
+            m_Head = (m_Head + 1) % m_Capacity;
+
+            m_Data[m_Tail] = value;
+            m_Tail = (m_Tail + 1) % m_Capacity;
+        }
+
+        /// <summary>
+        /// Moves the element at the back of the buffer to the front.
+        /// </summary>
+        public void MoveBackToFront()
+        {
+            if (m_Count <= 1)
+                return;
+
+            m_Tail = (m_Tail + m_Capacity - 1) % m_Capacity;
+            T val = m_Data[m_Tail];
+            m_Data[m_Tail] = default(T);
+
+            m_Head = (m_Head + m_Capacity - 1) % m_Capacity;
+            m_Data[m_Head] = val;
+        }
+
+        /// <summary>
+        /// Moves elements from the front of the buffer to the back until they fail to satisfy the given predicate.
+        /// Returns the number of elements moved.
+        /// </summary>
+        public int MoveFrontToBackWhere(Predicate<T> inPredicate)
+        {
+            if (m_Count <= 1)
+                return 0;
+
+            int moved = 0;
+            int count = m_Count;
+            while(moved < count)
+            {
+                T val = m_Data[m_Head];
+                if (!inPredicate(val))
+                {
+                    break;
+                }
+
+                m_Data[m_Head] = default(T);
+                m_Head = (m_Head + 1) % m_Capacity;
+
+                m_Data[m_Tail] = val;
+                m_Tail = (m_Tail + 1) % m_Capacity;
+                moved++;
+            }
+
+            return moved;
+        }
+
+        /// <summary>
+        /// Moves elements from the front of the buffer to the back until they fail to satisfy the given predicate.
+        /// Returns the number of elements moved.
+        /// </summary>
+        public int MoveFrontToBackWhere<TArg>(Predicate<T, TArg> inPredicate, TArg inArg)
+        {
+            if (m_Count <= 1)
+                return 0;
+
+            int moved = 0;
+            int count = m_Count;
+            while (moved < count)
+            {
+                T val = m_Data[m_Head];
+                if (!inPredicate(val, inArg))
+                {
+                    break;
+                }
+
+                m_Data[m_Head] = default(T);
+                m_Head = (m_Head + 1) % m_Capacity;
+
+                m_Data[m_Tail] = val;
+                m_Tail = (m_Tail + 1) % m_Capacity;
+                moved++;
+            }
+
+            return moved;
+        }
+
+        /// <summary>
+        /// Moves elements from the back of the buffer to the front until they fail to satisfy the given predicate.
+        /// Returns the number of elements moved.
+        /// </summary>
+        public int MoveBackToFrontWhere(Predicate<T> inPredicate)
+        {
+            if (m_Count <= 1)
+                return 0;
+
+            int moved = 0;
+            int count = m_Count;
+            while (moved < count)
+            {
+                int nextTail = (m_Tail + m_Capacity - 1) % m_Capacity;
+                T val = m_Data[nextTail];
+
+                if (!inPredicate(val))
+                {
+                    break;
+                }
+
+                m_Tail = nextTail;
+                m_Data[m_Tail] = default(T);
+
+                m_Head = (m_Head + m_Capacity - 1) % m_Capacity;
+                m_Data[m_Head] = val;
+
+                moved++;
+            }
+
+            return moved;
+        }
+
+        /// <summary>
+        /// Moves elements from the back of the buffer to the front until they fail to satisfy the given predicate.
+        /// Returns the number of elements moved.
+        /// </summary>
+        public int MoveBackToFrontWhere<TArg>(Predicate<T, TArg> inPredicate, TArg inArg)
+        {
+            if (m_Count <= 1)
+                return 0;
+
+            int moved = 0;
+            int count = m_Count;
+            while (moved < count)
+            {
+                int nextTail = (m_Tail + m_Capacity - 1) % m_Capacity;
+                T val = m_Data[nextTail];
+
+                if (!inPredicate(val, inArg))
+                {
+                    break;
+                }
+
+                m_Tail = nextTail;
+                m_Data[m_Tail] = default(T);
+
+                m_Head = (m_Head + m_Capacity - 1) % m_Capacity;
+                m_Data[m_Head] = val;
+
+                moved++;
+            }
+
+            return moved;
+        }
+
+        #endregion // Cycling
+
         #region Sorting
 
         /// <summary>

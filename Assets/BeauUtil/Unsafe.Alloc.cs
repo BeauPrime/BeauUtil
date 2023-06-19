@@ -60,15 +60,54 @@ namespace BeauUtil
         /// </summary>
         public interface IAllocator
         {
+            /// <summary>
+            /// Returns if the given memory address is within the allocator's memory range.
+            /// </summary>
             bool Owns(void* inPtr);
+
+            /// <summary>
+            /// Returns if the given memory address is within the allocator's currrently allocated memory range.
+            /// </summary>
             bool IsValid(void* inPtr);
+
+            /// <summary>
+            /// Returns the total size of the allocator.
+            /// </summary>
             int Size();
+
+            /// <summary>
+            /// Returns the number of free bytes in the allocator.
+            /// </summary>
             int FreeBytes();
+
+            /// <summary>
+            /// Returns the number of used bytes in the allocator.
+            /// </summary>
             int UsedBytes();
+
+            /// <summary>
+            /// Allocates a block of memory with the given size.
+            /// </summary>
             void* Alloc(int inSize);
+
+            /// <summary>
+            /// Allocates an aligned block of memory with the given size.
+            /// </summary>
             void* AllocAligned(int inSize, uint inAlign);
+
+            /// <summary>
+            /// Frees the given block of memory.
+            /// </summary>
             void Free(void* inPtr);
+            
+            /// <summary>
+            /// Releases all memory owned by the allocator.
+            /// </summary>
             void Release();
+
+            /// <summary>
+            /// Returns if the allocator is actually allocated and its internal state is valid.
+            /// </summary>
             bool Validate();
         }
 
@@ -223,13 +262,34 @@ namespace BeauUtil
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public int Size() { if (ValidateArena(this)) return (int) HeaderStart->Size; return 0; }
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public int FreeBytes() { if (ValidateArena(this)) return (int) HeaderStart->SizeRemaining; return 0; }
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public int UsedBytes() { if (ValidateArena(this)) return (int) (HeaderStart->Size - HeaderStart->SizeRemaining); return 0; }
+
+            /// <summary>
+            /// Arena allocators cannot free memory directly.
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public void Free(void* inPtr) { }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public void Release() { DestroyArena(this); this = default; }
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public bool Validate() { return ValidateArena(this); }
 
             // arena-specific
+
+            /// <summary>
+            /// Resets the arena, freeing all allocations.
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public void Reset() { ResetArena(this); }
+
+            /// <summary>
+            /// Pushes the current state of the allocator.
+            /// This records the currently used amount of memory.
+            /// This can be used in conjunction with Pop() to free contiguous chunks of allocations at the tail of the allocator without calling Reset()
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public void Push() { PushArena(this); }
+
+            /// <summary>
+            /// Pops the state of the allocator.
+            /// This restores the last used amount of memory recorded with Push().
+            /// This can be used in conjunction with Push() to free contiguous chunks of allocations at the tail of the allocator without calling Reset()
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)] public void Pop() { PopArena(this); }
 
             public string ToDebugString()
@@ -531,12 +591,13 @@ namespace BeauUtil
         /// </summary>
         static public void* Alloc(ArenaHandle inArena, int inLength)
         {
-            if (!ValidateArena(inArena))
+            if (!ValidateArena(inArena) || inLength <= 0)
                 return null;
             
             ArenaHeader* header = inArena.HeaderStart;
             #if VALIDATE_ARENA_MEMORY
             CheckDebugMemoryBoundary(header->CurrentPtr);
+            inLength = (int) AlignUp4((uint) inLength);
             #endif // VALIDATE_ARENA_MEMORY
 
             if (header->SizeRemaining < inLength)
@@ -561,12 +622,13 @@ namespace BeauUtil
         /// </summary>
         static internal void* AllocAligned(ArenaHandle inArena, int inLength, uint inAlignment)
         {
-            if (!ValidateArena(inArena))
+            if (!ValidateArena(inArena) || inLength <= 0)
                 return null;
 
             ArenaHeader* header = inArena.HeaderStart;
             #if VALIDATE_ARENA_MEMORY
             CheckDebugMemoryBoundary(header->CurrentPtr);
+            inLength = (int) AlignUp4((uint) inLength);
             #endif // VALIDATE_ARENA_MEMORY
             
             byte* aligned = (byte*) AlignUpN((ulong) header->CurrentPtr, inAlignment);

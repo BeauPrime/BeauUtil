@@ -69,7 +69,7 @@ namespace BeauUtil
             // This is to see if the object hasn't been destroyed yet
             if (ioObject)
             {
-                UnityEngine.Object.Destroy(ioObject);
+                SafeDestroyEditorAware(ioObject);
             }
 
             ioObject = null;
@@ -130,6 +130,18 @@ namespace BeauUtil
             }
 
             ioComponent = null;
+        }
+
+        static private void SafeDestroyEditorAware(UnityEngine.Object inObject)
+        {
+            #if UNITY_EDITOR
+            if (!Application.isPlaying)
+                UnityEngine.Object.DestroyImmediate(inObject);
+            else
+                UnityEngine.Object.Destroy(inObject);
+            #else
+                UnityEngine.Object.Destroy(inObject);
+            #endif // UNITY_EDITOR
         }
 
         #endregion // SafeDestroy
@@ -505,27 +517,27 @@ namespace BeauUtil
                 case TextureFormat.ETC2_RGBA1: return numPixels * 5 / 8;
                 case TextureFormat.ETC2_RGBA8: return numPixels;
 
-                #if UNITY_5_5_OR_NEWER
+#if UNITY_5_5_OR_NEWER
                 case TextureFormat.BC4: return numPixels / 2;
                 case TextureFormat.BC5: return numPixels;
                 case TextureFormat.BC6H: return numPixels;
                 case TextureFormat.BC7: return numPixels;
-                #endif // UNITY_5_5_OR_NEWER
+#endif // UNITY_5_5_OR_NEWER
 
-                #if UNITY_5_6_OR_NEWER
+#if UNITY_5_6_OR_NEWER
                 case TextureFormat.RGB9e5Float: return numPixels * 4;
                 case TextureFormat.RG16: return numPixels / 2;
                 case TextureFormat.R8: return numPixels;
-                #endif // UNITY_5_6_OR_NEWER
+#endif // UNITY_5_6_OR_NEWER
 
-                #if UNITY_2017_3_OR_NEWER
+#if UNITY_2017_3_OR_NEWER
                 case TextureFormat.ETC_RGB4Crunched: return numPixels / 2;
                 case TextureFormat.ETC2_RGBA8Crunched: return numPixels;
-                #endif // UNITY_2017_3_OR_NEWER
+#endif // UNITY_2017_3_OR_NEWER
 
-                #if UNITY_2019_1_OR_NEWER
+#if UNITY_2019_1_OR_NEWER
 
-                #if UNITY_2020_1_OR_NEWER
+#if UNITY_2020_1_OR_NEWER
 
                 case TextureFormat.ASTC_4x4: return numPixels;
                 case TextureFormat.ASTC_5x5: return numPixels * 16 / 25;
@@ -534,7 +546,7 @@ namespace BeauUtil
                 case TextureFormat.ASTC_10x10: return numPixels * 16 / 100;
                 case TextureFormat.ASTC_12x12: return numPixels * 16 / 144;
 
-                #else
+#else
 
                 case TextureFormat.ASTC_RGB_4x4: return numPixels;
                 case TextureFormat.ASTC_RGBA_4x4: return numPixels;
@@ -549,7 +561,7 @@ namespace BeauUtil
                 case TextureFormat.ASTC_RGB_12x12: return numPixels * 16 / 144;
                 case TextureFormat.ASTC_RGBA_12x12: return numPixels * 16 / 144;
 
-                #endif // !UNITY_2020_1_OR_NEWER
+#endif // !UNITY_2020_1_OR_NEWER
 
                 case TextureFormat.ASTC_HDR_4x4: return numPixels;
                 case TextureFormat.ASTC_HDR_5x5: return numPixels * 16 / 25;
@@ -558,13 +570,13 @@ namespace BeauUtil
                 case TextureFormat.ASTC_HDR_10x10: return numPixels * 16 / 100;
                 case TextureFormat.ASTC_HDR_12x12: return numPixels * 16 / 144;
 
-                #endif // UNITY_2019_1_OR_NEWER
+#endif // UNITY_2019_1_OR_NEWER
 
-                #if UNITY_2019_4_OR_NEWER
+#if UNITY_2019_4_OR_NEWER
                 case TextureFormat.RG32: return numPixels * 4;
                 case TextureFormat.RGB48: return numPixels * 6;
                 case TextureFormat.RGBA64: return numPixels * 8;
-                #endif // UNITY_2019_4_OR_NEWER 
+#endif // UNITY_2019_4_OR_NEWER 
 
                 default: return numPixels;
             }

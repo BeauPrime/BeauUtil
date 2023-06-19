@@ -197,8 +197,9 @@ namespace BeauUtil.UnitTests
                 word.Hash32();
             }
 
-            if (collisionCount > 0)
-                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 32", collisionCount);
+            if (collisionCount > 0) {
+                Debug.LogWarningFormat("[StringTests] {0} collisions with hash size 32", collisionCount);
+            }
 
             StringHashing.SetOnCollision(null);
         }

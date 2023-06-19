@@ -9,11 +9,12 @@
 
 using System;
 using System.Reflection;
+using UnityEngine.Scripting;
 
 namespace BeauUtil
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public class ExposedAttribute : Attribute
+    public class ExposedAttribute : PreserveAttribute
     {
         public StringHash32 Id;
         public string Name;

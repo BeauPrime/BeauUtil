@@ -17,7 +17,7 @@ namespace BeauUtil.Services
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     [Preserve]
-    public class ServiceReferenceAttribute : Attribute
+    public class ServiceReferenceAttribute : PreserveAttribute
     {
         /// <summary>
         /// If not set, a missing service will result in an exception.
