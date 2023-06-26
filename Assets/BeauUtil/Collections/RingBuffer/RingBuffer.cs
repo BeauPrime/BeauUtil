@@ -25,7 +25,7 @@ namespace BeauUtil
     /// Double-ended queue.
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
-    public class RingBuffer<T> : IRingBuffer<T>, IList<T>
+    public sealed class RingBuffer<T> : IRingBuffer<T>, IList<T>
     {
         static private readonly T[] s_EmptyArray = new T[0];
 

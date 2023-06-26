@@ -7,6 +7,8 @@
  * Purpose: Debug menu info.
  */
 
+using System;
+
 namespace BeauUtil.Debugger
 {
     /// <summary>
@@ -17,6 +19,16 @@ namespace BeauUtil.Debugger
         public DMHeaderInfo Header;
         public readonly RingBuffer<DMElementInfo> Elements;
         public float MinimumWidth;
+
+        /// <summary>
+        /// Callback when the menu is entered.
+        /// </summary>
+        public readonly CastableEvent<DMInfo> OnEnter = new CastableEvent<DMInfo>();
+
+        /// <summary>
+        /// Callback when the menu is exited.
+        /// </summary>
+        public readonly CastableEvent<DMInfo> OnExit = new CastableEvent<DMInfo>();
 
         public DMInfo(string inHeader, int inCapacity = 0)
         {

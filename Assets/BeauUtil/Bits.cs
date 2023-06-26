@@ -21,7 +21,7 @@ using System.Runtime.CompilerServices;
 namespace BeauUtil
 {
     /// <summary>
-    /// Performs bitwise operations on integers and unsigned integers.
+    /// Performs bitwise operations on 32- and 64-bit integrals.
     /// </summary>
     static public class Bits
     {
@@ -30,8 +30,16 @@ namespace BeauUtil
         /// </summary>
         public const int Length = 32;
 
+        /// <summary>
+        /// Total number of bits in a long.
+        /// </summary>
+        public const int Length64 = 64;
+
         public const int All32 = unchecked((int) AllU32);
         public const uint AllU32 = 0xFFFFFFFF;
+
+        public const long All64 = unchecked((int) AllU64);
+        public const ulong AllU64 = 0xFFFFFFFFFFFFFFFF;
 
         /// <summary>
         /// Returns if the given uint has the given bit toggled on.
@@ -49,6 +57,24 @@ namespace BeauUtil
         static public bool Contains(int inBitArray, int inBitIndex)
         {
             return (inBitArray & (1 << inBitIndex)) != 0;
+        }
+
+        /// <summary>
+        /// Returns if the given ulong has the given bit toggled on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool Contains(ulong inBitArray, int inBitIndex)
+        {
+            return (inBitArray & ((ulong) 1 << inBitIndex)) != 0;
+        }
+
+        /// <summary>
+        /// Returns if the given long has the given bit toggled on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool Contains(long inBitArray, int inBitIndex)
+        {
+            return (inBitArray & ((long) 1 << inBitIndex)) != 0;
         }
 
         /// <summary>
@@ -86,6 +112,24 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if the given ulong contains any of the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool ContainsAny(ulong inBitArray, ulong inBitMask)
+        {
+            return (inBitArray & inBitMask) != 0;
+        }
+
+        /// <summary>
+        /// Returns if the given long contains any of the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool ContainsAny(long inBitArray, long inBitMask)
+        {
+            return (inBitArray & inBitMask) != 0;
+        }
+
+        /// <summary>
         /// Returns if the given enum contains any of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,7 +142,7 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            return (Enums.ToUInt(inBitArray) & Enums.ToUInt(inBitMask)) != 0;
+            return (Enums.ToULong(inBitArray) & Enums.ToULong(inBitMask)) != 0;
         }
 
         /// <summary>
@@ -120,6 +164,24 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if the given ulong contains all of the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool ContainsAll(ulong inBitArray, ulong inBitMask)
+        {
+            return (inBitArray & inBitMask) == inBitMask;
+        }
+
+        /// <summary>
+        /// Returns if the given long contains all of the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool ContainsAll(long inBitArray, long inBitMask)
+        {
+            return (inBitArray & inBitMask) == inBitMask;
+        }
+
+        /// <summary>
         /// Returns if the given enum contains all of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,8 +194,8 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            uint mask = Enums.ToUInt(inBitMask);
-            return (Enums.ToUInt(inBitArray) & mask) == mask;
+            ulong mask = Enums.ToULong(inBitMask);
+            return (Enums.ToULong(inBitArray) & mask) == mask;
         }
 
         /// <summary>
@@ -155,6 +217,24 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given ulong to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Add(ref ulong ioBitArray, int inBitIndex)
+        {
+            ioBitArray |= ((ulong) 1 << inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given long to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Add(ref long ioBitArray, int inBitIndex)
+        {
+            ioBitArray |= ((long) 1 << inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given mask in the given enum to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -167,7 +247,7 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            ioBitArray = Enums.ToEnum<T>(Enums.ToUInt(ioBitArray) | Enums.ToUInt(inMask));
+            ioBitArray = Enums.ToEnum<T>(Enums.ToULong(ioBitArray) | Enums.ToULong(inMask));
         }
 
         /// <summary>
@@ -189,6 +269,24 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given ulong to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Remove(ref ulong ioBitArray, int inBitIndex)
+        {
+            ioBitArray &= ~((ulong) 1 << inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given long to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Remove(ref long ioBitArray, int inBitIndex)
+        {
+            ioBitArray &= ~((long) 1 << inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given mask in the given enum to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -201,7 +299,7 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            ioBitArray = Enums.ToEnum<T>(Enums.ToUInt(ioBitArray) & ~Enums.ToUInt(inMask));
+            ioBitArray = Enums.ToEnum<T>(Enums.ToULong(ioBitArray) & ~Enums.ToULong(inMask));
         }
 
         /// <summary>
@@ -221,6 +319,30 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref int ioBitArray, int inBitIndex, bool inbState)
+        {
+            if (inbState)
+                Add(ref ioBitArray, inBitIndex);
+            else
+                Remove(ref ioBitArray, inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given ulong to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Set(ref ulong ioBitArray, int inBitIndex, bool inbState)
+        {
+            if (inbState)
+                Add(ref ioBitArray, inBitIndex);
+            else
+                Remove(ref ioBitArray, inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given long to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Set(ref long ioBitArray, int inBitIndex, bool inbState)
         {
             if (inbState)
                 Add(ref ioBitArray, inBitIndex);
@@ -280,6 +402,36 @@ namespace BeauUtil
         /// <summary>
         /// Returns the bit index of the given bit array, if it contains a single set bit.
         /// </summary>
+        static public int IndexOf(long inBitArray)
+        {
+            unsafe
+            {
+                return IndexOf(*(ulong*) (&inBitArray));
+            }
+        }
+
+        /// <summary>
+        /// Returns the bit index of the given bit array, if it contains a single set bit.
+        /// </summary>
+        static public int IndexOf(ulong inBitArray)
+        {
+            if (inBitArray == 0)
+                return -1;
+            if ((inBitArray & (inBitArray - 1)) != 0)
+                return -1;
+
+            int shiftCount = 0;
+            while (inBitArray != 1)
+            {
+                inBitArray >>= 1;
+                ++shiftCount;
+            }
+            return shiftCount;
+        }
+
+        /// <summary>
+        /// Returns the bit index of the given bit array, if it contains a single set bit.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf<T>(T inBitArray)
         #if UNMANAGED_CONSTRAINT
@@ -319,6 +471,31 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the number of set bits in the given bit array.
+        /// </summary>
+        static public int Count(long inBitArray)
+        {
+            unsafe
+            {
+                return Count(*(ulong*)(&inBitArray));
+            }
+        }
+
+        /// <summary>
+        /// Returns the number of set bits in the given bit array.
+        /// </summary>
+        static public int Count(ulong inBitArray)
+        {
+            int count = 0;
+            while(inBitArray != 0)
+            {
+                inBitArray &= (inBitArray - 1);
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Returns the number of set bits in the given enum.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -331,7 +508,7 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            return Count(Enums.ToUInt(inBitArray));
+            return Count(Enums.ToULong(inBitArray));
         }
     }
 }

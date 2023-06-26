@@ -22,6 +22,7 @@ namespace BeauUtil
         /// <summary>
         /// Ensures a certain capacity for the list.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void EnsureCapacity<T>(ref List<T> ioList, int inCapacity)
         {
             if (ioList == null)
@@ -37,6 +38,7 @@ namespace BeauUtil
         /// <summary>
         /// Ensures a certain capacity for the list, making sure it is a power of 2.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void EnsureCapacityPow2<T>(ref List<T> ioList, int inCapacity)
         {
             if ((inCapacity & (inCapacity - 1)) == 0)

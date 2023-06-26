@@ -270,7 +270,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 8.578307
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -315,10 +315,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MeshFilter: {fileID: 386038753}
-  QuadCount: 20
-  QuadDistance: 4
+  QuadCount: 500
+  QuadDistance: 5
   QuadSize: 1
   FrameSkip: 8
+  ProfileTime: 2
 --- !u!1 &386038748
 GameObject:
   m_ObjectHideFlags: 0

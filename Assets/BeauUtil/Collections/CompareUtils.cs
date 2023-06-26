@@ -19,6 +19,10 @@ namespace BeauUtil
     {
         static private readonly Type s_UnityObjectType = typeof(UnityEngine.Object);
 
+        /// <summary>
+        /// Retrieves the default comparer for the given type.
+        /// For UnityEngine.Object-derived types this is more efficient than the standard comparer.
+        /// </summary>
         static public IEqualityComparer<T> DefaultComparer<T>()
         {
             IEqualityComparer<T> comparer = Cache<T>.DefaultComparer;
@@ -41,6 +45,14 @@ namespace BeauUtil
             }
             return comparer;
             
+        }
+
+        /// <summary>
+        /// Manually specifies the default comparer for the given type.
+        /// </summary>
+        static public void OverwriteDefault<T>(IEqualityComparer<T> inDefault)
+        {
+            Cache<T>.DefaultComparer = inDefault;
         }
 
         static private class Cache<T>

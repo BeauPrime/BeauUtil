@@ -12,6 +12,7 @@ using UnityEngine;
 
 namespace BeauUtil
 {
+    [AddComponentMenu("BeauUtil/Rendering/Dynamic Mesh Filter")]
     [RequireComponent(typeof(MeshFilter)), DisallowMultipleComponent, ExecuteAlways]
     public class DynamicMeshFilter : MonoBehaviour
     {

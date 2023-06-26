@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Examples/MeshTest/MeshTest.unity
+    guid: 33ffcb5c2fb829a40ac414c6dde9e4cf
   m_configObjects: {}

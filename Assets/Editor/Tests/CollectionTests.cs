@@ -72,6 +72,112 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
+        static public void BitSetTest32()
+        {
+            BitSet32 bitSet = new BitSet32();
+            bitSet.Set(17);
+            bitSet.Set(23);
+            bitSet.Set(2);
+
+            Assert.True(bitSet.IsSet(17));
+            Assert.AreEqual(3, bitSet.Count);
+
+            bitSet = ~bitSet;
+
+            Assert.False(bitSet.IsSet(17));
+            Assert.True(bitSet.IsSet(3));
+        }
+
+        [Test]
+        static public void BitSetTest64()
+        {
+            BitSet64 bitSet = new BitSet64();
+            bitSet.Set(17);
+            bitSet.Set(53);
+
+            Assert.True(bitSet.IsSet(17));
+            Assert.AreEqual(2, bitSet.Count);
+
+            bitSet = ~bitSet;
+
+            Assert.False(bitSet.IsSet(17));
+        }
+
+        [Test]
+        static public void BitSetTest128()
+        {
+            BitSet128 bitSet = new BitSet128();
+            bitSet.Set(98);
+            bitSet.Set(13);
+
+            Assert.True(bitSet.IsSet(13));
+            Assert.AreEqual(2, bitSet.Count);
+
+            bitSet = ~bitSet;
+
+            Assert.False(bitSet.IsSet(13));
+        }
+
+        [Test]
+        static public void BitSetTest256()
+        {
+            BitSet256 bitSet = new BitSet256();
+            bitSet.Set(98);
+            bitSet.Set(13);
+            bitSet.Set(99);
+            bitSet.Set(99);
+            bitSet.Set(199);
+            bitSet.Set(213);
+
+            Assert.True(bitSet.IsSet(213));
+            Assert.True(bitSet.IsSet(99));
+            Assert.AreEqual(5, bitSet.Count);
+
+            bitSet = ~bitSet;
+
+            Assert.False(bitSet.IsSet(13));
+        }
+
+        [Test]
+        static public void BitSetTest512()
+        {
+            BitSet512 bitSet = new BitSet512();
+            bitSet.Set(98);
+            bitSet.Set(13);
+            bitSet.Set(99);
+            bitSet.Set(99);
+            bitSet.Set(199);
+            bitSet.Set(501);
+
+            Assert.True(bitSet.IsSet(501));
+            Assert.False(bitSet.IsSet(203));
+            Assert.True(bitSet.IsSet(99));
+            Assert.AreEqual(5, bitSet.Count);
+
+            bitSet = ~bitSet;
+
+            Assert.False(bitSet.IsSet(13));
+        }
+
+        [Test]
+        static public void BitSetTestN()
+        {
+            BitSetN bitSet = new BitSetN(8192);
+            bitSet.Set(98);
+            bitSet.Set(13);
+            bitSet.Set(99);
+            bitSet.Set(99);
+            bitSet.Set(199);
+            bitSet.Set(501);
+            bitSet.Set(8000);
+
+            Assert.True(bitSet.IsSet(501));
+            Assert.False(bitSet.IsSet(203));
+            Assert.True(bitSet.IsSet(99));
+            Assert.AreEqual(6, bitSet.Count);
+        }
+
+        [Test]
         static public void FixedRingBufferTest()
         {
             RingBuffer<int> buffer = new RingBuffer<int>(4, RingBufferMode.Fixed);
@@ -288,6 +394,42 @@ namespace BeauUtil.UnitTests
                 Id = inId;
                 BatchId = inBatchId;
             }
+        }
+
+        [Test]
+        static public void LruCacheTest()
+        {
+            CacheCallbacks<int, string> config = new CacheCallbacks<int, string>()
+            {
+                Fetch = (k) => k.ToString()
+            };
+            int hitCount = 0, missCount = 0, evictCount = 0;
+            LruCache<int, string> toStringCache = new LruCache<int, string>(8, config);
+            toStringCache.OnHit += (k, op) => { hitCount++; Debug.LogFormat("hit '{0}' for operation {1}", k, op); };
+            toStringCache.OnMiss += (k, op) => { missCount++; Debug.LogFormat("missed '{0}' for operation {1}", k, op); };
+            toStringCache.OnEvict += (k, op) => { evictCount++; Debug.LogFormat("evicted '{0}' for operation {1}", k, op); };
+
+            toStringCache.Read(4);
+            Assert.AreEqual(missCount, 1);
+
+            toStringCache.Read(4);
+            Assert.AreEqual(missCount, 1);
+            Assert.AreEqual(hitCount, 1);
+
+            toStringCache.Read(16);
+            toStringCache.Read(4);
+            toStringCache.Read(8);
+            toStringCache.Read(16);
+            toStringCache.Read(7);
+            toStringCache.Read(4);
+            toStringCache.Read(3);
+            toStringCache.Read(9);
+            toStringCache.Read(4);
+            toStringCache.Read(0);
+            toStringCache.Read(1);
+            toStringCache.Read(19);
+            Assert.AreEqual(evictCount, 1);
+            Assert.False(toStringCache.Contains(8));
         }
     }
 }

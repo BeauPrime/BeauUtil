@@ -322,6 +322,7 @@ namespace BeauUtil
         /// <summary>
         /// Ensures a certain capacity for the array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void EnsureCapacity<T>(ref T[] ioArray, int inCapacity)
         {
             if (ioArray == null)
@@ -337,11 +338,9 @@ namespace BeauUtil
         /// <summary>
         /// Ensures a certain capacity for the array, making sure it is a power of 2.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void EnsureCapacityPow2<T>(ref T[] ioArray, int inCapacity)
         {
-            if (ioArray != null && ioArray.Length >= inCapacity)
-                return;
-
             if ((inCapacity & (inCapacity - 1)) == 0)
             {
                 EnsureCapacity(ref ioArray, inCapacity);

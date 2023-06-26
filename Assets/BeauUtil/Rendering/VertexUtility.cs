@@ -52,6 +52,34 @@ namespace BeauUtil
             Array.Resize(ref descriptors, descriptorCount);
             return descriptors;
         }
+
+        #region Mesh Data
+
+        /// <summary>
+        /// Maximum size of a mesh vertex stream (2 GiB).
+        /// </summary>
+        public const long MaxMeshVertexStreamSize = 2147483648L;
+
+        /// <summary>
+        /// Maximum size of a 16-bit mesh index buffer (1 GiB).
+        /// </summary>
+        public const long MaxMeshIndexStreamSize16 = 1073741824 / 2;
+
+        /// <summary>
+        /// Maximum size of a 32-bit mesh index buffer (1 GiB).
+        /// </summary>
+        public const long MaxMeshIndexStreamSize32 = 1073741824 / 4;
+
+        /// <summary>
+        /// Writes mesh data to the given mesh and clears the mesh data.
+        /// </summary>
+        static public void Flush(this IMeshData ioData, Mesh ioMesh)
+        {
+            ioData.Upload(ioMesh);
+            ioData.Clear();
+        }
+
+        #endregion // Mesh Data
     }
 
     /// <summary>
@@ -63,6 +91,27 @@ namespace BeauUtil
         [VertexAttr(VertexAttribute.Position)] public Vector4 Position;
         [VertexAttr(VertexAttribute.Color)] public Color Color;
         [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+    }
+
+    /// <summary>
+    /// Position, color, uv.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct VertexP3C1U2
+    {
+        [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
+        [VertexAttr(VertexAttribute.Color)] public Color32 Color;
+        [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+    }
+
+    /// <summary>
+    /// Position, color.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct VertexP3C1
+    {
+        [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
+        [VertexAttr(VertexAttribute.Color)] public Color32 Color;
     }
 
     /// <summary>

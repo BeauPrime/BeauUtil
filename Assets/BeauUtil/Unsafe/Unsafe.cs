@@ -108,6 +108,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignUp4(int val)
+        {
+            return (val + 4 - 1) & ~(4 - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp4(uint val)
         {
             return (val + 4u - 1) & ~(4u - 1);
@@ -117,6 +123,12 @@ namespace BeauUtil
         static public ulong AlignUp4(ulong val)
         {
             return (val + 4u - 1) & ~(ulong) (4u - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignDown4(int val)
+        {
+            return (val) & ~(4 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,6 +144,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignUp8(int val)
+        {
+            return (val + 8 - 1) & ~(8 - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp8(uint val)
         {
             return (val + 8u - 1) & ~(8u - 1);
@@ -141,6 +159,12 @@ namespace BeauUtil
         static public ulong AlignUp8(ulong val)
         {
             return (val + 8u - 1) & ~(ulong) (8u - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignDown8(int val)
+        {
+            return (val) & ~(8 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -156,6 +180,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignUp16(int val)
+        {
+            return (val + 16 - 1) & ~(16 - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp16(uint val)
         {
             return (val + 16u - 1) & ~(16u - 1);
@@ -165,6 +195,12 @@ namespace BeauUtil
         static public ulong AlignUp16(ulong val)
         {
             return (val + 16u - 1) & ~(ulong) (16u - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignDown16(int val)
+        {
+            return (val) & ~(16 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -180,6 +216,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignUp32(int val)
+        {
+            return (val + 32 - 1) & ~(32 - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp32(uint val)
         {
             return (val + 32u - 1) & ~(32u - 1);
@@ -189,6 +231,12 @@ namespace BeauUtil
         static public ulong AlignUp32(ulong val)
         {
             return (val + 32u - 1) & ~(ulong) (32u - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignDown32(int val)
+        {
+            return (val) & ~(32 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -204,6 +252,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignUp64(int val)
+        {
+            return (val + 64 - 1) & ~(64 - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp64(uint val)
         {
             return (val + 64u - 1) & ~(64u - 1);
@@ -213,6 +267,12 @@ namespace BeauUtil
         static public ulong AlignUp64(ulong val)
         {
             return (val + 64u - 1) & ~(ulong) (64u - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignDown64(int val)
+        {
+            return (val) & ~(64 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -228,6 +288,12 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int AlignUpN(int val, int n)
+        {
+            return (val + n - 1) & ~(n - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUpN(uint val, uint n)
         {
             return (val + n - 1) & ~(n - 1);
@@ -240,7 +306,13 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public uint AlignDown(uint val, uint n)
+        static public int AlignDownN(int val, int n)
+        {
+            return (val) & ~(n - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint AlignDownN(uint val, uint n)
         {
             return (val) & ~(n - 1);
         }
@@ -1039,7 +1111,7 @@ namespace BeauUtil
             }
         }
 
-#endif // UNMANAGED_CONSTRAINT
+        #endif // UNMANAGED_CONSTRAINT
 
         #endregion // Read/Write
 

@@ -244,7 +244,7 @@ namespace BeauUtil
 
             if (m_EntryCount >= m_Entries.Length)
             {
-                Array.Resize(ref m_Entries, (int) Unsafe.AlignUp8((uint) m_Entries.Length + 1));
+                Array.Resize(ref m_Entries, Unsafe.AlignUp8(m_Entries.Length + 1));
             }
 
             m_Entries[m_EntryCount++] = newEntry;

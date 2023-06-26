@@ -256,6 +256,8 @@ namespace BeauUtil.Debugger
         {
             EnsureInitialized();
 
+            ExitCurrent();
+
             m_CurrentMenu = default(MenuStackItem);
             m_MenuStack.Clear();
 
@@ -374,6 +376,7 @@ namespace BeauUtil.Debugger
         /// </summary>
         public void GotoMenu(DMInfo inMenu)
         {
+            ExitCurrent();
             m_MenuStack.Clear();
             PushMenu(inMenu);
         }
@@ -387,8 +390,12 @@ namespace BeauUtil.Debugger
             if (existingIndex >= 0)
             {
                 int removeCount = m_MenuStack.Count - 1 - existingIndex;
+                ExitCurrent();
+
                 if (removeCount > 0)
+                {
                     m_MenuStack.RemoveFromBack(removeCount);
+                }
             }
             else
             {
@@ -396,6 +403,7 @@ namespace BeauUtil.Debugger
             }
             
             PopulateMenu(inMenu, 0);
+            EnterCurrent();
         }
 
         /// <summary>
@@ -405,10 +413,14 @@ namespace BeauUtil.Debugger
         {
             if (m_MenuStack.Count > 1)
             {
+                ExitCurrent();
+
                 m_MenuStack.PopBack();
-                MenuStackItem prevMenu;
-                m_MenuStack.TryPeekBack(out prevMenu);
-                PopulateMenu(prevMenu.Menu, prevMenu.PageIndex);
+                MenuStackItem next;
+                m_MenuStack.TryPeekBack(out next);
+                PopulateMenu(next.Menu, next.PageIndex);
+
+                EnterCurrent();
             }
             else
             {
@@ -423,10 +435,14 @@ namespace BeauUtil.Debugger
         {
             if (m_MenuStack.Count > 1)
             {
+                ExitCurrent();
+
                 m_MenuStack.PopBack();
-                MenuStackItem prevMenu;
-                m_MenuStack.TryPeekBack(out prevMenu);
-                PopulateMenu(prevMenu.Menu, prevMenu.PageIndex);
+                MenuStackItem next;
+                m_MenuStack.TryPeekBack(out next);
+                PopulateMenu(next.Menu, next.PageIndex);
+                
+                EnterCurrent();
                 return true;
             }
 
@@ -466,6 +482,28 @@ namespace BeauUtil.Debugger
             }
 
             return -1;
+        }
+
+        private void ExitCurrent()
+        {
+            if (isActiveAndEnabled)
+            {
+                if (m_CurrentMenu.Menu != null)
+                {
+                    m_CurrentMenu.Menu.OnExit.Invoke(m_CurrentMenu.Menu);
+                }
+            }
+        }
+
+        private void EnterCurrent()
+        {
+            if (isActiveAndEnabled)
+            {
+                if (m_CurrentMenu.Menu != null)
+                {
+                    m_CurrentMenu.Menu.OnEnter.Invoke(m_CurrentMenu.Menu);
+                }
+            }
         }
 
         #endregion // Menu Management

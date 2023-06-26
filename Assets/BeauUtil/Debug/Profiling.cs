@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    2 Sept 2020
@@ -24,48 +24,66 @@ namespace BeauUtil.Debugger
     {
         #region Time
 
+        static private readonly long TimerFrequency = Stopwatch.Frequency;
+
         /// <summary>
         /// Returns a profiling block for time.
         /// </summary>
-        static public TimeBlock Time(string inLabel)
+        static public TimeBlock Time(string inLabel, ProfileTimeUnits inTimeUnits = ProfileTimeUnits.Milliseconds)
         {
-            #if ENABLE_PROFILING_BEAUUTIL
-            return new TimeBlock(inLabel);
-            #else
+#if ENABLE_PROFILING_BEAUUTIL
+            return new TimeBlock(inLabel, inTimeUnits);
+#else
             return default;
-            #endif // ENABLE_PROFILING_BEAUUTIL
+#endif // ENABLE_PROFILING_BEAUUTIL
         }
 
         public struct TimeBlock : IDisposable
         {
-            #if ENABLE_PROFILING_BEAUUTIL
+#if ENABLE_PROFILING_BEAUUTIL
             private readonly string m_Label;
             private readonly long m_TickStart;
             private readonly int m_FrameStart;
+            private readonly ProfileTimeUnits m_TimeUnits;
 
-            internal TimeBlock(string inLabel)
+            internal TimeBlock(string inLabel, ProfileTimeUnits inUnits)
             {
                 m_Label = inLabel ?? "Unknown";
                 m_TickStart = Stopwatch.GetTimestamp();
                 m_FrameStart = UnityEngine.Time.frameCount;
+                m_TimeUnits = inUnits;
             }
 
             public void Dispose()
             {
                 if (m_TickStart > 0)
                 {
-                    long elapsed = Stopwatch.GetTimestamp() - m_TickStart;
-                    double durationMS = (double) elapsed / Stopwatch.Frequency * 1000;
                     int durationFrames = UnityEngine.Time.frameCount - m_FrameStart;
-                    UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
+                    long elapsed = Stopwatch.GetTimestamp() - m_TickStart;
+                    switch (m_TimeUnits)
+                    {
+                        case ProfileTimeUnits.Milliseconds:
+                            double durationMS = (double) elapsed / TimerFrequency * 1000;
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}ms ({2} frames)", m_Label, durationMS, durationFrames));
+                            break;
+
+                        case ProfileTimeUnits.Microseconds:
+                            double durationMicroseconds = (double) elapsed / TimerFrequency * 1000000;
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}μs ({2} frames)", m_Label, durationMicroseconds, durationFrames));
+                            break;
+
+                        case ProfileTimeUnits.Ticks:
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1} ticks ({2} frames)", m_Label, elapsed, durationFrames));
+                            break;
+                    }
                 }
             }
-            #else
+#else
             public void Dispose() { }
-            #endif // ENABLE_PROFILING_BEAUUTIL
+#endif // ENABLE_PROFILING_BEAUUTIL
         }
 
-        #endregion // Time
+#endregion // Time
 
         #region Unity Samples
 
@@ -74,16 +92,16 @@ namespace BeauUtil.Debugger
         /// </summary>
         static public SampleBlock Sample(string inLabel)
         {
-            #if ENABLE_PROFILING_BEAUUTIL
+#if ENABLE_PROFILING_BEAUUTIL
             return new SampleBlock(inLabel);
-            #else
+#else
             return default;
-            #endif // ENABLE_PROFILING_BEAUUTIL
+#endif // ENABLE_PROFILING_BEAUUTIL
         }
 
         public struct SampleBlock : IDisposable
         {
-            #if ENABLE_PROFILING_BEAUUTIL
+#if ENABLE_PROFILING_BEAUUTIL
             internal SampleBlock(string inLabel)
             {
                 Profiler.BeginSample(inLabel);
@@ -93,11 +111,32 @@ namespace BeauUtil.Debugger
             {
                 Profiler.EndSample();
             }
-            #else
+#else
             public void Dispose() { }
-            #endif // ENABLE_PROFILING_BEAUUTIL
+#endif // ENABLE_PROFILING_BEAUUTIL
         }
 
         #endregion // Unity Samples
+    }
+
+    /// <summary>
+    /// Time units used for reporting from Profiling.Time.
+    /// </summary>
+    public enum ProfileTimeUnits
+    {
+        /// <summary>
+        /// Reports in milliseconds.
+        /// </summary>
+        Milliseconds,
+
+        /// <summary>
+        /// Reports in microseconds.
+        /// </summary>
+        Microseconds,
+
+        /// <summary>
+        /// Reports in system ticks.
+        /// </summary>
+        Ticks
     }
 }

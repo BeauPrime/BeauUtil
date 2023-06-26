@@ -109,10 +109,10 @@ namespace BeauUtil
         private const int DefaultIndexBufferSize = DefaultVertexBufferSize * 2;
 
         private Mesh m_Mesh;
-        private readonly List<Vector3> m_Positions = new List<Vector3>(DefaultVertexBufferSize);
-        private readonly List<Color32> m_Colors = new List<Color32>(DefaultVertexBufferSize);
-        private readonly List<Vector2> m_UVs = new List<Vector2>(DefaultVertexBufferSize);
-        private readonly List<ushort> m_Indices = new List<ushort>(DefaultIndexBufferSize);
+        private List<Vector3> m_Positions = new List<Vector3>(DefaultVertexBufferSize);
+        private List<Color32> m_Colors = new List<Color32>(DefaultVertexBufferSize);
+        private List<Vector2> m_UVs = new List<Vector2>(DefaultVertexBufferSize);
+        private List<ushort> m_Indices = new List<ushort>(DefaultIndexBufferSize);
 
         private ushort m_VertexCount;
         private uint m_IndexCount;
@@ -204,6 +204,38 @@ namespace BeauUtil
         }
 
         #endregion // Lifecycle
+
+        #region IMeshData
+
+        public int VertexCount
+        {
+            get { return m_VertexCount; }
+        }
+
+        public int IndexCount
+        {
+            get { return (int) m_IndexCount; }
+        }
+
+        public MeshTopology Topology
+        {
+            get { return MeshTopology.Triangles; }
+        }
+
+        public bool NeedsFlush(int inVertexCount)
+        {
+            return m_VertexCount + inVertexCount > ushort.MaxValue;
+        }
+
+        public void Preallocate(int inVertexCount, int inIndexCount)
+        {
+            ListUtils.EnsureCapacityPow2(ref m_Positions, m_VertexCount + inVertexCount);
+            ListUtils.EnsureCapacityPow2(ref m_Colors, m_VertexCount + inVertexCount);
+            ListUtils.EnsureCapacityPow2(ref m_UVs, m_VertexCount + inVertexCount);
+            ListUtils.EnsureCapacityPow2(ref m_Indices, (int) m_IndexCount + inVertexCount);
+        }
+
+        #endregion // IMeshData
 
         #region Upload
 
