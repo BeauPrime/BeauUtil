@@ -631,5 +631,28 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(0, next.Index);
             Assert.AreNotEqual(first, next);
         }
+
+        [TypeIndexCapacity(1024)]
+        private class ReflectA { }
+
+        private class ReflectB : ReflectA { }
+        private class ReflectC : ReflectA { }
+
+        [Test]
+        static public void TypeIndexWithCapacityTest() {
+            int b = TypeIndex<ReflectA>.Get<ReflectB>();
+            int c = TypeIndex<ReflectB>.Get<ReflectC>();
+            int a = TypeIndex<ReflectA>.Get<ReflectA>();
+
+            Assert.AreEqual(0, a);
+        }
+
+        [Test]
+        static public void TypeIndexTest() {
+            int b = TypeIndex<ReflectB>.Get<ReflectB>();
+            int c = TypeIndex<ReflectB>.Get<ReflectC>();
+
+            Assert.AreEqual(0, b);
+        }
     }
 }

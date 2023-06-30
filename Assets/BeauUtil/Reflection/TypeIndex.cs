@@ -44,6 +44,8 @@ namespace BeauUtil {
 
             s_TypeMap = new Dictionary<Type, int>(Capacity);
             s_IndexMap = new Type[Capacity];
+
+            Get(rootType);
         }
 
         /// <summary>
@@ -115,7 +117,7 @@ namespace BeauUtil {
 
         public TypeIndexCapacityAttribute(int inCapacity)
         {
-            if (Capacity < 4)
+            if (inCapacity < 4)
                 throw new ArgumentOutOfRangeException("inCapacity", "Capacity must be at least 4");
             Capacity = Unsafe.AlignUp8(inCapacity);
         }

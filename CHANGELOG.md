@@ -1,3 +1,8 @@
+## Version 0.9.1
+**29 June 2023**
+
+Hotfix for `TypeIndex` custom capacity
+
 ## Version 0.9.0
 **29 June 2023**
 

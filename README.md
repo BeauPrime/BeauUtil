@@ -1,6 +1,6 @@
 # BeauUtil
 
-**Current Version: 0.9.0**
+**Current Version: 0.9.1**
 Updated 29 June 2023 | [Changelog](https://github.com/BeauPrime/BeauUtil/blob/master/CHANGELOG.md)
 
 ## About
