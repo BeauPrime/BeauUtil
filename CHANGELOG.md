@@ -1,3 +1,37 @@
+## Version 0.9.0
+**29 June 2023**
+
+New collection types
+`MeshData` improvements
+
+## Features
+* New `BitSet` structs for easier access to bit sets
+* New `LruCache` fixed-size cache type
+* New `LLTable` collection, for array-backed linked lists
+* New `UniqueId`, `UniqueIdAllocator` and `UniqueIdMap` classes for generating unique validatable handles for array-backed storage
+* `CompareUtils.Default[...]` can now use types marked with `DefaultEqualityComparer` and `DefaultSorter` attributes for their respective types
+* New `Vectors` utility class for sequentially transforming vectors and vectors embedded in structs
+* New `OffsetLength` struct and utilities for representing ranges of data in 1-dimensional arrays/buffers
+* New `TypeIndex<T>` utility for statically mapping types to indices (for faster array lookups)
+
+## Improvements
+* `Bits` utilities now work on 64-bit integrals
+* Improved `MeshData.Upload` performance
+* Added `MeshData.Topology`, specified in constructor
+* `MeshData` can now transform ranges of vertices
+* `Profiling.Time` can now specify time units (milliseconds, microseconds, ticks)
+* Added callbacks to `DMInfo` for menu open and close
+* `CameraHelper` can now register global pre-cull, pre-render, and post-render handlers
+* `VertexUtility.GenerateLayout` also now returns size, attribute, and offset information
+
+## Fixes
+* `MeshData` correctly calculates maximum vertices based on index format and vertex size
+
+### Breaking Changes
+* `RingBuffer<T>` is now a sealed class
+* `CompareUtils.DefaultComparer<T>` renamed to `CompareUtils.DefaultEquals<T>` to avoid conceptual naming conflicts with `CompareUtils.DefaultSort<T>`
+* `MeshData.Add[Shape]` returns an `OffsetLength` instead of the `MeshData` instance
+
 ## Version 0.8.6
 **19 June 2023**
 
