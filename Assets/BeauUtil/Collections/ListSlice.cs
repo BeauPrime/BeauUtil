@@ -110,7 +110,7 @@ namespace BeauUtil
             if (m_Source == null)
                 return -1;
 
-            var comparer = CompareUtils.DefaultComparer<T>();
+            var comparer = CompareUtils.DefaultEquals<T>();
             for (int i = 0; i < inCount; ++i)
             {
                 if (comparer.Equals(m_Source[m_StartIndex + inStartIdx + i], inItem))
@@ -135,7 +135,7 @@ namespace BeauUtil
             if (m_Source == null)
                 return -1;
 
-            var comparer = CompareUtils.DefaultComparer<T>();
+            var comparer = CompareUtils.DefaultEquals<T>();
             for (int i = 0; i < inCount; ++i)
             {
                 if (comparer.Equals(m_Source[m_StartIndex + inStartIdx - i], inItem))

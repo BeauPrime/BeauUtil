@@ -91,7 +91,7 @@ namespace BeauUtil
             m_TotalWeight += inWeight;
             m_Cached = false;
             
-            var eq = CompareUtils.DefaultComparer<T>();
+            var eq = CompareUtils.DefaultEquals<T>();
             for(int i = m_Entries.Count - 1; i >= 0; --i)
             {
 #if EXPANDED_REFS
@@ -136,7 +136,7 @@ namespace BeauUtil
         public float ChangeWeight(T inValue, float inWeightChange)
 #endif // EXPANDED_REFS
         {
-            var eq = CompareUtils.DefaultComparer<T>();
+            var eq = CompareUtils.DefaultEquals<T>();
             for(int i = m_Entries.Count - 1; i >= 0; --i)
             {
 #if EXPANDED_REFS
@@ -196,7 +196,7 @@ namespace BeauUtil
                 return this;
             }
 
-            var eq = CompareUtils.DefaultComparer<T>();
+            var eq = CompareUtils.DefaultEquals<T>();
             for(int i = m_Entries.Count - 1; i >= 0; --i)
             {
 #if EXPANDED_REFS
@@ -247,7 +247,7 @@ namespace BeauUtil
         public float GetWeight(T inValue)
 #endif // EXPANDED_REFS
         {
-            var eq = CompareUtils.DefaultComparer<T>();
+            var eq = CompareUtils.DefaultEquals<T>();
             for(int i = m_Entries.Count - 1; i >= 0; --i)
             {
 #if EXPANDED_REFS
@@ -322,7 +322,7 @@ namespace BeauUtil
         public bool Remove(T inValue)
 #endif // EXPANDED_REFS
         {
-            var eq = CompareUtils.DefaultComparer<T>();
+            var eq = CompareUtils.DefaultEquals<T>();
             for(int i = m_Entries.Count - 1; i >= 0; --i)
             {
 #if EXPANDED_REFS

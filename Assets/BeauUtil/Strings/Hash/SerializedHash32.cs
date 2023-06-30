@@ -19,6 +19,7 @@ using System;
 using UnityEngine;
 using System.Diagnostics;
 using UnityEngine.Serialization;
+using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -30,6 +31,7 @@ namespace BeauUtil
     /// </summary>
     [Serializable]
     [DebuggerDisplay("{ToDebugString()}")]
+    [DefaultEqualityComparer(typeof(SerializedHash32.Comparer)), DefaultSorter(typeof(SerializedHash32.Comparer))]
     public struct SerializedHash32 : IEquatable<SerializedHash32>, IDebugString
 #if UNITY_EDITOR
         , ISerializationCallbackReceiver
@@ -195,5 +197,30 @@ namespace BeauUtil
         }
 
         #endif // UNITY_EDITOR
+
+        #region Comparisons
+
+        /// <summary>
+        /// Default comparer.
+        /// </summary>
+        private sealed class Comparer : IEqualityComparer<SerializedHash32>, IComparer<SerializedHash32>
+        {
+            public int Compare(SerializedHash32 x, SerializedHash32 y)
+            {
+                return x.m_HashValue < y.m_HashValue ? -1 : (x.m_HashValue > y.m_HashValue ? 1 : 0);
+            }
+
+            public bool Equals(SerializedHash32 x, SerializedHash32 y)
+            {
+                return x.m_HashValue == y.m_HashValue;
+            }
+
+            public int GetHashCode(SerializedHash32 obj)
+            {
+                return unchecked((int) obj.m_HashValue);
+            }
+        }
+
+        #endregion // Comparisons
     }
 }

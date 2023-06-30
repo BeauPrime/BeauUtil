@@ -20,6 +20,9 @@ namespace BeauUtil {
     /// </summary>
     static public class TypeIndex<T>
     {
+        /// <summary>
+        /// Maximum number of type indices.
+        /// </summary>
         static public readonly int Capacity;
 
         static private int s_Allocated = 0;
@@ -93,7 +96,7 @@ namespace BeauUtil {
         /// <summary>
         /// All thanks to generics!
         /// </summary>
-        static private class Cache<U>
+        private struct Cache<U>
         {
             static public readonly int Index = Get(typeof(U));
         }

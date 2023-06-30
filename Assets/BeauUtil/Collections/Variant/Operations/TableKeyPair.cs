@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -18,6 +19,7 @@ namespace BeauUtil.Variants
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    [DefaultEqualityComparer(typeof(TableKeyPair.Comparer))]
     public struct TableKeyPair : IEquatable<TableKeyPair>, IDebugString
     {
         static public readonly string TableOperator = ":";
@@ -169,5 +171,26 @@ namespace BeauUtil.Variants
         }
 
         #endregion // Overrides
+
+        #region Comparisons
+
+        /// <summary>
+        /// Default comparer.
+        /// </summary>
+        private sealed class Comparer : IEqualityComparer<TableKeyPair>
+        {
+            public bool Equals(TableKeyPair x, TableKeyPair y)
+            {
+                return x.TableId.HashValue == y.TableId.HashValue
+                    && x.VariableId.HashValue == y.TableId.HashValue;
+            }
+
+            public int GetHashCode(TableKeyPair obj)
+            {
+                return (obj.TableId.GetHashCode() << 3) ^ obj.VariableId.GetHashCode();
+            }
+        }
+
+        #endregion // Comparisons
     }
 }

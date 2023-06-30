@@ -81,7 +81,7 @@ namespace BeauUtil
             m_ValueTable = new TValue[inCapacity];
             m_UseTable = new ulong[inCapacity];
             m_Config = inConfig;
-            m_KeyLookup = new Dictionary<TKey, int>(inCapacity, CompareUtils.DefaultComparer<TKey>());
+            m_KeyLookup = new Dictionary<TKey, int>(inCapacity, CompareUtils.DefaultEquals<TKey>());
         }
 
         #region Checks

@@ -42,13 +42,13 @@ namespace BeauUtil
         public BufferedCollection()
         {
             m_Entries = new RingBuffer<Entry>();
-            m_Comparer = CompareUtils.DefaultComparer<T>();
+            m_Comparer = CompareUtils.DefaultEquals<T>();
         }
 
         public BufferedCollection(int inCapacity)
         {
             m_Entries = new RingBuffer<Entry>(inCapacity, RingBufferMode.Expand);
-            m_Comparer = CompareUtils.DefaultComparer<T>();
+            m_Comparer = CompareUtils.DefaultEquals<T>();
         }
 
         public BufferedCollection(int inCapacity, IEqualityComparer<T> inComparer)

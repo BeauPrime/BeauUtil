@@ -22,6 +22,7 @@ namespace BeauUtil
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Sequential, Size=8)]
     [Serializable]
+    [DefaultEqualityComparer(typeof(StringHash64.Comparer)), DefaultSorter(typeof(StringHash64.Comparer))]
     public struct StringHash64 : IEquatable<StringHash64>, IComparable<StringHash64>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedProxy<ulong>
@@ -174,7 +175,7 @@ namespace BeauUtil
 
         public override int GetHashCode()
         {
-            return (int) m_HashValue;
+            return unchecked((int) (m_HashValue >> 32) ^ (int) m_HashValue);
         }
 
         public override string ToString()
@@ -284,7 +285,7 @@ namespace BeauUtil
 
         #region ISerializedProxy
 
-        #if USING_BEAUDATA
+#if USING_BEAUDATA
 
         public ulong GetProxyValue(BeauData.ISerializerContext unused)
         {
@@ -296,8 +297,33 @@ namespace BeauUtil
             m_HashValue = inValue;
         }
 
-        #endif // USING_BEAUDATA
+#endif // USING_BEAUDATA
 
         #endregion // ISerializedProxy
+
+        #region Comparisons
+
+        /// <summary>
+        /// Default comparer.
+        /// </summary>
+        internal sealed class Comparer : IEqualityComparer<StringHash64>, IComparer<StringHash64>
+        {
+            public int Compare(StringHash64 x, StringHash64 y)
+            {
+                return x.m_HashValue < y.m_HashValue ? -1 : (x.m_HashValue > y.m_HashValue ? 1 : 0);
+            }
+
+            public bool Equals(StringHash64 x, StringHash64 y)
+            {
+                return x.m_HashValue == y.m_HashValue;
+            }
+
+            public int GetHashCode(StringHash64 obj)
+            {
+                return unchecked((int) (obj.m_HashValue >> 32) ^ (int) obj.m_HashValue);
+            }
+        }
+
+        #endregion // Comparisons
     }
 }

@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using BeauUtil.Debugger;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -55,7 +56,7 @@ namespace BeauUtil
         private const int DefaultInitialCapacity = 32;
 
         static private unsafe readonly long MaxAllowedVertices = Math.Min(VertexUtility.MaxMeshVertexStreamSize / sizeof(TVertex), ushort.MaxValue);
-        static private VertexAttributeDescriptor[] s_VertexLayout;
+        static private VertexLayout s_VertexLayout;
 
         private int m_VertexCount;
         private int m_IndexCount;
@@ -285,7 +286,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
-        public MeshData16<TVertex> AddTriangle(in TVertex inA, in TVertex inB, in TVertex inC)
+        public OffsetLengthU16 AddTriangle(in TVertex inA, in TVertex inB, in TVertex inC)
         {
             AllocateIndices(3);
             int currentVertCount = m_VertexCount;
@@ -297,7 +298,7 @@ namespace BeauUtil
             m_VertexBuffer[m_VertexCount++] = inA;
             m_VertexBuffer[m_VertexCount++] = inB;
             m_VertexBuffer[m_VertexCount++] = inC;
-            return this;
+            return new OffsetLengthU16((ushort) currentVertCount, 3);
         }
 
         /// <summary>
@@ -305,7 +306,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
-        public MeshData16<TVertex> AddQuad(in TVertex inA, in TVertex inB, in TVertex inC, in TVertex inD)
+        public OffsetLengthU16 AddQuad(in TVertex inA, in TVertex inB, in TVertex inC, in TVertex inD)
         {
             AllocateIndices(6);
             int currentVertCount = m_VertexCount;
@@ -321,14 +322,14 @@ namespace BeauUtil
             m_VertexBuffer[m_VertexCount++] = inB;
             m_VertexBuffer[m_VertexCount++] = inC;
             m_VertexBuffer[m_VertexCount++] = inD;
-            return this;
+            return new OffsetLengthU16((ushort) currentVertCount, 4);
         }
 
         /// <summary>
         /// Adds arbitrary vertices and indices to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public MeshData16<TVertex> AddFromBuffers(TVertex[] inVertices, int inVertexCount, ushort[] inIndices, int inIndexCount)
+        public OffsetLengthU16 AddFromBuffers(TVertex[] inVertices, int inVertexCount, ushort[] inIndices, int inIndexCount)
         {
             if (inVertexCount > inVertices.Length || inIndexCount > inIndices.Length)
                 throw new ArgumentOutOfRangeException();
@@ -345,14 +346,14 @@ namespace BeauUtil
             {
                 m_VertexBuffer[m_VertexCount++] = inVertices[i];
             }
-            return this;
+            return new OffsetLengthU16((ushort) currentVertCount, (ushort) inVertexCount);
         }
 
         /// <summary>
         /// Adds arbitrary vertices and indices to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public MeshData16<TVertex> AddFromBuffers(List<TVertex> inVertices, int inVertexCount, List<ushort> inIndices, int inIndexCount)
+        public OffsetLengthU16 AddFromBuffers(List<TVertex> inVertices, int inVertexCount, List<ushort> inIndices, int inIndexCount)
         {
             if (inVertexCount > inVertices.Count || inIndexCount > inIndices.Count)
                 throw new ArgumentOutOfRangeException();
@@ -369,14 +370,14 @@ namespace BeauUtil
             {
                 m_VertexBuffer[m_VertexCount++] = inVertices[i];
             }
-            return this;
+            return new OffsetLengthU16((ushort) currentVertCount, (ushort) inVertexCount);
         }
 
         /// <summary>
         /// Adds arbitrary vertices and indices to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public unsafe MeshData16<TVertex> AddFromBuffers(TVertex* inVertices, int inVertexCount, ushort* inIndices, int inIndexCount)
+        public unsafe OffsetLengthU16 AddFromBuffers(TVertex* inVertices, int inVertexCount, ushort* inIndices, int inIndexCount)
         {
             AllocateIndices(inIndexCount);
             int currentVertCount = m_VertexCount;
@@ -390,10 +391,41 @@ namespace BeauUtil
             {
                 m_VertexBuffer[m_VertexCount++] = inVertices[i];
             }
-            return this;
+            return new OffsetLengthU16((ushort) currentVertCount, (ushort) inVertexCount);
         }
 
         #endregion // Shapes
+
+        #region Transforms
+
+        /// <summary>
+        /// Transforms the given vertex range by the given matrix.
+        /// </summary>
+        public void Transform(OffsetLengthU16 inRange, Matrix4x4 inMatrix)
+        {
+            Assert.True(inRange.Offset >= 0 && inRange.End <= m_IndexCount, "Provided vertex range out of range");
+            unsafe
+            {
+                fixed (TVertex* verts = m_VertexBuffer)
+                {
+                    byte* stream = (byte*) (verts + inRange.Offset);
+                    if (s_VertexLayout.Has(VertexAttribute.Position))
+                    {
+                        Vectors.TransformPoint3Stride(stream, s_VertexLayout.Offset(VertexAttribute.Position), s_VertexLayout.Stride, (int) inRange.Length, ref inMatrix);
+                    }
+                    if (s_VertexLayout.Has(VertexAttribute.Normal))
+                    {
+                        Vectors.TransformVector3Stride(stream, s_VertexLayout.Offset(VertexAttribute.Normal), s_VertexLayout.Stride, (int) inRange.Length, ref inMatrix);
+                    }
+                    if (s_VertexLayout.Has(VertexAttribute.Tangent))
+                    {
+                        Vectors.TransformVector3Stride(stream, s_VertexLayout.Offset(VertexAttribute.Tangent), s_VertexLayout.Stride, (int) inRange.Length, ref inMatrix);
+                    }
+                }
+            }
+        }
+
+        #endregion // Transforms
 
         #region Upload
 
@@ -410,7 +442,7 @@ namespace BeauUtil
             {
                 fixed (TVertex* verts = m_VertexBuffer)
                 {
-                    ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout);
+                    ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
                     ioMesh.SetVertexBufferData(Unsafe.NativeArray(verts, m_VertexCount), 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
                 }
 
@@ -421,7 +453,7 @@ namespace BeauUtil
                 }
             }
 #else
-            ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout);
+            ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
             ioMesh.SetVertexBufferData(m_VertexBuffer, 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
 
             ioMesh.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt16);
@@ -441,7 +473,7 @@ namespace BeauUtil
 
         static private void InitializeVertexLayout()
         {
-            if (s_VertexLayout != null)
+            if (s_VertexLayout)
                 return;
 
             s_VertexLayout = VertexUtility.GenerateLayout(typeof(TVertex));
@@ -450,9 +482,9 @@ namespace BeauUtil
         /// <summary>
         /// Overrides the vertex layout for this vertex type.
         /// </summary>
-        static public void OverrideLayout(VertexAttributeDescriptor[] inLayout)
+        static public void OverrideLayout(VertexLayout inLayout)
         {
-            if (inLayout == null || inLayout.Length == 0)
+            if (!inLayout)
                 throw new ArgumentNullException("inLayout");
 
             s_VertexLayout = inLayout;
@@ -470,7 +502,7 @@ namespace BeauUtil
         private const int DefaultInitialCapacity = 32;
         static private unsafe readonly long MaxAllowedVertices = Math.Min(VertexUtility.MaxMeshVertexStreamSize / sizeof(TVertex), int.MaxValue);
 
-        static private VertexAttributeDescriptor[] s_VertexLayout;
+        static private VertexLayout s_VertexLayout;
 
         private int m_VertexCount;
         private int m_IndexCount;
@@ -700,7 +732,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
-        public MeshData32<TVertex> AddTriangle(in TVertex inA, in TVertex inB, in TVertex inC)
+        public OffsetLengthU32 AddTriangle(in TVertex inA, in TVertex inB, in TVertex inC)
         {
             AllocateIndices(3);
             int currentVertCount = m_VertexCount;
@@ -712,7 +744,7 @@ namespace BeauUtil
             m_VertexBuffer[m_VertexCount++] = inA;
             m_VertexBuffer[m_VertexCount++] = inB;
             m_VertexBuffer[m_VertexCount++] = inC;
-            return this;
+            return new OffsetLengthU32((uint) currentVertCount, 3);
         }
 
         /// <summary>
@@ -720,7 +752,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
-        public MeshData32<TVertex> AddQuad(in TVertex inA, in TVertex inB, in TVertex inC, in TVertex inD)
+        public OffsetLengthU32 AddQuad(in TVertex inA, in TVertex inB, in TVertex inC, in TVertex inD)
         {
             AllocateIndices(6);
             int currentVertCount = m_VertexCount;
@@ -736,14 +768,14 @@ namespace BeauUtil
             m_VertexBuffer[m_VertexCount++] = inB;
             m_VertexBuffer[m_VertexCount++] = inC;
             m_VertexBuffer[m_VertexCount++] = inD;
-            return this;
+            return new OffsetLengthU32((uint) currentVertCount, 4);
         }
 
         /// <summary>
         /// Adds arbitrary vertices and indices to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public MeshData32<TVertex> AddFromBuffers(TVertex[] inVertices, int inVertexCount, uint[] inIndices, int inIndexCount)
+        public OffsetLengthU32 AddFromBuffers(TVertex[] inVertices, int inVertexCount, uint[] inIndices, int inIndexCount)
         {
             if (inVertexCount > inVertices.Length || inIndexCount > inIndices.Length)
                 throw new ArgumentOutOfRangeException();
@@ -760,14 +792,14 @@ namespace BeauUtil
             {
                 m_VertexBuffer[m_VertexCount++] = inVertices[i];
             }
-            return this;
+            return new OffsetLengthU32((uint) currentVertCount, (uint) inVertexCount);
         }
 
         /// <summary>
         /// Adds arbitrary vertices and indices to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public MeshData32<TVertex> AddFromBuffers(List<TVertex> inVertices, int inVertexCount, List<uint> inIndices, int inIndexCount)
+        public OffsetLengthU32 AddFromBuffers(List<TVertex> inVertices, int inVertexCount, List<uint> inIndices, int inIndexCount)
         {
             if (inVertexCount > inVertices.Count || inIndexCount > inIndices.Count)
                 throw new ArgumentOutOfRangeException();
@@ -784,14 +816,14 @@ namespace BeauUtil
             {
                 m_VertexBuffer[m_VertexCount++] = inVertices[i];
             }
-            return this;
+            return new OffsetLengthU32((uint) currentVertCount, (uint) inVertexCount);
         }
 
         /// <summary>
         /// Adds arbitrary vertices and indices to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public unsafe MeshData32<TVertex> AddFromBuffers(TVertex* inVertices, int inVertexCount, uint* inIndices, int inIndexCount)
+        public unsafe OffsetLengthU32 AddFromBuffers(TVertex* inVertices, int inVertexCount, uint* inIndices, int inIndexCount)
         {
             AllocateIndices(inIndexCount);
             int currentVertCount = m_VertexCount;
@@ -805,10 +837,41 @@ namespace BeauUtil
             {
                 m_VertexBuffer[m_VertexCount++] = inVertices[i];
             }
-            return this;
+            return new OffsetLengthU32((uint) currentVertCount, (uint) inVertexCount);
         }
 
         #endregion // Shapes
+
+        #region Transforms
+
+        /// <summary>
+        /// Transforms the given vertex range by the given matrix.
+        /// </summary>
+        public void Transform(OffsetLengthU32 inRange, Matrix4x4 inMatrix)
+        {
+            Assert.True(inRange.Offset >= 0 && inRange.End <= m_IndexCount, "Provided vertex range out of range");
+            unsafe
+            {
+                fixed (TVertex* verts = m_VertexBuffer)
+                {
+                    byte* stream = (byte*) (verts + inRange.Offset);
+                    if (s_VertexLayout.Has(VertexAttribute.Position))
+                    {
+                        Vectors.TransformPoint3Stride(stream, s_VertexLayout.Offset(VertexAttribute.Position), s_VertexLayout.Stride, (int) inRange.Length, ref inMatrix);
+                    }
+                    if (s_VertexLayout.Has(VertexAttribute.Normal))
+                    {
+                        Vectors.TransformVector3Stride(stream, s_VertexLayout.Offset(VertexAttribute.Normal), s_VertexLayout.Stride, (int) inRange.Length, ref inMatrix);
+                    }
+                    if (s_VertexLayout.Has(VertexAttribute.Tangent))
+                    {
+                        Vectors.TransformVector3Stride(stream, s_VertexLayout.Offset(VertexAttribute.Tangent), s_VertexLayout.Stride, (int) inRange.Length, ref inMatrix);
+                    }
+                }
+            }
+        }
+
+        #endregion // Transforms
 
         #region Upload
 
@@ -825,7 +888,7 @@ namespace BeauUtil
             {
                 fixed (TVertex* verts = m_VertexBuffer)
                 {
-                    ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout);
+                    ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
                     ioMesh.SetVertexBufferData(Unsafe.NativeArray(verts, m_VertexCount), 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
                 }
 
@@ -836,7 +899,7 @@ namespace BeauUtil
                 }
             }
 #else
-            ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout);
+            ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
             ioMesh.SetVertexBufferData(m_VertexBuffer, 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
 
             ioMesh.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt32);
@@ -856,7 +919,7 @@ namespace BeauUtil
 
         static private void InitializeVertexLayout()
         {
-            if (s_VertexLayout != null)
+            if (s_VertexLayout)
                 return;
 
             s_VertexLayout = VertexUtility.GenerateLayout(typeof(TVertex));
@@ -865,9 +928,9 @@ namespace BeauUtil
         /// <summary>
         /// Overrides the vertex layout for this vertex type.
         /// </summary>
-        static public void OverrideLayout(VertexAttributeDescriptor[] inLayout)
+        static public void OverrideLayout(VertexLayout inLayout)
         {
-            if (inLayout == null || inLayout.Length == 0)
+            if (!inLayout)
                 throw new ArgumentNullException("inLayout");
 
             s_VertexLayout = inLayout;

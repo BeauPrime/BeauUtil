@@ -958,9 +958,9 @@ namespace BeauUtil
     /// </summary>
     public class BitSetN : IBitSet
     {
-        private readonly uint[] m_Bits;
-        private readonly int m_Capacity;
-        private readonly int m_ChunkCount;
+        private uint[] m_Bits;
+        private int m_Capacity;
+        private int m_ChunkCount;
 
         public BitSetN(int inCapacity)
         {
@@ -974,6 +974,17 @@ namespace BeauUtil
         }
 
         public int Capacity { get { return m_Capacity; } }
+
+        /// <summary>
+        /// Resizes the bit set to hold the given number of bits.
+        /// </summary>
+        public void Resize(int inCapacity)
+        {
+            inCapacity = Unsafe.AlignUp32(inCapacity);
+            m_Capacity = inCapacity;
+            m_ChunkCount = inCapacity >> 5;
+            Array.Resize(ref m_Bits, m_ChunkCount);
+        }
 
         /// <summary>
         /// Number of set bits.

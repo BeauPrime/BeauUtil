@@ -69,19 +69,19 @@ namespace BeauUtil.Editor
         public NamedItemList()
         {
            m_Entries = new List<Entry>();
-           m_Comparer = EqualityComparer<T>.Default;
+           m_Comparer = CompareUtils.DefaultEquals<T>();
         }
 
         public NamedItemList(NamedItemList<T> inSource)
         {
             m_Entries = new List<Entry>(inSource.m_Entries);
-            m_Comparer = EqualityComparer<T>.Default;
+            m_Comparer = inSource.m_Comparer;
         }
 
         public NamedItemList(int inCapacity)
         {
             m_Entries = new List<Entry>(inCapacity);
-            m_Comparer = EqualityComparer<T>.Default;
+            m_Comparer = CompareUtils.DefaultEquals<T>();
         }
 
         #region Modifications

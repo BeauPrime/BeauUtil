@@ -8,16 +8,14 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using BeauUtil.Debugger;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Indexes for a doubly-linked list.
     /// </summary>
-    public struct LLIndices : IEquatable<LLIndices>
+    public struct LLNode : IEquatable<LLNode>
     {
         /// <summary>
         /// Next index.
@@ -29,7 +27,7 @@ namespace BeauUtil
         /// </summary>
         public int Prev;
 
-        public LLIndices(int inPrev, int inNext)
+        public LLNode(int inPrev, int inNext)
         {
             Next = inNext;
             Prev = inPrev;
@@ -64,11 +62,11 @@ namespace BeauUtil
         /// <summary>
         /// Invalid indices.
         /// </summary>
-        static public readonly LLIndices Invalid = new LLIndices(-1, -1);
+        static public readonly LLNode Invalid = new LLNode(-1, -1);
 
         #region Overrides
 
-        public bool Equals(LLIndices other)
+        public bool Equals(LLNode other)
         {
             return Next == other.Next && Prev == other.Prev;
         }
@@ -80,8 +78,8 @@ namespace BeauUtil
 
         public override bool Equals(object obj)
         {
-            if (obj is LLIndices)
-                return Equals((LLIndices) obj);
+            if (obj is LLNode)
+                return Equals((LLNode) obj);
             return false;
         }
 
@@ -105,7 +103,7 @@ namespace BeauUtil
     /// <summary>
     /// Indexes for a doubly-linked list.
     /// </summary>
-    public struct LLIndices<TTag> : IEquatable<LLIndices<TTag>>
+    public struct LLNode<TTag> : IEquatable<LLNode<TTag>>
         where TTag : struct
     {
         /// <summary>
@@ -123,7 +121,7 @@ namespace BeauUtil
         /// </summary>
         public TTag Tag;
 
-        public LLIndices(int inPrev, int inNext, in TTag inTag)
+        public LLNode(int inPrev, int inNext, in TTag inTag)
         {
             Next = inNext;
             Prev = inPrev;
@@ -160,13 +158,13 @@ namespace BeauUtil
         /// <summary>
         /// Invalid indices.
         /// </summary>
-        static public readonly LLIndices<TTag> Invalid = new LLIndices<TTag>(-1, -1, default(TTag));
+        static public readonly LLNode<TTag> Invalid = new LLNode<TTag>(-1, -1, default(TTag));
 
         #region Overrides
 
-        public bool Equals(LLIndices<TTag> other)
+        public bool Equals(LLNode<TTag> other)
         {
-            return Next == other.Next && Prev == other.Prev && CompareUtils.DefaultComparer<TTag>().Equals(Tag, other.Tag);
+            return Next == other.Next && Prev == other.Prev && CompareUtils.DefaultEquals<TTag>().Equals(Tag, other.Tag);
         }
 
         public override int GetHashCode()
@@ -176,8 +174,8 @@ namespace BeauUtil
 
         public override bool Equals(object obj)
         {
-            if (obj is LLIndices<TTag>)
-                return Equals((LLIndices<TTag>) obj);
+            if (obj is LLNode<TTag>)
+                return Equals((LLNode<TTag>) obj);
             return false;
         }
 
@@ -196,6 +194,32 @@ namespace BeauUtil
         }
 
         #endregion // Overrides
+    }
+
+    /// <summary>
+    /// Tagged index in a tagged linked list table.
+    /// </summary>
+    public struct LLTaggedIndex<TTag>
+        where TTag : struct
+    {
+        public int Index;
+        public TTag Tag;
+
+        public LLTaggedIndex(int inIndex, TTag inTag)
+        {
+            Tag = inTag;
+            Index = inIndex;
+        }
+
+        /// <summary>
+        /// Invalid tagged index.
+        /// </summary>
+        static public readonly LLTaggedIndex<TTag> Invalid = new LLTaggedIndex<TTag>(-1, default(TTag));
+
+        static public implicit operator int(LLTaggedIndex<TTag> inTag)
+        {
+            return inTag.Index;
+        }
     }
 
     /// <summary>
@@ -227,5 +251,18 @@ namespace BeauUtil
             Tail = -1,
             Length = 0
         };
+
+        /// <summary>
+        /// Fixes up pointers for empty lists.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static internal void Fixup(ref LLIndexList ioList)
+        {
+            if (ioList.Length <= 0)
+            {
+                ioList.Length = 0;
+                ioList.Head = ioList.Tail = -1;
+            }
+        }
     }
 }

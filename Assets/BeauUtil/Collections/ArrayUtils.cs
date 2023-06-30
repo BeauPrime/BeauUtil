@@ -308,7 +308,7 @@ namespace BeauUtil
             if (inA.Length != inB.Length)
                 return false;
 
-            var comparer = CompareUtils.DefaultComparer<T>();
+            var comparer = CompareUtils.DefaultEquals<T>();
 
             for(int i = 0, len = inA.Length; i < len; ++i)
             {

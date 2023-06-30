@@ -13,6 +13,7 @@ using System;
 using UnityEngine.Rendering;
 using UnityEngine.Scripting;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -22,10 +23,9 @@ namespace BeauUtil
     static public class VertexUtility
     {
         /// <summary>
-        /// Generates an array of VertexAttributeDescriptor instances
-        /// describing the given vertex format type.
+        /// Generates a VertexLayout instance describing the given vertex format type.
         /// </summary>
-        static public VertexAttributeDescriptor[] GenerateLayout(Type inVertexType, int inStream = 0)
+        static public VertexLayout GenerateLayout(Type inVertexType, int inStream = 0)
         {
             if (inVertexType == null)
                 throw new ArgumentNullException("inVertexType");
@@ -33,24 +33,43 @@ namespace BeauUtil
             if (!inVertexType.IsValueType || inVertexType.StructLayoutAttribute == null || inVertexType.StructLayoutAttribute.Value != LayoutKind.Sequential || inVertexType.StructLayoutAttribute.Pack != 1)
                 throw new InvalidOperationException(string.Format("Type '{0}' is not valid as a vertex - must be sequential layout with pack = 1", inVertexType.FullName));
 
-            FieldInfo[] fields = inVertexType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            VertexAttributeDescriptor[] descriptors = new VertexAttributeDescriptor[fields.Length];
-            int descriptorCount = 0;
-
-            foreach (var field in fields)
+            unsafe
             {
-                VertexAttrAttribute attr = Reflect.GetAttribute<VertexAttrAttribute>(field);
-                if (attr != null)
+                byte* offsets = stackalloc byte[14];
+                ushort attributeMask = 0;
+
+                FieldInfo[] fields = inVertexType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                VertexAttributeDescriptor[] descriptors = new VertexAttributeDescriptor[fields.Length];
+                int descriptorCount = 0;
+                int offset = 0;
+
+                foreach (var field in fields)
                 {
-                    descriptors[descriptorCount++] = VertexAttrAttribute.AsDescriptor(attr, field, inStream);
+                    VertexAttrAttribute attr = Reflect.GetAttribute<VertexAttrAttribute>(field);
+                    if (attr != null)
+                    {
+                        VertexAttributeDescriptor descriptor = VertexAttrAttribute.AsDescriptor(attr, field, inStream);
+                        descriptors[descriptorCount++] = descriptor;
+                        offsets[(int) descriptor.attribute] = (byte) offset;
+                        offset += GetSize(descriptor.format) * descriptor.dimension;
+                        attributeMask |= (ushort) (1 << (int) descriptor.attribute);
+                    }
                 }
+
+                if (descriptorCount == 0)
+                    throw new InvalidOperationException(string.Format("Type '{0}' had no valid fields marked with VertexAttr", inVertexType.FullName));
+
+                Array.Resize(ref descriptors, descriptorCount);
+                VertexLayout layout;
+                layout.Descriptors = descriptors;
+                layout.AttributeMask = attributeMask;
+                layout.SourceType = inVertexType;
+                layout.Stride = Marshal.SizeOf(inVertexType);
+                for (int i = 0; i < 14; i++)
+                    layout.AttributeOffsets[i] = offsets[i];
+
+                return layout;
             }
-
-            if (descriptorCount == 0)
-                throw new InvalidOperationException(string.Format("Type '{0}' had no valid fields marked with VertexAttr", inVertexType.FullName));
-
-            Array.Resize(ref descriptors, descriptorCount);
-            return descriptors;
         }
 
         #region Mesh Data
@@ -63,12 +82,12 @@ namespace BeauUtil
         /// <summary>
         /// Maximum size of a 16-bit mesh index buffer (1 GiB).
         /// </summary>
-        public const long MaxMeshIndexStreamSize16 = 1073741824 / 2;
+        public const int MaxMeshIndexStreamSize16 = 1073741824 / 2;
 
         /// <summary>
         /// Maximum size of a 32-bit mesh index buffer (1 GiB).
         /// </summary>
-        public const long MaxMeshIndexStreamSize32 = 1073741824 / 4;
+        public const int MaxMeshIndexStreamSize32 = 1073741824 / 4;
 
         /// <summary>
         /// Writes mesh data to the given mesh and clears the mesh data.
@@ -80,6 +99,90 @@ namespace BeauUtil
         }
 
         #endregion // Mesh Data
+
+        #region Size
+
+        static private int GetSize(VertexAttributeFormat inFormat)
+        {
+            switch (inFormat)
+            {
+                case VertexAttributeFormat.Float32:
+                case VertexAttributeFormat.SInt32:
+                case VertexAttributeFormat.UInt32:
+                default:
+                    return 4;
+                case VertexAttributeFormat.Float16:
+                case VertexAttributeFormat.UInt16:
+                case VertexAttributeFormat.SInt16:
+                case VertexAttributeFormat.UNorm16:
+                case VertexAttributeFormat.SNorm16:
+                    return 2;
+                case VertexAttributeFormat.UNorm8:
+                case VertexAttributeFormat.SNorm8:
+                case VertexAttributeFormat.SInt8:
+                case VertexAttributeFormat.UInt8:
+                    return 1;
+            }
+        }
+
+        #endregion // Size
+    }
+
+    /// <summary>
+    /// Vertex layout data.
+    /// </summary>
+    public struct VertexLayout
+    {
+        /// <summary>
+        /// Length of the vertex.
+        /// </summary>
+        public int Stride;
+
+        /// <summary>
+        /// Mask representing which vertex attributes are present.
+        /// </summary>
+        public ushort AttributeMask;
+        
+        /// <summary>
+        /// Field offsets for each vertex attribute type.
+        /// </summary>
+        public unsafe fixed byte AttributeOffsets[14];
+
+        /// <summary>
+        /// Array of descriptors to use with Mesh.
+        /// </summary>
+        public VertexAttributeDescriptor[] Descriptors;
+
+        /// <summary>
+        /// Source vertex type.
+        /// </summary>
+        public Type SourceType;
+
+        /// <summary>
+        /// Returns the offset for the given attribute.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Offset(VertexAttribute inAttribute)
+        {
+            unsafe
+            {
+                return AttributeOffsets[(int) inAttribute];
+            }
+        }
+
+        /// <summary>
+        /// Returns if the given attribute is present.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Has(VertexAttribute inAttribute)
+        {
+            return (AttributeMask & (1 << (int) inAttribute)) != 0;
+        }
+
+        static public implicit operator bool(VertexLayout layout)
+        {
+            return layout.SourceType != null;
+        }
     }
 
     /// <summary>

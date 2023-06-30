@@ -85,7 +85,7 @@ namespace BeauUtil
         /// </summary>
         static public bool ReplaceDisposable<T>(ref T ioObject, T inReplace) where T : class, IDisposable
         {
-            if (CompareUtils.DefaultComparer<T>().Equals(ioObject, inReplace))
+            if (CompareUtils.DefaultEquals<T>().Equals(ioObject, inReplace))
                 return false;
 
             if (ioObject != null)
@@ -100,7 +100,7 @@ namespace BeauUtil
         /// </summary>
         static public bool ReplaceRefCounted<T>(ref T ioObject, T inReplace, int inRefCount = 1) where T : class, IRefCounted
         {
-            if (CompareUtils.DefaultComparer<T>().Equals(ioObject, inReplace))
+            if (CompareUtils.DefaultEquals<T>().Equals(ioObject, inReplace))
                 return false;
 
             if (ioObject != null)
@@ -119,7 +119,7 @@ namespace BeauUtil
         /// </summary>
         static public bool Replace<T>(ref T ioObject, T inReplace)
         {
-            if (CompareUtils.DefaultComparer<T>().Equals(ioObject, inReplace))
+            if (CompareUtils.DefaultEquals<T>().Equals(ioObject, inReplace))
                 return false;
 
             ioObject = inReplace;
@@ -131,7 +131,7 @@ namespace BeauUtil
         /// </summary>
         static public bool CompareExchange<T>(ref T ioObject, T inExpected, T inReplace)
         {
-            if (!CompareUtils.DefaultComparer<T>().Equals(ioObject, inExpected))
+            if (!CompareUtils.DefaultEquals<T>().Equals(ioObject, inExpected))
                 return false;
 
             ioObject = inReplace;

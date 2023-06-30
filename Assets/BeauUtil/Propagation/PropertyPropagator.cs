@@ -60,7 +60,7 @@ namespace BeauUtil
         }
 
         protected PropertyPropagator()
-            : this(EqualityComparer<T>.Default)
+            : this(CompareUtils.DefaultEquals<T>())
         {
         }
 

@@ -21,6 +21,7 @@ using UnityEngine;
 
 namespace BeauUtil
 {
+    [Obsolete("MeshBuilder has been deprecated in favor of MeshData", false)]
     public class MeshBuilder : IMeshData, IDisposable
     {
         #region Vertex Types

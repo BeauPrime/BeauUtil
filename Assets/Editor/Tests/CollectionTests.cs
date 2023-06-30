@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace BeauUtil.UnitTests
 {
@@ -410,11 +412,14 @@ namespace BeauUtil.UnitTests
             toStringCache.OnEvict += (k, op) => { evictCount++; Debug.LogFormat("evicted '{0}' for operation {1}", k, op); };
 
             toStringCache.Read(4);
-            Assert.AreEqual(missCount, 1);
+            Assert.AreEqual(1, missCount);
 
             toStringCache.Read(4);
-            Assert.AreEqual(missCount, 1);
-            Assert.AreEqual(hitCount, 1);
+            Assert.AreEqual(1, missCount);
+            Assert.AreEqual(1, hitCount);
+
+            Assert.AreEqual(missCount, toStringCache.Stats.MissCount);
+            Assert.AreEqual(hitCount, toStringCache.Stats.HitCount);
 
             toStringCache.Read(16);
             toStringCache.Read(4);
@@ -428,8 +433,203 @@ namespace BeauUtil.UnitTests
             toStringCache.Read(0);
             toStringCache.Read(1);
             toStringCache.Read(19);
-            Assert.AreEqual(evictCount, 1);
+            Assert.AreEqual(1, evictCount);
             Assert.False(toStringCache.Contains(8));
+        }
+
+        [Test]
+        static public void CanMergeOffsetRanges32()
+        {
+            OffsetLengthU32[] ranges = new OffsetLengthU32[10];
+            int length = 0;
+            ranges[length++] = new OffsetLengthU32(4, 4);
+            ranges[length++] = new OffsetLengthU32(7, 10);
+            ranges[length++] = new OffsetLengthU32(12, 8);
+            ranges[length++] = new OffsetLengthU32(14, 8);
+            ranges[length++] = new OffsetLengthU32(32, 7);
+            ranges[length++] = new OffsetLengthU32(45, 3);
+            ranges[length++] = new OffsetLengthU32(46, 1);
+            int newLength = OffsetLength.MergePreSorted(ranges, 0, length);
+            Assert.AreEqual(3, newLength);
+            Assert.AreEqual(4, ranges[0].Offset);
+            Assert.AreEqual(22, ranges[0].End);
+        }
+
+        [Test]
+        static public void CanMergeOffsetRanges16()
+        {
+            OffsetLength16[] ranges = new OffsetLength16[10];
+            int length = 0;
+            ranges[length++] = new OffsetLength16(4, 4);
+            ranges[length++] = new OffsetLength16(7, 10);
+            ranges[length++] = new OffsetLength16(12, 8);
+            ranges[length++] = new OffsetLength16(14, 8);
+            ranges[length++] = new OffsetLength16(32, 7);
+            ranges[length++] = new OffsetLength16(45, 3);
+            ranges[length++] = new OffsetLength16(46, 1);
+            int newLength = OffsetLength.MergePreSorted(ranges, 0, length);
+            Assert.AreEqual(3, newLength);
+            Assert.AreEqual(4, ranges[0].Offset);
+            Assert.AreEqual(22, ranges[0].End);
+        }
+
+        [Test]
+        static public void CanUseCustomDefaultComparers()
+        {
+            HashSet<StringHash32> set = new HashSet<StringHash32>(CompareUtils.DefaultEquals<StringHash32>()); 
+        }
+
+        [Test]
+        static public void CanUseLLTable()
+        {
+            LLTable table = new LLTable(8);
+            LLIndexList list = LLIndexList.Empty;
+            int first = table.PushBack(ref list);
+            int second = table.PushBack(ref list);
+
+            Assert.AreEqual(0, first);
+            Assert.AreEqual(1, second);
+
+            table.MoveToBack(ref list, first);
+
+            int third = table.PushBack(ref list);
+
+            table.Remove(ref list, second);
+
+            Assert.AreEqual(2, list.Length);
+
+            third = table.PushBack(ref list);
+            int fourth = table.PushBack(ref list);
+
+            Assert.AreEqual(4, list.Length);
+            table.MoveToFront(ref list, third);
+
+            table.Linearize(ref list);
+
+            table.OptimizeFreeList();
+
+            table.PushBack(ref list);
+            table.PushBack(ref list);
+            table.PushBack(ref list);
+            table.PushBack(ref list);
+            table.PushBack(ref list);
+            table.PushBack(ref list);
+
+            table.PopBack(ref list);
+
+            table.PopFront(ref list);
+
+            table.Validate(list);
+
+            table.OptimizeFreeList();
+        }
+
+        [Test]
+        static public void CanUseTaggedLLTable()
+        {
+            LLTable<byte> table = new LLTable<byte>(8);
+            LLIndexList list = LLIndexList.Empty;
+            int first = table.PushBack(ref list, 2);
+            int second = table.PushBack(ref list, 4);
+
+            Assert.AreEqual(0, first);
+            Assert.AreEqual(1, second);
+
+            table.MoveToBack(ref list, first);
+
+            int third = table.PushBack(ref list, 4);
+
+            table.Remove(ref list, second);
+
+            Assert.AreEqual(2, list.Length);
+
+            third = table.PushBack(ref list, 4);
+            int fourth = table.PushBack(ref list, 4);
+
+            Assert.AreEqual(4, list.Length);
+            table.MoveToFront(ref list, third);
+
+            table.Linearize(ref list);
+
+            table.OptimizeFreeList();
+
+            table.PushBack(ref list, 0);
+            table.PushBack(ref list, 16);
+            table.PushBack(ref list, 12);
+            table.PushBack(ref list, 99);
+            table.PushBack(ref list, 1);
+            table.PushBack(ref list, 14);
+
+            var popped = table.PopBack(ref list);
+            Assert.AreEqual(popped.Tag, 14);
+
+            table.PopFront(ref list);
+
+            table.Validate(list);
+
+            bool removed = table.RemoveTag(ref list, 4);
+            Assert.True(removed);
+
+            table.Clear(ref list);
+            Assert.AreEqual(0, list.Length);
+
+            table.OptimizeFreeList();
+        }
+
+        [Test]
+        static public void UniqueId16Tests()
+        {
+            UniqueIdAllocator16 alloc = new UniqueIdAllocator16(64);
+            Assert.False(alloc.IsValid(UniqueId16.Invalid));
+
+            var first = alloc.Alloc();
+            Assert.AreEqual(0, first.Index);
+            Assert.AreEqual(1, first.Version);
+            Assert.True(alloc.IsValid(first));
+
+            alloc.Alloc();
+            alloc.Alloc();
+
+            alloc.Free(first);
+
+            Assert.False(alloc.IsValid(first));
+
+            var next = alloc.Alloc();
+            Assert.AreEqual(0, next.Index);
+            Assert.AreNotEqual(first, next);
+
+            UniqueIdMap16<float> map = new UniqueIdMap16<float>(32);
+            var mapped = map.Add(16);
+            Assert.True(map.Contains(mapped));
+
+            Assert.AreEqual(0, map[UniqueId16.Invalid]);
+
+            map.Remove(mapped);
+
+            Assert.False(map.Contains(mapped));
+        }
+
+        [Test]
+        static public void UniqueId32Tests()
+        {
+            UniqueIdAllocator32 alloc = new UniqueIdAllocator32(64);
+            Assert.False(alloc.IsValid(UniqueId32.Invalid));
+
+            var first = alloc.Alloc();
+            Assert.AreEqual(0, first.Index);
+            Assert.AreEqual(1, first.Version);
+            Assert.True(alloc.IsValid(first));
+
+            alloc.Alloc();
+            alloc.Alloc();
+
+            alloc.Free(first);
+
+            Assert.False(alloc.IsValid(first));
+
+            var next = alloc.Alloc();
+            Assert.AreEqual(0, next.Index);
+            Assert.AreNotEqual(first, next);
         }
     }
 }

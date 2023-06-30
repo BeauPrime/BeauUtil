@@ -201,7 +201,7 @@ namespace BeauUtil
             for(int i = 0; i < inList.Count; i++)
             {
                 var entry = inList[i];
-                if (object.ReferenceEquals(entry.Camera, inTargetCamera))
+                if (object.ReferenceEquals(entry.Camera, null) || object.ReferenceEquals(entry.Camera, inTargetCamera))
                 {
                     inExecute(entry.Callback, inTargetCamera, inSource);
                 }
@@ -249,6 +249,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Adds a global handler, invoked before culling occurs for any camera.
+        /// </summary>
+        static public void AddOnPreCull(ICameraPreCullCallback inPreCull)
+        {
+            AddOnPreCull(null, inPreCull);
+        }
+
+        /// <summary>
         /// Removes a pre-cull handler.
         /// </summary>
         static public void RemoveOnPreCull(this Camera inCamera, ICameraPreCullCallback inPreCull)
@@ -263,6 +271,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Removes a global pre-cull handler.
+        /// </summary>
+        static public void RemoveOnPreCull(ICameraPreCullCallback inPreCull)
+        {
+            RemoveOnPreCull(null, inPreCull);
+        }
+
+        /// <summary>
         /// Adds a handler, invoked before rendering occurs for this camera.
         /// </summary>
         static public void AddOnPreRender(this Camera inCamera, ICameraPreRenderCallback inPreRender)
@@ -273,6 +289,14 @@ namespace BeauUtil
             }
             s_PreRenderCallbacks.Add(new CameraCallbackEntry<ICameraPreRenderCallback>(inCamera, inPreRender));
             RegisterCallbacks();
+        }
+
+        /// <summary>
+        /// Adds a global handler, invoked before rendering occurs for any camera.
+        /// </summary>
+        static public void AddOnPreRender(ICameraPreRenderCallback inPreRender)
+        {
+            AddOnPreRender(null, inPreRender);
         }
 
         /// <summary>
@@ -290,6 +314,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Removes a global pre-render handler.
+        /// </summary>
+        static public void RemoveOnPreRender(ICameraPreRenderCallback inPreRender)
+        {
+            RemoveOnPreRender(null, inPreRender);
+        }
+
+        /// <summary>
         /// Adds a handler, invoked after rendering occurs for this camera.
         /// </summary>
         static public void AddOnPostRender(this Camera inCamera, ICameraPostRenderCallback inPostRender)
@@ -300,6 +332,14 @@ namespace BeauUtil
             }
             s_PostRenderCallbacks.Add(new CameraCallbackEntry<ICameraPostRenderCallback>(inCamera, inPostRender));
             RegisterCallbacks();
+        }
+
+        /// <summary>
+        /// Adds a global handler, invoked after rendering occurs for any camera.
+        /// </summary>
+        static public void AddOnPostRender(ICameraPostRenderCallback inPostRender)
+        {
+            AddOnPostRender(null, inPostRender);
         }
 
         /// <summary>
@@ -314,6 +354,14 @@ namespace BeauUtil
                     DeregisterCallbacks();
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes a global post-render handler.
+        /// </summary>
+        static public void RemoveOnPostRender(ICameraPostRenderCallback inPostRender)
+        {
+            RemoveOnPostRender(null, inPostRender);
         }
 
         #endregion // Registration

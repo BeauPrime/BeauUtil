@@ -102,7 +102,7 @@ namespace BeauUtil
         static public bool TryGetValue<K, V, T>(this ICollection<T> inCollection, K inKey, out V outValue)
             where T : IKeyValuePair<K, V>
         {
-            var keyComparer = EqualityComparer<K>.Default;
+            var keyComparer = CompareUtils.DefaultEquals<K>();
             foreach (var entry in inCollection)
             {
                 if (keyComparer.Equals(entry.Key, inKey))
@@ -122,7 +122,7 @@ namespace BeauUtil
         static public bool TryGetValue<K, V>(this ICollection<V> inCollection, K inKey, out V outValue)
             where V : IKeyValuePair<K, V>
         {
-            var keyComparer = EqualityComparer<K>.Default;
+            var keyComparer = CompareUtils.DefaultEquals<K>();
             foreach (var entry in inCollection)
             {
                 if (keyComparer.Equals(entry.Key, inKey))
@@ -142,7 +142,7 @@ namespace BeauUtil
         static public bool TryGetValue<K, V, T>(this T[] inCollection, K inKey, out V outValue)
             where T : IKeyValuePair<K, V>
         {
-            var keyComparer = EqualityComparer<K>.Default;
+            var keyComparer = CompareUtils.DefaultEquals<K>();
             foreach (var entry in inCollection)
             {
                 if (keyComparer.Equals(entry.Key, inKey))
