@@ -13,12 +13,13 @@ using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
 using UnityEngine.Scripting;
 
-namespace BeauUtil {
+namespace BeauUtil
+{
     /// <summary>
     /// Static type to index mapping.
     /// Useful for mapping instances of types to an index in an array instead of using a dictionary.
     /// </summary>
-    static public class TypeIndex<T>
+    public class TypeIndex<T>
     {
         /// <summary>
         /// Maximum number of type indices.
@@ -45,7 +46,13 @@ namespace BeauUtil {
             s_TypeMap = new Dictionary<Type, int>(Capacity);
             s_IndexMap = new Type[Capacity];
 
+            // ensure index 0 is always the root type
             Get(rootType);
+        }
+
+        protected TypeIndex()
+        {
+            throw new NotImplementedException("TypeIndex should not be instantiated");
         }
 
         /// <summary>

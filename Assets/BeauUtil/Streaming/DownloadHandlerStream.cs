@@ -11,10 +11,10 @@ namespace BeauUtil.Streaming
         private ulong m_LastKnownContentLength;
         private ulong m_ReceivedBytes;
 
-        private readonly object m_DataContext;
-        private readonly int m_DataContextFlags;
-        private readonly DataHandler m_SafeDataHandler;
-        private readonly UnsafeDataHandler m_UnsafeHandler;
+        private object m_DataContext;
+        private int m_DataContextFlags;
+        private DataHandler m_SafeDataHandler;
+        private UnsafeDataHandler m_UnsafeHandler;
 
         public DownloadHandlerStream(byte[] inChunkBuffer, DataHandler inHandler, object inHandlerContext = null, int inContextFlags = 0)
             : base(inChunkBuffer)
@@ -64,6 +64,19 @@ namespace BeauUtil.Streaming
             if (m_LastKnownContentLength == 0)
                 return 0;
             return Mathf.Clamp01((float) m_ReceivedBytes / m_LastKnownContentLength);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            m_LastKnownContentLength = 0;
+            m_ReceivedBytes = 0;
+
+            m_DataContext = null;
+            m_DataContextFlags = 0;
+            m_SafeDataHandler = null;
+            m_UnsafeHandler = null;
         }
 
         /// <summary>

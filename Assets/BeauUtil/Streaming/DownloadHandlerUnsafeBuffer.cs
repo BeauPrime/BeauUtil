@@ -12,13 +12,34 @@ namespace BeauUtil.Streaming
         private ulong m_LastKnownContentLength;
         private ulong m_ReceivedBytes;
 
-        private readonly byte* m_BufferHead;
-        private readonly long m_BufferLength;
+        private byte* m_BufferHead;
+        private long m_BufferLength;
         private readonly WriteLocation m_WriteLocation;
 
         private byte* m_BufferWriteHeadAbsolute;
         private byte* m_BufferWriteHeadCurrent;
         private long m_RemainingWriteLength;
+
+        private AllocateBufferDelegate m_BufferAlloc;
+        private FreeBufferDelegate m_BufferFree;
+
+        private object m_DataContext;
+        private int m_DataContextFlags;
+
+        public DownloadHandlerUnsafeBuffer(byte[] inChunkBuffer, WriteLocation inWriteLocation = WriteLocation.Start)
+            : this(inChunkBuffer, DefaultAllocate, DefaultFree, inWriteLocation)
+        {
+        }
+
+        public DownloadHandlerUnsafeBuffer(byte[] inChunkBuffer, AllocateBufferDelegate inBufferAlloc, FreeBufferDelegate inBufferFree, WriteLocation inWriteLocation = WriteLocation.Start, object inBufferAllocContext = null, int inBufferAllocContextFlags = 0)
+            : base(inChunkBuffer)
+        {
+            m_DataContext = inBufferAllocContext;
+            m_DataContextFlags = inBufferAllocContextFlags;
+            m_WriteLocation = inWriteLocation;
+            m_BufferAlloc = inBufferAlloc;
+            m_BufferFree = inBufferFree;
+        }
 
         public DownloadHandlerUnsafeBuffer(byte[] inChunkBuffer, byte* inBufferHead, long inBufferLength, WriteLocation inWriteLocation = WriteLocation.Start)
             : base(inChunkBuffer)
@@ -33,10 +54,35 @@ namespace BeauUtil.Streaming
             }
         }
 
+        ~DownloadHandlerUnsafeBuffer()
+        {
+            if (m_BufferHead != null && m_BufferFree != null)
+            {
+                m_BufferFree(m_BufferHead, m_BufferLength, m_DataContext, m_DataContextFlags);
+                m_BufferHead = null;
+                m_BufferLength = 0;
+            }
+        }
+
         protected override void ReceiveContentLengthHeader(ulong contentLength)
         {
             m_LastKnownContentLength = contentLength;
             m_RemainingWriteLength = (int) (contentLength - m_ReceivedBytes);
+
+            if (m_BufferLength == 0 && m_BufferAlloc != null)
+            {
+                m_BufferHead = m_BufferAlloc(contentLength, out m_BufferLength, m_DataContext, m_DataContextFlags);
+                m_BufferAlloc = null;
+
+                if (m_WriteLocation == WriteLocation.Start)
+                {
+                    m_BufferWriteHeadAbsolute = m_BufferWriteHeadCurrent = m_BufferHead;
+                }
+                else
+                {
+                    m_BufferWriteHeadAbsolute = m_BufferWriteHeadCurrent = m_BufferHead + m_BufferLength - (long) m_LastKnownContentLength;
+                }
+            }
 
             if (m_LastKnownContentLength > (ulong) m_BufferLength)
             {
@@ -78,6 +124,32 @@ namespace BeauUtil.Streaming
             return Mathf.Clamp01((float) m_ReceivedBytes / m_LastKnownContentLength);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            m_LastKnownContentLength = 0;
+            m_ReceivedBytes = 0;
+
+            if (m_BufferHead != null && m_BufferFree != null)
+            {
+                m_BufferFree(m_BufferHead, m_BufferLength, m_DataContext, m_DataContextFlags);
+            }
+
+            m_BufferAlloc = null;
+            m_BufferFree = null;
+
+            m_DataContext = null;
+            m_DataContextFlags = 0;
+
+            m_BufferHead = null;
+            m_BufferLength = 0;
+
+            m_BufferWriteHeadAbsolute = null;
+            m_BufferWriteHeadCurrent = null;
+            m_RemainingWriteLength = 0;
+        }
+
         /// <summary>
         /// Retrieves the number of downloaded bytes.
         /// </summary>
@@ -105,5 +177,32 @@ namespace BeauUtil.Streaming
             // at the end of the buffer
             End
         }
+
+        /// <summary>
+        /// Delegate used for allocating a buffer.
+        /// </summary>
+        public delegate byte* AllocateBufferDelegate(ulong inContentLength, out long outBufferLength, object inContext, int inContextFlags);
+
+        /// <summary>
+        /// Delegate used for freeing a buffer.
+        /// </summary>
+        public delegate void FreeBufferDelegate(byte* inBufferHead, long inBufferLength, object inContext, int inContextFlags);
+
+        /// <summary>
+        /// Default buffer allocator.
+        /// </summary>
+        static public readonly AllocateBufferDelegate DefaultAllocate = (ulong contentLength, out long bufferLength, object context, int flags) =>
+        {
+            bufferLength = (long) contentLength;
+            return (byte*) Unsafe.Alloc((int) bufferLength);
+        };
+
+        /// <summary>
+        /// Default buffer free.
+        /// </summary>
+        static public readonly FreeBufferDelegate DefaultFree = (byte* head, long bufferLength, object context, int flags) =>
+        {
+            Unsafe.Free(head);
+        };
     }
 }

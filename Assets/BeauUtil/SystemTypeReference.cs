@@ -70,6 +70,10 @@ namespace BeauUtil
             {
                 return Equals((SystemTypeReference) obj);
             }
+            if (obj is System.Type)
+            {
+                return this.Type == (System.Type) obj;
+            }
             return false;
         }
 

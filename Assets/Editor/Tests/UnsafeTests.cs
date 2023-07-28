@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using NUnit.Framework;
 using UnityEngine;
@@ -292,6 +292,24 @@ namespace BeauUtil.UnitTests
                 aNow++;
                 bNow--;
             }
+        }
+
+        [Test]
+        static public void CanWriteUTF8()
+        {
+            byte* writeBuffer = stackalloc byte[1024];
+
+            string testString = "ABCDeFGhIjklM1841kljdfà, è, ì, ò, ù, ❤";
+
+            byte* writeHead = writeBuffer;
+            int written = 0, capacity = 1024;
+            Unsafe.WriteUTF8(testString, ref writeHead, ref written, capacity);
+
+            byte* readHead = writeBuffer;
+            int remaining = written;
+            string hopefullyTestStringAgain = Unsafe.ReadUTF8(ref readHead, ref remaining);
+
+            Assert.AreEqual(testString, hopefullyTestStringAgain);
         }
     }
 }

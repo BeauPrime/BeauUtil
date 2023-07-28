@@ -10,6 +10,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -33,9 +34,10 @@ namespace BeauUtil
     /// <summary>
     /// 32-bit mask.
     /// </summary>
+    [Serializable]
     public struct BitSet32 : IBitSet, IEquatable<BitSet32>
     {
-        private unsafe uint m_Bits;
+        [SerializeField] private unsafe uint m_Bits;
 
         public BitSet32(uint inData)
         {
@@ -206,9 +208,10 @@ namespace BeauUtil
     /// <summary>
     /// 64-bit mask.
     /// </summary>
+    [Serializable]
     public struct BitSet64 : IBitSet, IEquatable<BitSet64>
     {
-        private unsafe ulong m_Bits;
+        [SerializeField] private unsafe ulong m_Bits;
 
         public BitSet64(ulong inData)
         {
@@ -373,10 +376,11 @@ namespace BeauUtil
     /// <summary>
     /// 256-bit mask.
     /// </summary>
+    [Serializable]
     public struct BitSet128 : IBitSet, IEquatable<BitSet128>
     {
-        private unsafe ulong m_Bits0;
-        private unsafe ulong m_Bits1;
+        [SerializeField] private unsafe ulong m_Bits0;
+        [SerializeField] private unsafe ulong m_Bits1;
 
         public BitSet128(ulong inData0, ulong inData1)
         {
@@ -567,12 +571,13 @@ namespace BeauUtil
     /// <summary>
     /// 256-bit mask.
     /// </summary>
+    [Serializable]
     public struct BitSet256 : IBitSet, IEquatable<BitSet256>
     {
-        private unsafe ulong m_Bits0;
-        private unsafe ulong m_Bits1;
-        private unsafe ulong m_Bits2;
-        private unsafe ulong m_Bits3;
+        [SerializeField] private unsafe ulong m_Bits0;
+        [SerializeField] private unsafe ulong m_Bits1;
+        [SerializeField] private unsafe ulong m_Bits2;
+        [SerializeField] private unsafe ulong m_Bits3;
 
         private BitSet256(ulong inData0, ulong inData1, ulong inData2, ulong inData3)
         {
@@ -766,10 +771,11 @@ namespace BeauUtil
     /// <summary>
     /// 512-bit mask.
     /// </summary>
+    [Serializable]
     public struct BitSet512 : IBitSet, IEquatable<BitSet512>
     {
-        private unsafe BitSet256 m_Bits0;
-        private unsafe BitSet256 m_Bits1;
+        [SerializeField] private unsafe BitSet256 m_Bits0;
+        [SerializeField] private unsafe BitSet256 m_Bits1;
 
         private BitSet512(in BitSet256 inData0, in BitSet256 inData1)
         {
@@ -956,9 +962,10 @@ namespace BeauUtil
     /// N-bit mask.
     /// NOTE: this is a class, not a struct, as its size cannot be determined at compile-time.
     /// </summary>
-    public class BitSetN : IBitSet
+    [Serializable]
+    public class BitSetN : IBitSet, ISerializationCallbackReceiver
     {
-        private uint[] m_Bits;
+        [SerializeField] private uint[] m_Bits;
         private int m_Capacity;
         private int m_ChunkCount;
 
@@ -994,7 +1001,7 @@ namespace BeauUtil
             get
             {
                 int count = 0;
-                for(int i = 0; i < m_ChunkCount; i++)
+                for (int i = 0; i < m_ChunkCount; i++)
                     count += Bits.Count(m_Bits[i]);
                 return count;
             }
@@ -1088,5 +1095,19 @@ namespace BeauUtil
         }
 
         #endregion // Operators
+
+        #region Serialization
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            m_ChunkCount = m_Bits.Length;
+            m_Capacity = m_ChunkCount << 5;
+        }
+
+        #endregion // Serialization
     }
 }

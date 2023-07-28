@@ -12,12 +12,13 @@ public unsafe class DownloadTest : MonoBehaviour
 
     public string Url0;
     public string Url1;
+    public int BufferSize = 512;
 
     private Unsafe.ArenaHandle m_Arena;
     private byte[] m_ChunkBuffer;
 
     private void Start() {
-        m_ChunkBuffer = new byte[512];
+        m_ChunkBuffer = new byte[BufferSize];
         m_Arena = Unsafe.CreateArena(2 * 1024 * 1024);
 
         StartCoroutine(TestCoroutine());
@@ -69,8 +70,7 @@ public unsafe class DownloadTest : MonoBehaviour
     }
 
     private UnityWebRequest CreateFileBufferDownload(byte[] chunkBuffer, string path, DownloadHandlerUnsafeBuffer.WriteLocation location) {
-        byte* targetBuffer = (byte*) Unsafe.Alloc(m_Arena, 128 * 1024);
-        DownloadHandlerUnsafeBuffer buffer = new DownloadHandlerUnsafeBuffer(chunkBuffer, targetBuffer, 128 * 1024);
+        DownloadHandlerUnsafeBuffer buffer = new DownloadHandlerUnsafeBuffer(chunkBuffer, location);
         UnityWebRequest webRequest = new UnityWebRequest(GetDownloadURL(path), UnityWebRequest.kHttpVerbGET, buffer, null);
         return webRequest;
     }
@@ -85,6 +85,7 @@ public unsafe class DownloadTest : MonoBehaviour
         DownloadHandlerUnsafeBuffer buffer = (DownloadHandlerUnsafeBuffer) webRequest.downloadHandler;
         string dump = Unsafe.DumpMemory(buffer.DataHead, buffer.DataLength, ' ', 4);
         Debug.LogFormat("[Frame {0}] Finished downloading buffer '{1}' (size {2}):\n{3}", Time.frameCount, Path.GetFileName(webRequest.url), buffer.DataLength, dump);
+        webRequest.Dispose();
     }
 
     private void OnDestroy() {

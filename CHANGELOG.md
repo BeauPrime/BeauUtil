@@ -1,3 +1,19 @@
+## Version 0.9.2
+**28 July 2023**
+
+Hotfix for `UniqueIdAllocator` exception when exceeding initial capacity
+
+## Improvements
+* `DownloadHandlerUnsafeBuffer` can be passed allocation and free delegates instead of a pre-allocated buffer
+* New `AnimatorStateSnapshot` class for storing and restoring Animator layer and parameter information
+* All versions of `BitSet` are now serializable
+
+## Fixes
+* `UniqueIdAllocator` no longer throws an exception when reserving more identifier slots than initially allocated
+
+## Breaking Changes
+* All variants of `Unsafe.Read/Write(string)` renamed to `Unsafe.ReadUTF8/WriteUTF8` for consistency
+
 ## Version 0.9.1
 **29 June 2023**
 

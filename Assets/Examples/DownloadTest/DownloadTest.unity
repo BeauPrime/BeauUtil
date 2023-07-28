@@ -140,6 +140,11 @@ PrefabInstance:
       propertyPath: Url1
       value: https://github.com/fielddaylab/aqualab/blob/develop/Assets/_Prototyping/Observation/Assets/Models/Arctic%20Station/Whale%20Fall/whaleSkeletonBase00.fbx?raw=true
       objectReference: {fileID: 0}
+    - target: {fileID: 8102891879599288184, guid: 6407a5e38aab65047872dddbd0f80f05,
+        type: 3}
+      propertyPath: BufferSize
+      value: 2048
+      objectReference: {fileID: 0}
     - target: {fileID: 8102891879599288185, guid: 6407a5e38aab65047872dddbd0f80f05,
         type: 3}
       propertyPath: m_RootOrder

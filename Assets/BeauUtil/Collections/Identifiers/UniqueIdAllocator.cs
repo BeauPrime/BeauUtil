@@ -92,6 +92,7 @@ namespace BeauUtil
             int newLength = Math.Min(m_Capacity * 2, UniqueId16.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
             m_FreeList.SetCapacity(newLength);
+            m_FreeList.PushBack((ushort) m_MaxFree++);
         }
 
         /// <summary>
@@ -133,7 +134,7 @@ namespace BeauUtil
         public bool IsValid(UniqueId16 inId)
         {
             int index = inId.Index;
-            return index < m_Capacity && m_Versions[index] == inId.Version;
+            return index < m_MaxFree && m_Versions[index] == inId.Version;
         }
 
         #endregion // Checks
@@ -219,6 +220,7 @@ namespace BeauUtil
             int newLength = Math.Min(m_Capacity * 2, UniqueId32.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
             m_FreeList.SetCapacity(newLength);
+            m_FreeList.PushBack((ushort) m_MaxFree++);
         }
 
         /// <summary>
@@ -260,7 +262,7 @@ namespace BeauUtil
         public bool IsValid(UniqueId32 inId)
         {
             int index = inId.Index;
-            return index < m_Capacity && m_Versions[index] == inId.Version;
+            return index < m_MaxFree && m_Versions[index] == inId.Version;
         }
 
         #endregion // Checks

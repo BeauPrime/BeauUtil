@@ -587,8 +587,14 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(1, first.Version);
             Assert.True(alloc.IsValid(first));
 
+            Assert.False(alloc.IsValid(new UniqueId16(2, 0)));
+
             alloc.Alloc();
             alloc.Alloc();
+
+            for(int i = 0; i < 64; i++) {
+                alloc.Alloc();
+            }
 
             alloc.Free(first);
 
@@ -620,8 +626,14 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(1, first.Version);
             Assert.True(alloc.IsValid(first));
 
+            Assert.False(alloc.IsValid(new UniqueId32(2, 0)));
+
             alloc.Alloc();
             alloc.Alloc();
+
+            for (int i = 0; i < 64; i++) {
+                alloc.Alloc();
+            }
 
             alloc.Free(first);
 

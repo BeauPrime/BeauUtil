@@ -320,14 +320,14 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignDownN(ulong val, uint n)
         {
-            return (val) & ~(ulong) (n - 1); 
+            return (val) & ~(ulong) (n - 1);
         }
 
         #endregion // Alignment
 
         #region Size
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Returns the size of the unmanaged type.
@@ -339,7 +339,7 @@ namespace BeauUtil
             return sizeof(T);
         }
 
-        #else
+#else
 
         /// <summary>
         /// Returns the size of the unmanaged type.
@@ -351,15 +351,34 @@ namespace BeauUtil
             return Marshal.SizeOf(typeof(T));
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Size
 
+        #region Size Conversions
+
+        /// <summary>
+        /// Gigabyte/gibibyte to bytes conversion.
+        /// </summary>
+        public const int GiB = 1024 * 1024 * 1024;
+
+        /// <summary>
+        /// Megabyte/mebibyte to bytes conversion.
+        /// </summary>
+        public const int MiB = 1024 * 1024;
+
+        /// <summary>
+        /// Kilobyte/Kibibyte to bytes conversion.
+        /// </summary>
+        public const int KiB = 1024;
+
+        #endregion // Size Conversions
+
         #region Unity Native
 
-        #if NATIVE_ARRAY_EXT
+#if NATIVE_ARRAY_EXT
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Returns a pointer to the start of the given native buffer.
@@ -399,13 +418,13 @@ namespace BeauUtil
             where T : unmanaged
         {
             Unity.Collections.NativeArray<T> nativeArray = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(inBuffer, inCount, Unity.Collections.Allocator.None);
-            #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, Unity.Collections.LowLevel.Unsafe.AtomicSafetyHandle.GetTempUnsafePtrSliceHandle());
-            #endif // ENABLE_UNITY_COLLECTIONS_CHECKS
+#endif // ENABLE_UNITY_COLLECTIONS_CHECKS
             return nativeArray;
         }
 
-        #else
+#else
 
         /// <summary>
         /// Returns a pointer to the start of the given native buffer.
@@ -437,9 +456,9 @@ namespace BeauUtil
             return Unity.Collections.LowLevel.Unsafe.NativeSliceUnsafeUtility.GetUnsafePtr(inSlice);
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
-        #endif // NATIVE_ARRAY_EXT
+#endif // NATIVE_ARRAY_EXT
 
         #endregion // Unity Native
 
@@ -456,18 +475,18 @@ namespace BeauUtil
         /// Handle and address for a pinned array.
         /// </summary>
         public struct PinnedArrayHandle<T> : IDisposable
-            #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             where T : unmanaged
-            #else
+#else
             where T : struct
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             public T* Address;
-            #else
+#else
             public void* Address;
             internal int Stride;
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
             public int Length;
 
             internal GCHandle Handle;
@@ -481,12 +500,12 @@ namespace BeauUtil
             {
                 Handle = GCHandle.Alloc(inSource, GCHandleType.Pinned);
 
-                #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
                 Address = (T*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
-                #else
+#else
                 Address = (void*) Marshal.UnsafeAddrOfPinnedArrayElement(inSource, 0);
                 Stride = SizeOf<T>();
-                #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
                 Length = inLength;
             }
@@ -495,27 +514,27 @@ namespace BeauUtil
             {
                 Handle = GCHandle.Alloc(inSource, GCHandleType.Pinned);
 
-                #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
                 Address = (T*) Handle.AddrOfPinnedObject();
-                #else
+#else
                 Address = (void*) Handle.AddrOfPinnedObject();
                 Stride = SizeOf<T>();
-                #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
                 Length = inSource.Length;
             }
 
-            #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             public T* ElementAddress(int inIndex)
             {
                 return Address + inIndex;
             }
-            #else
+#else
             public void* ElementAddress(int inIndex)
             {
                 return (byte*) Address + Stride * inIndex;
             }
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
             public void Dispose()
             {
@@ -526,28 +545,28 @@ namespace BeauUtil
                 }
             }
 
-            #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             static public implicit operator T*(PinnedArrayHandle<T> inHandle)
             {
                 return inHandle.Address;
             }
-            #else
+#else
             static public implicit operator void*(PinnedArrayHandle<T> inHandle)
             {
                 return inHandle.Address;
             }
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
         /// Pins the given array in memory.
         /// </summary>
         static public PinnedArrayHandle<T> PinArray<T>(T[] inArray)
-            #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             where T : unmanaged
-            #else
+#else
             where T : struct
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         {
             if (inArray == null)
                 throw new ArgumentNullException("inArray", "Cannot pin null array");
@@ -559,11 +578,11 @@ namespace BeauUtil
         /// Pins the given list in memory.
         /// </summary>
         static public PinnedArrayHandle<T> PinList<T>(List<T> inList)
-            #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             where T : unmanaged
-            #else
+#else
             where T : struct
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         {
             if (inList == null)
                 throw new ArgumentNullException("inList", "Cannot pin null list");
@@ -613,7 +632,7 @@ namespace BeauUtil
         }
 
         #endregion // Pinning
-    
+
         #region Debug
 
         /// <summary>
@@ -622,7 +641,7 @@ namespace BeauUtil
         static public string DumpMemory(void* inBuffer, int inSize, char inSeparator = (char) 0, int inSeparatorInterval = 0)
         {
             int stringLength = inSize * 2;
-            
+
             int separatorCount = 0;
             if (inSeparatorInterval > 0)
             {
@@ -637,7 +656,7 @@ namespace BeauUtil
                 char* charBuffer = stackalloc char[stringLength];
                 char* writeHead = charBuffer;
 
-                for(int i = 0; i < inSize; i++)
+                for (int i = 0; i < inSize; i++)
                 {
                     if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
                     {
@@ -664,7 +683,7 @@ namespace BeauUtil
         static public string DumpMemory(void* inBuffer, long inSize, char inSeparator = (char) 0, int inSeparatorInterval = 0)
         {
             long stringLength = inSize * 2;
-            
+
             long separatorCount = 0;
             if (inSeparatorInterval > 0)
             {
@@ -679,7 +698,7 @@ namespace BeauUtil
                 char* charBuffer = stackalloc char[(int) stringLength];
                 char* writeHead = charBuffer;
 
-                for(int i = 0; i < inSize; i++)
+                for (int i = 0; i < inSize; i++)
                 {
                     if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
                     {
@@ -707,7 +726,7 @@ namespace BeauUtil
         {
             byte* bytes = (byte*) inBuffer;
             byte val;
-            for(int i = 0; i < inSize; i++)
+            for (int i = 0; i < inSize; i++)
             {
                 if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
                 {
@@ -725,7 +744,7 @@ namespace BeauUtil
         {
             byte* bytes = (byte*) inBuffer;
             byte val;
-            for(long i = 0; i < inSize; i++)
+            for (long i = 0; i < inSize; i++)
             {
                 if (i > 0 && inSeparatorInterval != 0 && (i % inSeparatorInterval) == 0)
                 {
@@ -737,7 +756,7 @@ namespace BeauUtil
         }
 
         #endregion // Debug
-    
+
         #region Hashing
 
         /// <summary>
@@ -747,16 +766,16 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
-            
+
             // fnv-1a
             uint hash = 2166136261;
-            
+
             byte* ptr = (byte*) inData;
-            while(inLength-- > 0)
+            while (inLength-- > 0)
             {
                 hash = (hash ^ *ptr++) * 16777619;
             }
-            
+
             return hash;
         }
 
@@ -767,16 +786,16 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
-            
+
             // fnv-1a
             ulong hash = 14695981039346656037;
-            
+
             byte* ptr = (byte*) inData;
-            while(inLength-- > 0)
+            while (inLength-- > 0)
             {
                 hash = (hash ^ *ptr++) * 1099511628211;
             }
-            
+
             return hash;
         }
 
@@ -787,16 +806,16 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
-            
+
             // fnv-1a
             uint hash = inInitial;
-            
+
             byte* ptr = (byte*) inData;
-            while(inLength-- > 0)
+            while (inLength-- > 0)
             {
                 hash = (hash ^ *ptr++) * 16777619;
             }
-            
+
             return hash;
         }
 
@@ -807,20 +826,20 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
-            
+
             // fnv-1a
             ulong hash = 14695981039346656037;
-            
+
             byte* ptr = (byte*) inData;
-            while(inLength-- > 0)
+            while (inLength-- > 0)
             {
                 hash = (hash ^ *ptr++) * 1099511628211;
             }
-            
+
             return hash;
         }
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Hashes the given data.
@@ -973,7 +992,7 @@ namespace BeauUtil
         /// Reads a UTF-8 string from the given byte buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void Read(ref string ioValue, byte** ioBufferPtr, int* ioBytesRemaining)
+        static public void ReadUTF8(ref string ioValue, byte** ioBufferPtr, int* ioBytesRemaining)
         {
             ioValue = ReadUTF8(ioBufferPtr, ioBytesRemaining);
         }
@@ -1009,7 +1028,7 @@ namespace BeauUtil
         /// Reads a UTF-8 string from the given byte buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void Read(ref string ioValue, ref byte* ioBufferPtr, ref int ioBytesRemaining)
+        static public void ReadUTF8(ref string ioValue, ref byte* ioBufferPtr, ref int ioBytesRemaining)
         {
             ioValue = ReadUTF8(ref ioBufferPtr, ref ioBytesRemaining);
         }
@@ -1053,7 +1072,7 @@ namespace BeauUtil
         /// <summary>
         /// Writes a UTF8 string to the given byte buffer.
         /// </summary>
-        static public void Write(string inValue, byte** ioBufferPtr, int* ioBytesWritten, int inBufferCapacity)
+        static public void WriteUTF8(string inValue, byte** ioBufferPtr, int* ioBytesWritten, int inBufferCapacity)
         {
             if (string.IsNullOrEmpty(inValue))
             {
@@ -1069,7 +1088,7 @@ namespace BeauUtil
 
             byte* lengthMarker = *ioBufferPtr;
             Write((ushort) inValue.Length, ioBufferPtr, ioBytesWritten, inBufferCapacity);
-            fixed(char* strChars = inValue)
+            fixed (char* strChars = inValue)
             {
                 int utf8bytesRaw = StringUtils.EncodeUFT8(strChars, inValue.Length, *ioBufferPtr, inBufferCapacity - *ioBytesWritten);
                 if (utf8bytesRaw > ushort.MaxValue)
@@ -1086,22 +1105,27 @@ namespace BeauUtil
         /// <summary>
         /// Writes a UTF8 string to the given byte buffer.
         /// </summary>
-        static public void Write(string inValue, ref byte* ioBufferPtr, ref int ioBytesWritten, int inBufferCapacity) {
-            if (string.IsNullOrEmpty(inValue)) {
+        static public void WriteUTF8(string inValue, ref byte* ioBufferPtr, ref int ioBytesWritten, int inBufferCapacity)
+        {
+            if (string.IsNullOrEmpty(inValue))
+            {
                 Write((ushort) 0, ref ioBufferPtr, ref ioBytesWritten, inBufferCapacity);
                 return;
             }
 
             int potentialWriteSize = StringUtils.EncodeSizeUTF8(inValue.Length);
-            if (ioBytesWritten + potentialWriteSize > inBufferCapacity) {
+            if (ioBytesWritten + potentialWriteSize > inBufferCapacity)
+            {
                 throw new InsufficientMemoryException(string.Format("No space left for writing a UTF8 string of size {0} (max size {1} vs remaining {2})", inValue.Length, potentialWriteSize, inBufferCapacity - ioBytesWritten));
             }
 
             byte* lengthMarker = ioBufferPtr;
             Write((ushort) inValue.Length, ref ioBufferPtr, ref ioBytesWritten, inBufferCapacity);
-            fixed (char* strChars = inValue) {
+            fixed (char* strChars = inValue)
+            {
                 int utf8bytesRaw = StringUtils.EncodeUFT8(strChars, inValue.Length, ioBufferPtr, inBufferCapacity - ioBytesWritten);
-                if (utf8bytesRaw > ushort.MaxValue) {
+                if (utf8bytesRaw > ushort.MaxValue)
+                {
                     throw new NotSupportedException("String encoded to a byte length greater than ushort.MaxValue - not supported by Unsave.WriteUTF8");
                 }
                 ushort utf8bytes = (ushort) utf8bytesRaw;
@@ -1121,7 +1145,8 @@ namespace BeauUtil
         /// Swaps the byte order of the given 2-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref short value) {
+        static public void SwapEndian(ref short value)
+        {
             ushort temp = FastReinterpret<short, ushort>(value);
             SwapEndian(ref temp);
             value = FastReinterpret<ushort, short>(temp);
@@ -1131,7 +1156,8 @@ namespace BeauUtil
         /// Swaps the byte order of the given 2-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref ushort value) {
+        static public void SwapEndian(ref ushort value)
+        {
             value = (ushort) (((value & 0xFF00u) >> 8) | ((value & 0x00FFu) << 8));
         }
 
@@ -1139,7 +1165,8 @@ namespace BeauUtil
         /// Swaps the byte order of the given 4-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref int value) {
+        static public void SwapEndian(ref int value)
+        {
             uint temp = FastReinterpret<int, uint>(value);
             SwapEndian(ref temp);
             value = FastReinterpret<uint, int>(temp);
@@ -1149,15 +1176,20 @@ namespace BeauUtil
         /// Swaps the byte order of the given 4-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref uint value) {
-            value = (uint) (((value & 0xFF000000u) >> 24) | ((value & 0xFF0000u) >> 8) | ((value & 0xFF00u) << 8) | ((value & 0xFFu) << 24));
+        static public void SwapEndian(ref uint value)
+        {
+            value = (uint) (((value & 0xFF000000u) >> 24)
+                | ((value & 0xFF0000u) >> 8)
+                | ((value & 0xFF00u) << 8)
+                | ((value & 0xFFu) << 24));
         }
 
         /// <summary>
         /// Swaps the byte order of the given 4-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref float value) {
+        static public void SwapEndian(ref float value)
+        {
             uint temp = FastReinterpret<float, uint>(value);
             SwapEndian(ref temp);
             value = FastReinterpret<uint, float>(temp);
@@ -1167,7 +1199,8 @@ namespace BeauUtil
         /// Swaps the byte order of the given 8-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref long value) {
+        static public void SwapEndian(ref long value)
+        {
             ulong temp = FastReinterpret<long, ulong>(value);
             SwapEndian(ref temp);
             value = FastReinterpret<ulong, long>(temp);
@@ -1177,7 +1210,8 @@ namespace BeauUtil
         /// Swaps the byte order of the given 8-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref ulong value) {
+        static public void SwapEndian(ref ulong value)
+        {
             value = (ulong) (
                 ((value & 0xFF00000000000000u) >> 56)
                 | ((value & 0xFF000000000000u) >> 40)
@@ -1194,7 +1228,8 @@ namespace BeauUtil
         /// Swaps the byte order of the given 8-byte value.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SwapEndian(ref double value) {
+        static public void SwapEndian(ref double value)
+        {
             ulong temp = FastReinterpret<double, ulong>(value);
             SwapEndian(ref temp);
             value = FastReinterpret<ulong, double>(temp);
