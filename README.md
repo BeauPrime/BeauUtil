@@ -1,7 +1,7 @@
 # BeauUtil
 
-**Current Version: 0.9.2**
-Updated 28 July 2023 | [Changelog](https://github.com/BeauPrime/BeauUtil/blob/master/CHANGELOG.md)
+**Current Version: 0.9.3**
+Updated 13 Oct 2023 | [Changelog](https://github.com/BeauPrime/BeauUtil/blob/master/CHANGELOG.md)
 
 ## About
 BeauUtil is a general utility library for Unity3d. It contains a variety of code helpers, collection types, debugging utilities, and unsafe code utilities, among many other modules.

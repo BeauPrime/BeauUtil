@@ -1,3 +1,8 @@
+## Version 0.9.3
+**13 Oct 2023**
+
+Hotfix for incorrect `Unsafe.Read` behavior when arguments passed as `ref`
+
 ## Version 0.9.2
 **28 July 2023**
 

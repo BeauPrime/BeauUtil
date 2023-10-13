@@ -937,9 +937,9 @@ namespace BeauUtil
             }
 
             T val = default(T);
-            if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
+            if ((((ulong) ioBufferPtr) % AlignOf<T>()) == 0)
             {
-                val = Reinterpret<byte, T>(*ioBufferPtr);
+                val = Reinterpret<byte, T>(ioBufferPtr);
             }
             else
             {
