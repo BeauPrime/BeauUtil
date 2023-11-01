@@ -218,6 +218,27 @@ namespace BeauUtil
     }
 
     /// <summary>
+    /// Position, normal, uv.
+    /// </summary>
+    public struct VertexP3N3U2
+    {
+        [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
+        [VertexAttr(VertexAttribute.Normal)] public Vector3 Normal;
+        [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+    }
+
+    /// <summary>
+    /// Position, normal, color, uv.
+    /// </summary>
+    public struct VertexP3N3C1U2
+    {
+        [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
+        [VertexAttr(VertexAttribute.Normal)] public Vector3 Normal;
+        [VertexAttr(VertexAttribute.Color)] public Color32 Color;
+        [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+    }
+
+    /// <summary>
     /// Attribute used for generating vertex attribute descriptors.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]

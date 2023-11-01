@@ -15,6 +15,7 @@ namespace BeauUtil
     /// <summary>
     /// Represents a range in an array, with a 32-bit offset and length.
     /// </summary>
+    [Serializable]
     public struct OffsetLength32 : IEquatable<OffsetLength32>, IComparable<OffsetLength32>
     {
         public int Offset;
@@ -52,6 +53,14 @@ namespace BeauUtil
         public bool Contains(OffsetLength32 inOther)
         {
             return inOther.Offset >= Offset && inOther.End <= End;
+        }
+
+        /// <summary>
+        /// Returns if the range contains the given value.
+        /// </summary>
+        public bool Contains(int inValue)
+        {
+            return inValue >= Offset && inValue < End;
         }
 
         #endregion // Checks
@@ -124,6 +133,7 @@ namespace BeauUtil
     /// <summary>
     /// Represents a range in an array, with an unsigned 32-bit offset and length.
     /// </summary>
+    [Serializable]
     public struct OffsetLengthU32 : IEquatable<OffsetLengthU32>, IComparable<OffsetLengthU32>
     {
         public uint Offset;
@@ -161,6 +171,14 @@ namespace BeauUtil
         public bool Contains(OffsetLengthU32 inOther)
         {
             return inOther.Offset >= Offset && inOther.End <= End;
+        }
+
+        /// <summary>
+        /// Returns if the range contains the given value.
+        /// </summary>
+        public bool Contains(uint inValue)
+        {
+            return inValue >= Offset && inValue < End;
         }
 
         #endregion // Checks
@@ -233,6 +251,7 @@ namespace BeauUtil
     /// <summary>
     /// Represents a range in an array, with a 16-bit offset and length.
     /// </summary>
+    [Serializable]
     public struct OffsetLength16 : IEquatable<OffsetLength16>, IComparable<OffsetLength16>
     {
         public short Offset;
@@ -270,6 +289,14 @@ namespace BeauUtil
         public bool Contains(OffsetLength16 inOther)
         {
             return inOther.Offset >= Offset && inOther.End <= End;
+        }
+
+        /// <summary>
+        /// Returns if the range contains the given value.
+        /// </summary>
+        public bool Contains(short inValue)
+        {
+            return inValue >= Offset && inValue < End;
         }
 
         #endregion // Checks
@@ -342,6 +369,7 @@ namespace BeauUtil
     /// <summary>
     /// Represents a range in an array, with an unsigned 16-bit offset and length.
     /// </summary>
+    [Serializable]
     public struct OffsetLengthU16 : IEquatable<OffsetLengthU16>, IComparable<OffsetLengthU16>
     {
         public ushort Offset;
@@ -379,6 +407,14 @@ namespace BeauUtil
         public bool Contains(OffsetLengthU16 inOther)
         {
             return inOther.Offset >= Offset && inOther.End <= End;
+        }
+
+        /// <summary>
+        /// Returns if the range contains the given value.
+        /// </summary>
+        public bool Contains(ushort inValue)
+        {
+            return inValue >= Offset && inValue < End;
         }
 
         #endregion // Checks

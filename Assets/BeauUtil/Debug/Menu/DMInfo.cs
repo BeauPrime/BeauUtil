@@ -50,7 +50,10 @@ namespace BeauUtil.Debugger
         /// </summary>
         public DMInfo AddDivider()
         {
-            Elements.PushBack(DMElementInfo.CreateDivider());
+            if (Elements.Count == 0 || Elements.PeekBack().Type != DMElementType.Divider)
+            {
+                Elements.PushBack(DMElementInfo.CreateDivider());
+            }
             return this;
         }
 

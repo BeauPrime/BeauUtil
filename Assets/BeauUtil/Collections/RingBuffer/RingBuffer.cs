@@ -11,6 +11,10 @@
 #define EXPANDED_REFS
 #endif // CSHARP_7_3_OR_NEWER
 
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
+#define HAS_DEBUGGER
+#endif // UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,6 +29,9 @@ namespace BeauUtil
     /// Double-ended queue.
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
+#if HAS_DEBUGGER
+    [DebuggerTypeProxy(typeof(RingBuffer<>.DebugView))]
+#endif // HAS_DEBUGGER
     public sealed class RingBuffer<T> : IRingBuffer<T>, IList<T>
     {
         static private readonly T[] s_EmptyArray = new T[0];
@@ -642,6 +649,7 @@ namespace BeauUtil
         /// <summary>
         /// Moves the element at the front of the buffer to the back.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public void MoveFrontToBack()
         {
             if (m_Count <= 1)
@@ -658,6 +666,7 @@ namespace BeauUtil
         /// <summary>
         /// Moves the element at the back of the buffer to the front.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public void MoveBackToFront()
         {
             if (m_Count <= 1)
@@ -675,6 +684,7 @@ namespace BeauUtil
         /// Moves elements from the front of the buffer to the back until they fail to satisfy the given predicate.
         /// Returns the number of elements moved.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int MoveFrontToBackWhere(Predicate<T> inPredicate)
         {
             if (m_Count <= 1)
@@ -705,6 +715,7 @@ namespace BeauUtil
         /// Moves elements from the front of the buffer to the back until they fail to satisfy the given predicate.
         /// Returns the number of elements moved.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int MoveFrontToBackWhere<TArg>(Predicate<T, TArg> inPredicate, TArg inArg)
         {
             if (m_Count <= 1)
@@ -735,6 +746,7 @@ namespace BeauUtil
         /// Moves elements from the back of the buffer to the front until they fail to satisfy the given predicate.
         /// Returns the number of elements moved.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int MoveBackToFrontWhere(Predicate<T> inPredicate)
         {
             if (m_Count <= 1)
@@ -768,6 +780,7 @@ namespace BeauUtil
         /// Moves elements from the back of the buffer to the front until they fail to satisfy the given predicate.
         /// Returns the number of elements moved.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int MoveBackToFrontWhere<TArg>(Predicate<T, TArg> inPredicate, TArg inArg)
         {
             if (m_Count <= 1)
@@ -976,6 +989,7 @@ namespace BeauUtil
         /// <summary>
         /// Performs a binary search for the given element in a sorted buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
 #if EXPANDED_REFS
         public int BinarySearch(in T inValue, SearchFlags inFlags = 0)
 #else
@@ -988,6 +1002,7 @@ namespace BeauUtil
         /// <summary>
         /// Performs a binary search for the given element in a sorted buffer with the given comparer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
 #if EXPANDED_REFS
         public int BinarySearch(in T inValue, IComparer<T> inComparer, SearchFlags inFlags = 0)
 #else
@@ -1028,6 +1043,7 @@ namespace BeauUtil
         /// <summary>
         /// Performs a binary search for the given element in a sorted buffer.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
 #if EXPANDED_REFS
         public int BinarySearch<U>(in U inValue, ComparePredicate<T, U> inComparer, SearchFlags inFlags = 0)
 #else
@@ -1076,6 +1092,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the index of the first element that passes the given predicate.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int FindIndex(Predicate<T> inPredicate)
         {
             if (m_Count <= 0)
@@ -1119,6 +1136,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the index of the first element that passes the given predicate.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int FindIndex<U>(Predicate<T, U> inPredicate, U inArg)
         {
             if (m_Count <= 0)
@@ -1318,5 +1336,29 @@ namespace BeauUtil
         }
 
         #endregion // Enumerator
+
+        #if HAS_DEBUGGER
+
+        private class DebugView
+        {
+            private readonly RingBuffer<T> m_Data;
+
+            public DebugView(RingBuffer<T> inData)
+            {
+                m_Data = inData;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public T[] Items
+            {
+                get
+                {
+                    T[] values = m_Data.ToArray();
+                    return values;
+                }
+            }
+        }
+
+        #endif // HAS_DEBUGGER
     }
 }

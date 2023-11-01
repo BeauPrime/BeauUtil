@@ -54,6 +54,24 @@ namespace BeauUtil
             {
             }
         }
+
+        /// <summary>
+        /// Allocator control flags.
+        /// </summary>
+        public enum AllocatorFlags : ushort
+        {
+            Default = 0,
+
+            /// <summary>
+            /// Indicates that the allocator did not allocate from system memory.
+            /// </summary>
+            DoesNotOwnMemory = 0x01,
+
+            /// <summary>
+            /// Indicates that the allocator should zero out returned memory ranges.
+            /// </summary>
+            ZeroOnAllocate = 0x02
+        }
         
         /// <summary>
         /// Interface for an allocator.
@@ -131,6 +149,15 @@ namespace BeauUtil
             where T : unmanaged
         {
             return (T*) Marshal.AllocHGlobal(inLength * sizeof(T));
+        }
+
+        /// <summary>
+        /// Allocates an array of the given unmanaged type.
+        /// </summary>
+        static public UnsafeSpan<T> AllocSpan<T>(int inLength)
+            where T : unmanaged
+        {
+            return new UnsafeSpan<T>((T*) Marshal.AllocHGlobal(inLength * sizeof(T)), (uint) inLength);
         }
 
         static public T* ReallocArray<T>(void* inPtr, int inLength)

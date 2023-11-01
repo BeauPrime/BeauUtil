@@ -324,7 +324,7 @@ namespace BeauUtil
         /// Note:   In the editor, TextMeshPro will automatically allocate a string internally,
         ///         so it can be displayed in the inspector. This does not occur in builds.
         /// </remarks>
-        static public unsafe void SetText(this TMP_Text inTextMeshPro, StringSlice inSlice)
+        static public void SetText(this TMP_Text inTextMeshPro, StringSlice inSlice)
         {
             if (inSlice.IsEmpty)
             {
@@ -367,7 +367,7 @@ namespace BeauUtil
         /// Note:   In the editor, TextMeshPro will automatically allocate a string internally,
         ///         so it can be displayed in the inspector. This does not occur in builds.
         /// </remarks>
-        static public unsafe void SetText(this TMP_Text inTextMeshPro, StringBuilderSlice inSlice)
+        static public void SetText(this TMP_Text inTextMeshPro, StringBuilderSlice inSlice)
         {
             if (inSlice.IsEmpty)
             {

@@ -1,3 +1,32 @@
+## Version 0.9.4
+**1 Nov 2023**
+
+New time-bound execution utilities
+Fix for `SceneReference` serialization
+New `Unsafe` features
+
+## Features
+* Added `WorkSlider` utility for time-bound execution of work queues
+* Added `AttributeCache` classes for caching attribute information
+* Added `Unsafe.Clear` for clearing memory to defaults
+
+## Improvements
+* All versions of `OffsetLength` structs are now serializable
+* Added `OffsetLength.Contains` method to OffsetLength types for checking if value is within range
+* Improved `RingBuffer` and `UnsafeSpan` debugger views
+* Added `BitSet.IsEmpty` method
+* Avoid adding multiple dividers in a row to `DMInfo`
+* Added a few more common vertex formats to `VertexUtility` file
+* Added `Unsafe.AllocSpan` variant of `Unsafe.AllocArray` to directly return an `UnsafeSpan`
+* Added `AllocArray` and `AllocSpan` methods to `Unsafe.ArenaHandle` API
+* Added `Unsafe.AllocatorFlags.ZeroOnAllocate` for zeroing out allocated memory
+
+## Fixes
+* Fixed potential data format inconsistencies when using `SceneReference` in build
+
+## Breaking Changes
+* `Unsafe.Reinterpret(TFrom*)` renamed in favor of `Unsafe.FastReinterpret(TFrom*)` to clarity reinterpretation method
+
 ## Version 0.9.3
 **13 Oct 2023**
 

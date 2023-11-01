@@ -4,6 +4,7 @@ using BeauUtil.Streaming;
 using UnityEngine.Networking;
 using System.IO;
 using System.Collections;
+using BeauUtil.Debugger;
 
 public unsafe class DownloadTest : MonoBehaviour
 {
@@ -20,6 +21,21 @@ public unsafe class DownloadTest : MonoBehaviour
     private void Start() {
         m_ChunkBuffer = new byte[BufferSize];
         m_Arena = Unsafe.CreateArena(2 * 1024 * 1024);
+
+        byte* testAlloc = (byte*) m_Arena.Alloc(64);
+
+        for(int i = 0; i < 64; i++)
+        {
+            testAlloc[i] = 127;
+        }
+
+        Unsafe.Clear(testAlloc, 64);
+
+        for(int i = 0; i < 64; i++)
+        {
+            if (testAlloc[i] != 0)
+                Log.Error("zero did not work!");
+        }
 
         StartCoroutine(TestCoroutine());
     }

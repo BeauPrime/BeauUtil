@@ -311,5 +311,46 @@ namespace BeauUtil.UnitTests
 
             Assert.AreEqual(testString, hopefullyTestStringAgain);
         }
+
+        [Test]
+        static public void CanClearMemory()
+        {
+            Setup();
+
+            byte* alloc = (byte*) Allocator.Alloc(256);
+            
+            for(int i = 0; i < 256; i++)
+            {
+                alloc[i] = (byte) RNG.Instance.Next(1, 205);
+            }
+
+            Unsafe.Clear(alloc, 256);
+
+            for(int i = 0; i < 256; i++)
+            {
+                Assert.AreEqual(0, alloc[i]);
+            }
+        }
+
+        [Test]
+        static public void ZeroOnAllocateWorks()
+        {
+            byte* localBUffer = stackalloc byte[1024];
+            for(int i = 0; i < 1024; i++)
+            {
+                localBUffer[i] = (byte) RNG.Instance.Next(1, 205);
+            }
+
+            Unsafe.ArenaHandle arena = Unsafe.CreateArena(localBUffer, 1024, null, Unsafe.AllocatorFlags.ZeroOnAllocate);
+
+            UnsafeSpan<byte> internalBuf = arena.AllocSpan<byte>(128);
+
+            for(int i = 0; i < internalBuf.Length; i++)
+            {
+                Assert.AreEqual(0, internalBuf[i]);
+            }
+
+            UnsafeSpan<int> internalBuf2 = arena.AllocSpan<int>(64);
+        }
     }
 }

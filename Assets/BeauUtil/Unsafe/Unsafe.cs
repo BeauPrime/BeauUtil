@@ -63,7 +63,7 @@ namespace BeauUtil
         /// Reinterprets an indirect value as a value of another type.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public TTo Reinterpret<TFrom, TTo>(TFrom* inValuePtr)
+        static public TTo FastReinterpret<TFrom, TTo>(TFrom* inValuePtr)
             where TFrom : unmanaged
             where TTo : unmanaged
         {
@@ -901,7 +901,7 @@ namespace BeauUtil
             T val = default(T);
             if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
             {
-                val = Reinterpret<byte, T>(*ioBufferPtr);
+                val = FastReinterpret<byte, T>(*ioBufferPtr);
             }
             else
             {
@@ -939,7 +939,7 @@ namespace BeauUtil
             T val = default(T);
             if ((((ulong) ioBufferPtr) % AlignOf<T>()) == 0)
             {
-                val = Reinterpret<byte, T>(ioBufferPtr);
+                val = FastReinterpret<byte, T>(ioBufferPtr);
             }
             else
             {

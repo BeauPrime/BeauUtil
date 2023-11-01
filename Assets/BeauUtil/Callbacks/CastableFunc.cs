@@ -9,6 +9,7 @@
 
 using System;
 using System.Reflection;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
@@ -81,6 +82,7 @@ namespace BeauUtil
             get { return m_CallbackObject?.Method;}
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         public TOutput Invoke(TInput inArg)
         {
             switch(m_Mode)
@@ -103,6 +105,7 @@ namespace BeauUtil
             }
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         public TOutput Invoke(ref TInput inArg)
         {
             switch(m_Mode)

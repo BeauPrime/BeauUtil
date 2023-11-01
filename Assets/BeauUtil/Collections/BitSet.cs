@@ -21,6 +21,7 @@ namespace BeauUtil
     {
         int Capacity { get; }
         int Count { get; }
+        bool IsEmpty { get; }
 
         bool IsSet(int inIndex);
         void Set(int inIndex);
@@ -53,6 +54,13 @@ namespace BeauUtil
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Bits.Count(m_Bits); }
+        }
+
+        /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty {
+            get { return m_Bits == 0; }
         }
 
         /// <summary>
@@ -230,6 +238,13 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty {
+            get { return m_Bits == 0; }
+        }
+
+        /// <summary>
         /// Gets/sets the value of the bit at the given index.
         /// </summary>
         public bool this[int inIndex]
@@ -397,6 +412,13 @@ namespace BeauUtil
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Bits.Count(m_Bits0) + Bits.Count(m_Bits1); }
+        }
+
+        /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty {
+            get { return m_Bits0 == 0 && m_Bits1 == 0; }
         }
 
         /// <summary>
@@ -603,6 +625,13 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty {
+            get { return m_Bits0 == 0 && m_Bits1 == 0 && m_Bits2 == 0 && m_Bits3 == 0; }
+        }
+
+        /// <summary>
         /// Gets/sets the value of the bit at the given index.
         /// </summary>
         public bool this[int inIndex]
@@ -798,6 +827,13 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty {
+            get { return m_Bits0.IsEmpty && m_Bits1.IsEmpty; }
+        }
+
+        /// <summary>
         /// Gets/sets the value of the bit at the given index.
         /// </summary>
         public bool this[int inIndex]
@@ -966,8 +1002,8 @@ namespace BeauUtil
     public class BitSetN : IBitSet, ISerializationCallbackReceiver
     {
         [SerializeField] private uint[] m_Bits;
-        private int m_Capacity;
-        private int m_ChunkCount;
+        [NonSerialized] private int m_Capacity;
+        [NonSerialized] private int m_ChunkCount;
 
         public BitSetN(int inCapacity)
         {
@@ -1004,6 +1040,20 @@ namespace BeauUtil
                 for (int i = 0; i < m_ChunkCount; i++)
                     count += Bits.Count(m_Bits[i]);
                 return count;
+            }
+        }
+
+        /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty {
+            get {
+                for(int i = 0; i < m_ChunkCount; i++) {
+                    if (m_Bits[i] != 0) {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 

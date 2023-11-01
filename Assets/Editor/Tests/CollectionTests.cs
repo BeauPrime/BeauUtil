@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,7 +14,7 @@ namespace BeauUtil.UnitTests
         static public void BitTest()
         {
             int fullMask = 0;
-            for(int i = 0; i < Bits.Length; ++i)
+            for (int i = 0; i < Bits.Length; ++i)
             {
                 Bits.Add(ref fullMask, i);
                 Debug.LogFormat("base10: {0}; base2: {1}", fullMask, Convert.ToString(fullMask, 2).PadLeft(32, '0'));
@@ -22,7 +23,7 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(fullMask, Bits.All32);
             Assert.AreEqual(32, Bits.Count(fullMask));
 
-            for(int i = 0; i < 32; ++i)
+            for (int i = 0; i < 32; ++i)
             {
                 bool bMatch = Bits.Contains(fullMask, i);
                 Assert.True(bMatch);
@@ -236,7 +237,7 @@ namespace BeauUtil.UnitTests
 
             Assert.AreEqual(5, buffer.PopFront());
             Assert.AreEqual(17, buffer.PopBack());
-            
+
             buffer.Clear();
 
             Assert.AreEqual(0, buffer.Count);
@@ -307,7 +308,7 @@ namespace BeauUtil.UnitTests
             int a = 0, b = 0, c = 0, d = 0;
 
             int iter = 100000;
-            for(int i = 0; i < iter; ++i)
+            for (int i = 0; i < iter; ++i)
             {
                 switch (r.Choose(set))
                 {
@@ -336,17 +337,19 @@ namespace BeauUtil.UnitTests
                 100f * d / iter,
                 iter);
         }
-    
+
         [Test]
         static public void BatchTest()
         {
             int lastBatchId = -1;
             int[] sums = new int[6];
-            Batch.ProcessDelegate<BatchItem, int> processDelegate = (items, id, args) => {
+            Batch.ProcessDelegate<BatchItem, int> processDelegate = (items, id, args) =>
+            {
                 Assert.GreaterOrEqual(id, lastBatchId);
                 lastBatchId = id;
                 Debug.LogFormat("Batch {0} with {1} items", id, items.Length);
-                for(int i = 0; i < items.Length; i++) {
+                for (int i = 0; i < items.Length; i++)
+                {
                     Debug.LogFormat("Batch {0}, item {1}, arg {2}", id, items[i].Id, args);
                     sums[id] += items[i].Id;
                 }
@@ -476,7 +479,7 @@ namespace BeauUtil.UnitTests
         [Test]
         static public void CanUseCustomDefaultComparers()
         {
-            HashSet<StringHash32> set = new HashSet<StringHash32>(CompareUtils.DefaultEquals<StringHash32>()); 
+            HashSet<StringHash32> set = new HashSet<StringHash32>(CompareUtils.DefaultEquals<StringHash32>());
         }
 
         [Test]
@@ -592,7 +595,8 @@ namespace BeauUtil.UnitTests
             alloc.Alloc();
             alloc.Alloc();
 
-            for(int i = 0; i < 64; i++) {
+            for (int i = 0; i < 64; i++)
+            {
                 alloc.Alloc();
             }
 
@@ -631,7 +635,8 @@ namespace BeauUtil.UnitTests
             alloc.Alloc();
             alloc.Alloc();
 
-            for (int i = 0; i < 64; i++) {
+            for (int i = 0; i < 64; i++)
+            {
                 alloc.Alloc();
             }
 
@@ -651,7 +656,8 @@ namespace BeauUtil.UnitTests
         private class ReflectC : ReflectA { }
 
         [Test]
-        static public void TypeIndexWithCapacityTest() {
+        static public void TypeIndexWithCapacityTest()
+        {
             int b = TypeIndex<ReflectA>.Get<ReflectB>();
             int c = TypeIndex<ReflectB>.Get<ReflectC>();
             int a = TypeIndex<ReflectA>.Get<ReflectA>();
@@ -660,11 +666,210 @@ namespace BeauUtil.UnitTests
         }
 
         [Test]
-        static public void TypeIndexTest() {
+        static public void TypeIndexTest()
+        {
             int b = TypeIndex<ReflectB>.Get<ReflectB>();
             int c = TypeIndex<ReflectB>.Get<ReflectC>();
 
             Assert.AreEqual(0, b);
+        }
+
+        [Test]
+        static public void CanRunProcessorOnSimpleElements()
+        {
+            RingBuffer<int> ints = new RingBuffer<int>(8, RingBufferMode.Expand);
+            for (int i = 0; i < ints.Capacity; i++)
+            {
+                ints.PushBack(i);
+            }
+
+            int total = 0;
+            WorkSlicer.Step(ints, (i) => total += i);
+
+            Assert.AreEqual(0, total);
+
+            WorkSlicer.Step(ints, (i) => total += i);
+            WorkSlicer.Step(ints, (i) => total += i);
+
+            Assert.AreEqual(5, ints.Count);
+            Assert.AreEqual(3, total);
+
+            WorkSlicer.Flush(ints, (i) => total += i);
+            Assert.AreEqual(28, total);
+            Assert.AreEqual(0, ints.Count);
+
+            for (int i = 0; i < ints.Capacity; i++)
+            {
+                ints.PushBack(1 + i);
+            }
+
+            WorkSlicer.Result result = WorkSlicer.TimeSliced(ints, (i) =>
+            {
+                Thread.Sleep(i);
+            }, 50);
+
+            Debug.LogFormat("remaining {0}", ints.Count);
+            Assert.IsTrue(ints.Count > 0);
+            Assert.AreEqual(WorkSlicer.Result.Processed, result);
+        }
+
+        [Test]
+        static public void CanRunProcessorOnEnumeratedElements()
+        {
+            RingBuffer<int> ints = new RingBuffer<int>(8, RingBufferMode.Expand);
+            for (int i = 0; i < ints.Capacity; i++)
+            {
+                ints.PushBack(1 + i);
+            }
+
+            int total = 0;
+            IEnumerator<WorkSlicer.Result?> Op(int i)
+            {
+                yield return null;
+                yield return null;
+                total += i;
+            }
+
+            WorkSlicer.EnumeratedState state = new WorkSlicer.EnumeratedState();
+
+            WorkSlicer.Step(ints, Op, ref state);
+
+            Assert.AreEqual(0, total);
+
+            WorkSlicer.Step(ints, Op, ref state);
+            WorkSlicer.Step(ints, Op, ref state);
+
+            Assert.AreEqual(7, ints.Count);
+            Assert.AreEqual(0, total);
+
+            WorkSlicer.Step(ints, Op, ref state);
+            Assert.AreEqual(1, total);
+
+            WorkSlicer.Flush(ints, Op, ref state);
+            Assert.AreEqual(36, total);
+            Assert.AreEqual(0, ints.Count);
+
+            for (int i = 0; i < ints.Capacity; i++)
+            {
+                ints.PushBack(1 + i);
+            }
+
+            WorkSlicer.Result result = WorkSlicer.TimeSliced(ints, Op, ref state, 10);
+            Assert.AreEqual(WorkSlicer.Result.OutOfData, result);
+        }
+
+        [Test]
+        static public void CanRunProcessorOnSingleFunction()
+        {
+            int total = 0;
+            bool Op1()
+            {
+                total++;
+                return total < 50;
+            }
+
+            WorkSlicer.Result Op2()
+            {
+                total++;
+                return total < 50 ? WorkSlicer.Result.Processed : WorkSlicer.Result.OutOfData;
+            }
+
+            WorkSlicer.Result result = WorkSlicer.TimeSliced(Op1, 50);
+
+            Assert.AreEqual(WorkSlicer.Result.OutOfData, result);
+        }
+
+        [Test]
+        static public void CanRunProcessorOnBigEnumerator()
+        {
+            int total = 0;
+            IEnumerator<WorkSlicer.Result?> Op()
+            {
+                while (total < 20)
+                {
+                    total++;
+                    yield return null;
+                }
+
+                yield return WorkSlicer.Result.HaltForFrame;
+
+                while (total < 50)
+                {
+                    total++;
+                    yield return null;
+                }
+            }
+
+            var enumerator = Op();
+
+            WorkSlicer.Result result = WorkSlicer.TimeSliced(ref enumerator, 5);
+
+            Assert.AreEqual(WorkSlicer.Result.HaltForFrame, result);
+
+            result = WorkSlicer.TimeSliced(ref enumerator, 5);
+
+            Assert.AreEqual(WorkSlicer.Result.OutOfData, result);
+        }
+
+        public class SomeImportantAttribute : Attribute
+        {
+            public readonly int Value;
+
+            public SomeImportantAttribute(int val)
+            {
+                Value = val;
+            }
+        }
+
+        public struct UntaggedStruct
+        {
+
+        }
+
+        [SomeImportant(-5)]
+        public struct TaggedStructA
+        {
+
+        }
+
+        [SomeImportant(5)]
+        public struct TaggedStructB
+        {
+
+        }
+
+        [Test]
+        static public void CanCacheAttributeMappedCache()
+        {
+            AttributeCache<SomeImportantAttribute, int> cache = new AttributeCache<SomeImportantAttribute, int>((a, t) => a.Value, 8);
+
+            int untagged = cache.Get<UntaggedStruct>();
+            Assert.AreEqual(0, untagged);
+            Assert.AreEqual(1, cache.Count);
+
+            int a = cache.Get<TaggedStructA>();
+            int b = cache.Get<TaggedStructB>();
+
+            Assert.AreEqual(-5, a);
+            Assert.AreEqual(5, b);
+            Assert.AreEqual(3, cache.Count);
+        }
+
+        [Test]
+        static public void CanCacheAttributeCache()
+        {
+            AttributeCache<SomeImportantAttribute> cache = new AttributeCache<SomeImportantAttribute>(8);
+
+            SomeImportantAttribute untagged = cache.Get<UntaggedStruct>();
+            Assert.AreEqual(null, untagged);
+            Assert.AreEqual(1, cache.Count);
+
+            SomeImportantAttribute a = cache.Get<TaggedStructA>();
+            SomeImportantAttribute b = cache.Get<TaggedStructB>();
+
+            Assert.AreEqual(-5, a.Value);
+            Assert.AreEqual(5, b.Value);
+            Assert.AreEqual(3, cache.Count);
         }
     }
 }

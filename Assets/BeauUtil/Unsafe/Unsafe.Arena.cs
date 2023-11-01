@@ -90,6 +90,13 @@ namespace BeauUtil
 
             // arena-specific
 
+            #if UNMANAGED_CONSTRAINT
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public T* AllocArray<T>(int inLength) where T : unmanaged { return Unsafe.AllocArray<T>(this, inLength); }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public UnsafeSpan<T> AllocSpan<T>(int inLength) where T : unmanaged { return Unsafe.AllocSpan<T>(this, inLength); }
+            #else
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] public void* AllocArray<T>(int inLength) where T : struct { return Unsafe.AllocArray<T>(this, inLength); }
+            #endif // UNMANAGED_CONSTRAINT
+
             /// <summary>
             /// Resets the arena, freeing all allocations.
             /// </summary>
@@ -111,18 +118,18 @@ namespace BeauUtil
 
             public string ToDebugString()
             {
-                #if HAS_DEBUGGER
+#if HAS_DEBUGGER
                 if (ValidateArena(this))
                 {
-                    return string.Format("[arena '{0}' size={1} remaining={2}]", HeaderStart->Name.ToDebugString(), HeaderStart->Size, HeaderStart->SizeRemaining);
+                    return string.Format("[arena '{0}' size={1} remaining={2} flags={3}]", HeaderStart->Name.ToDebugString(), HeaderStart->Size, HeaderStart->SizeRemaining, HeaderStart->Flags);
                 }
                 else
                 {
                     return "null";
                 }
-                #else
+#else
                 return "[ArenaHandle]";
-                #endif // HAS_DEBUGGER
+#endif // HAS_DEBUGGER
             }
 
             #region Overrides
@@ -167,12 +174,10 @@ namespace BeauUtil
             internal const uint ExpectedMagic = 0xBEAA110C;
             internal const uint CorruptionCheckMagic = 0xBAD0F00D;
             internal const int MaxRewindStackSize = 6;
-
-            internal const ushort Flag_DoesNotOwnMemory = 0x01; // indicates this allocator does not have sole ownership of its buffer
             
             internal uint Magic; // magic value, used to check for memory corruption
             internal StringHash32 Name;
-            internal ushort Flags;
+            internal AllocatorFlags Flags;
             internal ushort RewindStackSize;
             internal byte* StartPtr;
             internal byte* CurrentPtr;
@@ -183,11 +188,11 @@ namespace BeauUtil
             static internal readonly int HeaderSize = (int) AlignUp32((uint) sizeof(ArenaHeader));
 
             static internal readonly int MinimumSize = HeaderSize +
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 sizeof(uint);
-                #else
+#else
                 0;
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
         }
 
         #region Lifecycle
@@ -195,7 +200,7 @@ namespace BeauUtil
         /// <summary>
         /// Creates a linear allocation arena.
         /// </summary>
-        static public ArenaHandle CreateArena(int inSize, StringHash32 inName = default)
+        static public ArenaHandle CreateArena(int inSize, StringHash32 inName = default, AllocatorFlags inFlags = 0)
         {
             uint arenaSize = AlignUp32((uint) inSize);
             int totalSize = (int) (ArenaHeader.MinimumSize + arenaSize);
@@ -209,16 +214,16 @@ namespace BeauUtil
             header.StartPtr = header.CurrentPtr = dataStart;
             header.Size = header.SizeRemaining = arenaSize;
             header.RewindStackSize = 0;
-            header.Flags = 0;
-            #if VALIDATE_ARENA_MEMORY
+            header.Flags = inFlags & ~AllocatorFlags.DoesNotOwnMemory; // ensure this flag is NOT set to prevent memory leaks
+#if VALIDATE_ARENA_MEMORY
             header.Magic = ArenaHeader.ExpectedMagic;
-            #else
+#else
             header.Magic = 0;
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
-            #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
             WriteDebugMemoryBoundary(header.CurrentPtr);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
             *blockHeader = header;
 
@@ -228,7 +233,7 @@ namespace BeauUtil
         /// <summary>
         /// Creates a linear allocation arena from the memory of another ArenaHandle.
         /// </summary>
-        static public ArenaHandle CreateArena(ArenaHandle inBase, int inSize, StringHash32 inName = default)
+        static public ArenaHandle CreateArena(ArenaHandle inBase, int inSize, StringHash32 inName = default, AllocatorFlags inFlags = 0)
         {
             uint arenaSize = AlignUp32((uint) inSize);
             int totalSize = (int) (ArenaHeader.MinimumSize + arenaSize);
@@ -242,16 +247,16 @@ namespace BeauUtil
             header.StartPtr = header.CurrentPtr = dataStart;
             header.Size = header.SizeRemaining = arenaSize;
             header.RewindStackSize = 0;
-            header.Flags = ArenaHeader.Flag_DoesNotOwnMemory;
-            #if VALIDATE_ARENA_MEMORY
+            header.Flags = AllocatorFlags.DoesNotOwnMemory | inFlags;
+#if VALIDATE_ARENA_MEMORY
             header.Magic = ArenaHeader.ExpectedMagic;
-            #else
+#else
             header.Magic = 0;
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
-            #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
             WriteDebugMemoryBoundary(header.CurrentPtr);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
             *blockHeader = header;
 
@@ -261,7 +266,7 @@ namespace BeauUtil
         /// <summary>
         /// Creates a linear allocation arena from an existing unmanaged buffer.
         /// </summary>
-        static public ArenaHandle CreateArena(void* inUnmanaged, int inSize, StringHash32 inName = default)
+        static public ArenaHandle CreateArena(void* inUnmanaged, int inSize, StringHash32 inName = default, AllocatorFlags inFlags = 0)
         {
             // ensure this is aligned properly
             void* block = (void*) AlignUpN((ulong) inUnmanaged, AlignOf<ArenaHeader>());
@@ -282,16 +287,16 @@ namespace BeauUtil
             header.StartPtr = header.CurrentPtr = dataStart;
             header.Size = header.SizeRemaining = (uint) arenaSize;
             header.RewindStackSize = 0;
-            header.Flags = ArenaHeader.Flag_DoesNotOwnMemory;
-            #if VALIDATE_ARENA_MEMORY
+            header.Flags = AllocatorFlags.DoesNotOwnMemory | inFlags;
+#if VALIDATE_ARENA_MEMORY
             header.Magic = ArenaHeader.ExpectedMagic;
-            #else
+#else
             header.Magic = 0;
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
-            #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
             WriteDebugMemoryBoundary(header.CurrentPtr);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
             *blockHeader = header;
 
@@ -316,13 +321,13 @@ namespace BeauUtil
             if (ValidateArena(inArena))
             {
                 ArenaHeader* header = inArena.HeaderStart;
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 CheckDebugMemoryBoundary(header->CurrentPtr);
                 header->Magic = 0;
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
                 // if this does not own its own memory we cannot safely free
-                if ((header->Flags & ArenaHeader.Flag_DoesNotOwnMemory) == 0)
+                if ((header->Flags & AllocatorFlags.DoesNotOwnMemory) == 0)
                 {
                     Free(header);
                 }
@@ -337,13 +342,13 @@ namespace BeauUtil
             if (ValidateArena(ioArena))
             {
                 ArenaHeader* header = ioArena.HeaderStart;
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 CheckDebugMemoryBoundary(header->CurrentPtr);
                 header->Magic = 0;
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
                 // if this does not own its own memory we cannot safely free
-                if ((header->Flags & ArenaHeader.Flag_DoesNotOwnMemory) == 0)
+                if ((header->Flags & AllocatorFlags.DoesNotOwnMemory) == 0)
                 {
                     Free(header);
                 }
@@ -362,7 +367,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static internal bool ValidateArena(ArenaHandle inArena)
         {
-            #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
             if (inArena.HeaderStart != null)
             {
                 if (inArena.HeaderStart->Magic != ArenaHeader.ExpectedMagic)
@@ -370,12 +375,12 @@ namespace BeauUtil
                 return true;
             }
             return false;
-            #else
+#else
             return inArena.HeaderStart != null;
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
         }
 
-        #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
 
         /// <summary>
         /// Writes the debug magic value at the given address.
@@ -397,7 +402,7 @@ namespace BeauUtil
             }
         }
 
-        #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
         #endregion // Checks
 
@@ -412,10 +417,10 @@ namespace BeauUtil
                 return null;
             
             ArenaHeader* header = inArena.HeaderStart;
-            #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
             CheckDebugMemoryBoundary(header->CurrentPtr);
             inLength = (int) AlignUp4((uint) inLength);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
             if (header->SizeRemaining < inLength)
             {
@@ -427,9 +432,14 @@ namespace BeauUtil
             header->CurrentPtr += inLength;
             header->SizeRemaining -= (uint) inLength;
 
-            #if VALIDATE_ARENA_MEMORY
+            if ((header->Flags & AllocatorFlags.ZeroOnAllocate) != 0)
+            {
+                Clear(addr, inLength);
+            }
+
+#if VALIDATE_ARENA_MEMORY
             WriteDebugMemoryBoundary(header->CurrentPtr);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
             return addr;
         }
@@ -443,10 +453,10 @@ namespace BeauUtil
                 return null;
 
             ArenaHeader* header = inArena.HeaderStart;
-            #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
             CheckDebugMemoryBoundary(header->CurrentPtr);
             inLength = (int) AlignUp4((uint) inLength);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
             
             byte* aligned = (byte*) AlignUpN((ulong) header->CurrentPtr, inAlignment);
             uint padding = (uint) (aligned - header->CurrentPtr);
@@ -459,9 +469,14 @@ namespace BeauUtil
             header->CurrentPtr += inLength + padding;
             header->SizeRemaining -= (uint) inLength + padding;
 
-            #if VALIDATE_ARENA_MEMORY
+            if ((header->Flags & AllocatorFlags.ZeroOnAllocate) != 0)
+            {
+                Clear(aligned, inLength);
+            }
+
+#if VALIDATE_ARENA_MEMORY
             WriteDebugMemoryBoundary(header->CurrentPtr);
-            #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
             return aligned;
         }
@@ -475,21 +490,21 @@ namespace BeauUtil
             if (ValidateArena(inArena))
             {
                 ArenaHeader* header = inArena.HeaderStart;
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 CheckDebugMemoryBoundary(header->CurrentPtr);
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
                 header->SizeRemaining = header->Size;
                 header->CurrentPtr = header->StartPtr;
                 header->RewindStackSize = 0;
                 
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 WriteDebugMemoryBoundary(header->CurrentPtr);
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
             }
         }
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Allocates an instance of an unmanaged struct from the given arena.
@@ -509,7 +524,16 @@ namespace BeauUtil
             return (T*) AllocAligned(inAlloc, SizeOf<T>() * inLength, AlignOf<T>());
         }
 
-        #else
+        /// <summary>
+        /// Allocates an array of an unmanaged struct from the given arena.
+        /// </summary>
+        static public UnsafeSpan<T> AllocSpan<T>(ArenaHandle inAlloc, int inLength)
+            where T : unmanaged
+        {
+            return new UnsafeSpan<T>((T*) AllocAligned(inAlloc, SizeOf<T>() * inLength, AlignOf<T>()), (uint) inLength);
+        }
+
+#else
 
         /// <summary>
         /// Allocates an instance of an unmanaged struct from the given arena.
@@ -529,7 +553,7 @@ namespace BeauUtil
             return AllocAligned(inAlloc, SizeOf<T>() * inLength, AlignOf<T>());
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Allocations
 
@@ -544,9 +568,9 @@ namespace BeauUtil
             if (ValidateArena(inArena))
             {
                 ArenaHeader* header = inArena.HeaderStart;
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 CheckDebugMemoryBoundary(header->CurrentPtr);
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
                 if (header->RewindStackSize >= ArenaHeader.MaxRewindStackSize)
                 {
@@ -566,9 +590,9 @@ namespace BeauUtil
             if (ValidateArena(inArena))
             {
                 ArenaHeader* header = inArena.HeaderStart;
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 CheckDebugMemoryBoundary(header->CurrentPtr);
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
 
                 if (header->RewindStackSize <= 0)
                 {
@@ -581,9 +605,9 @@ namespace BeauUtil
                 header->CurrentPtr = header->StartPtr + poppedOffset;
                 header->SizeRemaining = header->Size - poppedOffset;
 
-                #if VALIDATE_ARENA_MEMORY
+#if VALIDATE_ARENA_MEMORY
                 WriteDebugMemoryBoundary(header->CurrentPtr);
-                #endif // VALIDATE_ARENA_MEMORY
+#endif // VALIDATE_ARENA_MEMORY
             }
         }
 

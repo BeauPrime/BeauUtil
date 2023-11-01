@@ -7,17 +7,25 @@
  * Purpose: Unsafe pointer wrapper.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
+    #if UNMANAGED_CONSTRAINT
+
     /// <summary>
     /// Pointer wrapper.
     /// Useful for passing pointers in code where unsafe pointers
     /// are not allowed (such as in enumerator methods and coroutines)
     /// </summary>
-    public struct UnsafePtr<T> : IEquatable<UnsafePtr<T>>, IComparable<UnsafePtr<T>>
+    [DebuggerDisplay("{Ptr}")]
+    public readonly struct UnsafePtr<T> : IEquatable<UnsafePtr<T>>, IComparable<UnsafePtr<T>>
         where T : unmanaged
     {
         public readonly unsafe T* Ptr;
@@ -34,6 +42,15 @@ namespace BeauUtil
         public unsafe ref T Ref()
         {
             return ref *Ptr;
+        }
+
+        /// <summary>
+        /// Dereferences the object.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe T Deref()
+        {
+            return *Ptr;
         }
 
         #region Interfaces
@@ -125,4 +142,6 @@ namespace BeauUtil
 
         #endregion // Operators
     }
+
+    #endif // UNMANAGED_CONSTRAINT
 }

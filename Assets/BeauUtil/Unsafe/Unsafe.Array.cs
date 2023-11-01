@@ -1409,8 +1409,71 @@ namespace BeauUtil
             }
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+		#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Shuffle
+
+        #region Clear
+
+        #if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Clears all memory within the given buffer to 0.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Clear(void* inSrc, int inSize)
+        {
+            Span<byte> bytes = new Span<byte>(inSrc, inSize);
+            bytes.Fill(0);
+        }
+
+        /// <summary>
+        /// Clears all memory within the given buffer to default.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Clear<T>(T* inSrc, int inSize) where T : unmanaged
+        {
+            Span<byte> data = new Span<byte>(inSrc, inSize * sizeof(T));
+            data.Fill(0);
+        }
+
+        /// <summary>
+        /// Clears all memory within the given buffer to default.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Clear<T>(UnsafeSpan<T> inSpan) where T : unmanaged
+        {
+            Clear(inSpan.Ptr, inSpan.Length);
+        }
+
+        /// <summary>
+        /// Clears all memory within the given array to default.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Clear<T>(T[] inSrc, int inOffset, int inSize) where T : unmanaged
+        {
+            fixed (T* ptr = inSrc)
+            {
+                Span<byte> data = new Span<byte>(ptr + inOffset, inSize * sizeof(T));
+                data.Fill(0);
+            }
+        }
+
+        /// <summary>
+        /// Clears all memory within the given array to default.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Clear<T>(T[] inSrc) where T : unmanaged
+        {
+            fixed (T* ptr = inSrc)
+            {
+                Span<byte> data = new Span<byte>(ptr, inSrc.Length * sizeof(T));
+                data.Fill(0);
+            }
+        }
+
+        #endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Clear
     }
 }

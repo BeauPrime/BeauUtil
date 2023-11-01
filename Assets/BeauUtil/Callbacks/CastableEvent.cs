@@ -8,6 +8,7 @@
  */
 
 using System;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -239,6 +240,8 @@ namespace BeauUtil
         /// <summary>
         /// Invokes all currently registered actions.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Invoke(ref TInput inInput)
         {
             int idx = 0;

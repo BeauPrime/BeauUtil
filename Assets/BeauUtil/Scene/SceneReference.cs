@@ -10,6 +10,8 @@
 using System;
 using UnityEngine;
 using System.Diagnostics;
+using UnityEngine.SceneManagement;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -27,13 +29,34 @@ namespace BeauUtil
 #endif // UNITY_EDITOR
     {
         [SerializeField] private string m_ScenePath;
-        #if UNITY_EDITOR
         [SerializeField] private string m_GUID;
-        #endif // UNITY_EDITOR
+        [NonSerialized] private string m_CachedName;
+
+        public SceneReference(Scene scene)
+        {
+            m_ScenePath = scene.path;
+#if UNITY_EDITOR
+            m_GUID = AssetDatabase.AssetPathToGUID(m_ScenePath);
+#else
+            m_GUID = null;
+#endif // UNITY_EDITOR
+            m_CachedName = scene.name;
+        }
+
+        public SceneReference(SceneBinding scene)
+        {
+            m_ScenePath = scene.Path;
+#if UNITY_EDITOR
+            m_GUID = AssetDatabase.AssetPathToGUID(m_ScenePath);
+#else
+            m_GUID = null;
+#endif // UNITY_EDITOR
+            m_CachedName = scene.Name;
+        }
 
         public string Name
         {
-            get { return System.IO.Path.GetFileNameWithoutExtension(m_ScenePath); }
+            get { return m_CachedName ?? (m_CachedName = System.IO.Path.GetFileNameWithoutExtension(m_ScenePath)); }
         }
 
         public string Path
@@ -46,7 +69,27 @@ namespace BeauUtil
             get { return !string.IsNullOrEmpty(m_ScenePath); }
         }
 
-        #if UNITY_EDITOR
+        public SceneBinding Resolve()
+        {
+#if UNITY_EDITOR
+            if (!UnityEditor.EditorApplication.isPlaying)
+                return UnityEditor.SceneManagement.EditorSceneManager.GetSceneByPath(Path);
+            else
+#endif
+                return SceneManager.GetSceneByPath(Path);
+        }
+
+        static public implicit operator SceneReference(Scene scene)
+        {
+            return new SceneReference(scene);
+        }
+
+        static public implicit operator SceneReference(SceneBinding scene)
+        {
+            return new SceneReference(scene);
+        }
+
+		#if UNITY_EDITOR
 
         public void OnAfterDeserialize()
         {

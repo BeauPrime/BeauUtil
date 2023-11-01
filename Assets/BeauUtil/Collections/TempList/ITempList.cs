@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace BeauUtil
 {
     /// <summary>
-    /// Temporary list, going up to 16 elements.
+    /// Temporary list interface.
     /// </summary>
     public interface ITempList<T> : IList<T>, IReadOnlyList<T>
     {
