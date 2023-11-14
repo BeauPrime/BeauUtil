@@ -76,6 +76,14 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns the current scene loading state.
+        /// </summary>
+        public SceneHelper.LoadingState LoadingState()
+        {
+            return CacheScene().GetLoadingState();
+        }
+
+        /// <summary>
         /// Dispatches the OnLoaded callback.
         /// </summary>
         public void BroadcastLoaded(object inContext = null)

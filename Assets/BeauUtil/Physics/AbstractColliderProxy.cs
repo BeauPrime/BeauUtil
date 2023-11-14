@@ -25,7 +25,7 @@ namespace BeauUtil
         /// <summary>
         /// Object occupying this collider proxy.
         /// </summary>
-        public struct Occupant
+        public readonly struct Occupant
         {
             public readonly TCollider Collider;
             public readonly TRigidbody Rigidbody;

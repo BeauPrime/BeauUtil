@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,9 +23,19 @@ namespace BeauUtil
         static SceneHelper()
         {
             s_IgnoredSceneFilters = new List<SceneFilter>(4);
-            foreach(var sceneName in s_DefaultIgnoreSceneNames)
+            foreach (var sceneName in s_DefaultIgnoreSceneNames)
             {
                 s_IgnoredSceneFilters.Add(new SceneFilter(sceneName, null));
+            }
+
+            Type sceneType = typeof(Scene);
+
+            GetLoadingStateInternal = sceneType.GetMethod("GetLoadingStateInternal", BindingFlags.Static | BindingFlags.NonPublic);
+            
+            MethodInfo getGUIDInternalMethod = sceneType.GetMethod("GetGUIDInternal", BindingFlags.Static | BindingFlags.NonPublic);
+            if (getGUIDInternalMethod != null)
+            {
+                GetGUIDInternal = (GetGUIDInternalDelegate) getGUIDInternalMethod.CreateDelegate(typeof(GetGUIDInternalDelegate));
             }
         }
 
@@ -46,7 +57,7 @@ namespace BeauUtil
         /// by invoking its OnUnloadMethod.
         /// </summary>
         static public event SceneLoadAction OnSceneUnload;
-        
+
         /// <summary>
         /// Indicates that this scene is loaded.
         /// Will dispatch to all ISceneLoadHandler components in the scene
@@ -117,7 +128,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(inNameFilter))
                 return;
 
-            for(int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
+            for (int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
             {
                 if (StringComparer.Ordinal.Equals(s_IgnoredSceneFilters[i].Name, inNameFilter))
                 {
@@ -133,7 +144,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(inPathFilter))
                 return;
 
-            for(int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
+            for (int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
             {
                 if (StringComparer.Ordinal.Equals(s_IgnoredSceneFilters[i].Path, inPathFilter))
                 {
@@ -149,7 +160,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(inNameFilter))
                 return;
 
-            for(int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
+            for (int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
             {
                 if (StringComparer.Ordinal.Equals(s_IgnoredSceneFilters[i].Name, inNameFilter))
                 {
@@ -164,7 +175,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(inPathFilter))
                 return;
 
-            for(int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
+            for (int i = s_IgnoredSceneFilters.Count - 1; i >= 0; --i)
             {
                 if (StringComparer.Ordinal.Equals(s_IgnoredSceneFilters[i].Path, inPathFilter))
                 {
@@ -179,7 +190,7 @@ namespace BeauUtil
         /// </summary>
         static public bool IsIgnored(SceneBinding inScene)
         {
-            for(int i = 0; i < s_IgnoredSceneFilters.Count; ++i)
+            for (int i = 0; i < s_IgnoredSceneFilters.Count; ++i)
             {
                 if (s_IgnoredSceneFilters[i].Match(inScene))
                     return true;
@@ -218,7 +229,7 @@ namespace BeauUtil
             }
             else if (bBuild)
             {
-                foreach(var scene in AllBuildScenes(bIncludeIgnored))
+                foreach (var scene in AllBuildScenes(bIncludeIgnored))
                 {
                     if (bLoaded && !scene.IsLoaded())
                         continue;
@@ -228,7 +239,7 @@ namespace BeauUtil
             }
             else if (bLoaded)
             {
-                foreach(var scene in AllLoadedScenes(bIncludeIgnored))
+                foreach (var scene in AllLoadedScenes(bIncludeIgnored))
                 {
                     yield return scene;
                 }
@@ -240,7 +251,7 @@ namespace BeauUtil
         /// </summary>
         static public SceneBinding FindScene(SceneCategories inCategories)
         {
-            foreach(var scene in FindScenes(inCategories))
+            foreach (var scene in FindScenes(inCategories))
                 return scene;
 
             return default(SceneBinding);
@@ -251,7 +262,7 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<SceneBinding> FindScenesByName(string inNameFilter, SceneCategories inCategories)
         {
-            foreach(var scene in FindScenes(inCategories))
+            foreach (var scene in FindScenes(inCategories))
             {
                 if (WildcardMatch.Match(scene.Name, inNameFilter))
                     yield return scene;
@@ -263,7 +274,7 @@ namespace BeauUtil
         /// </summary>
         static public SceneBinding FindSceneByName(string inNameFilter, SceneCategories inCategories)
         {
-            foreach(var scene in FindScenes(inCategories))
+            foreach (var scene in FindScenes(inCategories))
             {
                 if (WildcardMatch.Match(scene.Name, inNameFilter))
                     return scene;
@@ -277,7 +288,7 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<SceneBinding> FindScenesByPath(string inPathFilter, SceneCategories inCategories = SceneCategories.Loaded)
         {
-            foreach(var scene in FindScenes(inCategories))
+            foreach (var scene in FindScenes(inCategories))
             {
                 if (WildcardMatch.Match(scene.Path, inPathFilter))
                     yield return scene;
@@ -289,7 +300,7 @@ namespace BeauUtil
         /// </summary>
         static public SceneBinding FindSceneByPath(string inPathFilter, SceneCategories inCategories)
         {
-            foreach(var scene in FindScenes(inCategories))
+            foreach (var scene in FindScenes(inCategories))
             {
                 if (WildcardMatch.Match(scene.Path, inPathFilter))
                     return scene;
@@ -303,7 +314,7 @@ namespace BeauUtil
         /// </summary>
         static public SceneBinding FindSceneById(StringHash32 inId, SceneCategories inCategories)
         {
-            foreach(var scene in FindScenes(inCategories))
+            foreach (var scene in FindScenes(inCategories))
             {
                 if (scene.Id == inId)
                     return scene;
@@ -327,7 +338,7 @@ namespace BeauUtil
         static public IEnumerable<SceneBinding> AllBuildScenes(bool inbIncludeIgnored = false)
         {
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
-            for(int i = 0; i < buildSceneCount; ++i)
+            for (int i = 0; i < buildSceneCount; ++i)
             {
                 string path = SceneUtility.GetScenePathByBuildIndex(i);
                 SceneBinding binding = new SceneBinding(i, path);
@@ -344,7 +355,7 @@ namespace BeauUtil
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
 
             int returnedCount = 0;
-            for(int i = 0; i < buildSceneCount; ++i)
+            for (int i = 0; i < buildSceneCount; ++i)
             {
                 string path = SceneUtility.GetScenePathByBuildIndex(i);
                 SceneBinding binding = new SceneBinding(i, path);
@@ -363,7 +374,7 @@ namespace BeauUtil
         static public IEnumerable<SceneBinding> AllLoadedScenes(bool inbIncludeIgnored = false)
         {
             int sceneCount = SceneManager.sceneCount;
-            for(int i = 0; i < sceneCount; ++i)
+            for (int i = 0; i < sceneCount; ++i)
             {
                 SceneBinding sceneBinding = SceneManager.GetSceneAt(i);
                 if (inbIncludeIgnored || !IsIgnored(sceneBinding))
@@ -379,7 +390,7 @@ namespace BeauUtil
             int sceneCount = SceneManager.sceneCount;
 
             int returnedCount = 0;
-            for(int i = 0; i < sceneCount; ++i)
+            for (int i = 0; i < sceneCount; ++i)
             {
                 SceneBinding sceneBinding = SceneManager.GetSceneAt(i);
                 if (inbIncludeIgnored || !IsIgnored(sceneBinding))
@@ -438,11 +449,11 @@ namespace BeauUtil
             inScene.GetRootGameObjects(s_CachedRootGOs);
             ListUtils.EnsureCapacity(ref ioCache, inScene.rootCount * 4);
             ioCache.Clear();
-            foreach(var go in s_CachedRootGOs)
+            foreach (var go in s_CachedRootGOs)
             {
                 if (!inbIncludeInactive && !go.activeSelf)
                     continue;
-                
+
                 go.GetComponentsInChildren<T>(inbIncludeInactive, ioCache);
                 ListUtils.EnsureCapacity(ref outList, Mathf.NextPowerOfTwo(outList.Count + ioCache.Count));
                 outList.AddRange(ioCache);
@@ -481,7 +492,7 @@ namespace BeauUtil
         {
             List<T> allComponents = new List<T>();
             GetAllComponents<T>(inScene, inbIncludeInteractive, allComponents);
-            for(int i = 0, count = allComponents.Count; i < count; ++i)
+            for (int i = 0, count = allComponents.Count; i < count; ++i)
             {
                 inAction(inScene, allComponents[i]);
             }
@@ -502,14 +513,14 @@ namespace BeauUtil
         {
             List<T> allComponents = new List<T>();
             GetAllComponents<T>(inScene, inbIncludeInteractive, allComponents);
-            for(int i = 0, count = allComponents.Count; i < count; ++i)
+            for (int i = 0, count = allComponents.Count; i < count; ++i)
             {
                 inAction(inScene, allComponents[i], inContext);
             }
         }
 
         #endregion // ForEachComponent
-    
+
         #region Load Wrappers
 
         /// <summary>
@@ -522,10 +533,10 @@ namespace BeauUtil
                 Debug.LogErrorFormat("Cannot load invalid scene '{0}'", inScene.Path);
                 return null;
             }
-            
+
             if (inMode == LoadSceneMode.Single)
             {
-                foreach(var scene in FindScenes(SceneCategories.Loaded))
+                foreach (var scene in FindScenes(SceneCategories.Loaded))
                     scene.BroadcastUnload(inContext);
             }
 
@@ -553,5 +564,68 @@ namespace BeauUtil
         }
 
         #endregion // Load Wrappers
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Scene loading state.
+        /// Exposed version of UnityEngine.SceneManagement.Scene.LoadingState
+        /// </summary>
+        public enum LoadingState
+        {
+            NotLoaded,
+            Loading,
+            Loaded,
+            Unloading
+        }
+
+        private delegate string GetGUIDInternalDelegate(int inHandle);
+        static private readonly MethodInfo GetLoadingStateInternal;
+        static private readonly GetGUIDInternalDelegate GetGUIDInternal;
+
+        [ThreadStatic]
+        static private object[] s_GetLoadingStateArgsArray;
+
+        /// <summary>
+        /// Returns the loading state of the given scene.
+        /// </summary>
+        static public LoadingState GetLoadingState(this Scene inScene)
+        {
+            if (!inScene.IsValid())
+            {
+                return LoadingState.NotLoaded;
+            }
+            else if (inScene.isLoaded)
+            {
+                return LoadingState.Loaded;
+            }
+            else if (GetLoadingStateInternal != null)
+            {
+                var argsArray = (s_GetLoadingStateArgsArray ?? (s_GetLoadingStateArgsArray = new object[1]));
+                argsArray[0] = inScene.handle;
+                return (LoadingState) Convert.ToInt32(GetLoadingStateInternal.Invoke(null, argsArray));
+            }
+            else
+            {
+                return LoadingState.NotLoaded;
+            }
+        }
+
+        /// <summary>
+        /// Returns the GUID of the given scene.
+        /// </summary>
+        static public string GetGUID(this Scene inScene)
+        {
+            if (GetGUIDInternal != null)
+            {
+                return GetGUIDInternal(inScene.handle);
+            }
+            else
+            {
+                return Guid.Empty.ToString();
+            }
+        }
+
+        #endregion // Internal Methods
     }
 }

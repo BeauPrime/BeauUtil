@@ -7,6 +7,7 @@
  * Purpose: Sprite vertex data.
 */
 
+using System;
 using UnityEngine;
 
 namespace BeauUtil
@@ -14,6 +15,7 @@ namespace BeauUtil
     /// <summary>
     /// Sprite mesh vertex/index information.
     /// </summary>
+    [Serializable]
     public struct SpriteMeshInfo
     {
         public Vector2[] Vertex;

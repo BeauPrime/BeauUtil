@@ -29,6 +29,8 @@ namespace BeauUtil
     /// </summary>
     static public unsafe partial class Unsafe
     {
+        internal const uint CorruptionCheckMagic = 0xBAD0F00D;
+
         /// <summary>
         /// Exception indicating some type of memory corruption has occurred.
         /// </summary>
@@ -72,7 +74,7 @@ namespace BeauUtil
             /// </summary>
             ZeroOnAllocate = 0x02
         }
-        
+
         /// <summary>
         /// Interface for an allocator.
         /// </summary>
@@ -117,7 +119,7 @@ namespace BeauUtil
             /// Frees the given block of memory.
             /// </summary>
             void Free(void* inPtr);
-            
+
             /// <summary>
             /// Releases all memory owned by the allocator.
             /// </summary>
@@ -131,7 +133,7 @@ namespace BeauUtil
 
         #region Default Allocator
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Allocates an instance of an unmanaged type.
@@ -166,7 +168,7 @@ namespace BeauUtil
             return (T*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) (inLength * sizeof(T)));
         }
 
-        #else
+#else
 
         /// <summary>
         /// Allocates an instance of an unmanaged type.
@@ -192,7 +194,7 @@ namespace BeauUtil
             return (void*) Marshal.ReAllocHGlobal((IntPtr) inPtr, (IntPtr) (inLength * SizeOf<T>()));
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Allocates unmanaged memory from the application's memory.
@@ -236,5 +238,33 @@ namespace BeauUtil
         }
 
         #endregion // Default Allocator
+
+        #region Validation
+
+#if VALIDATE_ARENA_MEMORY
+
+        /// <summary>
+        /// Writes the debug magic value at the given address.
+        /// </summary>
+        static internal void WriteDebugMemoryBoundary(void* inPtr)
+        {
+            *((uint*) inPtr) = CorruptionCheckMagic;
+        }
+
+        /// <summary>
+        /// Checks that the value at the given address is the debug magic value.
+        /// </summary>
+        static internal void CheckDebugMemoryBoundary(void* inPtr)
+        {
+            uint val = *((uint*) inPtr);
+            if (val != CorruptionCheckMagic)
+            {
+                throw new MemoryCorruptionException(inPtr, "Memory boundary value was {0:X} but expected {1:X}. Most likely memory was written outside of allocated bounds.", val, CorruptionCheckMagic);
+            }
+        }
+
+#endif // VALIDATE_ARENA_MEMORY
+
+        #endregion // Validation
     }
 }

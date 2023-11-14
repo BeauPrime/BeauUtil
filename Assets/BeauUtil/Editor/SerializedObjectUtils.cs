@@ -11,15 +11,25 @@
 #define SUPPORTS_PREFABSTAGEUTILITY
 #endif // UNITY_2018_3_OR_NEWER
 
+#if SUPPORTS_PREFABSTAGEUTILITY
+#if !UNITY_2021_2_OR_NEWER
+#define EXPERIMENTAL_PREFABSTAGEUTILITY
+#endif // UNITY_2021_OR_NEWER
+#endif // SUPPORTS_PREFABSTAGEUTILITY
+
 using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-
-#if SUPPORTS_PREFABSTAGEUTILITY
-
 using System.Collections;
-#endif // SUPPORTS_PREFABSTAGEUTILITY
+
+#if EXPERIMENTAL_PREFABSTAGEUTILITY
+using PrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStage;
+using PrefabStageUtility = UnityEditor.Experimental.SceneManagement.PrefabStageUtility;
+#elif SUPPORTS_PREFABSTAGEUTILITY
+using PrefabStage = UnityEditor.SceneManagement.PrefabStage;
+using PrefabStageUtility = UnityEditor.SceneManagement.PrefabStageUtility;
+#endif // EXPERIMENTAL_PREFABSTAGEUTILITY
 
 namespace BeauUtil.Editor
 {
@@ -516,7 +526,7 @@ namespace BeauUtil.Editor
         /// </summary>
         static public bool IsEditingPrefab(this SerializedProperty inProperty)
         {
-            #if SUPPORTS_PREFABSTAGEUTILITY
+#if SUPPORTS_PREFABSTAGEUTILITY
             foreach (UnityEngine.Object target in inProperty.serializedObject.targetObjects)
             {
                 GameObject go = target as GameObject;
@@ -530,7 +540,7 @@ namespace BeauUtil.Editor
                 if (ReferenceEquals(go, null))
                     return false;
 
-                UnityEditor.SceneManagement.PrefabStage stage = UnityEditor.SceneManagement.PrefabStageUtility.GetPrefabStage(go);
+                PrefabStage stage = PrefabStageUtility.GetPrefabStage(go);
                 if (stage == null)
                     return false;
 
@@ -538,9 +548,9 @@ namespace BeauUtil.Editor
                     return false;
             }
             return true;
-            #else
+#else
             throw new NotImplementedException("IsEditingPrefab not implemented for versions before 2018.3");
-            #endif // SUPPORTS_PREFABSTAGEUTILITY
+#endif // SUPPORTS_PREFABSTAGEUTILITY
         }
 
         /// <summary>
@@ -552,5 +562,31 @@ namespace BeauUtil.Editor
         }
 
         #endregion // Prefab
+
+        #region Exposed Methods
+
+        private delegate FieldInfo GetFieldInfoFromPropertyDelegate(SerializedProperty inProperty, out Type outType);
+        static private readonly GetFieldInfoFromPropertyDelegate CachedGetFieldInfoFromProperty;
+
+        static SerializedObjectUtils()
+        {
+            Type scriptAttributeUtility = Assembly.GetAssembly(typeof(ScriptableWizard)).GetType("UnityEditor.ScriptAttributeUtility");
+            CachedGetFieldInfoFromProperty = (GetFieldInfoFromPropertyDelegate) scriptAttributeUtility.GetMethod("GetFieldInfoFromProperty", BindingFlags.NonPublic | BindingFlags.Static)?.CreateDelegate(typeof(GetFieldInfoFromPropertyDelegate));
+        }
+
+        static public FieldInfo GetFieldInfoFromProperty(SerializedProperty inProperty, out Type outType)
+        {
+            if (CachedGetFieldInfoFromProperty != null)
+            {
+                return CachedGetFieldInfoFromProperty(inProperty, out outType);
+            }
+            else
+            {
+                outType = null;
+                return null;
+            }
+        }
+
+        #endregion // Exposed Methods
     }
 }

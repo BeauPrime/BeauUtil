@@ -32,19 +32,29 @@ namespace BeauUtil
         /// <summary>
         /// Size of an unmanaged pointer.
         /// </summary>
-        static public readonly uint PointerSize = (uint) IntPtr.Size;
+        public const uint PointerSize =
+#if UNITY_64 || UNITY_EDITOR_64
+            8u;
+#else
+            4u;
+#endif // UNITY_64 || UNITY_EDITOR_64
+
+        /// <summary>
+        /// If this is a 64-bit environment.
+        /// </summary>
+        public const bool Is64 = (PointerSize == 8);
 
         /// <summary>
         /// Attempts to load the given address into the cache.
         /// </summary>
-        static public void Prefetch(void* inData)
+        static public void Prefetch(void* inAddress)
         {
-            byte b = *((byte*) inData);
+            byte b = *((byte*) inAddress);
         }
 
         #region Reinterpret
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Reinterprets a value as a value of another type.
@@ -82,7 +92,7 @@ namespace BeauUtil
             return *((TTo*) &inValue);
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Reinterpret
 
@@ -755,6 +765,43 @@ namespace BeauUtil
             }
         }
 
+        /// <summary>
+        /// Formats the given memory size with the appropriate suffix.
+        /// </summary>
+        static public string FormatBytes(long inSize)
+        {
+            int magnitude = 0; // 0 B, 1 KiB, 2 MiB, 3 GiB
+            double size = inSize;
+            while(size >= 1024 && magnitude < 3)
+            {
+                size /= 1024;
+                magnitude++;
+            }
+
+            if (magnitude == 0)
+            {
+                return string.Concat(inSize.ToStringLookup(), "B");
+            }
+
+            string suffix;
+            switch (magnitude)
+            {
+                case 1:
+                    suffix = "KiB";
+                    break;
+                case 2:
+                    suffix = "MiB";
+                    break;
+                case 3:
+                    suffix = "GiB";
+                    break;
+                default:
+                    throw new IndexOutOfRangeException(); // should be impossible
+            }
+
+            return string.Concat(size.ToString("F2"), suffix);
+        }
+
         #endregion // Debug
 
         #region Hashing
@@ -883,7 +930,7 @@ namespace BeauUtil
 
         #region Read/Write
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Reads a value of the given type from the given byte buffer.
@@ -1135,7 +1182,7 @@ namespace BeauUtil
             }
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Read/Write
 

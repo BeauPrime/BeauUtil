@@ -1,6 +1,19 @@
+#if UNITY_EDITOR 
+
+#if UNITY_2019_2_OR_NEWER
+#define UNITY_TYPECACHE_AVAILABLE
+#endif // UNITY_2019_2_OR_NEWER
+
+#if UNITY_2020_1_OR_NEWER
+#define UNITY_TYPECACHE_FIELDS
+#endif // UNITY_2020_1_OR_NEWER
+
+#endif // UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -9,6 +22,11 @@ namespace BeauUtil
     /// </summary>
     static public class Reflect
     {
+        /// <summary>
+        /// Default binding flags for searches.
+        /// </summary>
+        public const BindingFlags DefaultBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+
         #region Inheritance
 
         /// <summary>
@@ -16,7 +34,11 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<Type> FindAllDerivedTypes(Type inType)
         {
+#if UNITY_TYPECACHE_AVAILABLE
+            return UnityEditor.TypeCache.GetTypesDerivedFrom(inType);
+#else
             return FindDerivedTypes(inType, AppDomain.CurrentDomain.GetAssemblies());
+#endif // UNITY_TYPECACHE_AVAILABLE
         }
 
         /// <summary>
@@ -24,11 +46,27 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<Type> FindDerivedTypes(Type inType, IEnumerable<Assembly> inAssemblies)
         {
+#if UNITY_TYPECACHE_AVAILABLE
+            var filter = GetAssemblySet(inAssemblies);
+            foreach(var type in UnityEditor.TypeCache.GetTypesDerivedFrom(inType))
+            {
+                if (filter.Contains(type.Assembly))
+                {
+                    yield return type;
+                }
+            }
+#else
             foreach (var assembly in inAssemblies)
             {
-                foreach (var derivedType in FindDerivedTypes(inType, assembly))
-                    yield return derivedType;
+                foreach(var type in assembly.GetTypes())
+                {
+                    if (inType.IsAssignableFrom(type))
+                    {
+                        yield return type;
+                    }
+                }
             }
+#endif // UNITY_TYPECACHE_AVAILABLE
         }
 
         /// <summary>
@@ -272,7 +310,19 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, Type>> FindAllTypes<TAttribute>(bool inbInherit = false) where TAttribute : Attribute
         {
+#if UNITY_TYPECACHE_AVAILABLE
+            Type attributeType = typeof(TAttribute);
+
+            foreach (var type in UnityEditor.TypeCache.GetTypesWithAttribute<TAttribute>())
+            {
+                foreach (var customAttribute in type.GetCustomAttributes(attributeType, inbInherit))
+                {
+                    yield return new AttributeBinding<TAttribute, Type>((TAttribute) customAttribute, type);
+                }
+            }
+#else
             return FindTypes<TAttribute>(AppDomain.CurrentDomain.GetAssemblies());
+#endif // UNITY_TYPECACHE_AVAILABLE
         }
 
         /// <summary>
@@ -280,13 +330,37 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, Type>> FindTypes<TAttribute>(IEnumerable<Assembly> inAssemblies, bool inbInherit = false) where TAttribute : Attribute
         {
-            foreach (var assembly in inAssemblies)
+#if UNITY_TYPECACHE_AVAILABLE
+            Type attributeType = typeof(TAttribute);
+            var filter = GetAssemblySet(inAssemblies);
+
+            foreach (var type in UnityEditor.TypeCache.GetTypesWithAttribute<TAttribute>())
             {
-                foreach (var binding in FindTypes<TAttribute>(assembly, inbInherit))
+                if (filter.Contains(type.Assembly))
                 {
-                    yield return binding;
+                    foreach (var customAttribute in type.GetCustomAttributes(attributeType, inbInherit))
+                    {
+                        yield return new AttributeBinding<TAttribute, Type>((TAttribute) customAttribute, type);
+                    }
                 }
             }
+#else
+            Type attributeType = typeof(TAttribute);
+
+            foreach (var assembly in inAssemblies)
+            {
+                foreach(var type in assembly.GetTypes())
+                {
+                    if (type.IsDefined(attributeType, inbInherit))
+                    {
+                        foreach (var customAttribute in type.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, Type>((TAttribute) customAttribute, type);
+                        }
+                    }
+                }
+            }
+#endif // UNITY_TYPECACHE_AVAILABLE
         }
 
         /// <summary>
@@ -325,19 +399,73 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindAllMethods<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+#if UNITY_TYPECACHE_AVAILABLE
+            if (inFlags == DefaultBindingFlags)
+            {
+                return FindAllMethods_TypeCache<TAttribute>(inbInherit);
+            }
+#endif // UNITY_TYPECACHE_AVAILABLE
+
             return FindMethods<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
         }
+
+#if UNITY_TYPECACHE_AVAILABLE
+
+        static private IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindAllMethods_TypeCache<TAttribute>(bool inbInherit = false) where TAttribute : Attribute
+        {
+            Type attributeType = typeof(TAttribute);
+
+            foreach (var method in UnityEditor.TypeCache.GetMethodsWithAttribute<TAttribute>())
+            {
+                foreach (var customAttribute in method.GetCustomAttributes(attributeType, inbInherit))
+                {
+                    yield return new AttributeBinding<TAttribute, MethodInfo>((TAttribute) customAttribute, method);
+                }
+            }
+        }
+
+#endif // UNITY_TYPECACHE_AVAILABLE
 
         /// <summary>
         /// Finds all methods in the given assemblies with the given attribute type defined.
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindMethods<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
+#if UNITY_TYPECACHE_AVAILABLE
+            if (inFlags == DefaultBindingFlags)
+            {
+                var filter = GetAssemblySet(inAssemblies);
+
+                foreach (var method in UnityEditor.TypeCache.GetMethodsWithAttribute<TAttribute>())
+                {
+                    if (filter.Contains(method.DeclaringType.Assembly))
+                    {
+                        foreach (var customAttribute in method.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, MethodInfo>((TAttribute) customAttribute, method);
+                        }
+                    }
+                }
+                yield break;
+            }
+#endif // UNITY_TYPECACHE_AVAILABLE
+
             foreach (var assembly in inAssemblies)
             {
-                foreach (var binding in FindMethods<TAttribute>(assembly, inFlags, inbInherit))
+                foreach (var type in assembly.GetTypes())
                 {
-                    yield return binding;
+                    foreach (var method in type.GetMethods(inFlags))
+                    {
+                        if (method.IsDefined(attributeType, inbInherit))
+                        {
+                            foreach (var customAttribute in method.GetCustomAttributes(attributeType, inbInherit))
+                            {
+                                yield return new AttributeBinding<TAttribute, MethodInfo>((TAttribute) customAttribute, method);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -355,11 +483,19 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MethodInfo>> FindMethods<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var type in inTypes)
             {
-                foreach (var binding in FindMethods<TAttribute>(type, inFlags, inbInherit))
+                foreach(var method in type.GetMethods(inFlags))
                 {
-                    yield return binding;
+                    if (method.IsDefined(attributeType, inbInherit))
+                    {
+                        foreach (var customAttribute in method.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, MethodInfo>((TAttribute) customAttribute, method);
+                        }
+                    }
                 }
             }
         }
@@ -392,19 +528,73 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindAllFields<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+#if UNITY_TYPECACHE_FIELDS
+            if (inFlags == DefaultBindingFlags)
+            {
+                return FindAllFields_TypeCache<TAttribute>(inbInherit);
+            }
+#endif // UNITY_TYPECACHE_FIELDS
+
             return FindFields<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
         }
+
+#if UNITY_TYPECACHE_FIELDS
+
+        static private IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindAllFields_TypeCache<TAttribute>(bool inbInherit = false) where TAttribute : Attribute
+        {
+            Type attributeType = typeof(TAttribute);
+
+            foreach (var field in UnityEditor.TypeCache.GetFieldsWithAttribute<TAttribute>())
+            {
+                foreach (var customAttribute in field.GetCustomAttributes(attributeType, inbInherit))
+                {
+                    yield return new AttributeBinding<TAttribute, FieldInfo>((TAttribute) customAttribute, field);
+                }
+            }
+        }
+
+#endif // UNITY_TYPECACHE_FIELDS
 
         /// <summary>
         /// Finds all fields in the given assemblies with the given attribute type defined.
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindFields<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
+#if UNITY_TYPECACHE_FIELDS
+            if (inFlags == DefaultBindingFlags)
+            {
+                var filter = GetAssemblySet(inAssemblies);
+
+                foreach (var field in UnityEditor.TypeCache.GetFieldsWithAttribute<TAttribute>())
+                {
+                    if (filter.Contains(field.DeclaringType.Assembly))
+                    {
+                        foreach (var customAttribute in field.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, FieldInfo>((TAttribute) customAttribute, field);
+                        }
+                    }
+                }
+                yield break;
+            }
+#endif // UNITY_TYPECACHE_FIELDS
+
             foreach (var assembly in inAssemblies)
             {
-                foreach (var binding in FindFields<TAttribute>(assembly, inFlags, inbInherit))
+                foreach(var type in assembly.GetTypes())
                 {
-                    yield return binding;
+                    foreach(var field in type.GetFields())
+                    {
+                        if (field.IsDefined(attributeType, inbInherit))
+                        {
+                            foreach (var customAttribute in field.GetCustomAttributes(attributeType, inbInherit))
+                            {
+                                yield return new AttributeBinding<TAttribute, FieldInfo>((TAttribute) customAttribute, field);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -422,11 +612,19 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, FieldInfo>> FindFields<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var type in inTypes)
             {
-                foreach (var binding in FindFields<TAttribute>(type, inFlags, inbInherit))
+                foreach (var field in type.GetFields(inFlags))
                 {
-                    yield return binding;
+                    if (field.IsDefined(attributeType, inbInherit))
+                    {
+                        foreach (var customAttribute in field.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, FieldInfo>((TAttribute) customAttribute, field);
+                        }
+                    }
                 }
             }
         }
@@ -467,11 +665,22 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindProperties<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var assembly in inAssemblies)
             {
-                foreach (var binding in FindProperties<TAttribute>(assembly, inFlags, inbInherit))
+                foreach(var type in assembly.GetTypes())
                 {
-                    yield return binding;
+                    foreach (var property in type.GetProperties(inFlags))
+                    {
+                        if (property.IsDefined(attributeType, inbInherit))
+                        {
+                            foreach (var customAttribute in property.GetCustomAttributes(attributeType, inbInherit))
+                            {
+                                yield return new AttributeBinding<TAttribute, PropertyInfo>((TAttribute) customAttribute, property);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -489,11 +698,19 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindProperties<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var type in inTypes)
             {
-                foreach (var binding in FindProperties<TAttribute>(type, inFlags, inbInherit))
+                foreach (var property in type.GetProperties(inFlags))
                 {
-                    yield return binding;
+                    if (property.IsDefined(attributeType, inbInherit))
+                    {
+                        foreach (var customAttribute in property.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, PropertyInfo>((TAttribute) customAttribute, property);
+                        }
+                    }
                 }
             }
         }
@@ -534,11 +751,22 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindEvents<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var assembly in inAssemblies)
             {
-                foreach (var binding in FindEvents<TAttribute>(assembly, inFlags, inbInherit))
+                foreach (var type in assembly.GetTypes())
                 {
-                    yield return binding;
+                    foreach (var evt in type.GetEvents(inFlags))
+                    {
+                        if (evt.IsDefined(attributeType, inbInherit))
+                        {
+                            foreach (var customAttribute in evt.GetCustomAttributes(attributeType, inbInherit))
+                            {
+                                yield return new AttributeBinding<TAttribute, EventInfo>((TAttribute) customAttribute, evt);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -556,11 +784,19 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindEvents<TAttribute>(IEnumerable<Type> inTypes, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var type in inTypes)
             {
-                foreach (var binding in FindEvents<TAttribute>(type, inFlags, inbInherit))
+                foreach (var evt in type.GetEvents(inFlags))
                 {
-                    yield return binding;
+                    if (evt.IsDefined(attributeType, inbInherit))
+                    {
+                        foreach (var customAttribute in evt.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, EventInfo>((TAttribute) customAttribute, evt);
+                        }
+                    }
                 }
             }
         }
@@ -601,11 +837,24 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MemberInfo>> FindMembers<TAttribute>(IEnumerable<Assembly> inAssemblies, BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
+            Type attributeType = typeof(TAttribute);
+
             foreach (var assembly in inAssemblies)
             {
-                foreach (var binding in FindMembers<TAttribute>(assembly, inFlags, inbInherit))
+                foreach (var type in assembly.GetTypes())
                 {
-                    yield return binding;
+                    foreach (var customAttribute in type.GetCustomAttributes(attributeType, inbInherit))
+                    {
+                        yield return new AttributeBinding<TAttribute, MemberInfo>((TAttribute) customAttribute, type);
+                    }
+
+                    foreach (var member in type.GetMembers(inFlags))
+                    {
+                        foreach (var customAttribute in member.GetCustomAttributes(attributeType, inbInherit))
+                        {
+                            yield return new AttributeBinding<TAttribute, MemberInfo>((TAttribute) customAttribute, member);
+                        }
+                    }
                 }
             }
         }
@@ -632,9 +881,12 @@ namespace BeauUtil
                     yield return new AttributeBinding<TAttribute, MemberInfo>((TAttribute) customAttribute, type);
                 }
 
-                foreach (var binding in FindMembers<TAttribute>(type, inFlags, inbInherit))
+                foreach (var member in type.GetMembers(inFlags))
                 {
-                    yield return binding;
+                    foreach (var customAttribute in member.GetCustomAttributes(attributeType, inbInherit))
+                    {
+                        yield return new AttributeBinding<TAttribute, MemberInfo>((TAttribute) customAttribute, member);
+                    }
                 }
             }
         }
@@ -722,7 +974,18 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<Assembly> FindAllUserAssemblies()
         {
+#if !UNITY_EDITOR && (ENABLE_IL2CPP)
+            if (s_CachedUserAssemblies == null)
+            {
+                List<Assembly> userAssemblies = new List<Assembly>(16);
+                userAssemblies.AddRange(FindAllAssemblies(0, AssemblyType.DefaultNonUserMask));
+                s_CachedUserAssemblies = userAssemblies.ToArray();
+                UnityEngine.Debug.Log("[Reflect] Cached user assemblies array");
+            }
+            return s_CachedUserAssemblies;
+#else
             return FindAllAssemblies(0, AssemblyType.DefaultNonUserMask);
+#endif // !UNITY_EDITOR && (ENABLE_IL2CPP)
         }
 
         /// <summary>
@@ -800,7 +1063,9 @@ namespace BeauUtil
         static private readonly string[] MicrosoftAssemblyFilters = new string[]
         {
             "mscorlib",
-            "Microsoft.*"
+            "Microsoft.*",
+            "netstandard",
+            "NetStandard"
         };
 
         static private readonly string[] MonoAssemblyFilters = new string[]
@@ -822,7 +1087,15 @@ namespace BeauUtil
             "UnityEditor",
             "UnityEditor.*",
             "Boo.Lang",
-            "ExCSS.Unity"
+            "ExCSS.Unity",
+            "Bee.*",
+            "com.unity.*",
+
+#if UNITY_EDITOR
+            "BeeBuildProgramCommon.Data",
+            "ScriptCompilationBuildProgram.Data",
+            "PlayerBuildProgramLibrary.Data",
+#endif // UNITY_EDITOR
         };
 
         static private readonly string[] UnityDefaultUserAssemblyFilters = new string[]
@@ -830,8 +1103,18 @@ namespace BeauUtil
             "Assembly-*"
         };
 
-        #endregion // Assemblies
-    
+        static private Assembly[] s_CachedUserAssemblies;
+
+#if UNITY_TYPECACHE_AVAILABLE
+        static private HashSet<Assembly> GetAssemblySet(IEnumerable<Assembly> inAssemblies)
+        {
+            HashSet<Assembly> set = new HashSet<Assembly>(inAssemblies);
+            return set;
+        }
+#endif // UNITY_TYPECACHE_AVAILABLE
+
+#endregion // Assemblies
+
         #region Generics
 
         static private readonly Type GenericIEnumerableType = typeof(IEnumerable<>);
@@ -865,7 +1148,7 @@ namespace BeauUtil
     /// <summary>
     /// Binding of an attribute to a member.
     /// </summary>
-    public struct AttributeBinding<TAttribute, TInfo>
+    public readonly struct AttributeBinding<TAttribute, TInfo>
         where TAttribute : Attribute
 		where TInfo : MemberInfo
     {
@@ -882,7 +1165,7 @@ namespace BeauUtil
     /// <summary>
     /// Method signature.
     /// </summary>
-    public struct MethodSignature
+    public readonly struct MethodSignature
     {
         /// <summary>
         /// Return value information.

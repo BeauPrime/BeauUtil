@@ -25,7 +25,7 @@ namespace BeauUtil
     /// Serializable map entry.
     /// Create subclass and mark serializable to use in the inspector.
     /// </summary>
-    public abstract class SerializableKeyValuePair<K, V> : IKeyValuePair<K, V>
+    public class SerializableKeyValuePair<K, V> : IKeyValuePair<K, V>
     {
         public K Key;
         public V Value;

@@ -17,7 +17,7 @@ namespace BeauUtil
     /// <summary>
     /// Read-only slice of a list or array.
     /// </summary>
-    public struct ListSlice<T> : IEnumerable<T>, IReadOnlyList<T>, IEquatable<ListSlice<T>>
+    public readonly struct ListSlice<T> : IEnumerable<T>, IReadOnlyList<T>, IEquatable<ListSlice<T>>
     {
         private readonly IReadOnlyList<T> m_Source;
         private readonly int m_StartIndex;

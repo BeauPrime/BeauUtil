@@ -4,7 +4,9 @@
     "references": [
         "Unity.TextMeshPro",
         "BeauData",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.Mathematics",
+        "Unity.Burst"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -28,6 +30,16 @@
             "name": "com.unity.textmeshpro",
             "expression": "0.0.1",
             "define": "ENABLE_TEXTMESHPRO"
+        },
+        {
+            "name": "com.unity.mathematics",
+            "expression": "0.0.1",
+            "define": "USING_MATHEMATICS"
+        },
+        {
+            "name": "com.unity.burst",
+            "expression": "0.0.1",
+            "define": "USING_BURST"
         }
     ],
     "noEngineReferences": false

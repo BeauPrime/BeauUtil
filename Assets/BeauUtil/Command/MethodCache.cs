@@ -12,6 +12,7 @@
 #endif // CSHARP_7_3_OR_NEWER
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -125,6 +126,7 @@ namespace BeauUtil
         private List<Component> m_RelatedComponentCachedList;
         private Type m_ComponentType;
         private IStringConverter m_StringConverter;
+        private bool m_CachingStaticAsyncLock;
 
         public MethodCache()
             : this(typeof(MonoBehaviour), DefaultStringConverter.Instance)
@@ -185,13 +187,14 @@ namespace BeauUtil
 
         private void CacheStatic(IEnumerable<Assembly> inAssemblies)
         {
-            if (m_StaticMethods != null)
+            if (m_StaticMethods != null && !m_CachingStaticAsyncLock)
                 return;
 
             m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
             inAssemblies = inAssemblies ?? Reflect.FindAllUserAssemblies();
+            m_CachingStaticAsyncLock = false;
 
-            foreach(var attrPair in Reflect.FindMethods<TAttr>(inAssemblies, StaticAttributeSearch, false))
+            foreach (var attrPair in Reflect.FindMethods<TAttr>(inAssemblies, StaticAttributeSearch, false))
             {
                 attrPair.Attribute.AssignId(attrPair.Info);
 
@@ -210,6 +213,161 @@ namespace BeauUtil
 
                 m_StaticMethods.Add(desc.Id, desc);
             }
+        }
+
+        private void CacheStaticFromSet(SerializedAttributeSet inAttributeSet)
+        {
+            if (m_StaticMethods != null && !m_CachingStaticAsyncLock)
+                return;
+
+            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
+            m_CachingStaticAsyncLock = false;
+
+            foreach (var attrPair in inAttributeSet.Read<TAttr>())
+            {
+                MethodInfo method = attrPair.Info as MethodInfo;
+                if (method == null || !method.IsStatic)
+                {
+                    continue;
+                }
+
+                attrPair.Attribute.AssignId(attrPair.Info);
+
+                if (m_StaticMethods.ContainsKey(attrPair.Attribute.Id))
+                {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Multiple instances of static method with id '{0}' found", attrPair.Attribute.Id.ToDebugString());
+                    continue;
+                }
+
+                MethodDescription desc = CreateDescription(attrPair.Attribute, method);
+                if (!desc.TryProcess(this))
+                {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    continue;
+                }
+
+                m_StaticMethods.Add(desc.Id, desc);
+            }
+        }
+
+        private IEnumerator CacheStaticAsync(IEnumerable<Assembly> inAssemblies)
+        {
+            if (m_StaticMethods != null || m_CachingStaticAsyncLock)
+                yield break;
+
+            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
+            inAssemblies = inAssemblies ?? Reflect.FindAllUserAssemblies();
+            
+            m_CachingStaticAsyncLock = true;
+
+            foreach (var attrPair in Reflect.FindMethods<TAttr>(inAssemblies, StaticAttributeSearch, false))
+            {
+                if (!m_CachingStaticAsyncLock)
+                {
+                    yield break; // cancelled externally
+                }
+
+                attrPair.Attribute.AssignId(attrPair.Info);
+
+                if (m_StaticMethods.ContainsKey(attrPair.Attribute.Id))
+                {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Multiple instances of static method with id '{0}' found", attrPair.Attribute.Id.ToDebugString());
+                    yield return null;
+
+                    if (!m_CachingStaticAsyncLock)
+                    {
+                        yield break; // cancelled externally
+                    }
+
+                    continue;
+                }
+
+                MethodDescription desc = CreateDescription(attrPair.Attribute, attrPair.Info);
+                if (!desc.TryProcess(this))
+                {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    yield return null;
+
+                    if (!m_CachingStaticAsyncLock)
+                    {
+                        yield break; // cancelled externally
+                    }
+
+                    continue;
+                }
+
+                m_StaticMethods.Add(desc.Id, desc);
+                yield return null;
+
+                if (!m_CachingStaticAsyncLock)
+                {
+                    yield break; // cancelled externally
+                }
+            }
+
+            m_CachingStaticAsyncLock = false;
+        }
+
+        private IEnumerator CacheStaticFromSetAsync(SerializedAttributeSet inAttributeSet)
+        {
+            if (m_StaticMethods != null || m_CachingStaticAsyncLock)
+                yield break;
+
+            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
+            m_CachingStaticAsyncLock = true;
+
+            foreach (var attrPair in inAttributeSet.Read<TAttr>())
+            {
+                if (!m_CachingStaticAsyncLock)
+                {
+                    yield break; // cancelled externally
+                }
+
+                MethodInfo method = attrPair.Info as MethodInfo;
+                if (method == null || !method.IsStatic)
+                {
+                    yield return null;
+                    if (!m_CachingStaticAsyncLock)
+                    {
+                        yield break; // cancelled externally
+                    }
+                    continue;
+                }
+
+                attrPair.Attribute.AssignId(attrPair.Info);
+
+                if (m_StaticMethods.ContainsKey(attrPair.Attribute.Id))
+                {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Multiple instances of static method with id '{0}' found", attrPair.Attribute.Id.ToDebugString());
+                    yield return null;
+                    if (!m_CachingStaticAsyncLock)
+                    {
+                        yield break; // cancelled externally
+                    }
+                    continue;
+                }
+
+                MethodDescription desc = CreateDescription(attrPair.Attribute, method);
+                if (!desc.TryProcess(this))
+                {
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    yield return null;
+                    if (!m_CachingStaticAsyncLock)
+                    {
+                        yield break; // cancelled externally
+                    }
+                    continue;
+                }
+
+                m_StaticMethods.Add(desc.Id, desc);
+                yield return null;
+                if (!m_CachingStaticAsyncLock)
+                {
+                    yield break; // cancelled externally
+                }
+            }
+
+            m_CachingStaticAsyncLock = false;
         }
 
         #endregion // Types
@@ -395,11 +553,44 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Loads info for static methods from the given attribute set.
+        /// </summary>
+        public void LoadStaticFromSet(SerializedAttributeSet inAttributeSet)
+        {
+            CacheStaticFromSet(inAttributeSet);
+        }
+
+        /// <summary>
         /// Loads info for static methods from the given assemblies.
         /// </summary>
         public void LoadStatic(IEnumerable<Assembly> inAssemblies)
         {
             CacheStatic(inAssemblies);
+        }
+
+        /// <summary>
+        /// Loads info for static methods from default assemblies.
+        /// </summary>
+        public IEnumerator LoadStaticAsync()
+        {
+            return CacheStaticAsync(null);
+        }
+
+        /// <summary>
+        /// Loads info for static methods from the given attribute set.
+        /// </summary>
+        public IEnumerator LoadStaticFromSetAsync(SerializedAttributeSet inAttributeSet)
+        {
+            return CacheStaticFromSetAsync(inAttributeSet);
+        }
+
+        /// <summary>
+        /// Loads info for static methods from the given assemblies.
+        /// Returns an IEnumerator to actually process the static methods.
+        /// </summary>
+        public IEnumerator LoadStaticAsync(IEnumerable<Assembly> inAssemblies)
+        {
+            return CacheStaticAsync(inAssemblies);
         }
 
         /// <summary>

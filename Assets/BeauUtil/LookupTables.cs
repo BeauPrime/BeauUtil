@@ -21,14 +21,42 @@ namespace BeauUtil
     static public class LookupTables
     {
         static private string[] s_IntegerTable;
-        private const int INTEGER_MIN = -100;
-        private const int INTEGER_MAX = 100;
+        private const int INTEGER_MIN = -128;
+        private const int INTEGER_MAX = 255;
 
         static LookupTables()
         {
             s_IntegerTable = new string[INTEGER_MAX - INTEGER_MIN + 1];
             for (int i = 0; i < s_IntegerTable.Length; ++i)
                 s_IntegerTable[i] = (i + INTEGER_MIN).ToString();
+        }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [-100, 100]
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        static public string ToStringLookup(this sbyte inValue)
+        {
+            if (inValue >= INTEGER_MIN && inValue < INTEGER_MAX)
+                return s_IntegerTable[inValue - INTEGER_MIN];
+            return inValue.ToString();
+        }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [-100, 100]
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        static public string ToStringLookup(this short inValue)
+        {
+            if (inValue >= INTEGER_MIN && inValue <= INTEGER_MAX)
+                return s_IntegerTable[inValue - INTEGER_MIN];
+            return inValue.ToString();
         }
 
         /// <summary>
@@ -52,10 +80,64 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        static public string ToStringLookup(this long inValue)
+        {
+            if (inValue >= INTEGER_MIN && inValue <= INTEGER_MAX)
+                return s_IntegerTable[inValue - INTEGER_MIN];
+            return inValue.ToString();
+        }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [0, 100]
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        static public string ToStringLookup(this byte inValue)
+        {
+            return s_IntegerTable[inValue - INTEGER_MIN];
+        }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [0, 100]
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        static public string ToStringLookup(this ushort inValue)
+        {
+            if (inValue <= INTEGER_MAX)
+                return s_IntegerTable[inValue - INTEGER_MIN];
+            return inValue.ToString();
+        }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [0, 100]
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public string ToStringLookup(this uint inValue)
         {
             if (inValue <= INTEGER_MAX)
                 return s_IntegerTable[inValue - INTEGER_MIN];
+            return inValue.ToString();
+        }
+
+        /// <summary>
+        /// Retrieves a cached version of the string
+        /// representation of this integer value.
+        /// Range [0, 100]
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        static public string ToStringLookup(this ulong inValue)
+        {
+            if (inValue <= INTEGER_MAX)
+                return s_IntegerTable[(int) inValue - INTEGER_MIN];
             return inValue.ToString();
         }
     }

@@ -1,3 +1,27 @@
+## Version 0.9.5
+**14 Nov 2023**
+
+## Features
+* Added `UnityHelper.IsPersistent` for checking if an asset is a persistent asset
+* Added `SceneHelper.GetLoadingState` and `SceneHelper.GetGUID` for returning info about scenes
+* Added `SerializedAttributeSet` class for serializing reflection information
+* Added `ReloadableRef<T>` struct for references to assets with custom importers that may be reloaded during the editor
+* Added `AssetOnlyAttribute` property attribute for restricting an object reference to persistent objects only
+
+## Improvements
+* Added optional `Unity.Mathematics` integration for several bit calls
+* Inlined some `Reflect.Find` enumerable calls for better performance
+* Some `Reflect.Find` calls can now make use of the editor type cache in the editor
+* Added `StringHashing.DumpReverseLookupStats` for writing reverse lookup table stats to console
+* Added `StringHashReverseCacheInitialCapacityAttribute` attribute for setting the initial capacity of the reverse lookup table
+* Added `Unsafe.FormatBytes` for formatting byte counts
+
+## Fixes
+* Fixed several incompatibilities with Unity 2019
+
+## Breaking Changes
+* `UnsafePtr.Ref` renamed to `UnsafePtr.AsRef`
+
 ## Version 0.9.4
 **1 Nov 2023**
 

@@ -590,6 +590,31 @@ namespace BeauUtil.Services
             m_ScannedStaticMembers = true;
         }
 
+        private void ScanForStaticInjectionFromSet(SerializedAttributeSet attributeSet)
+        {
+            if (m_ScannedStaticMembers)
+                return;
+
+            foreach (var member in attributeSet.Read<ServiceReferenceAttribute>())
+            {
+                FieldInfo field = member.Info as FieldInfo;
+                if (field != null)
+                {
+                    m_StaticServiceFields.Add(field);
+                    continue;
+                }
+
+                PropertyInfo property = member.Info as PropertyInfo;
+                if (property != null)
+                {
+                    m_StaticServiceProperties.Add(property);
+                    continue;
+                }
+            }
+
+            m_ScannedStaticMembers = true;
+        }
+
         private void InjectStaticReferences(IService inService, Type inServiceType)
         {
             foreach(var field in m_StaticServiceFields)

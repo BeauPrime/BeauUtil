@@ -1,3 +1,8 @@
+#if !UNITY_2021_1_OR_NEWER
+#define DISPOSABLE_HACK
+#endif // !UNITY_2021_1_OR_NEWER
+
+using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -7,6 +12,9 @@ namespace BeauUtil.Streaming
     /// Download handler that passes loaded bytes to a custom handler.
     /// </summary>
     public class DownloadHandlerStream : DownloadHandlerScript
+#if DISPOSABLE_HACK
+        , IDisposable
+#endif // DISPOSABLE_HACK
     {
         private ulong m_LastKnownContentLength;
         private ulong m_ReceivedBytes;
@@ -66,7 +74,11 @@ namespace BeauUtil.Streaming
             return Mathf.Clamp01((float) m_ReceivedBytes / m_LastKnownContentLength);
         }
 
+#if DISPOSABLE_HACK
+        public new void Dispose()
+#else
         public override void Dispose()
+#endif // DISPOSABLE_HACK
         {
             base.Dispose();
 

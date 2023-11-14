@@ -16,7 +16,12 @@
 #endif // CSHARP_7_3_OR_NEWER
 
 using System;
+using System.Collections;
 using System.Runtime.CompilerServices;
+
+#if USING_MATHEMATICS
+using Unity.Mathematics;
+#endif // USING_MATHEMATICS
 
 namespace BeauUtil
 {
@@ -40,6 +45,8 @@ namespace BeauUtil
 
         public const long All64 = unchecked((int) AllU64);
         public const ulong AllU64 = 0xFFFFFFFFFFFFFFFF;
+
+        #region Contains
 
         /// <summary>
         /// Returns if the given uint has the given bit toggled on.
@@ -198,6 +205,10 @@ namespace BeauUtil
             return (Enums.ToULong(inBitArray) & mask) == mask;
         }
 
+        #endregion // Contains
+
+        #region Add/Remove
+
         /// <summary>
         /// Toggles the given bit in the given uint to on.
         /// </summary>
@@ -205,6 +216,15 @@ namespace BeauUtil
         static public void Add(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray |= (1U << inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given uint to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint Add(uint inBitArray, int inBitIndex)
+        {
+            return inBitArray | (1U << inBitIndex);
         }
 
         /// <summary>
@@ -217,6 +237,15 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given int to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int Add(int inBitArray, int inBitIndex)
+        {
+            return inBitArray | (1 << inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given ulong to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -226,12 +255,30 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given ulong to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong Add(ulong inBitArray, int inBitIndex)
+        {
+            return inBitArray | ((ulong) 1 << inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given long to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Add(ref long ioBitArray, int inBitIndex)
         {
             ioBitArray |= ((long) 1 << inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given long to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long Add(long inBitArray, int inBitIndex)
+        {
+            return inBitArray | ((long) 1 << inBitIndex);
         }
 
         /// <summary>
@@ -251,12 +298,37 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given mask in the given enum to on.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T Add<T>(T inBitArray, T inMask)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return Enums.ToEnum<T>(Enums.ToULong(inBitArray) | Enums.ToULong(inMask));
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given uint to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Remove(ref uint ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~(1U << inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given uint to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint Remove(uint inBitArray, int inBitIndex)
+        {
+            return inBitArray & ~(1U << inBitIndex);
         }
 
         /// <summary>
@@ -269,6 +341,15 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given int to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int Remove(int inBitArray, int inBitIndex)
+        {
+            return inBitArray & ~(1 << inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given ulong to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -278,12 +359,30 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given ulong to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong Remove(ulong inBitArray, int inBitIndex)
+        {
+            return inBitArray & ~((ulong) 1 << inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given long to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Remove(ref long ioBitArray, int inBitIndex)
         {
             ioBitArray &= ~((long) 1 << inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given long to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long Remove(long inBitArray, int inBitIndex)
+        {
+            return inBitArray & ~((long) 1 << inBitIndex);
         }
 
         /// <summary>
@@ -303,6 +402,22 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given mask in the given enum to off.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T Remove<T>(T inBitArray, T inMask)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return Enums.ToEnum<T>(Enums.ToULong(inBitArray) & ~Enums.ToULong(inMask));
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given uint to the given state.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,6 +427,18 @@ namespace BeauUtil
                 Add(ref ioBitArray, inBitIndex);
             else
                 Remove(ref ioBitArray, inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given uint to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint Set(uint inBitArray, int inBitIndex, bool inbState)
+        {
+            if (inbState)
+                return Add(inBitArray, inBitIndex);
+            else
+                return Remove(inBitArray, inBitIndex);
         }
 
         /// <summary>
@@ -327,6 +454,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given int to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int Set(int inBitArray, int inBitIndex, bool inbState)
+        {
+            if (inbState)
+                return Add(inBitArray, inBitIndex);
+            else
+                return Remove(inBitArray, inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given ulong to the given state.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -339,6 +478,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given ulong to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong Set(ulong inBitArray, int inBitIndex, bool inbState)
+        {
+            if (inbState)
+                return Add(inBitArray, inBitIndex);
+            else
+                return Remove(inBitArray, inBitIndex);
+        }
+
+        /// <summary>
         /// Toggles the given bit in the given long to the given state.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -348,6 +499,18 @@ namespace BeauUtil
                 Add(ref ioBitArray, inBitIndex);
             else
                 Remove(ref ioBitArray, inBitIndex);
+        }
+
+        /// <summary>
+        /// Toggles the given bit in the given long to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long Set(long inBitArray, int inBitIndex, bool inbState)
+        {
+            if (inbState)
+                return Add(inBitArray, inBitIndex);
+            else
+                return Remove(inBitArray, inBitIndex);
         }
 
         /// <summary>
@@ -370,8 +533,32 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Toggles the given bit in the given int to the given state.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T Set<T>(T inBitArray, T inMask, bool inbState)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            if (inbState)
+                return Add(inBitArray, inMask);
+            else
+                return Remove(inBitArray, inMask);
+        }
+
+        #endregion // Add/Remove
+
+        #region IndexOf
+
+        /// <summary>
         /// Returns the bit index of the given bit array, if it contains a single set bit.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(int inBitArray)
         {
             unsafe
@@ -383,6 +570,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the bit index of the given bit array, if it contains a single set bit.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(uint inBitArray)
         {
             if (inBitArray == 0)
@@ -390,6 +578,9 @@ namespace BeauUtil
             if ((inBitArray & (inBitArray - 1)) != 0)
                 return -1;
 
+#if USING_MATHEMATICS
+            return math.tzcnt(inBitArray);
+#else
             int shiftCount = 0;
             while (inBitArray != 1)
             {
@@ -397,11 +588,13 @@ namespace BeauUtil
                 ++shiftCount;
             }
             return shiftCount;
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
         /// Returns the bit index of the given bit array, if it contains a single set bit.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(long inBitArray)
         {
             unsafe
@@ -413,6 +606,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the bit index of the given bit array, if it contains a single set bit.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(ulong inBitArray)
         {
             if (inBitArray == 0)
@@ -420,6 +614,9 @@ namespace BeauUtil
             if ((inBitArray & (inBitArray - 1)) != 0)
                 return -1;
 
+#if USING_MATHEMATICS
+            return math.tzcnt(inBitArray);
+#else
             int shiftCount = 0;
             while (inBitArray != 1)
             {
@@ -427,6 +624,7 @@ namespace BeauUtil
                 ++shiftCount;
             }
             return shiftCount;
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
@@ -434,20 +632,25 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf<T>(T inBitArray)
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
-        #elif HAS_ENUM_CONSTRAINT
+#elif HAS_ENUM_CONSTRAINT
             where T : struct, Enum
-        #else
+#else
             where T : struct, IConvertible
-        #endif // HAS_ENUM_CONSTRAINT
+#endif // HAS_ENUM_CONSTRAINT
         {
             return IndexOf(Enums.ToUInt(inBitArray));
         }
 
+        #endregion // Indexof
+
+        #region Count
+
         /// <summary>
         /// Returns the number of set bits in the given bit array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count(int inBitArray)
         {
             unsafe
@@ -459,20 +662,26 @@ namespace BeauUtil
         /// <summary>
         /// Returns the number of set bits in the given bit array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count(uint inBitArray)
         {
+#if USING_MATHEMATICS
+            return math.countbits(inBitArray);
+#else
             int count = 0;
-            while(inBitArray != 0)
+            while (inBitArray != 0)
             {
                 inBitArray &= (inBitArray - 1);
                 count++;
             }
             return count;
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
         /// Returns the number of set bits in the given bit array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count(long inBitArray)
         {
             unsafe
@@ -484,15 +693,20 @@ namespace BeauUtil
         /// <summary>
         /// Returns the number of set bits in the given bit array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count(ulong inBitArray)
         {
+#if USING_MATHEMATICS
+            return math.countbits(inBitArray);
+#else
             int count = 0;
-            while(inBitArray != 0)
+            while (inBitArray != 0)
             {
                 inBitArray &= (inBitArray - 1);
                 count++;
             }
             return count;
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
@@ -500,15 +714,181 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count<T>(T inBitArray)
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
-        #elif HAS_ENUM_CONSTRAINT
+#elif HAS_ENUM_CONSTRAINT
             where T : struct, Enum
-        #else
+#else
             where T : struct, IConvertible
-        #endif // HAS_ENUM_CONSTRAINT
+#endif // HAS_ENUM_CONSTRAINT
         {
             return Count(Enums.ToULong(inBitArray));
         }
+
+        #endregion // Count
+
+        #region Rotate
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int RotateLeft(int inBitArray, int inAmount)
+        {
+            unsafe
+            {
+                uint rot = RotateLeft(*(uint*) (&inBitArray), inAmount);
+                return *(int*) &rot;
+            }
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateLeft(ref int ioBitArray, int inAmount)
+        {
+            ioBitArray = RotateLeft(ioBitArray, inAmount);
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint RotateLeft(uint inBitArray, int inAmount)
+        {
+            return (inBitArray << inAmount) | (inBitArray >> (32 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateLeft(ref uint ioBitArray, int inAmount)
+        {
+            ioBitArray = (ioBitArray << inAmount) | (ioBitArray >> (32 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long RotateLeft(long inBitArray, int inAmount)
+        {
+            unsafe
+            {
+                ulong rot = RotateLeft(*(ulong*) (&inBitArray), inAmount);
+                return *(long*) &rot;
+            }
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateLeft(ref long ioBitArray, int inAmount)
+        {
+            ioBitArray = RotateLeft(ioBitArray, inAmount);
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong RotateLeft(ulong inBitARray, int inAmount)
+        {
+            return (inBitARray << inAmount) | (inBitARray >> (64 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the left.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateLeft(ref ulong ioBitArray, int inAmount)
+        {
+            ioBitArray = (ioBitArray << inAmount) | (ioBitArray >> (64 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int RotateRight(int inBitArray, int inAmount)
+        {
+            unsafe
+            {
+                uint rot = RotateRight(*(uint*) (&inBitArray), inAmount);
+                return *(int*) &rot;
+            }
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateRight(ref int ioBitArray, int inAmount)
+        {
+            ioBitArray = RotateRight(ioBitArray, inAmount);
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint RotateRight(uint inBitArray, int inAmount)
+        {
+            return (inBitArray >> inAmount) | (inBitArray << (32 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateRight(ref uint ioBitArray, int inAmount)
+        {
+            ioBitArray = (ioBitArray >> inAmount) | (ioBitArray << (32 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long RotateRight(long inBitArray, int inAmount)
+        {
+            unsafe
+            {
+                ulong rot = RotateRight(*(ulong*) (&inBitArray), inAmount);
+                return *(long*) &rot;
+            }
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateRight(ref long ioBitArray, int inAmount)
+        {
+            ioBitArray = RotateRight(ioBitArray, inAmount);
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong RotateRight(ulong inBitARray, int inAmount)
+        {
+            return (inBitARray >> inAmount) | (inBitARray << (64 - inAmount));
+        }
+
+        /// <summary>
+        /// Rotates the given bits to the right.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RotateRight(ref ulong ioBitArray, int inAmount)
+        {
+            ioBitArray = (ioBitArray >> inAmount) | (ioBitArray << (64 - inAmount));
+        }
+
+        #endregion // Rotate
     }
 }

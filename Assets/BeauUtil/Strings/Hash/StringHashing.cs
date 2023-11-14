@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System;
 using System.Text;
+using System.Reflection;
 
 namespace BeauUtil
 {
@@ -23,6 +24,15 @@ namespace BeauUtil
         static StringHashing()
         {
             #if PRESERVE_DEBUG_SYMBOLS
+            foreach(var assembly in Reflect.FindAllUserAssemblies())
+            {
+                if (assembly.IsDefined(typeof(StringHashReverseCacheInitialCapacityAttribute)))
+                {
+                    s_CacheSizeAttribute = (StringHashReverseCacheInitialCapacityAttribute) assembly.GetCustomAttribute(typeof(StringHashReverseCacheInitialCapacityAttribute));
+                    break;
+                }
+            }
+
             EnableReverseLookup(true);
             #endif // PRESERVE_DEBUG_SYMBOLS
         }
@@ -241,9 +251,13 @@ namespace BeauUtil
 
         static private bool s_ReverseLookupEnabled;
         static private CollisionCallbackDelegate s_OnCollision;
+        static private readonly StringHashReverseCacheInitialCapacityAttribute s_CacheSizeAttribute;
 
         static private Dictionary<uint, string> s_ReverseLookup32;
         static private Dictionary<ulong, string> s_ReverseLookup64;
+
+        static private uint s_ReverseLookup32ResizeCount;
+        static private uint s_ReverseLookup64ResizeCount;
 
         /// <summary>
         /// Enabled/disables reverse hash lookup.
@@ -256,8 +270,8 @@ namespace BeauUtil
                 s_ReverseLookupEnabled = inbEnabled;
                 if (inbEnabled)
                 {
-                    s_ReverseLookup32 = new Dictionary<uint, string>(256);
-                    s_ReverseLookup64 = new Dictionary<ulong, string>(256);
+                    s_ReverseLookup32 = new Dictionary<uint, string>(s_CacheSizeAttribute != null ? s_CacheSizeAttribute.Hash32 : 512);
+                    s_ReverseLookup64 = new Dictionary<ulong, string>(s_CacheSizeAttribute != null ? s_CacheSizeAttribute.Hash64 : 512);
                 }
                 else
                 {
@@ -300,6 +314,56 @@ namespace BeauUtil
             s_OnCollision = inCallback;
         }
 
+        /// <summary>
+        /// Estimates the size, in bytes, of the reverse lookup cache.
+        /// Non-functional in non-development builds.
+        /// </summary>
+        static public void DumpReverseLookupStats()
+        {
+            if (!s_ReverseLookupEnabled)
+            {
+                UnityEngine.Debug.LogFormat("[StringHashing] Reverse Hash disabled, no stats");
+                return;
+            }
+
+            long hash32size = 0, hash32count = 0, hash32capacity = 0;
+            long hash64size = 0, hash64count = 0, hash64capacity = 0;
+            float hash32usage = 0;
+            float hash64usage = 0;
+
+            if (s_ReverseLookup32 != null)
+            {
+                hash32capacity = s_ReverseLookup32.GetCapacity();
+
+                hash32size += 24 * hash32capacity;
+                foreach(var kvp in s_ReverseLookup32)
+                {
+                    hash32size += 12 + kvp.Value.Length * 2;
+                }
+
+                hash32count = s_ReverseLookup32.Count;
+                hash32usage = hash32count * 100f / hash32capacity;
+            }
+
+            if (s_ReverseLookup64 != null)
+            {
+                hash64capacity = s_ReverseLookup64.GetCapacity();
+
+                hash64size += 24 * hash64capacity;
+                foreach (var kvp in s_ReverseLookup64)
+                {
+                    hash64size += 12 + kvp.Value.Length * 2;
+                }
+
+                hash64count = s_ReverseLookup64.Count;
+                hash64usage = hash64count * 100f / hash64capacity;
+            }
+
+            UnityEngine.Debug.LogFormat("[StringHashing] Reverse Hash Table | 32 - ~{0} in {1} entries ({2}% of {3}) | 64 - ~{4} in {5} entries ({6}% of {7})",
+                Unsafe.FormatBytes(hash32size), hash32count, hash32usage, hash32capacity,
+                Unsafe.FormatBytes(hash64size), hash64count, hash64usage, hash64capacity);
+        }
+
         #else
 
         /// <summary>
@@ -334,6 +398,15 @@ namespace BeauUtil
         /// </summary>
         static public void SetOnCollision(CollisionCallbackDelegate inCallback)
         {
+        }
+
+        /// <summary>
+        /// Estimates the size, in bytes, of the reverse lookup cache.
+        /// Non-functional in non-development builds.
+        /// </summary>
+        static public void DumpReverseLookupStats()
+        {
+            return 0;
         }
 
         #endif // PRESERVE_DEBUG_SYMBOLS
@@ -737,5 +810,21 @@ namespace BeauUtil
         #endif // PRESERVE_DEBUG_SYMBOLS
 
         #endregion // Store/Retrieve
+    }
+
+    /// <summary>
+    /// Declares the initial capacity for the string hash reverse lookup tables.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+    public sealed class StringHashReverseCacheInitialCapacityAttribute : Attribute
+    {
+        public readonly int Hash32;
+        public readonly int Hash64;
+
+        public StringHashReverseCacheInitialCapacityAttribute(int inHash32Capacity = 256, int inHash64Capacity = 256)
+        {
+            Hash32 = inHash32Capacity;
+            Hash64 = inHash64Capacity;
+        }
     }
 }

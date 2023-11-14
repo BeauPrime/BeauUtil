@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine.Scripting;
 
 namespace BeauUtil
@@ -74,6 +75,7 @@ namespace BeauUtil
         /// Retrieves the index for the given type.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public int Get(Type inType)
         {
             if (!s_TypeMap.TryGetValue(inType, out int index))
@@ -96,6 +98,8 @@ namespace BeauUtil
         /// <summary>
         /// Returns the type for the given index.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public Type Type(int inIndex)
         {
             Assert.True(inIndex >= 0 && inIndex < s_Allocated, "Index {0} is out of mapped range 0-{1}", inIndex, s_Allocated - 1);

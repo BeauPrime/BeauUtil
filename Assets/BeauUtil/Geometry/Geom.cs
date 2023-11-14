@@ -470,7 +470,7 @@ namespace BeauUtil
         /// Generates the minimum AABB for the given two points.
         /// </summary>
         static public Bounds AABB(Vector3 inPointA, Vector3 inPointB) {
-            Bounds b = new Bounds();
+            Bounds b = default(Bounds);
             b.SetMinMax(inPointA, inPointB);
             return b;
         }
@@ -479,7 +479,7 @@ namespace BeauUtil
         /// Generates the minimum AABB for the given two points.
         /// </summary>
         static public Bounds AABB(Vector2 inPointA, Vector2 inPointB) {
-            Bounds b = new Bounds();
+            Bounds b = default(Bounds);
             b.SetMinMax(inPointA, inPointB);
             return b;
         }
@@ -504,7 +504,7 @@ namespace BeauUtil
                 max.z = Mathf.Max(max.z, point.z);
             }
 
-            Bounds b = new Bounds();
+            Bounds b = default(Bounds);
             b.SetMinMax(min, max);
             return b;
         }
@@ -527,7 +527,7 @@ namespace BeauUtil
                 max.y = Mathf.Max(max.y, point.y);
             }
 
-            Bounds b = new Bounds();
+            Bounds b = default(Bounds);
             b.SetMinMax(min, max);
             return b;
         }
@@ -552,7 +552,7 @@ namespace BeauUtil
                 max.z = Mathf.Max(max.z, point.z);
             }
 
-            Bounds b = new Bounds();
+            Bounds b = default(Bounds);
             b.SetMinMax(min, max);
             return b;
         }
@@ -575,7 +575,7 @@ namespace BeauUtil
                 max.y = Mathf.Max(max.y, point.y);
             }
 
-            Bounds b = new Bounds();
+            Bounds b = default(Bounds);
             b.SetMinMax(min, max);
             return b;
         }

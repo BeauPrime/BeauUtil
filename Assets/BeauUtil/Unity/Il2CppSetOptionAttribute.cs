@@ -6,7 +6,7 @@ namespace Unity.IL2CPP.CompilerServices
     /// The code generation options available for IL to C++ conversion.
     /// Enable or disabled these with caution.
     /// </summary>
-    internal enum Option
+    public enum Option
     {
         /// <summary>
         /// Enable or disable code generation for null checks.
@@ -60,7 +60,7 @@ namespace Unity.IL2CPP.CompilerServices
     ///     }
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Struct | AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    internal class Il2CppSetOptionAttribute : Attribute
+    public class Il2CppSetOptionAttribute : Attribute
     {
         public Option Option { get; private set; }
         public object Value { get; private set; }

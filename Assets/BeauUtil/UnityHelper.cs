@@ -591,23 +591,34 @@ namespace BeauUtil
     
         #region Lookups
 
-        private delegate UnityEngine.Object FindDelegate(int inInstanceId);
-        private delegate bool AlivePredicate(int inInstanceId);
-        static private readonly FindDelegate s_FindDelegate;
-        static private readonly AlivePredicate s_AliveDelegate;
+        private delegate UnityEngine.Object FindObjectDelegate(int inInstanceId);
+        private delegate bool ObjectIdPredicate(int inInstanceId);
+        private delegate bool ObjectPredicate(UnityEngine.Object inObject);
+
+        static private readonly FindObjectDelegate s_FindDelegate;
+        static private readonly ObjectIdPredicate s_AliveDelegate;
+        static private readonly ObjectPredicate s_IsPersistentDelegate;
 
         static UnityHelper()
         {
-            MethodInfo findInfo = typeof(UnityEngine.Object).GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
+            Type objType = typeof(UnityEngine.Object);
+
+            MethodInfo findInfo = objType.GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
             if (findInfo != null)
             {
-                s_FindDelegate = (FindDelegate) findInfo.CreateDelegate(typeof(FindDelegate));
+                s_FindDelegate = (FindObjectDelegate) findInfo.CreateDelegate(typeof(FindObjectDelegate));
             }
 
-            MethodInfo aliveInfo = typeof(UnityEngine.Object).GetMethod("DoesObjectWithInstanceIDExist", BindingFlags.NonPublic | BindingFlags.Static);
+            MethodInfo aliveInfo = objType.GetMethod("DoesObjectWithInstanceIDExist", BindingFlags.NonPublic | BindingFlags.Static);
             if (aliveInfo != null)
             {
-                s_AliveDelegate = (AlivePredicate) aliveInfo.CreateDelegate(typeof(AlivePredicate));
+                s_AliveDelegate = (ObjectIdPredicate) aliveInfo.CreateDelegate(typeof(ObjectIdPredicate));
+            }
+
+            MethodInfo persistentInfo = objType.GetMethod("IsPersistent", BindingFlags.NonPublic | BindingFlags.Static);
+            if (persistentInfo != null)
+            {
+                s_IsPersistentDelegate = (ObjectPredicate) persistentInfo.CreateDelegate(typeof(ObjectPredicate));
             }
         }
 
@@ -670,6 +681,20 @@ namespace BeauUtil
         static public int Id(UnityEngine.Object inObject)
         {
             return object.ReferenceEquals(inObject, null) ? 0 : inObject.GetInstanceID();
+        }
+
+        /// <summary>
+        /// Returns if the given object is a persistent object
+        /// (i.e. not a scene object)
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsPersistent(this UnityEngine.Object inObject)
+        {
+            if (ReferenceEquals(inObject, null) || s_IsPersistentDelegate == null)
+            {
+                return false;
+            }
+            return s_IsPersistentDelegate(inObject);
         }
 
         #endregion // Lookups

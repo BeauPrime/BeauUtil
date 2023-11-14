@@ -172,7 +172,6 @@ namespace BeauUtil
         internal struct ArenaHeader
         {
             internal const uint ExpectedMagic = 0xBEAA110C;
-            internal const uint CorruptionCheckMagic = 0xBAD0F00D;
             internal const int MaxRewindStackSize = 6;
             
             internal uint Magic; // magic value, used to check for memory corruption
@@ -239,6 +238,11 @@ namespace BeauUtil
             int totalSize = (int) (ArenaHeader.MinimumSize + arenaSize);
 
             void* block = AllocAligned(inBase, totalSize, AlignOf<ArenaHeader>());
+            if (block == null)
+            {
+                throw new InsufficientMemoryException(string.Format("Provided arena has insufficient memory availabe for {0} required size", totalSize));
+            }
+
             ArenaHeader* blockHeader = (ArenaHeader*) block;
             byte* dataStart = (byte*) block + ArenaHeader.HeaderSize;
 
@@ -379,30 +383,6 @@ namespace BeauUtil
             return inArena.HeaderStart != null;
 #endif // VALIDATE_ARENA_MEMORY
         }
-
-#if VALIDATE_ARENA_MEMORY
-
-        /// <summary>
-        /// Writes the debug magic value at the given address.
-        /// </summary>
-        static internal void WriteDebugMemoryBoundary(void* inPtr)
-        {
-            *((uint*) inPtr) = ArenaHeader.CorruptionCheckMagic;
-        }
-
-        /// <summary>
-        /// Checks that the value at the given address is the debug magic value.
-        /// </summary>
-        static internal void CheckDebugMemoryBoundary(void* inPtr)
-        {
-            uint val = *((uint*) inPtr);
-            if (val != ArenaHeader.CorruptionCheckMagic)
-            {
-                throw new MemoryCorruptionException(inPtr, "Arena memory boundary value was {0:X} but expected {1:X}. Most likely memory was written outside of allocated bounds.", val, ArenaHeader.CorruptionCheckMagic);
-            }
-        }
-
-#endif // VALIDATE_ARENA_MEMORY
 
         #endregion // Checks
 

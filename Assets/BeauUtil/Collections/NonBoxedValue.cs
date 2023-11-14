@@ -9,7 +9,7 @@ namespace BeauUtil
     /// Alternative to object for variant return values.
     /// Can represent built-in numerics, booleans, chars, strings, and several BeauUtil types.
     /// </summary>
-    public struct NonBoxedValue
+    public readonly struct NonBoxedValue
     {
         public enum ValueType : byte
         {

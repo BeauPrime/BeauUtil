@@ -163,7 +163,7 @@ namespace BeauUtil.IO
     /// <summary>
     /// Result of a hot reload.
     /// </summary>
-    public struct HotReloadResult : IDebugString
+    public readonly struct HotReloadResult : IDebugString
     {
         public readonly StringHash32 ObjectId;
         public readonly StringHash32 ObjectTag;

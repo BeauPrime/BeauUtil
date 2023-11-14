@@ -5,11 +5,14 @@ using UnityEngine.Networking;
 using System.IO;
 using System.Collections;
 using BeauUtil.Debugger;
+using BeauUtil.IO;
 
 public unsafe class DownloadTest : MonoBehaviour
 {
     [StreamingPath] public string File0;
     [StreamingPath] public string File1;
+    public ReloadableRef<TextAsset> AssetRef;
+    [AssetOnly] public Transform Prefab;
 
     public string Url0;
     public string Url1;
@@ -29,6 +32,8 @@ public unsafe class DownloadTest : MonoBehaviour
             testAlloc[i] = 127;
         }
 
+        StringHash32 hash = "whatever";
+
         Unsafe.Clear(testAlloc, 64);
 
         for(int i = 0; i < 64; i++)
@@ -36,6 +41,8 @@ public unsafe class DownloadTest : MonoBehaviour
             if (testAlloc[i] != 0)
                 Log.Error("zero did not work!");
         }
+
+        Debug.Log("Is64: " + Unsafe.Is64);
 
         StartCoroutine(TestCoroutine());
     }

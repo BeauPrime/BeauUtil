@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -22,7 +23,13 @@ namespace BeauUtil
         IStringConverter StringConverter { get; }
         
         void Load(Type inType);
+
         void LoadStatic();
+        void LoadStatic(IEnumerable<Assembly> inAssemblies);
+        void LoadStaticFromSet(SerializedAttributeSet inAttributeSet);
+        IEnumerator LoadStaticAsync();
+        IEnumerator LoadStaticAsync(IEnumerable<Assembly> inAssemblies);
+        IEnumerator LoadStaticFromSetAsync(SerializedAttributeSet inAttributeSet);
 
         bool Has(StringHash32 inId);
         bool HasStatic(StringHash32 inId);

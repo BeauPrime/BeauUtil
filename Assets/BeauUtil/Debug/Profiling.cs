@@ -38,7 +38,7 @@ namespace BeauUtil.Debugger
 #endif // ENABLE_PROFILING_BEAUUTIL
         }
 
-        public struct TimeBlock : IDisposable
+        public readonly struct TimeBlock : IDisposable
         {
 #if ENABLE_PROFILING_BEAUUTIL
             private readonly string m_Label;
@@ -99,7 +99,7 @@ namespace BeauUtil.Debugger
 #endif // ENABLE_PROFILING_BEAUUTIL
         }
 
-        public struct SampleBlock : IDisposable
+        public readonly struct SampleBlock : IDisposable
         {
 #if ENABLE_PROFILING_BEAUUTIL
             internal SampleBlock(string inLabel)

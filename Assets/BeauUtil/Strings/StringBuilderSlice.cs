@@ -18,7 +18,7 @@ namespace BeauUtil
     /// <summary>
     /// A section of a StringBuilder.
     /// </summary>
-    public struct StringBuilderSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringBuilderSlice>, IEquatable<string>
+    public readonly struct StringBuilderSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringBuilderSlice>, IEquatable<string>
     {
         private readonly StringBuilder m_Source;
         private readonly int m_StartIndex;

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Scripting;
 using UnityEngine.UIElements;
 
 namespace BeauUtil.UnitTests
@@ -870,6 +872,74 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(-5, a.Value);
             Assert.AreEqual(5, b.Value);
             Assert.AreEqual(3, cache.Count);
+        }
+
+        [Test]
+        static public void CanCreateAttributeSet()
+        {
+            SerializedAttributeSet attrSet = new SerializedAttributeSet();
+            attrSet.Write<PreserveAttribute>(Reflect.FindAllUserAssemblies());
+
+            using (BeauUtil.Debugger.Log.DisableMsgStackTrace())
+            {
+                foreach (var binding in attrSet.Read<PreserveAttribute>())
+                {
+                    Assert.NotNull(binding.Info);
+                    Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
+                }
+
+                attrSet.Write<SerializableAttribute>(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0));
+
+                string setJSON = JsonUtility.ToJson(attrSet);
+                System.IO.File.WriteAllText("Temp/TestBindingExport.json", setJSON);
+
+                foreach (var binding in attrSet.Read<SerializableAttribute>())
+                {
+                    Assert.NotNull(binding.Info);
+                    //Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
+                }
+
+                attrSet.Write<UnityEngine.RuntimeInitializeOnLoadMethodAttribute>(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0));
+
+                foreach (var binding in attrSet.Read<RuntimeInitializeOnLoadMethodAttribute>())
+                {
+                    Assert.NotNull(binding.Info);
+                    Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
+                }
+
+                setJSON = JsonUtility.ToJson(attrSet);
+                System.IO.File.WriteAllText("Temp/TestBindingExport2.json", setJSON);
+
+                Type nativeType = Type.GetType("UnityEngine.Bindings.NativeHeaderAttribute, UnityEngine.SharedInternalsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+                attrSet.Write(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0), nativeType);
+
+                foreach (var binding in attrSet.Read(nativeType))
+                {
+                    Assert.NotNull(binding.Info);
+                    Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
+                }
+
+                setJSON = JsonUtility.ToJson(attrSet);
+                System.IO.File.WriteAllText("Temp/TestBindingExport3.json", setJSON);
+            }
+        }
+
+        [Test]
+        static public void TestBitRotates()
+        {
+            uint bits = 0;
+            Bits.Add(ref bits, 31);
+            Bits.Add(ref bits, 0);
+
+            Assert.AreEqual(2, Bits.Count(bits));
+
+            uint rotatedbits = Bits.RotateLeft(bits, 1);
+
+            Assert.AreEqual(3, rotatedbits);
+
+            uint shouldBeOriginalBits = Bits.RotateRight(rotatedbits, 1);
+
+            Assert.AreEqual(bits, shouldBeOriginalBits);
         }
     }
 }

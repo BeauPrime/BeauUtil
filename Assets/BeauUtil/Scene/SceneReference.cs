@@ -35,22 +35,14 @@ namespace BeauUtil
         public SceneReference(Scene scene)
         {
             m_ScenePath = scene.path;
-#if UNITY_EDITOR
-            m_GUID = AssetDatabase.AssetPathToGUID(m_ScenePath);
-#else
-            m_GUID = null;
-#endif // UNITY_EDITOR
+            m_GUID = SceneHelper.GetGUID(scene);
             m_CachedName = scene.name;
         }
 
         public SceneReference(SceneBinding scene)
         {
             m_ScenePath = scene.Path;
-#if UNITY_EDITOR
-            m_GUID = AssetDatabase.AssetPathToGUID(m_ScenePath);
-#else
-            m_GUID = null;
-#endif // UNITY_EDITOR
+            m_GUID = SceneHelper.GetGUID(scene.Scene);
             m_CachedName = scene.Name;
         }
 
@@ -69,7 +61,7 @@ namespace BeauUtil
             get { return !string.IsNullOrEmpty(m_ScenePath); }
         }
 
-        public SceneBinding Resolve()
+        public Scene Resolve()
         {
 #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)

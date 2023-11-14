@@ -11,6 +11,10 @@
 #define UNMANAGED_CONSTRAINT
 #endif // CSHARP_7_3_OR_NEWER
 
+#if UNITY_2021_1_OR_NEWER
+#define SUPPORTS_SPAN
+#endif // UNITY_2021_1_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -1423,8 +1427,21 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Clear(void* inSrc, int inSize)
         {
+            if (inSize <= 0)
+            {
+                return;
+            }
+
+#if SUPPORTS_SPAN
             Span<byte> bytes = new Span<byte>(inSrc, inSize);
             bytes.Fill(0);
+#else
+            byte* bytePtr = (byte*) inSrc;
+            while(inSize-- > 0)
+            {
+                *bytePtr++ = 0;
+            }
+#endif // SUPPORTS_SPAN
         }
 
         /// <summary>
@@ -1433,8 +1450,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Clear<T>(T* inSrc, int inSize) where T : unmanaged
         {
-            Span<byte> data = new Span<byte>(inSrc, inSize * sizeof(T));
-            data.Fill(0);
+            Clear((void*) inSrc, sizeof(T) * inSize);
         }
 
         /// <summary>
@@ -1443,7 +1459,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Clear<T>(UnsafeSpan<T> inSpan) where T : unmanaged
         {
-            Clear(inSpan.Ptr, inSpan.Length);
+            Clear((void*) inSpan.Ptr, inSpan.Length);
         }
 
         /// <summary>
@@ -1454,8 +1470,7 @@ namespace BeauUtil
         {
             fixed (T* ptr = inSrc)
             {
-                Span<byte> data = new Span<byte>(ptr + inOffset, inSize * sizeof(T));
-                data.Fill(0);
+                Clear((void*) (ptr + inOffset), sizeof(T) * inSize);
             }
         }
 
@@ -1467,13 +1482,12 @@ namespace BeauUtil
         {
             fixed (T* ptr = inSrc)
             {
-                Span<byte> data = new Span<byte>(ptr, inSrc.Length * sizeof(T));
-                data.Fill(0);
+                Clear((void*) ptr, sizeof(T) * inSrc.Length);
             }
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
-        #endregion // Clear
-    }
+#endregion // Clear
+            }
 }

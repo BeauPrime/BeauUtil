@@ -17,7 +17,7 @@ namespace BeauUtil
     /// <summary>
     /// A section of a string.
     /// </summary>
-    public struct StringSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringSlice>, IEquatable<string>, IConvertible, IComparable<StringSlice>
+    public readonly struct StringSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringSlice>, IEquatable<string>, IConvertible, IComparable<StringSlice>
     {
         private readonly string m_Source;
         private readonly int m_StartIndex;
@@ -1648,7 +1648,7 @@ namespace BeauUtil
     /// <summary>
     /// String slicing options.
     /// </summary>
-    public struct StringSliceOptions
+    public readonly struct StringSliceOptions
     {
         public readonly StringSplitOptions Split;
         public readonly int MaxSlices;

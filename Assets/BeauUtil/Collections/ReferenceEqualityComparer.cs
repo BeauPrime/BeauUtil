@@ -62,11 +62,13 @@ namespace BeauUtil
             return -1;
         }
 
-        bool IEqualityComparer.Equals(object x, object y) {
+        bool IEqualityComparer.Equals(object x, object y)
+        {
             return object.Equals(x, y);
         }
 
-        int IEqualityComparer.GetHashCode(object obj) {
+        int IEqualityComparer.GetHashCode(object obj)
+        {
             return RuntimeHelpers.GetHashCode(obj);
         }
     }

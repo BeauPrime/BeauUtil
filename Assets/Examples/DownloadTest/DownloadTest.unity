@@ -143,8 +143,14 @@ PrefabInstance:
     - target: {fileID: 8102891879599288184, guid: 6407a5e38aab65047872dddbd0f80f05,
         type: 3}
       propertyPath: BufferSize
-      value: 2048
+      value: 8192
       objectReference: {fileID: 0}
+    - target: {fileID: 8102891879599288184, guid: 6407a5e38aab65047872dddbd0f80f05,
+        type: 3}
+      propertyPath: AssetRef.m_Value
+      value: 
+      objectReference: {fileID: 11500000, guid: 5165259646e966f4eb21e4742c73e0ed,
+        type: 3}
     - target: {fileID: 8102891879599288185, guid: 6407a5e38aab65047872dddbd0f80f05,
         type: 3}
       propertyPath: m_RootOrder

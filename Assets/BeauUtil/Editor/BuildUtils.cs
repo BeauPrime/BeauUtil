@@ -25,7 +25,14 @@ namespace BeauUtil.Editor
     static public class BuildUtils
     {
         private const string DefinePrefix = "-define:";
-        static private readonly string[] DefineFiles = new string[] { "Assets/mcs.rsp", "Assets/us.rsp", "Assets/csc.rsp" };
+        static private readonly string[] DefineFiles = new string[]
+        {
+#if NET_4_6
+            "Assets/us.rsp", "Assets/csc.rsp"
+#else
+            "Assets/mcs.rsp", "Assets/us.rsp", "Assets/csc.rsp"
+#endif // NET_4_6
+        };
 
         static private string GetDefineString(string inDefines)
         {
@@ -74,6 +81,14 @@ namespace BeauUtil.Editor
         /// </summary>
         static public void ForceRecompile(string[] inDirectories = null)
         {
+#if UNITY_2019_3_OR_NEWER
+            if (inDirectories == null || inDirectories.Length == 0)
+            {
+                UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+                return;
+            }
+#endif // UNITY_2019_3_OR_NEWER
+
             HashSet<Assembly> affectedAssemblies = new HashSet<Assembly>();
             foreach (var file in AssetDBUtils.FindAssets<MonoScript>(null, inDirectories))
             {
@@ -89,7 +104,6 @@ namespace BeauUtil.Editor
             if (affectedAssemblies.Count > 0)
             {
                 EditorApplication.ExecuteMenuItem("Assets/Open C# Project");
-                // TODO(Beau): Replace with a more stable method for syncing C# projects
             }
         }
 

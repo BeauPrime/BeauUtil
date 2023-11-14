@@ -104,8 +104,9 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public Result Step<T>(Queue<T> inObjects, ElementOperation<T> inProcessor)
         {
-            if (inObjects.TryDequeue(out T obj))
+            if (inObjects.Count > 0)
             {
+                T obj = inObjects.Dequeue();
                 inProcessor(obj);
                 return Result.Processed;
             }
@@ -132,8 +133,9 @@ namespace BeauUtil
                 }
             }
 
-            if (inObjects.TryDequeue(out T obj))
+            if (inObjects.Count > 0)
             {
+                T obj = inObjects.Dequeue();
                 ioState.Sequence = inProcessor(obj);
                 return Result.Processed;
             }
@@ -203,8 +205,9 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public Result Flush<T>(Queue<T> inObjects, ElementOperation<T> inProcessor)
         {
-            while (inObjects.TryDequeue(out T obj))
+            while (inObjects.Count > 0)
             {
+                T obj = inObjects.Dequeue();
                 inProcessor(obj);
             }
             return Result.OutOfData;

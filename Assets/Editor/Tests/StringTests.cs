@@ -4,6 +4,10 @@ using NUnit.Framework;
 using UnityEngine;
 using BeauUtil.Variants;
 using System.IO;
+using UnityEditor;
+using BeauUtil;
+
+//[assembly: StringHashReverseCacheInitialCapacity(2048, 2048)]
 
 namespace BeauUtil.UnitTests
 {
@@ -201,6 +205,7 @@ namespace BeauUtil.UnitTests
                 Debug.LogWarningFormat("[StringTests] {0} collisions with hash size 32", collisionCount);
             }
 
+            StringHashing.DumpReverseLookupStats();
             StringHashing.SetOnCollision(null);
         }
 
@@ -224,8 +229,9 @@ namespace BeauUtil.UnitTests
             }
 
             if (collisionCount > 0)
-                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 16", collisionCount);
+                Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 64", collisionCount);
 
+            StringHashing.DumpReverseLookupStats();
             StringHashing.SetOnCollision(null);
         }
 

@@ -39,7 +39,7 @@ namespace BeauUtil
         /// Reference to the object.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe ref T Ref()
+        public unsafe ref T AsRef()
         {
             return ref *Ptr;
         }

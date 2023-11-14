@@ -1,3 +1,4 @@
+using BeauUtil;
 using BeauUtil.Debugger;
 using UnityEngine;
 
@@ -14,6 +15,9 @@ public class DebugExample : MonoBehaviour
         subMenu.AddText("Useless Text", () => Time.timeSinceLevelLoad.ToString());
         subMenu.SetMinWidth(200);
 
+        SceneHelper.LoadingState loadingState = SceneHelper.GetLoadingState(SceneHelper.ActiveScene());
+        string guid = SceneHelper.GetGUID(SceneHelper.ActiveScene());
+
         DMInfo rootMenu = new DMInfo("Debug", 8);
         rootMenu
             .AddSubmenu(subMenu)
@@ -25,7 +29,8 @@ public class DebugExample : MonoBehaviour
             .AddDivider()
             .AddSlider("Slide X", () => slide.position.x, (f) => slide.position = new Vector3(f, slide.position.y, slide.position.z), -10, 10, 0, "{0:0.0}", () => m_AdvancedLogging)
             .AddDivider()
-            .AddText("Frame Count", () => Time.frameCount.ToString());
+            .AddText("Frame Count", () => Time.frameCount.ToString())
+            .AddText("Scene GUID", () => guid);
 
         menuUI.GotoMenu(rootMenu);
     }
