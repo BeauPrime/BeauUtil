@@ -22,6 +22,8 @@ namespace BeauUtil
     {
         static private readonly Type s_UnityObjectType = typeof(UnityEngine.Object);
 
+        static private ReferenceEqualityComparer<string> s_InternedStringRefComparer;
+
         /// <summary>
         /// Retrieves the default equality comparer for the given type.
         /// For UnityEngine.Object-derived types this is more efficient than the standard comparer.
@@ -42,7 +44,11 @@ namespace BeauUtil
             if (comparer == null)
             {
                 Type type = typeof(T);
-                if (type == typeof(string))
+                if (type.IsPrimitive)
+                {
+                    comparer = EqualityComparer<T>.Default;
+                }
+                else if (type == typeof(string))
                 {
                     comparer = (IEqualityComparer<T>) StringComparer.Ordinal;
                 }
@@ -81,7 +87,11 @@ namespace BeauUtil
             if (comparer == null)
             {
                 Type type = typeof(T);
-                if (type == typeof(string))
+                if (type.IsPrimitive)
+                {
+                    comparer = Comparer<T>.Default;
+                }
+                else if (type == typeof(string))
                 {
                     comparer = (IComparer<T>) StringComparer.Ordinal;
                 }
@@ -104,6 +114,15 @@ namespace BeauUtil
                 Cache<T>.DefaultSort = comparer;
             }
             return comparer;
+        }
+
+        /// <summary>
+        /// Retrieves a reference equality comparer for directly comparing
+        /// strings by reference. Useful only for interned strings.
+        /// </summary>
+        static public ReferenceEqualityComparer<string> StringReferenceEquals
+        {
+            get { return s_InternedStringRefComparer ?? (s_InternedStringRefComparer = new ReferenceEqualityComparer<string>()); }
         }
 
         /// <summary>

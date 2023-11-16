@@ -11,6 +11,17 @@
 #define EXPANDED_REFS
 #endif // CSHARP_7_3_OR_NEWER
 
+// NOTE: Since MethodInvocationHelper instances
+// are largely cached for the lifetime of the application,
+// using function pointers on a JIT platform is not recommended.
+// We could end up with pointers to unoptimized code
+// if JIT compilation decides to recompile the function.
+// Therefore, only enable this optimization on AOT platforms.
+
+#if UNITY_2021_2_OR_NEWER && ENABLE_IL2CPP
+#define SPECIALIZE_WITH_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -80,10 +91,14 @@ namespace BeauUtil
         private delegate void Void_String_Delegate(string p0); //
         private delegate bool Bool_String_Delegate(string p0); //
 
-        private struct SpecializationInfo
+        private unsafe struct SpecializationInfo
         {
             public short Type;
+#if SPECIALIZE_WITH_FUNCTION_POINTERS
+            public void* FunctionPtr;
+#else
             public Delegate Delegate;
+#endif // SPECIALIZE_WITH_FUNCTION_POINTERS
             public NonBoxedValue DefaultArgument;
         }
 
@@ -113,7 +128,7 @@ namespace BeauUtil
 
             MethodSignature signature = new MethodSignature(inMethod);
             Signature = signature;
-            
+
             int paramCount = signature.Parameters.Length;
             ParameterInfo firstParam = paramCount > 0 ? signature.Parameters[0] : null;
             ParameterInfo firstUserParam = firstParam;
@@ -148,7 +163,14 @@ namespace BeauUtil
                     m_Unspecialized.DefaultArguments = Array.Empty<object>();
 
                     m_Specialized.Type = (short) specializationIndex;
+#if SPECIALIZE_WITH_FUNCTION_POINTERS
+                    unsafe
+                    {
+                        m_Specialized.FunctionPtr = (void*) inMethod.MethodHandle.GetFunctionPointer();
+                    }
+#else
                     m_Specialized.Delegate = inMethod.CreateDelegate(SpecializationTable[specializationIndex]);
+#endif // SPECIALIZE_WITH_FUNCTION_POINTERS
                     if (firstParam != null && firstParam.IsOptional)
                     {
                         m_Specialized.DefaultArgument = new NonBoxedValue(firstParam.DefaultValue);
@@ -169,7 +191,7 @@ namespace BeauUtil
             bool hasDefaults = false;
 
             int reqParams = 0;
-            for(int i = m_Unspecialized.ContextOffset; i < paramCount; i++)
+            for (int i = m_Unspecialized.ContextOffset; i < paramCount; i++)
             {
                 ParameterInfo p = signature.Parameters[i];
 
@@ -215,13 +237,13 @@ namespace BeauUtil
                     outReturnValue = null;
                     return false;
                 }
-                
+
                 return TrySpecializedInvoke(inTarget, firstArg, 1, inContext, out outReturnValue);
             }
 
             TempList8<StringSlice> split = default(TempList8<StringSlice>);
             int count = inArgumentsAsString.Split(StringUtils.ArgsList.Splitter.UnescapedInstance, StringSplitOptions.None, ref split);
-            
+
             if (!ValidateArgumentCount(count))
             {
                 outReturnValue = null;
@@ -241,13 +263,13 @@ namespace BeauUtil
                     outReturnValue = null;
                     return false;
                 }
-                
+
                 return TrySpecializedInvoke(inTarget, firstArg, 1, inContext, out outReturnValue);
             }
             else
             {
                 int idx = m_Unspecialized.ContextOffset;
-                for(int i = 0; i < count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     NonBoxedValue arg;
                     if (!inConverter.TryConvertTo(split[i], Signature.Parameters[idx].ParameterType, inContext, out arg))
@@ -275,6 +297,105 @@ namespace BeauUtil
                     inArgument = m_Specialized.DefaultArgument;
                 }
 
+#if SPECIALIZE_WITH_FUNCTION_POINTERS
+                unsafe
+                {
+                    void* func = m_Specialized.FunctionPtr;
+
+                    switch (specializedType)
+                    {
+                        case 0:
+                            ((delegate*<void>) func)();
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 1:
+                            outReturnValue = ((delegate*<bool>) func)();
+                            return true;
+
+                        case 2:
+                            outReturnValue = ((delegate*<int>) func)();
+                            return true;
+
+                        case 3:
+                            outReturnValue = ((delegate*<float>) func)();
+                            return true;
+
+                        case 4:
+                            outReturnValue = ((delegate*<StringHash32>) func)();
+                            return true;
+
+                        case 5:
+                            outReturnValue = new NonBoxedValue(((delegate*<IEnumerator>) func)());
+                            return true;
+
+                        case 6:
+                            ((delegate*<bool, void>) func)(inArgument.AsBool());
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 7:
+                            ((delegate*<int, void>) func)(inArgument.AsInt32());
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 8:
+                            ((delegate*<float, void>) func)(inArgument.AsFloat());
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 9:
+                            outReturnValue = new NonBoxedValue(((delegate*<float, IEnumerator>) func)(inArgument.AsFloat()));
+                            return true;
+
+                        case 10:
+                            ((delegate*<StringHash32, void>) func)(inArgument.AsStringHash());
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 11:
+                            outReturnValue = ((delegate*<StringHash32, bool>) func)(inArgument.AsStringHash());
+                            return true;
+
+                        case 12:
+                            outReturnValue = ((delegate*<StringHash32, int>) func)(inArgument.AsStringHash());
+                            return true;
+
+                        case 13:
+                            outReturnValue = ((delegate*<StringHash32, float>) func)(inArgument.AsStringHash());
+                            return true;
+
+                        case 14:
+                            outReturnValue = ((delegate*<StringHash32, StringHash32>) func)(inArgument.AsStringHash());
+                            return true;
+
+                        case 15:
+                            outReturnValue = new NonBoxedValue(((delegate*<StringHash32, IEnumerator>) func)(inArgument.AsStringHash()));
+                            return true;
+
+                        case 16:
+                            ((delegate*<StringSlice, void>) func)(inArgument.AsStringSlice());
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 17:
+                            outReturnValue = ((delegate*<StringSlice, bool>) func)(inArgument.AsStringSlice());
+                            return true;
+
+                        case 18:
+                            ((delegate*<string, void>) func)(inArgument.AsString());
+                            outReturnValue = default(NonBoxedValue);
+                            return true;
+
+                        case 19:
+                            outReturnValue = ((delegate*<string, bool>) func)(inArgument.AsString());
+                            return true;
+
+                        default:
+                            throw new InvalidOperationException("Unknown specialization index " + specializedType);
+                    }
+                }
+#else
                 Delegate func = m_Specialized.Delegate;
 
                 switch(specializedType)
@@ -369,6 +490,8 @@ namespace BeauUtil
                     default:
                         throw new InvalidOperationException("Unknown specialization index " + specializedType);
                 }
+
+#endif // SPECIALIZE_WITH_FUNCTION_POINTERS
             }
 
             if (inPassedArgumentCount > 0)
@@ -381,9 +504,9 @@ namespace BeauUtil
 
         private bool DoUnspecializedInvoke(object inTarget, int inDefaultOffset, object inContext, out NonBoxedValue outReturnValue)
         {
-            for(int i = inDefaultOffset, len = m_Unspecialized.DefaultArguments.Length; i < len; i++)
+            for (int i = inDefaultOffset, len = m_Unspecialized.DefaultArguments.Length; i < len; i++)
                 m_Unspecialized.Arguments[i] = m_Unspecialized.DefaultArguments[i];
-            
+
             if (m_Unspecialized.ContextOffset > 0)
                 m_Unspecialized.Arguments[0] = m_Unspecialized.BindContext.Bind(inContext);
 
@@ -431,7 +554,7 @@ namespace BeauUtil
         static MethodInvocationHelper()
         {
             SpecializationHashTable = new uint[SpecializationTable.Length];
-            for(int i = 0; i < SpecializationTable.Length; i++)
+            for (int i = 0; i < SpecializationTable.Length; i++)
             {
                 SpecializationHashTable[i] = MethodSignature.GetDelegateId(SpecializationTable[i]);
             }

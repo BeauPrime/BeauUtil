@@ -475,6 +475,7 @@ namespace BeauUtil
         #region Pinning
 
         static private FieldInfo s_StringBuilderChunkField;
+        static private FieldInfo s_StringBuilderChunkPreviousField;
 
         static private class PinFieldCache<T>
         {
@@ -627,8 +628,12 @@ namespace BeauUtil
             if (inString == null)
                 throw new ArgumentNullException("inString", "Cannot pin null StringBuilder");
 
-            if (inString.Length > 8000)
-                throw new ArgumentException("inString", "Cannot pin a StringBuilder with more than one chunk");
+            if (s_StringBuilderChunkPreviousField == null)
+            {
+                s_StringBuilderChunkPreviousField = typeof(StringBuilder).GetField("m_ChunkPrevious", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (s_StringBuilderChunkPreviousField == null)
+                    throw new InvalidOperationException("StringBuilder pin not supported");
+            }
 
             if (s_StringBuilderChunkField == null)
             {
@@ -636,6 +641,9 @@ namespace BeauUtil
                 if (s_StringBuilderChunkField == null)
                     throw new InvalidOperationException("StringBuilder pin not supported");
             }
+
+            if (s_StringBuilderChunkPreviousField.GetValue(inString) != null)
+                throw new ArgumentException("inString", "Cannot pin a StringBuilder with more than one chunk");
 
             char[] chunkChars = (char[]) s_StringBuilderChunkField.GetValue(inString);
             return new PinnedArrayHandle<char>(chunkChars);
@@ -734,6 +742,17 @@ namespace BeauUtil
         /// </summary>
         static public void DumpMemory(void* inBuffer, int inSize, StringBuilder ioStringBuilder, char inSeparator = (char) 0, int inSeparatorInterval = 0)
         {
+            int stringLength = inSize * 2;
+
+            int separatorCount = 0;
+            if (inSeparatorInterval > 0)
+            {
+                separatorCount = (inSize - 1) / inSeparatorInterval;
+                stringLength += separatorCount;
+            }
+
+            ioStringBuilder.Reserve(stringLength);
+
             byte* bytes = (byte*) inBuffer;
             byte val;
             for (int i = 0; i < inSize; i++)
@@ -752,6 +771,17 @@ namespace BeauUtil
         /// </summary>
         static public void DumpMemory(void* inBuffer, long inSize, StringBuilder ioStringBuilder, char inSeparator = (char) 0, int inSeparatorInterval = 0)
         {
+            long stringLength = inSize * 2;
+
+            long separatorCount = 0;
+            if (inSeparatorInterval > 0)
+            {
+                separatorCount = (inSize - 1) / inSeparatorInterval;
+                stringLength += separatorCount;
+            }
+
+            ioStringBuilder.Reserve((int) stringLength);
+
             byte* bytes = (byte*) inBuffer;
             byte val;
             for (long i = 0; i < inSize; i++)
@@ -806,6 +836,10 @@ namespace BeauUtil
 
         #region Hashing
 
+        // Switching from FNV-1a to Murmur2
+        // A hashing function that can operate on 32 and 64-bit chunks at a time
+        // Observed: 30% performance improvement on TransformHelper.GetStateHash()
+
         /// <summary>
         /// Hashes the given data.
         /// </summary>
@@ -814,16 +848,52 @@ namespace BeauUtil
             if (inLength <= 0)
                 return 0;
 
-            // fnv-1a
-            uint hash = 2166136261;
+            // murmur2
+            const uint m = 0x5bd1e995;
+            const int r = 24;
+
+            uint h = 2166136261 ^ (uint) inLength;
 
             byte* ptr = (byte*) inData;
-            while (inLength-- > 0)
+            while(inLength >= 4)
             {
-                hash = (hash ^ *ptr++) * 16777619;
+                uint k = *((uint*)ptr);
+
+                k *= m;
+                k ^= k >> r;
+                k *= m;
+
+                h *= m;
+                h ^= k;
+
+                ptr += 4;
+                inLength -= 4;
             }
 
-            return hash;
+            switch (inLength)
+            {
+                case 3:
+                    h ^= (uint) ptr[2] << 16;
+                    h ^= (uint) ptr[1] << 8;
+                    h ^= (uint) ptr[0];
+                    h *= m;
+                    break;
+                case 2:
+                    h ^= (uint) ptr[1] << 8;
+                    h ^= (uint) ptr[0];
+                    h *= m;
+                    break;
+                case 1:
+                    h ^= (uint) ptr[0];
+                    h *= m;
+                    break;
+            }
+
+            h ^= h >> 13;
+            h *= m;
+            h ^= h >> 15;
+
+            return h;
         }
 
         /// <summary>
@@ -834,16 +904,93 @@ namespace BeauUtil
             if (inLength <= 0)
                 return 0;
 
-            // fnv-1a
-            ulong hash = 14695981039346656037;
+            // murmur2 64a
+            const ulong m = 0xc6a4a7935bd1e995;
+            const int r = 47;
 
-            byte* ptr = (byte*) inData;
-            while (inLength-- > 0)
+            ulong h = 14695981039346656037 ^ (uint) inLength;
+
+            ulong* ptr = (ulong*) inData;
+            ulong* end = ptr + (inLength / 8);
+
+            while (ptr != end)
             {
-                hash = (hash ^ *ptr++) * 1099511628211;
+                ulong k = *ptr++;
+
+                k *= m;
+                k ^= k >> r;
+                k *= m;
+
+                h *= m;
+                h ^= k;
             }
 
-            return hash;
+            byte* ptr2 = (byte*) ptr;
+
+            switch (inLength & 7)
+            {
+                case 7:
+                    h ^= (ulong) ptr[6] << 48;
+                    h ^= (ulong) ptr[5] << 40;
+                    h ^= (ulong) ptr[4] << 32;
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 6:
+                    h ^= (ulong) ptr[5] << 40;
+                    h ^= (ulong) ptr[4] << 32;
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 5:
+                    h ^= (ulong) ptr[4] << 32;
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 4:
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 3:
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 2:
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 1:
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+            }
+
+            h ^= h >> r;
+            h *= m;
+            h ^= h >> r;
+
+            return h;
         }
 
         /// <summary>
@@ -854,16 +1001,52 @@ namespace BeauUtil
             if (inLength <= 0)
                 return 0;
 
-            // fnv-1a
-            uint hash = inInitial;
+            // murmur2
+            const uint m = 0x5bd1e995;
+            const int r = 24;
+
+            uint h = inInitial ^ (uint) inLength;
 
             byte* ptr = (byte*) inData;
-            while (inLength-- > 0)
+            while (inLength >= 4)
             {
-                hash = (hash ^ *ptr++) * 16777619;
+                uint k = *((uint*) ptr);
+
+                k *= m;
+                k ^= k >> r;
+                k *= m;
+
+                h *= m;
+                h ^= k;
+
+                ptr += 4;
+                inLength -= 4;
             }
 
-            return hash;
+            switch (inLength)
+            {
+                case 3:
+                    h ^= (uint) ptr[2] << 16;
+                    h ^= (uint) ptr[1] << 8;
+                    h ^= (uint) ptr[0];
+                    h *= m;
+                    break;
+                case 2:
+                    h ^= (uint) ptr[1] << 8;
+                    h ^= (uint) ptr[0];
+                    h *= m;
+                    break;
+                case 1:
+                    h ^= (uint) ptr[0];
+                    h *= m;
+                    break;
+            }
+
+            h ^= h >> 13;
+            h *= m;
+            h ^= h >> 15;
+
+            return h;
         }
 
         /// <summary>
@@ -874,16 +1057,93 @@ namespace BeauUtil
             if (inLength <= 0)
                 return 0;
 
-            // fnv-1a
-            ulong hash = 14695981039346656037;
+            // murmur2 64a
+            const ulong m = 0xc6a4a7935bd1e995;
+            const int r = 47;
 
-            byte* ptr = (byte*) inData;
-            while (inLength-- > 0)
+            ulong h = inInitial ^ (uint) inLength;
+
+            ulong* ptr = (ulong*) inData;
+            ulong* end = ptr + (inLength / 8);
+
+            while (ptr != end)
             {
-                hash = (hash ^ *ptr++) * 1099511628211;
+                ulong k = *ptr++;
+
+                k *= m;
+                k ^= k >> r;
+                k *= m;
+
+                h *= m;
+                h ^= k;
             }
 
-            return hash;
+            byte* ptr2 = (byte*) ptr;
+
+            switch (inLength & 7)
+            {
+                case 7:
+                    h ^= (ulong) ptr[6] << 48;
+                    h ^= (ulong) ptr[5] << 40;
+                    h ^= (ulong) ptr[4] << 32;
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 6:
+                    h ^= (ulong) ptr[5] << 40;
+                    h ^= (ulong) ptr[4] << 32;
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 5:
+                    h ^= (ulong) ptr[4] << 32;
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 4:
+                    h ^= (ulong) ptr[3] << 24;
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 3:
+                    h ^= (ulong) ptr[2] << 16;
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 2:
+                    h ^= (ulong) ptr[1] << 8;
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+
+                case 1:
+                    h ^= (ulong) ptr[0];
+                    h *= m;
+                    break;
+            }
+
+            h ^= h >> r;
+            h *= m;
+            h ^= h >> r;
+
+            return h;
         }
 
 #if UNMANAGED_CONSTRAINT
@@ -962,12 +1222,47 @@ namespace BeauUtil
 
         /// <summary>
         /// Reads a value of the given type from the given byte buffer.
+        /// Note that this does NOT check for out of bounds reads.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T ReadUnchecked<T>(byte** ioBufferPtr)
+            where T : unmanaged
+        {
+            int readSize = sizeof(T);
+
+            T val = default(T);
+            if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
+            {
+                val = FastReinterpret<byte, T>(*ioBufferPtr);
+            }
+            else
+            {
+                Copy(*ioBufferPtr, readSize, &val, readSize);
+            }
+
+            *ioBufferPtr += readSize;
+            return val;
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Read<T>(ref T ioValue, byte** ioBufferPtr, int* ioBytesRemaining)
             where T : unmanaged
         {
             ioValue = Read<T>(ioBufferPtr, ioBytesRemaining);
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
+        /// Note that this does NOT check for out of bounds reads.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void ReadUnchecked<T>(ref T ioValue, byte** ioBufferPtr)
+            where T : unmanaged
+        {
+            ioValue = ReadUnchecked<T>(ioBufferPtr);
         }
 
         /// <summary>
@@ -1000,12 +1295,47 @@ namespace BeauUtil
 
         /// <summary>
         /// Reads a value of the given type from the given byte buffer.
+        /// Note that this does NOT check for out of bounds reads.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T ReadUnchecked<T>(ref byte* ioBufferPtr)
+            where T : unmanaged
+        {
+            int readSize = sizeof(T);
+
+            T val = default(T);
+            if ((((ulong) ioBufferPtr) % AlignOf<T>()) == 0)
+            {
+                val = FastReinterpret<byte, T>(ioBufferPtr);
+            }
+            else
+            {
+                Copy(ioBufferPtr, readSize, &val, readSize);
+            }
+
+            ioBufferPtr += readSize;
+            return val;
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Read<T>(ref T ioValue, ref byte* ioBufferPtr, ref int ioBytesRemaining)
             where T : unmanaged
         {
             ioValue = Read<T>(ref ioBufferPtr, ref ioBytesRemaining);
+        }
+
+        /// <summary>
+        /// Reads a value of the given type from the given byte buffer.
+        /// Note that this does NOT check for out of bounds reads.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void ReadUnchecked<T>(ref T ioValue, ref byte* ioBufferPtr)
+            where T : unmanaged
+        {
+            ioValue = ReadUnchecked<T>(ref ioBufferPtr);
         }
 
         /// <summary>

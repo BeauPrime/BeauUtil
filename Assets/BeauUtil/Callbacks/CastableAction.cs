@@ -7,8 +7,13 @@
  * Purpose: Callback that supports three different signature types.
  */
 
+#if UNITY_2021_2_OR_NEWER
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
@@ -22,40 +27,58 @@ namespace BeauUtil
     public struct CastableAction<TInput> : IEquatable<CastableAction<TInput>>, IEquatable<Action>, IEquatable<Action<TInput>>, IEquatable<RefAction<TInput>>, IEquatable<MulticastDelegate>, IDisposable
     {
         private Delegate m_CallbackObject;
+#if SUPPORTS_FUNCTION_POINTERS
+        private unsafe delegate*<Delegate, TInput, void> m_CastedArgInvoker;
+        private unsafe void* m_CallbackPtr;
+#else
         private CastedAction<TInput> m_CastedArgInvoker;
+#endif // SUPPORTS_FUNCTION_POINTERS
         private CallbackMode m_Mode;
 
-        private CastableAction(Action inAction)
+        private unsafe CastableAction(Action inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
-            
+
             m_Mode = CallbackMode.NoArg;
+#if SUPPORTS_FUNCTION_POINTERS
+            m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
             m_CastedArgInvoker = null;
             m_CallbackObject = inAction;
         }
 
-        private CastableAction(Action<TInput> inAction)
+        private unsafe CastableAction(Action<TInput> inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
 
             m_Mode = CallbackMode.NativeArg;
+#if SUPPORTS_FUNCTION_POINTERS
+            m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
             m_CallbackObject = inAction;
             m_CastedArgInvoker = null;
         }
 
-        private CastableAction(RefAction<TInput> inAction)
+        private unsafe CastableAction(RefAction<TInput> inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
 
             m_Mode = CallbackMode.NativeArgRef;
+#if SUPPORTS_FUNCTION_POINTERS
+            m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
             m_CallbackObject = inAction;
             m_CastedArgInvoker = null;
         }
 
-        private CastableAction(MulticastDelegate inCastedDelegate, CastedAction<TInput> inCastedInvoker)
+#if SUPPORTS_FUNCTION_POINTERS
+        private unsafe CastableAction(MulticastDelegate inCastedDelegate, delegate*<Delegate, TInput, void> inCastedInvoker)
+#else
+        private unsafe CastableAction(MulticastDelegate inCastedDelegate, CastedAction<TInput> inCastedInvoker)
+#endif // SUPPORTS_FUNCTION_POINTERS
         {
             if (inCastedDelegate == null)
                 throw new ArgumentNullException("inCastedDelegate");
@@ -63,12 +86,51 @@ namespace BeauUtil
                 throw new ArgumentNullException("inCastedInvoker");
 
             m_Mode = CallbackMode.CastedArg;
+#if SUPPORTS_FUNCTION_POINTERS
+            m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
             m_CallbackObject = inCastedDelegate;
             m_CastedArgInvoker = inCastedInvoker;
         }
 
+#if SUPPORTS_FUNCTION_POINTERS
+        private unsafe CastableAction(delegate*<void> inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inPointer");
+
+            m_Mode = CallbackMode.NoArg_Ptr;
+            m_CallbackPtr = inPointer;
+            m_CallbackObject = null;
+            m_CastedArgInvoker = null;
+        }
+
+        private unsafe CastableAction(delegate*<TInput, void> inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inPointer");
+
+            m_Mode = CallbackMode.NativeArg_Ptr;
+            m_CallbackPtr = inPointer;
+            m_CallbackObject = null;
+            m_CastedArgInvoker = null;
+        }
+
+        private unsafe CastableAction(delegate*<ref TInput, void> inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inPointer");
+
+            m_Mode = CallbackMode.NativeArgRef_Ptr;
+            m_CallbackPtr = inPointer;
+            m_CallbackObject = null;
+            m_CastedArgInvoker = null;
+        }
+#endif // SUPPORTS_FUNCTION_POINTERS
+
         public bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Mode == CallbackMode.Unassigned; }
         }
 
@@ -79,13 +141,13 @@ namespace BeauUtil
 
         public MethodInfo Method
         {
-            get { return m_CallbackObject?.Method;}
+            get { return m_CallbackObject?.Method; }
         }
 
         [Il2CppSetOption(Option.NullChecks, false)]
         public void Invoke(TInput inArg)
         {
-            switch(m_Mode)
+            switch (m_Mode)
             {
                 case CallbackMode.NoArg:
                     ((Action) m_CallbackObject)();
@@ -100,8 +162,33 @@ namespace BeauUtil
                     break;
 
                 case CallbackMode.CastedArg:
-                    m_CastedArgInvoker(m_CallbackObject, inArg);
+                    unsafe
+                    {
+                        m_CastedArgInvoker(m_CallbackObject, inArg);
+                    }
                     break;
+
+#if SUPPORTS_FUNCTION_POINTERS
+                case CallbackMode.NoArg_Ptr:
+                    unsafe
+                    {
+                        ((delegate*<void>) m_CallbackPtr)();
+                    }
+                    break;
+                case CallbackMode.NativeArg_Ptr:
+                    unsafe
+                    {
+                        ((delegate*<TInput, void>) m_CallbackPtr)(inArg);
+                    }
+                    break;
+
+                case CallbackMode.NativeArgRef_Ptr:
+                    unsafe
+                    {
+                        ((delegate*<ref TInput, void>) m_CallbackPtr)(ref inArg);
+                    }
+                    break;
+#endif // SUPPORTS_FUNCTION_POINTERS
 
                 case CallbackMode.Unassigned:
                 default:
@@ -112,7 +199,7 @@ namespace BeauUtil
         [Il2CppSetOption(Option.NullChecks, false)]
         public void Invoke(ref TInput inArg)
         {
-            switch(m_Mode)
+            switch (m_Mode)
             {
                 case CallbackMode.NoArg:
                     ((Action) m_CallbackObject)();
@@ -127,25 +214,56 @@ namespace BeauUtil
                     break;
 
                 case CallbackMode.CastedArg:
-                    m_CastedArgInvoker(m_CallbackObject, inArg);
+                    unsafe
+                    {
+                        m_CastedArgInvoker(m_CallbackObject, inArg);
+                    }
                     break;
+
+#if SUPPORTS_FUNCTION_POINTERS
+                case CallbackMode.NoArg_Ptr:
+                    unsafe
+                    {
+                        ((delegate*<void>) m_CallbackPtr)();
+                    }
+                    break;
+                case CallbackMode.NativeArg_Ptr:
+                    unsafe
+                    {
+                        ((delegate*<TInput, void>) m_CallbackPtr)(inArg);
+                    }
+                    break;
+
+                case CallbackMode.NativeArgRef_Ptr:
+                    unsafe
+                    {
+                        ((delegate*<ref TInput, void>) m_CallbackPtr)(ref inArg);
+                    }
+                    break;
+#endif // SUPPORTS_FUNCTION_POINTERS
 
                 case CallbackMode.Unassigned:
                 default:
                     throw new InvalidOperationException("Callback has not been initialized, or has been disposed");
             }
         }
-    
+
         #region Set
 
         public void Set(Action inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
-            
+
             m_Mode = CallbackMode.NoArg;
-            m_CastedArgInvoker = null;
-            m_CallbackObject = inAction;
+            unsafe
+            {
+                m_CastedArgInvoker = null;
+                m_CallbackObject = inAction;
+#if SUPPORTS_FUNCTION_POINTERS
+                m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
         }
 
         public void Set(Action<TInput> inAction)
@@ -155,7 +273,13 @@ namespace BeauUtil
 
             m_Mode = CallbackMode.NativeArg;
             m_CallbackObject = inAction;
-            m_CastedArgInvoker = null;
+            unsafe
+            {
+                m_CastedArgInvoker = null;
+#if SUPPORTS_FUNCTION_POINTERS
+                m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
         }
 
         public void Set(RefAction<TInput> inAction)
@@ -165,7 +289,13 @@ namespace BeauUtil
 
             m_Mode = CallbackMode.NativeArgRef;
             m_CallbackObject = inAction;
-            m_CastedArgInvoker = null;
+            unsafe
+            {
+                m_CastedArgInvoker = null;
+#if SUPPORTS_FUNCTION_POINTERS
+                m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
         }
 
         public void Set<U>(Action<U> inAction)
@@ -175,8 +305,51 @@ namespace BeauUtil
 
             m_Mode = CallbackMode.CastedArg;
             m_CallbackObject = inAction;
-            m_CastedArgInvoker = CastedActionInvoker<TInput, U>.Invoker;
+            unsafe
+            {
+#if SUPPORTS_FUNCTION_POINTERS
+                m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
+                m_CastedArgInvoker = CastedActionInvoker<TInput, U>.Invoker;
+            }
         }
+
+#if SUPPORTS_FUNCTION_POINTERS
+
+        public unsafe void Set(delegate*<void> inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inPointer");
+
+            m_Mode = CallbackMode.CastedArg;
+            m_CallbackObject = null;
+            m_CallbackPtr = inPointer;
+            m_CastedArgInvoker = null;
+        }
+
+        public unsafe void Set(delegate*<TInput, void> inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inPointer");
+
+            m_Mode = CallbackMode.CastedArg;
+            m_CallbackObject = null;
+            m_CallbackPtr = inPointer;
+            m_CastedArgInvoker = null;
+        }
+
+        public unsafe void Set(delegate*<ref TInput, void> inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inPointer");
+
+            m_Mode = CallbackMode.CastedArg;
+            m_CallbackObject = null;
+            m_CallbackPtr = inPointer;
+            m_CastedArgInvoker = null;
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
 
         #endregion // Set
 
@@ -186,7 +359,13 @@ namespace BeauUtil
         {
             m_Mode = CallbackMode.Unassigned;
             m_CallbackObject = null;
-            m_CastedArgInvoker = null;
+            unsafe
+            {
+#if SUPPORTS_FUNCTION_POINTERS
+                m_CallbackPtr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
+                m_CastedArgInvoker = null;
+            }
         }
 
         #endregion // IDisposable
@@ -200,8 +379,15 @@ namespace BeauUtil
 
             if (m_Mode == CallbackMode.Unassigned)
                 return true;
-            
-            return m_CallbackObject == other.m_CallbackObject;
+
+            unsafe
+            {
+#if SUPPORTS_FUNCTION_POINTERS
+                return m_CallbackObject == other.m_CallbackObject && m_CallbackPtr == other.m_CallbackPtr;
+#else
+                return m_CallbackObject == other.m_CallbackObject;
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
         }
 
         public bool Equals(Action<TInput> other)
@@ -236,15 +422,55 @@ namespace BeauUtil
             return m_CallbackObject == ((Delegate) other);
         }
 
+#if SUPPORTS_FUNCTION_POINTERS
+
+        public unsafe bool Equals(delegate*<void> other)
+        {
+            if (other == null)
+                return m_Mode == CallbackMode.Unassigned;
+
+            return m_CallbackPtr == other;
+        }
+
+        public unsafe bool Equals(delegate*<TInput, void> other)
+        {
+            if (other == null)
+                return m_Mode == CallbackMode.Unassigned;
+
+            return m_CallbackPtr == other;
+        }
+
+        public unsafe bool Equals(delegate*<ref TInput, void> other)
+        {
+            if (other == null)
+                return m_Mode == CallbackMode.Unassigned;
+
+            return m_CallbackPtr == other;
+        }
+
+        public unsafe bool Equals(IntPtr other)
+        {
+            if (other == null)
+                return m_Mode == CallbackMode.Unassigned;
+
+            return m_CallbackPtr == other.ToPointer();
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
+
         #endregion // IEquatable
 
         #region Overrides
 
-        public override int GetHashCode()
+        public override unsafe int GetHashCode()
         {
             int hash = m_Mode.GetHashCode();
             if (m_CallbackObject != null)
                 hash = (hash << 5) ^ m_CallbackObject.GetHashCode();
+#if SUPPORTS_FUNCTION_POINTERS
+            if (m_CallbackPtr != null)
+                hash = (hash >> 3) ^ ((long) m_CallbackPtr).GetHashCode();
+#endif // SUPPORTS_FUNCTION_POINTERS
             return hash;
         }
 
@@ -268,7 +494,7 @@ namespace BeauUtil
         #endregion // Overrides
 
         #region Create
-    
+
         static public CastableAction<TInput> Create(Action inAction)
         {
             return new CastableAction<TInput>(inAction);
@@ -286,8 +512,30 @@ namespace BeauUtil
 
         static public CastableAction<TInput> Create<U>(Action<U> inAction)
         {
-            return new CastableAction<TInput>(inAction, CastedActionInvoker<TInput, U>.Invoker);
+            unsafe
+            {
+                return new CastableAction<TInput>(inAction, CastedActionInvoker<TInput, U>.Invoker);
+            }
         }
+
+#if SUPPORTS_FUNCTION_POINTERS
+
+        static public unsafe CastableAction<TInput> Create(delegate*<void> inPointer)
+        {
+            return new CastableAction<TInput>(inPointer);
+        }
+
+        static public unsafe CastableAction<TInput> Create(delegate*<TInput, void> inPointer)
+        {
+            return new CastableAction<TInput>(inPointer);
+        }
+
+        static public unsafe CastableAction<TInput> Create(delegate*<ref TInput, void> inPointer)
+        {
+            return new CastableAction<TInput>(inPointer);
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
 
         #endregion // Create
 
@@ -308,7 +556,25 @@ namespace BeauUtil
 
     public delegate void RefAction<T>(ref T inValue);
 
-    internal delegate void CastedAction<TInput>(Delegate inDelegate, TInput inInput);
+#if SUPPORTS_FUNCTION_POINTERS
+    internal static class CastedActionInvoker<TInput, TOutput>
+    {
+#if ENABLE_IL2CPP
+        static internal unsafe readonly delegate*<Delegate, TInput, void> Invoker = &CastedInvoke;
+#else
+        static internal unsafe delegate*<Delegate, TInput, void> Invoker
+        {
+            get { return &CastedInvoke; }
+        }
+#endif // ENABLE_IL2CPP
+
+        static private void CastedInvoke(Delegate inDelegate, TInput inInput)
+        {
+            ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));
+        }
+    }
+#else
+        internal delegate void CastedAction<TInput>(Delegate inDelegate, TInput inInput);
 
     internal static class CastedActionInvoker<TInput, TOutput>
     {
@@ -327,4 +593,5 @@ namespace BeauUtil
             ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));
         }
     }
+#endif // SUPPORTS_FUNCTION_POINTERS
 }

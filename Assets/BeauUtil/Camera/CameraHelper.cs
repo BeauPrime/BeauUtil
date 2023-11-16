@@ -7,6 +7,10 @@
  * Purpose: Camera utility methods.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 #if UNITY_2019_1_OR_NEWER
 #define USE_SRP
 #endif // UNITY_2019_1_OR_NEWER
@@ -14,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 #if USE_SRP
@@ -452,10 +457,40 @@ namespace BeauUtil
             ForEachCallback(s_PostRenderCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPostRender(c, s));
         }
 
-        #endif // USE_SRP
+#endif // USE_SRP
 
         #endregion // SRP
 
         #endregion // Callbacks
+
+        #region State Hash
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct CameraHashState
+        {
+            public Matrix4x4 MatrixA;
+            public Rect Rect;
+            public Vector2 ScreenSize;
+            public float OrthoSize;
+            public float FOV;
+            public Matrix4x4 MatrixB;
+        }
+
+        /// <summary>
+        /// Calculates a 64-bit hash of the camera's state.
+        /// </summary>
+        static public unsafe ulong GetStateHash(this Camera inCamera)
+        {
+            CameraHashState state;
+            state.MatrixA = inCamera.projectionMatrix;
+            state.MatrixB = inCamera.cameraToWorldMatrix;
+            state.Rect = inCamera.rect;
+            state.ScreenSize = new Vector2(Screen.width, Screen.height);
+            state.OrthoSize = inCamera.orthographic ? inCamera.orthographicSize : float.NaN;
+            state.FOV = inCamera.orthographic ? float.NaN : inCamera.fieldOfView;
+            return Unsafe.Hash64(&state, sizeof(CameraHashState));
+        }
+
+        #endregion // State Hash
     }
 }

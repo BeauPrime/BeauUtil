@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2022. Autumn Beauchesne. All rights reserved.
+ * Copyright (C) 2023. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
- * Date:    19 Oct 2022
+ * Date:    15 Nov 2023
  * 
- * File:    RoundedRectGraphic.cs
- * Purpose: Rounded rectangle graphic.
+ * File:    RegularPolyGraphic.cs
+ * Purpose: Regular polygon graphic.
 */
 
 using System;
@@ -17,24 +17,37 @@ namespace BeauUtil.UI
     /// <summary>
     /// Rounded rectangle graphic.
     /// </summary>
-    [AddComponentMenu("BeauUtil/Rendering/Rounded Rect Graphic")]
-    public class RoundedRectGraphic : ShapeGraphic
+    [AddComponentMenu("BeauUtil/Rendering/Regular Polygon Graphic")]
+    public class RegularPolyGraphic : ShapeGraphic
     {
-        [SerializeField] private float m_CornerRadius = 15;
-        [SerializeField, Range(0, 40)] private int m_Resolution = 0;
-        
+        [SerializeField] private int m_Sides = 6;
+        [SerializeField] private float m_RotationOffset = 0;
+
         [Space]
         [SerializeField] private bool m_Outline = false;
         [SerializeField, ShowIfField("m_Outline")] private float m_Thickness = 1;
 
-        public float CornerRadius
+        public float RotationOffset
         {
-            get { return m_CornerRadius; }
+            get { return m_RotationOffset; }
             set
             {
-                if (m_CornerRadius != value)
+                if (m_RotationOffset != value)
                 {
-                    m_CornerRadius = value;
+                    m_RotationOffset = value;
+                    SetVerticesDirty();
+                }
+            }
+        }
+
+        public int SideCount
+        {
+            get { return m_Sides; }
+            set
+            {
+                if (m_Sides != value)
+                {
+                    m_Sides = value;
                     SetVerticesDirty();
                 }
             }
@@ -72,14 +85,11 @@ namespace BeauUtil.UI
             vh.Clear();
 
             var r = GetPixelAdjustedRect();
-            int resolution = m_Resolution;
-            if (resolution <= 0)
-                resolution = CanvasMesh.EstimateCurveResolution(m_CornerRadius, this);
             
             if (m_Outline)
-                CanvasMesh.AddRoundedRectOutline(vh, r, m_CornerRadius, resolution, m_Thickness, color, m_TextureRegion.UVCenter);
+                CanvasMesh.AddRegularPolygonOutline(vh, r, m_Sides, m_RotationOffset, m_Thickness, color, m_TextureRegion.UVCenter);
             else
-                CanvasMesh.AddRoundedRect(vh, r, m_CornerRadius, resolution, color, m_TextureRegion.UVCenter);
+                CanvasMesh.AddRegularPolygon(vh, r, m_Sides, m_RotationOffset, color, m_TextureRegion.UVCenter);
         }
     }
 }

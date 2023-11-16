@@ -7,6 +7,10 @@
  * Purpose: Translation-rotation-scale storage.
 */
 
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
+#define DEVELOPMENT
+#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
+
 using System;
 using UnityEngine;
 
@@ -102,8 +106,10 @@ namespace BeauUtil
         /// </summary>
         public void CopyTo(Transform inTransform)
         {
+#if DEVELOPMENT
             if (inTransform == null)
                 throw new ArgumentNullException("inTransform");
+#endif // DEVELOPMENT
 
             inTransform.localPosition = Position;
             inTransform.localRotation = Rotation;
@@ -115,8 +121,10 @@ namespace BeauUtil
         /// </summary>
         public void CopyTo(Transform inTransform, Space inSpace)
         {
+#if DEVELOPMENT
             if (inTransform == null)
                 throw new ArgumentNullException("inTransform");
+#endif // DEVELOPMENT
 
             if (inSpace == Space.Self)
             {

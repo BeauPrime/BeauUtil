@@ -25,22 +25,22 @@ namespace BeauUtil
     #endif // USE_ALWAYS
     public abstract class RectTransformConstraint : UIBehaviour
     {
+        private const ulong DestroyedHash = ulong.MaxValue;
+
         protected struct CameraTrackGroup
         {
             public Camera Camera;
-            private TrackedCamera m_Tracker;
-            private int m_Version;
+            private ulong m_Hash;
 
             public bool IsActive()
             {
-                return m_Tracker;
+                return Camera;
             }
 
             public void Clear()
             {
                 Camera = null;
-                m_Tracker = null;
-                m_Version = -1;
+                m_Hash = 0;
             }
 
             public bool Replace(Camera inCamera, bool inbSync)
@@ -50,16 +50,14 @@ namespace BeauUtil
                     Camera = inCamera;
                     if (inCamera != null)
                     {
-                        m_Tracker = TrackedCamera.Get(Camera);
                         if (inbSync)
-                            UpdateVersion.Sync(m_Tracker, ref m_Version);
+                            m_Hash = Camera.GetStateHash();
                         else
-                            UpdateVersion.Reset(ref m_Version);
+                            m_Hash = 0;
                     }
                     else
                     {
-                        m_Tracker = null;
-                        m_Version = -2;
+                        m_Hash = DestroyedHash;
                     }
                 }
 
@@ -68,22 +66,21 @@ namespace BeauUtil
 
             public bool HasChanged()
             {
-                if (Camera.IsReferenceDestroyed() || m_Tracker.IsReferenceDestroyed())
+                if (Camera.IsReferenceDestroyed())
                 {
                     Camera = null;
-                    m_Tracker = null;
-                    m_Version = -1;
+                    m_Hash = 0;
                     return true;
                 }
 
-                if (!m_Tracker.IsReferenceNull())
+                if (!Camera.IsReferenceNull())
                 {
-                    return m_Tracker.HasChanged(ref m_Version);
+                    return StateHash.HasChanged(Camera.GetStateHash(), ref m_Hash);
                 }
 
-                if (m_Version == -2)
+                if (m_Hash == DestroyedHash)
                 {
-                    m_Version = -1;
+                    m_Hash = 0;
                     return true;
                 }
 
@@ -92,29 +89,27 @@ namespace BeauUtil
         
             public void Sync()
             {
-                if (m_Tracker)
-                    m_Tracker.Sync(ref m_Version);
-                else
-                    m_Version = -1;
+                if (Camera)
+                {
+                    m_Hash = Camera.GetStateHash();
+                }
             }
         }
 
         protected struct TransformTrackGroup
         {
             public Transform Transform;
-            private TrackedTransform m_Tracker;
-            private int m_Version;
+            private ulong m_Hash;
 
             public bool IsActive()
             {
-                return m_Tracker;
+                return Transform;
             }
 
             public void Clear()
             {
                 Transform = null;
-                m_Tracker = null;
-                m_Version = -1;
+                m_Hash = 0;
             }
 
             public bool Replace(Transform inTransform, bool inbSync)
@@ -124,17 +119,14 @@ namespace BeauUtil
                     Transform = inTransform;
                     if (inTransform != null)
                     {
-                        m_Tracker = TrackedTransform.Get(Transform);
                         if (inbSync)
-                            UpdateVersion.Sync(m_Tracker, ref m_Version);
+                            m_Hash = inTransform.GetStateHash();
                         else
-                            UpdateVersion.Reset(ref m_Version);
-
+                            m_Hash = 0;
                     }
                     else
                     {
-                        m_Tracker = null;
-                        m_Version = -2;
+                        m_Hash = DestroyedHash;
                     }
                 }
 
@@ -143,22 +135,21 @@ namespace BeauUtil
 
             public bool HasChanged()
             {
-                if (Transform.IsReferenceDestroyed() || m_Tracker.IsReferenceDestroyed())
+                if (Transform.IsReferenceDestroyed())
                 {
                     Transform = null;
-                    m_Tracker = null;
-                    m_Version = -1;
+                    m_Hash = 0;
                     return true;
                 }
 
-                if (!m_Tracker.IsReferenceNull())
+                if (!Transform.IsReferenceNull())
                 {
-                    return m_Tracker.HasChanged(ref m_Version);
+                    return StateHash.HasChanged(Transform.GetStateHash(), ref m_Hash);
                 }
 
-                if (m_Version == -2)
+                if (m_Hash == DestroyedHash)
                 {
-                    m_Version = -1;
+                    m_Hash = 0;
                     return true;
                 }
 
@@ -167,10 +158,10 @@ namespace BeauUtil
         
             public void Sync()
             {
-                if (m_Tracker)
-                    m_Tracker.Sync(ref m_Version);
+                if (Transform)
+                    m_Hash = Transform.GetStateHash();
                 else
-                    m_Version = -1;
+                    m_Hash = 0;
             }
         }
 
@@ -184,8 +175,7 @@ namespace BeauUtil
 
         protected void CacheTransform()
         {
-            if (ReferenceEquals(m_SelfRectTransform, null))
-                m_SelfRectTransform = (RectTransform) transform;
+            this.CacheComponent(ref m_SelfRectTransform);
         }
 
         protected override void Awake()

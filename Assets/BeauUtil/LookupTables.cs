@@ -7,6 +7,7 @@
  * Purpose: Contains some simple lookup tables to help avoid garbage generation.
  */
 
+using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
@@ -31,6 +32,8 @@ namespace BeauUtil
                 s_IntegerTable[i] = (i + INTEGER_MIN).ToString();
         }
 
+#pragma warning disable CS0652
+
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
@@ -38,6 +41,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this sbyte inValue)
         {
             if (inValue >= INTEGER_MIN && inValue < INTEGER_MAX)
@@ -52,6 +56,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this short inValue)
         {
             if (inValue >= INTEGER_MIN && inValue <= INTEGER_MAX)
@@ -66,6 +71,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this int inValue)
         {
             if (inValue >= INTEGER_MIN && inValue <= INTEGER_MAX)
@@ -80,6 +86,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this long inValue)
         {
             if (inValue >= INTEGER_MIN && inValue <= INTEGER_MAX)
@@ -94,6 +101,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this byte inValue)
         {
             return s_IntegerTable[inValue - INTEGER_MIN];
@@ -106,6 +114,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this ushort inValue)
         {
             if (inValue <= INTEGER_MAX)
@@ -120,6 +129,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this uint inValue)
         {
             if (inValue <= INTEGER_MAX)
@@ -134,6 +144,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this ulong inValue)
         {
             if (inValue <= INTEGER_MAX)
@@ -141,4 +152,6 @@ namespace BeauUtil
             return inValue.ToString();
         }
     }
+
+#pragma warning restore CS0652
 }

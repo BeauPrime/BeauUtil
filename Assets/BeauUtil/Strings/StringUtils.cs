@@ -7,11 +7,15 @@
  * Purpose: String utility methods.
  */
 
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
+#define DEVELOPMENT
+#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -50,6 +54,7 @@ namespace BeauUtil
         /// <summary>
         /// Escapes a string to the given string builder.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Escape(string inString, StringBuilder ioBuilder, ICustomEscapeEvaluator inCustomEscape = null)
         {
             if (inString == null)
@@ -61,9 +66,10 @@ namespace BeauUtil
         /// <summary>
         /// Escapes a string.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Escape(string inString, ICustomEscapeEvaluator inCustomEscape = null)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(inString.Length + 64);
             Escape(inString, sb, inCustomEscape);
             return sb.ToString();
         }
@@ -71,6 +77,7 @@ namespace BeauUtil
         /// <summary>
         /// Escapes a substring to the given string builder.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Escape(string inString, int inStartIndex, StringBuilder ioBuilder, ICustomEscapeEvaluator inCustomEscape = null)
         {
             if (inString == null)
@@ -82,9 +89,10 @@ namespace BeauUtil
         /// <summary>
         /// Escapes a substring.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Escape(string inString, int inStartIndex, ICustomEscapeEvaluator inCustomEscape = null)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(inString.Length - inStartIndex + 64);
             Escape(inString, inStartIndex, sb, inCustomEscape);
             return sb.ToString();
         }
@@ -107,6 +115,8 @@ namespace BeauUtil
             {
                 throw new ArgumentOutOfRangeException("Length extends beyond end of string");
             }
+
+            ioBuilder.Reserve(inLength + 64);
 
             for (int idx = inStartIndex; idx < endIdx; ++idx)
             {
@@ -165,9 +175,10 @@ namespace BeauUtil
         /// <summary>
         /// Escapes a substring.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Escape(string inString, int inStartIndex, int inLength, ICustomEscapeEvaluator inCustomEscape = null)
         {
-            StringBuilder sb = new StringBuilder(inLength);
+            StringBuilder sb = new StringBuilder(inLength + 64);
             Escape(inString, inStartIndex, inLength, sb, inCustomEscape);
             return sb.ToString();
         }
@@ -199,6 +210,8 @@ namespace BeauUtil
             {
                 throw new ArgumentOutOfRangeException("Length extends beyond end of string");
             }
+
+            ioBuilder.Reserve(inLength + 64);
 
             for (int idx = inStartIndex; idx < endIdx; ++idx)
             {
@@ -256,6 +269,7 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a string to the given string builder.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Unescape(string inString, StringBuilder ioBuilder, ICustomEscapeEvaluator inCustomEscape = null)
         {
             if (inString == null)
@@ -267,9 +281,10 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a string.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Unescape(string inString, ICustomEscapeEvaluator inCustomEscape = null)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(inString.Length);
             Unescape(inString, sb, inCustomEscape);
             return sb.ToString();
         }
@@ -277,6 +292,7 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a substring to the given string builder.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Unescape(string inString, int inStartIndex, StringBuilder ioBuilder, ICustomEscapeEvaluator inCustomEscape = null)
         {
             if (inString == null)
@@ -288,9 +304,10 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a substring.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Unescape(string inString, int inStartIndex, ICustomEscapeEvaluator inCustomEscape = null)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(inString.Length - inStartIndex);
             Unescape(inString, inStartIndex, sb, inCustomEscape);
             return sb.ToString();
         }
@@ -313,6 +330,8 @@ namespace BeauUtil
             {
                 throw new ArgumentOutOfRangeException("Length extends beyond end of string");
             }
+
+            ioBuilder.Reserve(inLength);
 
             for (int idx = inStartIndex; idx < endIdx; ++idx)
             {
@@ -390,6 +409,7 @@ namespace BeauUtil
         /// <summary>
         /// Unescapes a substring.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Unescape(string inString, int inStartIndex, int inLength, ICustomEscapeEvaluator inCustomEscape = null)
         {
             StringBuilder sb = new StringBuilder(inLength);
@@ -424,6 +444,8 @@ namespace BeauUtil
             {
                 throw new ArgumentOutOfRangeException("Length extends beyond end of string");
             }
+
+            ioBuilder.Reserve(inLength);
 
             for (int idx = 0; idx < inLength; ++idx)
             {
@@ -719,10 +741,13 @@ namespace BeauUtil
         /// Retrieves the string from the StringBuilder
         /// and clears the StringBuilder's state.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string Flush(this StringBuilder ioBuilder)
         {
+#if DEVELOPMENT
             if (ioBuilder == null)
                 throw new ArgumentNullException("ioBuilder");
+#endif // DEVELOPMENT
 
             if (ioBuilder.Length <= 0)
                 return string.Empty;
@@ -733,12 +758,46 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Appends a StringSlice to the given StringBuilder.
+        /// Ensures the given StringBuilder has enough capacity to append the given length.
         /// </summary>
-        static public StringBuilder AppendSlice(this StringBuilder ioBuilder, StringSlice inSlice)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Reserve(this StringBuilder ioBuilder, int inAdditionalCapacity)
         {
+#if DEVELOPMENT
             if (ioBuilder == null)
                 throw new ArgumentNullException("ioBuilder");
+#endif // DEVELOPMENT
+            ioBuilder.EnsureCapacity(ioBuilder.Length + inAdditionalCapacity);
+        }
+
+        /// <summary>
+        /// Ensures the given StringBuilder has enough capacity to append the given length.
+        /// Will resize to the nearest power of 2.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void ReservePow2(this StringBuilder ioBuilder, int inAdditionalCapacity)
+        {
+#if DEVELOPMENT
+            if (ioBuilder == null)
+                throw new ArgumentNullException("ioBuilder");
+#endif // DEVELOPMENT
+            int size = ioBuilder.Length + inAdditionalCapacity;
+            if (ioBuilder.Capacity < size)
+            {
+                ioBuilder.Capacity = Mathf.NextPowerOfTwo(size);
+            }
+        }
+
+        /// <summary>
+        /// Appends a StringSlice to the given StringBuilder.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringBuilder AppendSlice(this StringBuilder ioBuilder, StringSlice inSlice)
+        {
+#if DEVELOPMENT
+            if (ioBuilder == null)
+                throw new ArgumentNullException("ioBuilder");
+#endif // DEVELOPMENT
 
             inSlice.AppendTo(ioBuilder);
             return ioBuilder;
@@ -747,10 +806,13 @@ namespace BeauUtil
         /// <summary>
         /// Appends a StringBuilderSlice to the given StringBuilder.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringBuilder AppendSlice(this StringBuilder ioBuilder, StringBuilderSlice inSlice)
         {
+#if DEVELOPMENT
             if (ioBuilder == null)
                 throw new ArgumentNullException("ioBuilder");
+#endif // DEVELOPMENT
 
             inSlice.AppendTo(ioBuilder);
             return ioBuilder;
@@ -979,6 +1041,7 @@ namespace BeauUtil
                     buffer[idx--] = '-';
                 }
 
+                inBuilder.Reserve(NoAllocNumberBufferSize - 1 - idx);
                 return inBuilder.Append(buffer + idx + 1, NoAllocNumberBufferSize - 1 - idx);
             }
 
@@ -996,6 +1059,7 @@ namespace BeauUtil
                 }
                 while(inValue != 0 || idx > minIdx);
 
+                inBuilder.Reserve(NoAllocNumberBufferSize - 1 - idx);
                 return inBuilder.Append(buffer + idx + 1, NoAllocNumberBufferSize - 1 - idx);
             }
 
@@ -1015,11 +1079,14 @@ namespace BeauUtil
                 }
                 while(inValue != 0 || idx > minIdx);
 
+                inBuilder.Reserve(NoAllocNumberBufferSize - 1 - idx);
                 return inBuilder.Append(buffer + idx + 1, NoAllocNumberBufferSize - 1 - idx);
             }
 
             static internal unsafe StringBuilder AppendNumber(StringBuilder inBuilder, double inValue, int inPadLeft, int inPrecision)
             {
+                inBuilder.Reserve(32);
+
                 if (double.IsNaN(inValue))
                 {
                     return inBuilder.Append("NaN");
@@ -1097,8 +1164,10 @@ namespace BeauUtil
         /// </summary>
         static public bool AttemptMatch(this StringBuilder inBuilder, int inIndex, string inMatch, bool inbIgnoreCase = false)
         {
+#if DEVELOPMENT
             if (inBuilder == null)
                 throw new ArgumentNullException("inBuilder");
+#endif // DEVELOPMENT
 
             if (string.IsNullOrEmpty(inMatch))
                 return false;
@@ -1137,8 +1206,10 @@ namespace BeauUtil
         /// </summary>
         static public bool AttemptMatchEnd(this StringBuilder inBuilder, int inIndex, string inMatch, bool inbIgnoreCase = false)
         {
+#if DEVELOPMENT
             if (inBuilder == null)
                 throw new ArgumentNullException("inBuilder");
+#endif // DEVELOPMENT
 
             if (string.IsNullOrEmpty(inMatch))
                 return false;
@@ -1177,10 +1248,12 @@ namespace BeauUtil
         /// </summary>
         static public StringBuilder TrimEnd(this StringBuilder ioBuilder, char[] inTrimChars)
         {
+#if DEVELOPMENT
             if (ioBuilder == null)
                 throw new ArgumentNullException("ioBuilder");
             if (inTrimChars == null)
                 throw new ArgumentException("inTrimChars");
+#endif // DEVELOPMENT
 
             if (inTrimChars.Length == 0)
                 return ioBuilder;
@@ -1220,6 +1293,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the first index of the given character.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(this StringBuilder inBuilder, char inChar, int inStartIndex, int inCount)
         {
             int end = inStartIndex + inCount;
@@ -1705,6 +1779,7 @@ namespace BeauUtil
         /// <summary>
         /// Fast StringUtils.ToUpperInvariant.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public char ToUpperInvariant(char inCharacter)
         {
             int charInt = inCharacter;

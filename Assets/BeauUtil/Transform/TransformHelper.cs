@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Runtime.InteropServices;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -182,12 +184,12 @@ namespace BeauUtil
 
             Camera[] cameraArray = s_CachedCameraArray;
             int cameraCount = Camera.GetAllCameras(cameraArray);
-            
+
             // find the camera with the most specific rendering mask that includes this layer
             Camera found = null;
             int mostSpecificBitCount = int.MaxValue;
-            
-            for(int i = 0; i < cameraCount; ++i)
+
+            for (int i = 0; i < cameraCount; ++i)
             {
                 Camera cam = cameraArray[i];
                 if (!inbIncludeInactive && !cam.isActiveAndEnabled)
@@ -214,7 +216,7 @@ namespace BeauUtil
         static private readonly Camera[] s_CachedCameraArray = new Camera[64];
 
         #endregion // Camera
-    
+
         #region Flattening Helpers
 
         /// <summary>
@@ -229,21 +231,21 @@ namespace BeauUtil
                 return;
             }
 
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             if (!Application.isPlaying)
             {
                 GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(inTransform);
                 if (root != null)
                     PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             }
-            #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
 
             Transform transform = inTransform;
             Transform parent = transform.parent;
             Transform child;
             int childCount = transform.childCount;
             int siblingIdx = transform.GetSiblingIndex() + 1;
-            while(childCount-- > 0)
+            while (childCount-- > 0)
             {
                 child = transform.GetChild(0);
                 child.SetParent(parent, true);
@@ -253,19 +255,19 @@ namespace BeauUtil
 
         static private void FlattenHierarchyRecursive(Transform inTransform, Transform inParent, ref int ioSiblingIndex)
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             if (!Application.isPlaying)
             {
                 GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(inTransform);
                 if (root != null)
                     PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             }
-            #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
 
             Transform transform = inTransform;
             Transform child;
             int childCount = transform.childCount;
-            while(childCount-- > 0)
+            while (childCount-- > 0)
             {
                 child = transform.GetChild(0);
                 child.SetParent(inParent, true);
@@ -275,5 +277,43 @@ namespace BeauUtil
         }
 
         #endregion // Flattening Helpers
+
+        #region State Hash
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct TransformHashState
+        {
+            public Matrix4x4 Matrix;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct RectTransformHashState
+        {
+            public Matrix4x4 Matrix;
+            public Rect Rect;
+        }
+
+        /// <summary>
+        /// Calculates a 64-bit hash for the current state of the transform.
+        /// </summary>
+        static public unsafe ulong GetStateHash(this Transform inTransform)
+        {
+            RectTransform r = inTransform as RectTransform;
+            if (!ReferenceEquals(r, null))
+            {
+                RectTransformHashState state;
+                state.Matrix = inTransform.localToWorldMatrix;
+                state.Rect = r.rect;
+                return Unsafe.Hash64(&state, sizeof(RectTransformHashState));
+            }
+            else
+            {
+                TransformHashState state;
+                state.Matrix = inTransform.localToWorldMatrix;
+                return Unsafe.Hash64(&state, sizeof(TransformHashState));
+            }
+        }
+
+        #endregion // State Hash
     }
 }

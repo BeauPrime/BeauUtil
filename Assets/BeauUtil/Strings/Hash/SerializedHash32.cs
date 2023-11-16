@@ -20,6 +20,7 @@ using UnityEngine;
 using System.Diagnostics;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -59,14 +60,17 @@ namespace BeauUtil
 
         public bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_HashValue == 0; }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string Source()
         {
             return m_Source;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash32 Hash()
         {
             return new StringHash32(m_HashValue);

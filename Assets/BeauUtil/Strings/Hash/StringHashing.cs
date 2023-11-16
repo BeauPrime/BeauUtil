@@ -406,7 +406,6 @@ namespace BeauUtil
         /// </summary>
         static public void DumpReverseLookupStats()
         {
-            return 0;
         }
 
         #endif // PRESERVE_DEBUG_SYMBOLS

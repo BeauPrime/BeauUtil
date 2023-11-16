@@ -50,6 +50,7 @@ namespace BeauUtil
         /// </summary>
         public ulong HashValue
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_HashValue; }
         }
 
@@ -58,12 +59,14 @@ namespace BeauUtil
         /// </summary>
         public bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_HashValue == 0; }
         }
 
         /// <summary>
         /// Concats a string to this hash value.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash64 Concat(StringSlice inSlice)
         {
             return new StringHash64(inSlice.AppendHash64(m_HashValue, true));
@@ -74,6 +77,7 @@ namespace BeauUtil
         /// This will not record the concatenated string to the Reverse Lookup.
         /// In non-debug builds this is functionally identical to Concat.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash64 FastConcat(StringSlice inSlice)
         {
             return new StringHash64(inSlice.AppendHash64(m_HashValue, false));
@@ -82,6 +86,7 @@ namespace BeauUtil
         /// <summary>
         /// Calculates the string hash without caching a reverse lookup.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 Fast(StringSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64NoCache());
@@ -90,6 +95,7 @@ namespace BeauUtil
         /// <summary>
         /// Calculates the string hash without caching a reverse lookup.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 Fast(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64NoCache());
@@ -98,6 +104,7 @@ namespace BeauUtil
         /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 CaseInsensitive(string inString)
         {
             return new StringHash64(StringHashing.StoreHash64CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
@@ -106,6 +113,7 @@ namespace BeauUtil
         /// <summary>
         /// Constructs a case-insensitive hash without caching a reverse lookup.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 FastCaseInsensitive(string inString)
         {
             return new StringHash64(StringHashing.Hash64CaseInsensitive(inString, 0, inString == null ? 0 : inString.Length));
@@ -114,6 +122,7 @@ namespace BeauUtil
         /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 CaseInsensitive(StringSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitive());
@@ -122,6 +131,7 @@ namespace BeauUtil
         /// <summary>
         /// Constructs a case-insensitive hash without caching a reverse lookup.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 FastCaseInsensitive(StringSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitiveNoCache());
@@ -130,6 +140,7 @@ namespace BeauUtil
         /// <summary>
         /// Constructs a case-insensitive hash.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 CaseInsensitive(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitive());
@@ -138,6 +149,7 @@ namespace BeauUtil
         /// <summary>
         /// Constructs a case-insensitive hash without caching a reverse lookup.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 FastCaseInsensitive(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitiveNoCache());
@@ -212,11 +224,13 @@ namespace BeauUtil
             return left.m_HashValue != right;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public implicit operator StringHash64(StringSlice inSlice)
         {
             return new StringHash64(inSlice);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public implicit operator StringHash64(string inString)
         {
             return new StringHash64(inString);

@@ -27,6 +27,7 @@ using BeauUtil.Blocks;
 using BeauUtil.Debugger;
 using BeauUtil.IO;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -373,6 +374,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Reads characters into the given array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadChars(int inBlockSize, char[] outBuffer, int inOutBufferOffset)
         {
             unsafe
@@ -387,14 +389,11 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Reads characters into the given character buffer.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe int ReadChars(int inBlockSize, char* outBuffer, int inOutBufferOffset, int inOutBufferLength)
         {
             int bufferType = (int) Type;
-            if (bufferType == 0)
-            {
-                throw new ArgumentNullException("ioStream");
-            }
-
+            Assert.True(bufferType != 0, "Stream is uninitialized");
             Assert.True(outBuffer != null, "Null buffer");
             Assert.True(inOutBufferOffset <= inOutBufferLength, "Out-of-bounds write to buffer");
             return s_ReadCharHandlers[bufferType](ref this, inBlockSize, outBuffer + inOutBufferOffset, inOutBufferLength - inOutBufferOffset);
@@ -551,6 +550,7 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Reads bytes into the given array.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadBytes(int inBlockSize, byte[] outBuffer, int inOutBufferOffset)
         {
             unsafe
@@ -565,14 +565,11 @@ namespace BeauUtil.Streaming
         /// <summary>
         /// Reads bytes into the given byte buffer.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe int ReadBytes(int inBlockSize, byte* outBuffer, int inOutBufferOffset, int inOutBufferLength)
         {
             int bufferType = (int) Type;
-            if (bufferType == 0)
-            {
-                throw new ArgumentNullException("ioStream");
-            }
-
+            Assert.True(bufferType != 0, "Stream is uninitialized");
             Assert.True(outBuffer != null, "Null buffer");
             Assert.True(inOutBufferOffset <= inOutBufferLength, "Out-of-bounds write to buffer");
             return s_ReadByteHandlers[bufferType](ref this, inBlockSize, outBuffer + inOutBufferOffset, inOutBufferLength - inOutBufferOffset);
@@ -1095,7 +1092,7 @@ namespace BeauUtil.Streaming
             FileStream fileStr = inOwner as FileStream;
             if (fileStr != null)
             {
-                return IOHelper.GetRelativePath(fileStr.Name);
+                return IOHelper.GetLogicalPath(fileStr.Name);
             }
 
             #if UNITY_EDITOR
@@ -1105,7 +1102,7 @@ namespace BeauUtil.Streaming
             {
                 if (AssetDatabase.IsMainAsset(obj) || AssetDatabase.IsSubAsset(obj))
                 {
-                    return IOHelper.GetRelativePath(AssetDatabase.GetAssetPath(obj));
+                    return IOHelper.GetLogicalPath(AssetDatabase.GetAssetPath(obj));
                 }
             }
 

@@ -9,6 +9,8 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -39,6 +41,7 @@ namespace BeauUtil.IO
         /// <summary>
         /// Returns the last modified time for the given asset.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public long GetAssetModifyTimestamp(UnityEngine.Object inObject)
         {
             #if UNITY_EDITOR
@@ -55,6 +58,7 @@ namespace BeauUtil.IO
         /// <summary>
         /// Returns an identifier for the given asset.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash32 GetAssetIdentifier(UnityEngine.Object inObject)
         {
             if (inObject.IsReferenceNull())
@@ -87,16 +91,49 @@ namespace BeauUtil.IO
             return inPath;
         }
 
+#if UNITY_EDITOR
+        static private readonly string s_CachedDataPathParent = Directory.GetParent(UnityEngine.Application.dataPath).FullName;
+#endif // UNITY_EDITOR
+
+        [Obsolete("IOHelper.GetRelativePath(string) renamed to GetLogicalPath", false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public string GetRelativePath(string inPath)
+        {
+            return GetLogicalPath(inPath);
+        }
+
         /// <summary>
         /// Returns the relative path to the current working directory, or project directory if in the editor.
         /// </summary>
-        static public string GetRelativePath(string inPath)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public string GetLogicalPath(string inPath)
         {
-            #if UNITY_EDITOR
-            return GetRelativePath(Directory.GetParent(UnityEngine.Application.dataPath).FullName, inPath);
-            #else
+#if UNITY_EDITOR
+#if UNITY_2021_2_OR_NEWER
+            return FileUtil.GetLogicalPath(inPath);
+#else
+            return GetRelativePath(s_CachedDataPathParent, inPath);
+#endif // UNITY_2021_2_OR_NEWER
+#else
             return GetRelativePath(Environment.CurrentDirectory, inPath);
-            #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
+        }
+
+        /// <summary>
+        /// Returns the absolute path to the given logical path.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public string GetPhysicalPath(string inPath)
+        {
+#if UNITY_EDITOR
+#if UNITY_2021_2_OR_NEWER
+            return FileUtil.GetPhysicalPath(inPath);
+#else
+            return Path.Combine(s_CachedDataPathParent, inPath);
+#endif // UNITY_2021_2_OR_NEWER
+#else
+            return Path.Combine(Environment.CurrentDirectory, inPath);
+#endif // UNITY_EDITOR
         }
     }
 }

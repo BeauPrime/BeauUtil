@@ -360,7 +360,7 @@ namespace BeauUtil
 
         public override string ToString()
         {
-            return string.Format("[{0}({1})]", ((int) Offset).ToStringLookup(), ((int) Length).ToStringLookup());
+            return string.Format("[{0}({1})]", Offset.ToStringLookup(), Length.ToStringLookup());
         }
 
         #endregion // Overrides
@@ -478,7 +478,7 @@ namespace BeauUtil
 
         public override string ToString()
         {
-            return string.Format("[{0}({1})]", ((int) Offset).ToStringLookup(), ((int) Length).ToStringLookup());
+            return string.Format("[{0}({1})]", Offset.ToStringLookup(), Length.ToStringLookup());
         }
 
         #endregion // Overrides

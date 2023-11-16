@@ -666,7 +666,108 @@ namespace BeauUtil
             inVH.AddTriangle(vertCount + 0, vertCount + 1, vertCount + 2);
             inVH.AddTriangle(vertCount + 2, vertCount + 3, vertCount + 0);
         }
-    
+
         #endregion // Line
+
+        #region Regular Polygon
+
+        /// <summary>
+        /// Renders a regular polygon.
+        /// </summary>
+        static public void AddRegularPolygon(this VertexHelper inVH, Rect inRect, int inSideCount, float inStartDeg, Color32 inColor, Vector2 inUVs)
+        {
+            if (inSideCount < 3)
+            {
+                return;
+            }
+
+            float radiusX = inRect.width / 2,
+                radiusY = inRect.height / 2;
+
+            Vector2 center = inRect.center;
+            float angleIncrement = 360f / inSideCount;
+
+            unsafe
+            {
+                int totalVerts = inSideCount + 1;
+                Vector2* verts = stackalloc Vector2[totalVerts];
+                verts[0] = center;
+                for (int i = 0; i < inSideCount; i++)
+                {
+                    float angle = (inStartDeg + angleIncrement * i) * Mathf.Deg2Rad;
+                    float cos = Mathf.Cos(angle), sin = Mathf.Sin(angle);
+
+                    verts[1 + i].x = center.x + (radiusX) * cos;
+                    verts[1 + i].y = center.y + (radiusY) * sin;
+                }
+
+                int vertCount = inVH.currentVertCount;
+
+                for (int i = 0; i < totalVerts; i++)
+                {
+                    inVH.AddVert(verts[i], inColor, inUVs);
+                }
+
+                for (int i = 0; i < inSideCount; i++)
+                {
+                    inVH.AddTriangle(vertCount, vertCount + 1 + ((1 + i) % inSideCount), vertCount + 1 + (i % inSideCount));
+            }
+            }
+        }
+
+        /// <summary>
+        /// Renders a regular polygon.
+        /// </summary>
+        static public void AddRegularPolygonOutline(this VertexHelper inVH, Rect inRect, int inSideCount, float inStartDeg, float inOutlineWidth, Color32 inColor, Vector2 inUVs)
+        {
+            if (inSideCount < 3)
+            {
+                return;
+            }
+
+            float radiusX = inRect.width / 2,
+                radiusY = inRect.height / 2;
+
+            if (inOutlineWidth >= Math.Min(radiusX, radiusY))
+            {
+                AddRegularPolygon(inVH, inRect, inSideCount, inStartDeg, inColor, inUVs);
+                return;
+            }
+
+            Vector2 center = inRect.center;
+            float angleIncrement = 360f / inSideCount;
+
+            unsafe
+            {
+                int totalVerts = inSideCount * 2;
+                Vector2* verts = stackalloc Vector2[totalVerts];
+                for(int i = 0; i < inSideCount; i++)
+                {
+                    float angle = (inStartDeg + angleIncrement * i) * Mathf.Deg2Rad;
+                    float cos = Mathf.Cos(angle), sin = Mathf.Sin(angle);
+
+                    verts[i * 2 + 0].x = center.x + (radiusX - inOutlineWidth) * cos;
+                    verts[i * 2 + 0].y = center.y + (radiusY - inOutlineWidth) * sin;
+
+                    verts[i * 2 + 1].x = center.x + (radiusX) * cos;
+                    verts[i * 2 + 1].y = center.y + (radiusY) * sin;
+                }
+
+                int vertCount = inVH.currentVertCount;
+
+                for(int i = 0; i < totalVerts; i++)
+                {
+                    inVH.AddVert(verts[i], inColor, inUVs);
+                }
+
+                for (int i = 0; i < inSideCount; i++)
+                {
+                    inVH.AddTriangle(vertCount + (i * 2), vertCount + ((i * 2 + 2) % totalVerts), vertCount + (i * 2) + 1);
+                    inVH.AddTriangle(vertCount + ((i * 2 + 2) % totalVerts), vertCount + ((i * 2 + 3) % totalVerts), vertCount + (i * 2) + 1);
+                }
+            }
+        }
+
+        #endregion // Regular Polygon
     }
 }

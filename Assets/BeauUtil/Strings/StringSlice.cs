@@ -10,7 +10,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
@@ -67,6 +69,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Length == 0; }
         }
 
@@ -107,6 +110,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the 32-bit hash of this string slice.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash32 Hash32()
         {
             return new StringHash32(CalculateHash32());
@@ -115,6 +119,7 @@ namespace BeauUtil
         /// <summary>
         /// Returns the 64-bit hash of this string slice.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash64 Hash64()
         {
             return new StringHash64(CalculateHash64());
@@ -124,31 +129,37 @@ namespace BeauUtil
 
         #region Char
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool StartsWith(char inItem)
         {
             return Length > 0 && m_Source[m_StartIndex] == inItem;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool EndsWith(char inItem)
         {
             return Length > 0 && m_Source[m_StartIndex + Length - 1] == inItem;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(char inItem)
         {
             return IndexOf(inItem) >= 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(char inItem)
         {
             return IndexOf(inItem, 0, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(char inItem, int inStartIdx)
         {
             return IndexOf(inItem, inStartIdx, Length - inStartIdx);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(char inItem, int inStartIdx, int inCount)
         {
             if (m_Source == null)
@@ -158,16 +169,19 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOfAny(char[] inItems)
         {
             return IndexOfAny(inItems, 0, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOfAny(char[] inItems, int inStartIdx)
         {
             return IndexOfAny(inItems, inStartIdx, Length - inStartIdx);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOfAny(char[] inItems, int inStartIdx, int inCount)
         {
             if (m_Source == null)
@@ -177,16 +191,19 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(char inItem)
         {
             return LastIndexOf(inItem, Length - 1, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(char inItem, int inStartIdx)
         {
             return LastIndexOf(inItem, inStartIdx, inStartIdx + 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(char inItem, int inStartIdx, int inCount)
         {
             if (m_Source == null)
@@ -196,16 +213,19 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOfAny(char[] inItems)
         {
             return LastIndexOfAny(inItems, Length - 1, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOfAny(char[] inItems, int inStartIdx)
         {
             return LastIndexOfAny(inItems, inStartIdx, inStartIdx + 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOfAny(char[] inItems, int inStartIdx, int inCount)
         {
             if (m_Source == null)
@@ -219,6 +239,7 @@ namespace BeauUtil
 
         #region String
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool StartsWith(string inItem)
         {
             if (m_Source == null || inItem == null)
@@ -227,6 +248,7 @@ namespace BeauUtil
             return MatchStart(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool StartsWith(string inItem, bool inbIgnoreCase)
         {
             if (m_Source == null || inItem == null)
@@ -235,6 +257,7 @@ namespace BeauUtil
             return MatchStart(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool StartsWith(StringSlice inItem)
         {
             if (m_Source == null || inItem.m_Source == null)
@@ -243,6 +266,7 @@ namespace BeauUtil
             return MatchStart(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool StartsWith(StringSlice inItem, bool inbIgnoreCase)
         {
             if (m_Source == null || inItem.m_Source == null)
@@ -251,16 +275,19 @@ namespace BeauUtil
             return MatchStart(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(string inItem)
         {
             return IndexOf(inItem) >= 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(string inItem, bool inbIgnoreCase)
         {
             return IndexOf(inItem, inbIgnoreCase) >= 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool EndsWith(string inItem)
         {
             if (m_Source == null || inItem == null)
@@ -269,6 +296,7 @@ namespace BeauUtil
             return MatchEnd(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool EndsWith(string inItem, bool inbIgnoreCase)
         {
             if (m_Source == null || inItem == null)
@@ -277,6 +305,7 @@ namespace BeauUtil
             return MatchEnd(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool EndsWith(StringSlice inItem)
         {
             if (m_Source == null || inItem.m_Source == null)
@@ -285,6 +314,7 @@ namespace BeauUtil
             return MatchEnd(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool EndsWith(StringSlice inItem, bool inbIgnoreCase)
         {
             if (m_Source == null || inItem.m_Source == null)
@@ -293,26 +323,31 @@ namespace BeauUtil
             return MatchEnd(m_Source, m_StartIndex, Length, inItem.m_Source, inItem.m_StartIndex, inItem.Length, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(string inItem)
         {
             return IndexOf(inItem, 0, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(string inItem, bool inbIgnoreCase)
         {
             return IndexOf(inItem, 0, Length, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(string inItem, int inStartIdx)
         {
             return IndexOf(inItem, inStartIdx, Length - inStartIdx);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(string inItem, int inStartIdx, bool inbIgnoreCase)
         {
             return IndexOf(inItem, inStartIdx, Length - inStartIdx, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(string inItem, int inStartIdx, int inCount)
         {
             if (m_Source == null || inItem == null)
@@ -322,6 +357,7 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(string inItem, int inStartIdx, int inCount, bool inbIgnoreCase)
         {
             if (m_Source == null || inItem == null)
@@ -331,26 +367,31 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(string inItem)
         {
             return LastIndexOf(inItem, Length - 1, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(string inItem, bool inbIgnoreCase)
         {
             return LastIndexOf(inItem, Length - 1, Length, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(string inItem, int inStartIdx)
         {
             return LastIndexOf(inItem, inStartIdx, inStartIdx + 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(string inItem, int inStartIdx, bool inbIgnoreCase)
         {
             return LastIndexOf(inItem, inStartIdx, inStartIdx + 1, inbIgnoreCase);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(string inItem, int inStartIdx, int inCount)
         {
             if (m_Source == null || inItem == null)
@@ -360,6 +401,7 @@ namespace BeauUtil
             return srcIndex < 0 ? srcIndex : srcIndex - m_StartIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(string inItem, int inStartIdx, int inCount, bool inbIgnoreCase)
         {
             if (m_Source == null || inItem == null)
@@ -375,11 +417,13 @@ namespace BeauUtil
 
         #region Trim
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice Trim()
         {
             return Trim(TrimWhitespaceChars);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice Trim(char[] inTrimChars)
         {
             if (inTrimChars == null || inTrimChars.Length == 0)
@@ -390,11 +434,13 @@ namespace BeauUtil
             return Trim(m_Source, m_StartIndex, Length, inTrimChars, TrimType.Both);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice TrimStart()
         {
             return TrimStart(TrimWhitespaceChars);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice TrimStart(char[] inTrimChars)
         {
             if (inTrimChars == null || inTrimChars.Length == 0)
@@ -405,11 +451,13 @@ namespace BeauUtil
             return Trim(m_Source, m_StartIndex, Length, inTrimChars, TrimType.Start);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice TrimEnd()
         {
             return TrimEnd(TrimWhitespaceChars);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice TrimEnd(char[] inTrimChars)
         {
             if (inTrimChars == null || inTrimChars.Length == 0)
@@ -424,11 +472,13 @@ namespace BeauUtil
 
         #region Substring
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice Substring(int inStartIdx)
         {
             return Substring(inStartIdx, Length - inStartIdx);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSlice Substring(int inStartIdx, int inLength)
         {
             return new StringSlice(m_Source, m_StartIndex + inStartIdx, inLength);
@@ -587,41 +637,49 @@ namespace BeauUtil
             return Array.Empty<char>();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string Escape()
         {
             return StringUtils.Escape(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string Escape(StringUtils.ICustomEscapeEvaluator inCustomEscape)
         {
             return StringUtils.Escape(m_Source, m_StartIndex, Length, inCustomEscape);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Escape(StringBuilder ioBuilder)
         {
             StringUtils.Escape(m_Source, m_StartIndex, Length, ioBuilder);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Escape(StringBuilder ioBuilder, StringUtils.ICustomEscapeEvaluator inCustomEscape)
         {
             StringUtils.Escape(m_Source, m_StartIndex, Length, ioBuilder, inCustomEscape);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string Unescape()
         {
             return StringUtils.Unescape(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string Unescape(StringUtils.ICustomEscapeEvaluator inCustomEscape)
         {
             return StringUtils.Unescape(m_Source, m_StartIndex, Length, inCustomEscape);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unescape(StringBuilder ioBuilder)
         {
             StringUtils.Unescape(m_Source, m_StartIndex, Length, ioBuilder);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unescape(StringBuilder ioBuilder, StringUtils.ICustomEscapeEvaluator inCustomUnescape)
         {
             StringUtils.Unescape(m_Source, m_StartIndex, Length, ioBuilder, inCustomUnescape);
@@ -643,6 +701,9 @@ namespace BeauUtil
 
         public char this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Il2CppSetOption(Option.NullChecks, false)]
+            [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
             get
             {
                 if (index < 0 || index >= Length)
@@ -939,59 +1000,71 @@ namespace BeauUtil
 
         #region Internal
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendTo(StringBuilder ioBuilder)
         {
             if (Length <= 0)
                 return;
-            
+
+            ioBuilder.Reserve(Length);
             ioBuilder.Append(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal uint CalculateHash32()
         {
             return StringHashing.StoreHash32(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal uint CalculateHash32NoCache()
         {
             return StringHashing.Hash32(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal uint CalculateHash32CaseInsensitive()
         {
             return StringHashing.StoreHash32CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal uint CalculateHash32CaseInsensitiveNoCache()
         {
             return StringHashing.Hash32CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal uint AppendHash32(uint inHash, bool inbReverseLookup)
         {
             return StringHashing.AppendHash32(inHash, m_Source, m_StartIndex, Length, inbReverseLookup);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ulong CalculateHash64()
         {
             return StringHashing.StoreHash64(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ulong CalculateHash64NoCache()
         {
             return StringHashing.Hash64(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ulong CalculateHash64CaseInsensitive()
         {
             return StringHashing.StoreHash64CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ulong CalculateHash64CaseInsensitiveNoCache()
         {
             return StringHashing.Hash64CaseInsensitive(m_Source, m_StartIndex, Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ulong AppendHash64(ulong inHash, bool inbReverseLookup)
         {
             return StringHashing.AppendHash64(inHash, m_Source, m_StartIndex, Length, inbReverseLookup);

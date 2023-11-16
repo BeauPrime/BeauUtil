@@ -36,6 +36,18 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Ensures a certain capacity for the list.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void EnsureCapacity<T>(this List<T> ioList, int inCapacity)
+        {
+            if (ioList.Capacity < inCapacity)
+            {
+                ioList.Capacity = inCapacity;
+            }
+        }
+
+        /// <summary>
         /// Ensures a certain capacity for the list, making sure it is a power of 2.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -48,6 +60,29 @@ namespace BeauUtil
             }
             
             EnsureCapacity(ref ioList, Mathf.NextPowerOfTwo(inCapacity));
+        }
+
+        /// <summary>
+        /// Ensures a certain capacity for the list, making sure it is a power of 2.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void EnsureCapacityPow2<T>(this List<T> ioList, int inCapacity)
+        {
+            if ((inCapacity & (inCapacity - 1)) == 0)
+            {
+                EnsureCapacity(ioList, inCapacity);
+                return;
+            }
+
+            EnsureCapacity(ioList, Mathf.NextPowerOfTwo(inCapacity));
+        }
+
+        /// <summary>
+        /// Reserves space for the given number of additional items.
+        /// </summary>
+        static public void Reserve<T>(this List<T> ioList, int inCapacity)
+        {
+            EnsureCapacity(ioList, ioList.Count + inCapacity);
         }
 
         /// <summary>

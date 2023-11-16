@@ -7,7 +7,12 @@
  * Purpose: Invokable list of CastableAction instances.
  */
 
+#if UNITY_2021_2_OR_NEWER
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System;
+using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
@@ -82,6 +87,46 @@ namespace BeauUtil
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
+
+#if SUPPORTS_FUNCTION_POINTERS
+
+        /// <summary>
+        /// Registers an action.
+        /// </summary>
+        public unsafe IntPtr Register(delegate*<TInput, void> inPointer, UnityEngine.Object inContext = null)
+        {
+            EnsureCapacity(m_Length + 1);
+            m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
+            m_ContextIds[m_Length] = 0;
+            m_Length++;
+            return (IntPtr) inPointer;
+        }
+
+        /// <summary>
+        /// Registers an action.
+        /// </summary>
+        public unsafe IntPtr Register(delegate*<ref TInput, void> inPointer, UnityEngine.Object inContext = null)
+        {
+            EnsureCapacity(m_Length + 1);
+            m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
+            m_ContextIds[m_Length] = 0;
+            m_Length++;
+            return (IntPtr) inPointer;
+        }
+
+        /// <summary>
+        /// Registers an action.
+        /// </summary>
+        public unsafe IntPtr Register(delegate*<void> inPointer, UnityEngine.Object inContext = null)
+        {
+            EnsureCapacity(m_Length + 1);
+            m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
+            m_ContextIds[m_Length] = 0;
+            m_Length++;
+            return (IntPtr) inPointer;
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
 
         #endregion // Add
 
@@ -159,6 +204,32 @@ namespace BeauUtil
             }
         }
 
+#if SUPPORTS_FUNCTION_POINTERS
+
+        // NOTE: On JIT platforms, function pointers are not guaranteed to be the same
+        //       On AOT it's fine, but for this reason we'll have users call Deregister
+        //       with the same IntPtr they got back from the Register call
+
+        /// <summary>
+        /// Removes the registered action.
+        /// </summary>
+        public unsafe void Deregister(IntPtr inPointer)
+        {
+            if (inPointer == null)
+                throw new ArgumentNullException("inAction");
+
+            for (int i = m_Length - 1; i >= 0; i--)
+            {
+                if (m_Actions[i].Equals(inPointer))
+                {
+                    RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
+
         /// <summary>
         /// Removes all actions bound to the given context.
         /// </summary>
@@ -218,6 +289,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Length == 0; }
         }
 
@@ -226,12 +298,14 @@ namespace BeauUtil
         /// </summary>
         public int Count
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Length; }
         }
 
         /// <summary>
         /// Invokes all currently registered actions.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invoke(TInput inInput)
         {
             Invoke(ref inInput);

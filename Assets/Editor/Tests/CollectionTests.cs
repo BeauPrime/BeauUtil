@@ -941,5 +941,18 @@ namespace BeauUtil.UnitTests
 
             Assert.AreEqual(bits, shouldBeOriginalBits);
         }
+
+        [Test]
+        static public void CanUseMapUtils()
+        {
+            Dictionary<StringHash32, int> dict = MapUtils.Create<StringHash32, int>(90);
+
+            int capacity = dict.GetCapacity();
+            Assert.AreEqual(107, capacity);
+
+            dict.EnsureCapacity(256);
+
+            Assert.AreEqual(293, dict.GetCapacity());
+        }
     }
 }

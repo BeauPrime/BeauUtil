@@ -7,6 +7,10 @@
  * Purpose: Callback mode enum definition.
  */
 
+#if UNITY_2021_2_OR_NEWER
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System;
 
 namespace BeauUtil
@@ -17,6 +21,11 @@ namespace BeauUtil
         NoArg,
         NativeArg,
         NativeArgRef,
-        CastedArg
+        CastedArg,
+#if SUPPORTS_FUNCTION_POINTERS
+        NoArg_Ptr,
+        NativeArg_Ptr,
+        NativeArgRef_Ptr,
+#endif // SUPPORTS_FUNCTION_POINTERS
     }
 }

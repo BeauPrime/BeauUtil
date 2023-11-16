@@ -13,6 +13,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using UnityEngine.Profiling;
 
 namespace BeauUtil.Debugger
@@ -24,7 +25,21 @@ namespace BeauUtil.Debugger
     {
         #region Time
 
+        static Profiling()
+        {
+            long hzPerSec = UnityEngine.SystemInfo.processorFrequency * 1000000L;
+            if (hzPerSec == 0)
+            {
+                CyclesPerTick = 256;
+            }
+            else
+            {
+                CyclesPerTick = hzPerSec / (double) TimerFrequency;
+            }
+        }
+
         static private readonly long TimerFrequency = Stopwatch.Frequency;
+        static private readonly double CyclesPerTick;
 
         /// <summary>
         /// Returns a profiling block for time.
@@ -75,6 +90,10 @@ namespace BeauUtil.Debugger
                         case ProfileTimeUnits.Ticks:
                             UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1} ticks ({2} frames)", m_Label, elapsed, durationFrames));
                             break;
+
+                        case ProfileTimeUnits.Cycles:
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took ~{1:0.00} est. cycles ({2} frames)", m_Label, elapsed * CyclesPerTick, durationFrames));
+                            break;
                     }
                 }
             }
@@ -117,6 +136,75 @@ namespace BeauUtil.Debugger
         }
 
         #endregion // Unity Samples
+
+        #region Timing
+
+        /// <summary>
+        /// Returns a timestamp, in ticks.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long NowTicks()
+        {
+            return Stopwatch.GetTimestamp();
+        }
+
+        /// <summary>
+        /// Calculates converts from ticks to milliseconds. 
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double TicksToMillisecs(long inTicks)
+        {
+            return (double) inTicks / TimerFrequency * 1000;
+        }
+
+        /// <summary>
+        /// Calculates converts from ticks to milliseconds. 
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double TicksToMillisecs(double inTicks)
+        {
+            return (double) inTicks / TimerFrequency * 1000;
+        }
+
+        /// <summary>
+        /// Calculates converts from ticks to microseconds. 
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double TicksToMicrosecs(long inTicks)
+        {
+            return (double) inTicks / TimerFrequency * 1000000;
+        }
+
+        /// <summary>
+        /// Calculates converts from ticks to microseconds. 
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double TicksToMicrosecs(double inTicks)
+        {
+            return (double) inTicks / TimerFrequency * 1000000;
+        }
+
+        /// <summary>
+        /// Calculates converts from ticks to cycles. 
+        /// If the estimated CPU cycle rate is not available, cycles are assumed to be 256 per tick.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double TicksToEstCycles(long inTicks)
+        {
+            return inTicks * CyclesPerTick;
+        }
+
+        /// <summary>
+        /// Calculates converts from ticks to cycles.
+        /// If the estimated CPU cycle rate is not available, cycles are assumed to be 256 per tick.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double TicksToEstCycles(double inTicks)
+        {
+            return inTicks * CyclesPerTick;
+        }
+
+        #endregion // Timing
     }
 
     /// <summary>
@@ -137,6 +225,12 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Reports in system ticks.
         /// </summary>
-        Ticks
+        Ticks,
+
+        /// <summary>
+        /// Report in estimated cycles, if available.
+        /// If the estimated CPU cycle rate is not available, cycles are assumed to be 256 per tick.
+        /// </summary>
+        Cycles
     }
 }

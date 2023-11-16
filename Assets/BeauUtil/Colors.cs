@@ -7,6 +7,7 @@
  * Purpose: Color utility methods.
  */
 
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -28,6 +29,8 @@ namespace BeauUtil
         /// Returns a color derived from a hex code,
         /// or a default if unable to be parsed.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public Color Hex(string inHexCode, Color inDefault)
         {
             StringSlice str = inHexCode;

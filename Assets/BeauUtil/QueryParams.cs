@@ -177,7 +177,7 @@ namespace BeauUtil
             if (m_Parameters == null || m_Parameters.Count == 0)
                 return string.Empty;
 
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder(m_Parameters.Count * 32);
 
             builder.Append('?');
             for (int i = 0; i < m_Parameters.Count; ++i)

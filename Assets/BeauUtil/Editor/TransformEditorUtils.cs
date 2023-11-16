@@ -74,5 +74,19 @@ namespace BeauUtil.Editor
             foreach(var gameObject in Selection.gameObjects)
                 FlattenHierarchy(gameObject.transform, true);
         }
+
+        [MenuItem("CONTEXT/Transform/Log Transform Hash")]
+        static private void LogTransformHash(MenuCommand command)
+        {
+            Transform t = (Transform) command.context;
+            Debug.LogFormat("Hash of Transform '{0}' State: {1:X8}", t.name, t.GetStateHash());
+        }
+
+        [MenuItem("CONTEXT/Camera/Log Camera Hash")]
+        static private void LogCameraHash(MenuCommand command)
+        {
+            Camera c = (Camera) command.context;
+            Debug.LogFormat("Hash of Camera '{0}' State: {1:X8}", c.name, c.GetStateHash());
+        }
     }
 }

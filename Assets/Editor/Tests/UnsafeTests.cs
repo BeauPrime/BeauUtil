@@ -6,6 +6,7 @@ using BeauUtil.Graph;
 
 using Log = BeauUtil.Debugger.Log;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace BeauUtil.UnitTests
 {
@@ -351,6 +352,37 @@ namespace BeauUtil.UnitTests
             }
 
             UnsafeSpan<int> internalBuf2 = arena.AllocSpan<int>(64);
+        }
+
+        static void InternalFunc_JitTest(int a)
+        {
+            int x = 20;
+            while(x-- > 0) { }
+            Debug.Log("from pointer: " + a);
+        }
+
+        static void InternalFunc2(int a)
+        {
+            Debug.Log("from delegate: " + a);
+        }
+
+        [Test]
+        static public void CanTakeFunctionPointers_JitTest()
+        {
+            CastableAction<int> a = CastableAction<int>.Create(&InternalFunc_JitTest);
+            CastableAction<int> b = CastableAction<int>.Create(InternalFunc2);
+
+            a.Invoke(15); 
+            b.Invoke(16);
+
+            // invoke many times in succession to hopefully trigger JIT compilation
+            for(int i = 0; i < 10000; i++)
+            {
+                a.Invoke(i);
+                //b.Invoke(i);
+            }
+
+            Debug.Log(a.Equals(&InternalFunc_JitTest));
         }
     }
 }
