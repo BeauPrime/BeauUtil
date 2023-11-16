@@ -16,7 +16,7 @@ namespace BeauUtil
     /// Tracks transform changes.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class TrackedTransform : MonoBehaviour, IUpdateVersioned
+    public sealed class TrackedTransform : MonoBehaviour, IUpdateVersioned, IStateHash
     {
         [NonSerialized]
         private Transform m_Transform = null;
@@ -39,6 +39,14 @@ namespace BeauUtil
             }
 
             return m_UpdateSerial;
+        }
+
+        ulong IStateHash.GetStateHash()
+        {
+            if (ReferenceEquals(m_Transform, null))
+                m_Transform = transform;
+
+            return m_Transform.GetStateHash();
         }
 
         /// <summary>
