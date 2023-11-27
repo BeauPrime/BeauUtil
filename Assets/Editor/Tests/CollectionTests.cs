@@ -882,7 +882,7 @@ namespace BeauUtil.UnitTests
 
             using (BeauUtil.Debugger.Log.DisableMsgStackTrace())
             {
-                foreach (var binding in attrSet.Read<PreserveAttribute>())
+                foreach (var binding in attrSet.Read<PreserveAttribute>(Reflect.FindAllUserAssemblies()))
                 {
                     Assert.NotNull(binding.Info);
                     Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
@@ -893,7 +893,7 @@ namespace BeauUtil.UnitTests
                 string setJSON = JsonUtility.ToJson(attrSet);
                 System.IO.File.WriteAllText("Temp/TestBindingExport.json", setJSON);
 
-                foreach (var binding in attrSet.Read<SerializableAttribute>())
+                foreach (var binding in attrSet.Read<SerializableAttribute>(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0)))
                 {
                     Assert.NotNull(binding.Info);
                     //Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
@@ -901,7 +901,7 @@ namespace BeauUtil.UnitTests
 
                 attrSet.Write<UnityEngine.RuntimeInitializeOnLoadMethodAttribute>(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0));
 
-                foreach (var binding in attrSet.Read<RuntimeInitializeOnLoadMethodAttribute>())
+                foreach (var binding in attrSet.Read<RuntimeInitializeOnLoadMethodAttribute>(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0)))
                 {
                     Assert.NotNull(binding.Info);
                     Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);
@@ -913,7 +913,7 @@ namespace BeauUtil.UnitTests
                 Type nativeType = Type.GetType("UnityEngine.Bindings.NativeHeaderAttribute, UnityEngine.SharedInternalsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
                 attrSet.Write(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0), nativeType);
 
-                foreach (var binding in attrSet.Read(nativeType))
+                foreach (var binding in attrSet.Read(Reflect.FindAllAssemblies(Reflect.AssemblyType.Unity, 0), nativeType))
                 {
                     Assert.NotNull(binding.Info);
                     Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);

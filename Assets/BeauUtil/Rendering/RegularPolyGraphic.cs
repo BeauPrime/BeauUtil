@@ -15,7 +15,7 @@ using UnityEngine.UI;
 namespace BeauUtil.UI
 {
     /// <summary>
-    /// Rounded rectangle graphic.
+    /// Regular polygonal graphic.
     /// </summary>
     [AddComponentMenu("BeauUtil/Rendering/Regular Polygon Graphic")]
     public class RegularPolyGraphic : ShapeGraphic

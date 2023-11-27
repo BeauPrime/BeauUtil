@@ -1,3 +1,39 @@
+## Version 0.9.7
+**27 Nov 2023**
+
+Hotfix for `AttributeCache.Get`
+
+## Improvements
+* `Reflect.FindAllAssemblies` can now cache all loaded assemblies on IL2CPP builds
+
+## Fixes
+* `AttributeCache.Get` now works correctly for non-MemberInfo inputs
+* `SerializedAttributeSet.Read` correctly skips over assemblies it could not find
+* Fixed `Persist` default execution order
+
+## Breaking Changes
+* `SerializedAttributeSet.Read` now requires a list of assemblies as input
+
+## Version 0.9.6
+**16 Nov 2023**
+
+Hotfix for `StringHashing` compilation error in non-debug builds
+
+## Features
+* Added `RegularPolyGraphic` for rendering regular polygons
+* Support for function pointers in 2021.2+ in function wrappers and `MethodInvocationHelper`
+
+## Improvements
+* `Unsafe.Hash` functions now use Murmur2 instead of FNV-1a
+* Added various `Reserve` extension methods for `Dictionary`, `List`, `HashSet`, and `StringBuilder`
+* Added tick rate conversion methods to `Profiling`
+* Added extension method polyfills for several `Dictionary` and `HashSet` methods present in .NET standard but not earlier versions
+* Added `CameraHelper.GetStateHash` and `TransformHelper.GetStateHash` for quickly checking camera and transform changes
+
+## Fixes
+* Fixed `StringHashing.DumpReverseLookupStats` compilation error in non-debug builds
+* Fixed `Unsafe.PinString(StringBuilder)` to properly catch instances of chained StringBuilders
+
 ## Version 0.9.5
 **14 Nov 2023**
 

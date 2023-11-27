@@ -37,7 +37,7 @@ namespace BeauUtil
 #if UNITY_TYPECACHE_AVAILABLE
             return UnityEditor.TypeCache.GetTypesDerivedFrom(inType);
 #else
-            return FindDerivedTypes(inType, AppDomain.CurrentDomain.GetAssemblies());
+            return FindDerivedTypes(inType, FindAllAssemblies());
 #endif // UNITY_TYPECACHE_AVAILABLE
         }
 
@@ -48,7 +48,7 @@ namespace BeauUtil
         {
 #if UNITY_TYPECACHE_AVAILABLE
             var filter = GetAssemblySet(inAssemblies);
-            foreach(var type in UnityEditor.TypeCache.GetTypesDerivedFrom(inType))
+            foreach (var type in UnityEditor.TypeCache.GetTypesDerivedFrom(inType))
             {
                 if (filter.Contains(type.Assembly))
                 {
@@ -96,7 +96,7 @@ namespace BeauUtil
         {
             int depth = 0;
             Type t = inType;
-            while(t != null)
+            while (t != null)
             {
                 ++depth;
                 t = t.BaseType;
@@ -111,7 +111,7 @@ namespace BeauUtil
         static public IEnumerable<Type> GetBaseTypes(Type inType)
         {
             Type _type = inType;
-            while(_type != null)
+            while (_type != null)
             {
                 yield return _type;
                 _type = _type.BaseType;
@@ -124,13 +124,13 @@ namespace BeauUtil
         static public IEnumerable<Type> GetBaseTypesAndInterfaces(Type inType)
         {
             Type _type = inType;
-            while(_type != null)
+            while (_type != null)
             {
                 yield return _type;
                 _type = _type.BaseType;
             }
 
-            foreach(var _interface in inType.GetInterfaces())
+            foreach (var _interface in inType.GetInterfaces())
             {
                 yield return _interface;
             }
@@ -252,7 +252,7 @@ namespace BeauUtil
             if (inSignature.Return.ParameterType != inReturnType || inSignature.Parameters.Length != inTypes.Length)
                 return false;
 
-            for(int i = 0; i < inTypes.Length; i++)
+            for (int i = 0; i < inTypes.Length; i++)
             {
                 if (inSignature.Parameters[i].ParameterType != inTypes[i])
                     return false;
@@ -321,7 +321,7 @@ namespace BeauUtil
                 }
             }
 #else
-            return FindTypes<TAttribute>(AppDomain.CurrentDomain.GetAssemblies());
+            return FindTypes<TAttribute>(FindAllAssemblies());
 #endif // UNITY_TYPECACHE_AVAILABLE
         }
 
@@ -406,7 +406,7 @@ namespace BeauUtil
             }
 #endif // UNITY_TYPECACHE_AVAILABLE
 
-            return FindMethods<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+            return FindMethods<TAttribute>(FindAllAssemblies(), inFlags, inbInherit);
         }
 
 #if UNITY_TYPECACHE_AVAILABLE
@@ -487,7 +487,7 @@ namespace BeauUtil
 
             foreach (var type in inTypes)
             {
-                foreach(var method in type.GetMethods(inFlags))
+                foreach (var method in type.GetMethods(inFlags))
                 {
                     if (method.IsDefined(attributeType, inbInherit))
                     {
@@ -535,7 +535,7 @@ namespace BeauUtil
             }
 #endif // UNITY_TYPECACHE_FIELDS
 
-            return FindFields<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+            return FindFields<TAttribute>(FindAllAssemblies(), inFlags, inbInherit);
         }
 
 #if UNITY_TYPECACHE_FIELDS
@@ -583,9 +583,9 @@ namespace BeauUtil
 
             foreach (var assembly in inAssemblies)
             {
-                foreach(var type in assembly.GetTypes())
+                foreach (var type in assembly.GetTypes())
                 {
-                    foreach(var field in type.GetFields())
+                    foreach (var field in type.GetFields())
                     {
                         if (field.IsDefined(attributeType, inbInherit))
                         {
@@ -657,7 +657,7 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, PropertyInfo>> FindAllProperties<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            return FindProperties<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+            return FindProperties<TAttribute>(FindAllAssemblies(), inFlags, inbInherit);
         }
 
         /// <summary>
@@ -669,7 +669,7 @@ namespace BeauUtil
 
             foreach (var assembly in inAssemblies)
             {
-                foreach(var type in assembly.GetTypes())
+                foreach (var type in assembly.GetTypes())
                 {
                     foreach (var property in type.GetProperties(inFlags))
                     {
@@ -743,7 +743,7 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, EventInfo>> FindAllEvents<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            return FindEvents<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+            return FindEvents<TAttribute>(FindAllAssemblies(), inFlags, inbInherit);
         }
 
         /// <summary>
@@ -829,7 +829,7 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<AttributeBinding<TAttribute, MemberInfo>> FindAllMembers<TAttribute>(BindingFlags inFlags, bool inbInherit = false) where TAttribute : Attribute
         {
-            return FindMembers<TAttribute>(AppDomain.CurrentDomain.GetAssemblies(), inFlags, inbInherit);
+            return FindMembers<TAttribute>(FindAllAssemblies(), inFlags, inbInherit);
         }
 
         /// <summary>
@@ -965,7 +965,7 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<Assembly> FindAllAssemblies(AssemblyType inAllowMask, AssemblyType inIgnoreMask)
         {
-            return FindAssemblies(AppDomain.CurrentDomain.GetAssemblies(), inAllowMask, inIgnoreMask);
+            return FindAssemblies(FindAllAssemblies(), inAllowMask, inIgnoreMask);
         }
 
         /// <summary>
@@ -989,9 +989,40 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns all assemblies.
+        /// </summary>
+        static public Assembly[] FindAllAssemblies()
+        {
+#if !UNITY_EDITOR && (ENABLE_IL2CPP)
+            if (s_CachedDomainAssemblies == null)
+            {
+                s_CachedDomainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                UnityEngine.Debug.Log("[Reflect] Cached domain assemblies array");
+            }
+            return s_CachedDomainAssemblies;
+#else
+            return AppDomain.CurrentDomain.GetAssemblies();
+#endif // !UNITY_EDITOR && (ENABLE_IL2CPP)
+        }
+
+        /// <summary>
         /// Filters the given set of assemblies by type.
         /// </summary>
         static public IEnumerable<Assembly> FindAssemblies(IEnumerable<Assembly> inAssemblies, AssemblyType inAllowMask, AssemblyType inIgnoreMask)
+        {
+            foreach (var assembly in inAssemblies)
+            {
+                if (!CheckAssemblyAgainstFilters(assembly, inAllowMask, inIgnoreMask))
+                    continue;
+
+                yield return assembly;
+            }
+        }
+
+        /// <summary>
+        /// Filters the given set of assemblies by type.
+        /// </summary>
+        static public IEnumerable<Assembly> FindAssemblies(Assembly[] inAssemblies, AssemblyType inAllowMask, AssemblyType inIgnoreMask)
         {
             foreach (var assembly in inAssemblies)
             {
@@ -1104,6 +1135,7 @@ namespace BeauUtil
         };
 
         static private Assembly[] s_CachedUserAssemblies;
+        static private Assembly[] s_CachedDomainAssemblies;
 
 #if UNITY_TYPECACHE_AVAILABLE
         static private HashSet<Assembly> GetAssemblySet(IEnumerable<Assembly> inAssemblies)
@@ -1113,7 +1145,7 @@ namespace BeauUtil
         }
 #endif // UNITY_TYPECACHE_AVAILABLE
 
-#endregion // Assemblies
+        #endregion // Assemblies
 
         #region Generics
 
@@ -1133,7 +1165,7 @@ namespace BeauUtil
                     return inType.GetGenericArguments()[0];
             }
 
-            foreach(var interfaceType in inType.GetInterfaces())
+            foreach (var interfaceType in inType.GetInterfaces())
             {
                 if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == GenericIEnumerableType)
                     return interfaceType.GetGenericArguments()[0];
@@ -1150,7 +1182,7 @@ namespace BeauUtil
     /// </summary>
     public readonly struct AttributeBinding<TAttribute, TInfo>
         where TAttribute : Attribute
-		where TInfo : MemberInfo
+        where TInfo : MemberInfo
     {
         public readonly TAttribute Attribute;
         public readonly TInfo Info;
@@ -1171,7 +1203,7 @@ namespace BeauUtil
         /// Return value information.
         /// </summary>
         public readonly ParameterInfo Return;
-        
+
         /// <summary>
         /// Parameter information.
         /// </summary>
@@ -1193,7 +1225,7 @@ namespace BeauUtil
         {
             uint hash = 2166136261;
             hash = (hash ^ (uint) inReturn.ParameterType.GetHashCode()) * 16777619;
-            for(int i = 0; i < inParameters.Length; i++)
+            for (int i = 0; i < inParameters.Length; i++)
             {
                 hash = (hash ^ (uint) inParameters[i].ParameterType.GetHashCode()) * 16777619;
             }
@@ -1262,7 +1294,7 @@ namespace BeauUtil
         {
             uint hash = 2166136261;
             hash = (hash ^ (uint) inReturnType.GetHashCode()) * 16777619;
-            for(int i = 0; i < inParameters.Length; i++)
+            for (int i = 0; i < inParameters.Length; i++)
             {
                 hash = (hash ^ (uint) inParameters[i].GetHashCode()) * 16777619;
             }

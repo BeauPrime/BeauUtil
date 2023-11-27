@@ -223,7 +223,7 @@ namespace BeauUtil
             m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
             m_CachingStaticAsyncLock = false;
 
-            foreach (var attrPair in inAttributeSet.Read<TAttr>())
+            foreach (var attrPair in inAttributeSet.Read<TAttr>(Reflect.FindAllAssemblies()))
             {
                 MethodInfo method = attrPair.Info as MethodInfo;
                 if (method == null || !method.IsStatic)
@@ -316,7 +316,7 @@ namespace BeauUtil
             m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
             m_CachingStaticAsyncLock = true;
 
-            foreach (var attrPair in inAttributeSet.Read<TAttr>())
+            foreach (var attrPair in inAttributeSet.Read<TAttr>(Reflect.FindAllAssemblies()))
             {
                 if (!m_CachingStaticAsyncLock)
                 {

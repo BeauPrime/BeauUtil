@@ -58,7 +58,7 @@ namespace BeauUtil
                 return Get(member);
             }
 
-            return Get(member.GetType());
+            return Get(inObj.GetType());
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace BeauUtil
                 return Get(member);
             }
 
-            return Get(member.GetType());
+            return Get(inObj.GetType());
         }
 
         /// <summary>

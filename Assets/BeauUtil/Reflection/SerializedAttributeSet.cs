@@ -119,7 +119,7 @@ namespace BeauUtil
         /// <summary>
         /// Reads all attribute pairs from this info set.
         /// </summary>
-        public IEnumerable<AttributePair<TAttr>> Read<TAttr>() where TAttr : Attribute
+        public IEnumerable<AttributePair<TAttr>> Read<TAttr>(IEnumerable<Assembly> inAssemblies) where TAttr : Attribute
         {
             if (!typeof(TAttr).FullName.Equals(AttributeTypeName, StringComparison.Ordinal))
             {
@@ -131,7 +131,7 @@ namespace BeauUtil
                 yield break;
             }
 
-            Assembly[] allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] assemblyArr = GetAssemblyArray(inAssemblies);
 
             uint typeIndex = 0;
             uint memberIndex = 0;
@@ -140,15 +140,22 @@ namespace BeauUtil
             for (int asmIndex = 0, asmCount = Assemblies.Length; asmIndex < asmCount; asmIndex++)
             {
                 AssemblyBucket asmBucket = Assemblies[asmIndex];
-                Assembly asm = FindAssembly(allAssemblies, asmBucket.AssemblyName);
-                while(asmBucket.TypeCount-- > 0)
+                Assembly asm = FindAssembly(assemblyArr, asmBucket.AssemblyName);
+                if (asm == null)
+                {
+                    Debug.LogWarningFormat("[SerializedAttributeSet] Assembly '{0}' not found in provided set - skipping", asmBucket.AssemblyName);
+                    SkipAssemblyBucket(asmBucket, ref typeIndex, ref memberIndex, ref overloadIndex);
+                    continue;
+                }
+
+                while (asmBucket.TypeCount-- > 0)
                 {
                     TypeBucket typeBucket = Types[typeIndex++];
                     Type type = asm.GetType(typeBucket.TypeName, true, false);
 
                     if (typeBucket.Self)
                     {
-                        foreach(TAttr attr in type.GetCustomAttributes(typeof(TAttr), LookupInherit))
+                        foreach (TAttr attr in type.GetCustomAttributes(typeof(TAttr), LookupInherit))
                         {
                             yield return new AttributePair<TAttr>(attr, type);
                         }
@@ -207,7 +214,7 @@ namespace BeauUtil
         /// <summary>
         /// Reads all attribute pairs from this info set.
         /// </summary>
-        public IEnumerable<AttributePair<Attribute>> Read(Type inAttributeType)
+        public IEnumerable<AttributePair<Attribute>> Read(IEnumerable<Assembly> inAssemblies, Type inAttributeType)
         {
             if (inAttributeType == null)
             {
@@ -224,7 +231,7 @@ namespace BeauUtil
                 yield break;
             }
 
-            Assembly[] allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] assemblyArr = GetAssemblyArray(inAssemblies);
 
             uint typeIndex = 0;
             uint memberIndex = 0;
@@ -233,7 +240,14 @@ namespace BeauUtil
             for (int asmIndex = 0, asmCount = Assemblies.Length; asmIndex < asmCount; asmIndex++)
             {
                 AssemblyBucket asmBucket = Assemblies[asmIndex];
-                Assembly asm = FindAssembly(allAssemblies, asmBucket.AssemblyName);
+                Assembly asm = FindAssembly(assemblyArr, asmBucket.AssemblyName);
+                if (asm == null)
+                {
+                    Debug.LogWarningFormat("[SerializedAttributeSet] Assembly '{0}' not found in provided set - skipping", asmBucket.AssemblyName);
+                    SkipAssemblyBucket(asmBucket, ref typeIndex, ref memberIndex, ref overloadIndex);
+                    continue;
+                }
+
                 while (asmBucket.TypeCount-- > 0)
                 {
                     TypeBucket typeBucket = Types[typeIndex++];
@@ -309,6 +323,16 @@ namespace BeauUtil
             return null;
         }
 
+        private void SkipAssemblyBucket(AssemblyBucket inBucket, ref uint ioTypeIndex, ref uint ioMemberIndex, ref uint ioOverloadIndex)
+        {
+            while (inBucket.TypeCount-- > 0)
+            {
+                TypeBucket typeBucket = Types[ioTypeIndex++];
+                ioMemberIndex += typeBucket.MemberCount;
+                ioOverloadIndex += typeBucket.OverloadCount;
+            }
+        }
+
         private Type[] RetrieveTypeArray(ushort[] inTypes)
         {
             if (inTypes == null || inTypes.Length == 0)
@@ -346,6 +370,15 @@ namespace BeauUtil
                 typeRef.CachedType = Type.GetType(typeRef.AssemblyQualifiedName);
             }
             return typeRef.CachedType;
+        }
+
+        static private Assembly[] GetAssemblyArray(IEnumerable<Assembly> inAssemblies)
+        {
+            Assembly[] asms = inAssemblies as Assembly[];
+            if (asms != null)
+                return asms;
+            List<Assembly> list = new List<Assembly>(inAssemblies);
+            return list.ToArray();
         }
 
         #endregion // Reading
@@ -518,7 +551,7 @@ namespace BeauUtil
         /// </summary>
         static private bool IsPotentialOverloadedMethod(MethodInfo[] inMethodSet, MethodInfo inSearch)
         {
-            foreach(var method in inMethodSet)
+            foreach (var method in inMethodSet)
             {
                 if (method != inSearch && method.Name.Equals(inSearch.Name, StringComparison.Ordinal))
                 {
@@ -534,11 +567,11 @@ namespace BeauUtil
             ParameterInfo[] parameters = inMethod.GetParameters();
             ushort[] output = new ushort[parameters.Length];
 
-            for(int paramIdx = 0; paramIdx < parameters.Length; paramIdx++)
+            for (int paramIdx = 0; paramIdx < parameters.Length; paramIdx++)
             {
                 Type paramType = parameters[paramIdx].ParameterType;
                 int foundType = -1;
-                for(int typeIdx = 0; typeIdx < ioTypeReferences.Count; typeIdx++)
+                for (int typeIdx = 0; typeIdx < ioTypeReferences.Count; typeIdx++)
                 {
                     if (ioTypeReferences[typeIdx].CachedType == paramType)
                     {

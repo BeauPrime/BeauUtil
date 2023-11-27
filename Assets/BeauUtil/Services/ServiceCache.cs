@@ -595,7 +595,7 @@ namespace BeauUtil.Services
             if (m_ScannedStaticMembers)
                 return;
 
-            foreach (var member in attributeSet.Read<ServiceReferenceAttribute>())
+            foreach (var member in attributeSet.Read<ServiceReferenceAttribute>(Reflect.FindAllAssemblies()))
             {
                 FieldInfo field = member.Info as FieldInfo;
                 if (field != null)
