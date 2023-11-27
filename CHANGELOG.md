@@ -1,3 +1,8 @@
+## Version 0.9.8
+**27 Nov 2023**
+
+Hotfix for out-of-range execution order values.
+
 ## Version 0.9.7
 **27 Nov 2023**
 

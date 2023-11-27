@@ -699,4 +699,18 @@ namespace BeauUtil
 
         #endregion // Lookups
     }
+
+    /// <summary>
+    /// Arbitrary unity constants for min and max execution order.
+    /// </summary>
+    static public class ExecutionOrder
+    {
+        public const int Min = -32000;
+        public const int Max = 32000;
+
+        static public int Clamp(int inOrder)
+        {
+            return Math.Clamp(inOrder, Min, Max);
+        }
+    }
 }

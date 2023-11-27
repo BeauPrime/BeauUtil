@@ -7,6 +7,7 @@
  * Purpose: Marks a gameobject and its children as persistent.
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,10 +16,10 @@ namespace BeauUtil
     /// <summary>
     /// This game object and its children will persist across scene changes.
     /// </summary>
-    [AddComponentMenu("BeauUtil/Persist"), DisallowMultipleComponent, DefaultExecutionOrder(-50000000)]
+    [AddComponentMenu("BeauUtil/Persist"), DisallowMultipleComponent, DefaultExecutionOrder(ExecutionOrder.Min)]
     public sealed class Persist : MonoBehaviour
     {
-        static private readonly HashSet<string> s_ExistingIDs = new HashSet<string>();
+        static private readonly HashSet<string> s_ExistingIDs = new HashSet<string>(StringComparer.Ordinal);
 
         [SerializeField, Tooltip("If set, further Persist GameObjects with this ID will be destroyed.")]
         private string m_UniqueID = string.Empty;
@@ -64,6 +65,11 @@ namespace BeauUtil
         }
 
         #if UNITY_EDITOR
+
+        private void Reset()
+        {
+            m_UniqueID = System.Guid.NewGuid().ToString();
+        }
 
         [UnityEditor.CustomEditor(typeof(Persist))]
         private class Editor : UnityEditor.Editor

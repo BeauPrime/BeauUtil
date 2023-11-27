@@ -21,7 +21,7 @@ namespace BeauUtil
     /// </summary>
     [ExecuteAlways, RequireComponent(typeof(Camera))]
     [AddComponentMenu("BeauUtil/Camera FOV Plane"), DisallowMultipleComponent]
-    [DefaultExecutionOrder(100000000)]
+    [DefaultExecutionOrder(ExecutionOrder.Max)]
     public class CameraFOVPlane : MonoBehaviour, ICameraPreCullCallback
     {
         public struct CameraSettings
