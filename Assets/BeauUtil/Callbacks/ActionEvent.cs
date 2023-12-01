@@ -7,7 +7,7 @@
  * Purpose: Invokable list of Action instances.
  */
 
-#if UNITY_2021_2_OR_NEWER
+#if UNITY_2021_2_OR_NEWER && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
 #define SUPPORTS_FUNCTION_POINTERS
 #endif // UNITY_2021_2_OR_NEWER
 

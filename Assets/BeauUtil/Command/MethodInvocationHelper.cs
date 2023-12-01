@@ -18,7 +18,7 @@
 // if JIT compilation decides to recompile the function.
 // Therefore, only enable this optimization on AOT platforms.
 
-#if UNITY_2021_2_OR_NEWER && ENABLE_IL2CPP
+#if UNITY_2021_2_OR_NEWER && ENABLE_IL2CPP && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
 #define SPECIALIZE_WITH_FUNCTION_POINTERS
 #endif // UNITY_2021_2_OR_NEWER
 
