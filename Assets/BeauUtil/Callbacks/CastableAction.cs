@@ -568,6 +568,7 @@ namespace BeauUtil
         }
 #endif // ENABLE_IL2CPP
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void CastedInvoke(Delegate inDelegate, TInput inInput)
         {
             ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));
@@ -588,6 +589,7 @@ namespace BeauUtil
 
         static private CastedAction<TInput> s_Callback;
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void CastedInvoke(Delegate inDelegate, TInput inInput)
         {
             ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));

@@ -25,6 +25,12 @@ namespace BeauUtil
             Custom
         }
 
+        public enum ClampingBehavior
+        {
+            Point,
+            Rect
+        }
+
         public class PinBeginEvent : UnityEvent<Transform, bool, Vector3> { }
         public class PinEvent : UnityEvent<Transform> { }
         public class PinPositionEvent : UnityEvent<Transform, Vector3> { }
@@ -42,6 +48,7 @@ namespace BeauUtil
         [Header("Clamp")]
         [SerializeField] private bool m_ClampToParentRect = false;
         [SerializeField, ShowIfField("m_ClampToParentRect")] private Vector2 m_ParentRectClampOffset = default(Vector2);
+        [SerializeField, ShowIfField("m_ClampToParentRect")] private ClampingBehavior m_ClampBehavior = default(ClampingBehavior);
 
         [Header("Behavior")]
 
@@ -303,44 +310,57 @@ namespace BeauUtil
             #endif // UNITY_EDITOR
 
             bool bFound = m_CanvasTransformer.TryConvertToLocalSpace(m_CurrentTarget, out m_CurrentPinPosition);
-            if (bFound)
+            if (!bFound)
             {
-                m_CurrentPinPosition += new Vector3(m_LocalOffset.x, m_LocalOffset.y, 0);
-                RectTransform parent = m_SelfRectTransform.parent as RectTransform;
-                if (m_ClampToParentRect && parent != null)
-                {
-                    m_ClampedEdges = 0;
-
-                    Rect rect = parent.rect;
-                    rect.x += m_ParentRectClampOffset.x / 2;
-                    rect.y += m_ParentRectClampOffset.y / 2;
-                    rect.width -= m_ParentRectClampOffset.x;
-                    rect.height -= m_ParentRectClampOffset.y;
-
-                    if (m_CurrentPinPosition.x < rect.xMin)
-                    {
-                        m_CurrentPinPosition.x = rect.xMin;
-                        m_ClampedEdges |= RectEdges.Left;
-                    }
-                    else if (m_CurrentPinPosition.x > rect.xMax)
-                    {
-                        m_CurrentPinPosition.x = rect.xMax;
-                        m_ClampedEdges |= RectEdges.Right;
-                    }
-
-                    if (m_CurrentPinPosition.y < rect.yMin)
-                    {
-                        m_CurrentPinPosition.y = rect.yMin;
-                        m_ClampedEdges |= RectEdges.Bottom;
-                    }
-                    else if (m_CurrentPinPosition.y > rect.yMax)
-                    {
-                        m_CurrentPinPosition.y = rect.yMax;
-                        m_ClampedEdges |= RectEdges.Top;
-                    }
-                }
+                return false;
             }
-            return bFound;
+
+            m_CurrentPinPosition += new Vector3(m_LocalOffset.x, m_LocalOffset.y, 0);
+            RectTransform parent = m_SelfRectTransform.parent as RectTransform;
+            if (!m_ClampToParentRect || parent == null)
+            {
+                return true;
+            }
+
+            m_ClampedEdges = 0;
+
+            Rect rect = parent.rect;
+            rect.x += m_ParentRectClampOffset.x / 2;
+            rect.y += m_ParentRectClampOffset.y / 2;
+            rect.width -= m_ParentRectClampOffset.x;
+            rect.height -= m_ParentRectClampOffset.y;
+
+            if (m_ClampBehavior == ClampingBehavior.Rect)
+            {
+                Rect myRect = m_SelfRectTransform.rect;
+                rect.xMin -= myRect.xMin;
+                rect.xMax -= myRect.xMax;
+                rect.yMin -= myRect.yMin;
+                rect.yMax -= myRect.yMax;
+            }
+
+            if (m_CurrentPinPosition.x < rect.xMin)
+            {
+                m_CurrentPinPosition.x = rect.xMin;
+                m_ClampedEdges |= RectEdges.Left;
+            }
+            else if (m_CurrentPinPosition.x > rect.xMax)
+            {
+                m_CurrentPinPosition.x = rect.xMax;
+                m_ClampedEdges |= RectEdges.Right;
+            }
+
+            if (m_CurrentPinPosition.y < rect.yMin)
+            {
+                m_CurrentPinPosition.y = rect.yMin;
+                m_ClampedEdges |= RectEdges.Bottom;
+            }
+            else if (m_CurrentPinPosition.y > rect.yMax)
+            {
+                m_CurrentPinPosition.y = rect.yMax;
+                m_ClampedEdges |= RectEdges.Top;
+            }
+            return true;
         }
 
         private void ApplyPosition()

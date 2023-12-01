@@ -954,5 +954,18 @@ namespace BeauUtil.UnitTests
 
             Assert.AreEqual(293, dict.GetCapacity());
         }
+
+        [Test]
+        static public void CanDecomposeTRS()
+        {
+            int count = 1000;
+            while (count-- > 0) {
+                TRS trs = new TRS(RNG.Instance.NextVector3(), Quaternion.Euler(RNG.Instance.NextVector3(0, 360)), RNG.Instance.NextVector3(1, 92) * RNG.Instance.NextFloat(0, 1));
+                Matrix4x4 mat = trs.Matrix;
+                bool check = TRS.TryCreateFromMatrix(mat, out var newTRS);
+                Assert.IsTrue(check, "could not decompose");
+            }
+
+        }
     }
 }

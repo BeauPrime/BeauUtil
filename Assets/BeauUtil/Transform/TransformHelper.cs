@@ -13,6 +13,8 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Runtime.InteropServices;
+using Unity.IL2CPP.CompilerServices;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -296,6 +298,7 @@ namespace BeauUtil
         /// <summary>
         /// Calculates a 64-bit hash for the current state of the transform.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public unsafe ulong GetStateHash(this Transform inTransform)
         {
             RectTransform r = inTransform as RectTransform;

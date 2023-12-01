@@ -150,6 +150,7 @@ namespace BeauUtil
         /// Ensures the vertex buffer can allow for the given new vertex entries.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private void AllocateVertices(int inVertexCount)
         {
             int required = m_VertexCount + inVertexCount;
@@ -165,6 +166,7 @@ namespace BeauUtil
         /// Ensures the index buffer can allow for the given new index entries.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private void AllocateIndices(int inIndexCount)
         {
             int required = m_IndexCount + inIndexCount;
@@ -596,6 +598,7 @@ namespace BeauUtil
         /// Ensures the vertex buffer can allow for the given new vertex entries.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private void AllocateVertices(int inVertexCount)
         {
             int required = m_VertexCount + inVertexCount;
@@ -611,6 +614,7 @@ namespace BeauUtil
         /// Ensures the index buffer can allow for the given new index entries.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         private void AllocateIndices(int inIndexCount)
         {
             int required = m_IndexCount + inIndexCount;

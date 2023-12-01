@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 #if USE_SRP
@@ -479,6 +480,7 @@ namespace BeauUtil
         /// <summary>
         /// Calculates a 64-bit hash of the camera's state.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public unsafe ulong GetStateHash(this Camera inCamera)
         {
             CameraHashState state;

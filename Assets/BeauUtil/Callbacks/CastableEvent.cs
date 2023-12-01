@@ -93,7 +93,7 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public unsafe IntPtr Register(delegate*<TInput, void> inPointer, UnityEngine.Object inContext = null)
+        public unsafe IntPtr Register(delegate*<TInput, void> inPointer)
         {
             EnsureCapacity(m_Length + 1);
             m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
@@ -105,7 +105,7 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public unsafe IntPtr Register(delegate*<ref TInput, void> inPointer, UnityEngine.Object inContext = null)
+        public unsafe IntPtr Register(delegate*<ref TInput, void> inPointer)
         {
             EnsureCapacity(m_Length + 1);
             m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
@@ -117,7 +117,7 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public unsafe IntPtr Register(delegate*<void> inPointer, UnityEngine.Object inContext = null)
+        public unsafe IntPtr Register(delegate*<void> inPointer)
         {
             EnsureCapacity(m_Length + 1);
             m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);

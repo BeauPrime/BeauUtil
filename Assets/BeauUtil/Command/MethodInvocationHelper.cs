@@ -26,12 +26,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using BeauUtil.Variants;
 using UnityEngine;
 
 namespace BeauUtil
 {
-    public class MethodInvocationHelper
+    public struct MethodInvocationHelper
     {
         public const int MaxArguments = 8;
 
@@ -94,10 +95,9 @@ namespace BeauUtil
         private unsafe struct SpecializationInfo
         {
             public short Type;
+            public Delegate Delegate;
 #if SPECIALIZE_WITH_FUNCTION_POINTERS
             public void* FunctionPtr;
-#else
-            public Delegate Delegate;
 #endif // SPECIALIZE_WITH_FUNCTION_POINTERS
             public NonBoxedValue DefaultArgument;
         }
@@ -163,13 +163,12 @@ namespace BeauUtil
                     m_Unspecialized.DefaultArguments = Array.Empty<object>();
 
                     m_Specialized.Type = (short) specializationIndex;
+                    m_Specialized.Delegate = inMethod.CreateDelegate(SpecializationTable[specializationIndex]);
 #if SPECIALIZE_WITH_FUNCTION_POINTERS
                     unsafe
                     {
-                        m_Specialized.FunctionPtr = (void*) inMethod.MethodHandle.GetFunctionPointer();
+                        m_Specialized.FunctionPtr = (void*) Marshal.GetFunctionPointerForDelegate(m_Specialized.Delegate);
                     }
-#else
-                    m_Specialized.Delegate = inMethod.CreateDelegate(SpecializationTable[specializationIndex]);
 #endif // SPECIALIZE_WITH_FUNCTION_POINTERS
                     if (firstParam != null && firstParam.IsOptional)
                     {

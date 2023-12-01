@@ -1,3 +1,17 @@
+## Version 0.9.9
+**1 Dec 2023**
+
+Hotfix for MethodInvocationHelper on IL2CPP platforms
+
+## Improvements
+* Added rect-aware clamping mode to `RectTransformPinned`
+* Added experimental `TRS.TryCreateFromMatrix`
+
+## Fixes
+* Fixed specialized method invocation from `MethodInvocationHelper` on IL2CPP platforms
+* Fixed potential overflow issue when calling `Bits.IndexOf(Enum)` with a 64-bit enum
+* Fixed erroneous inclusion of context argument in `CastableEvent` and `ActionEvent` unsafe delegate registration methods
+
 ## Version 0.9.8
 **27 Nov 2023**
 

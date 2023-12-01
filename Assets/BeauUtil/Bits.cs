@@ -640,7 +640,7 @@ namespace BeauUtil
             where T : struct, IConvertible
 #endif // HAS_ENUM_CONSTRAINT
         {
-            return IndexOf(Enums.ToUInt(inBitArray));
+            return IndexOf(Enums.ToULong(inBitArray));
         }
 
         #endregion // Indexof

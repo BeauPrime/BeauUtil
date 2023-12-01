@@ -814,6 +814,9 @@ namespace BeauUtil
     /// <summary>
     /// Declares the initial capacity for the string hash reverse lookup tables.
     /// </summary>
+    /// <remarks>
+    /// This MUST be declared on an assembly.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
     public sealed class StringHashReverseCacheInitialCapacityAttribute : Attribute
     {

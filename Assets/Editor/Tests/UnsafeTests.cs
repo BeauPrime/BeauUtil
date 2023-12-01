@@ -7,6 +7,8 @@ using BeauUtil.Graph;
 using Log = BeauUtil.Debugger.Log;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using UnityEditor;
+using System.Reflection;
 
 namespace BeauUtil.UnitTests
 {
@@ -385,6 +387,20 @@ namespace BeauUtil.UnitTests
             Debug.Log(a.Equals(&InternalFunc_JitTest));
         }
 
+        static private void SpecializedTestMethod()
+        {
+            Log.Msg("Hey you invoked me!");
+        }
 
+        [Test]
+        static public void CanUseMethodInvocationHelper()
+        {
+            MethodInvocationHelper helper = default;
+            bool loaded = helper.TryLoad(typeof(UnsafeTests).GetMethod("SpecializedTestMethod", BindingFlags.Static | BindingFlags.NonPublic), DefaultStringConverter.Instance);
+            Assert.IsTrue(loaded);
+
+            bool invoked = helper.TryInvoke(null, default, DefaultStringConverter.Instance, null, out var _);
+            Assert.IsTrue(invoked);
+        }
     }
 }

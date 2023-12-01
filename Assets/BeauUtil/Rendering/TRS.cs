@@ -154,5 +154,35 @@ namespace BeauUtil
         };
 
         #endregion // Identity
+
+        #region Create
+
+        static public bool TryCreateFromMatrix(Matrix4x4 inMatrix, out TRS outTRS)
+        {
+            outTRS.Position = inMatrix.GetPosition();
+            outTRS.Scale = inMatrix.lossyScale;
+            return TryGetRotation(inMatrix, out outTRS.Rotation) && inMatrix.ValidTRS();
+        }
+
+        static public bool TryGetRotation(Matrix4x4 inMatrix, out Quaternion outRotation)
+        {
+            Vector3 forward = inMatrix.GetColumn(2);
+            if (forward.sqrMagnitude == 0)
+            {
+                outRotation = Quaternion.identity;
+                return false;
+            }
+
+            Vector3 up = inMatrix.GetColumn(1);
+            if (up.sqrMagnitude == 0) {
+                outRotation = Quaternion.identity;
+                return false;
+            }
+
+            outRotation = Quaternion.LookRotation(forward, up);
+            return true;
+        }
+
+        #endregion // Create
     }
 }

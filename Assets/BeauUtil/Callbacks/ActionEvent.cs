@@ -91,7 +91,7 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public unsafe IntPtr Register(delegate*<void> inPointer, UnityEngine.Object inContext = null)
+        public unsafe IntPtr Register(delegate*<void> inPointer)
         {
             if (inPointer == null)
                 throw new ArgumentNullException("inAction");

@@ -554,6 +554,7 @@ namespace BeauUtil
         }
 #endif // ENABLE_IL2CPP
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private TOutput CastedInvoke(MulticastDelegate inDelegate, TInput inInput)
         {
             return ((Func<TInputCasted, TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TInputCasted>(inInput));
@@ -574,6 +575,7 @@ namespace BeauUtil
 
         static private CastedFunc<TInput, TOutput> s_Callback;
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private TOutput CastedInvoke(MulticastDelegate inDelegate, TInput inInput)
         {
             return ((Func<TInputCasted, TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TInputCasted>(inInput));
