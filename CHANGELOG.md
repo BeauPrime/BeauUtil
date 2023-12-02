@@ -1,3 +1,8 @@
+## Version 0.9.10
+**1 Dec 2023**
+
+Further hotfix for MethodInvocationHelper
+
 ## Version 0.9.9
 **1 Dec 2023**
 

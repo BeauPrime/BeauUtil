@@ -8,6 +8,8 @@ using UnityEngine.UI;
 using System.IO;
 using BeauUtil.Debugger;
 using BeauUtil.Streaming;
+using UnityEngine.Scripting;
+using AOT;
 
 namespace BeauUtil.Examples
 {
@@ -21,6 +23,14 @@ namespace BeauUtil.Examples
         public void Start()
         {
             Reprocess();
+
+            MethodInvocationHelper helper = default;
+            helper.TryLoad(typeof(TextBlockTest).GetMethod("SomeTestFunc"), DefaultStringConverter.Instance);
+            helper.TryInvoke(null, null, DefaultStringConverter.Instance, null, out NonBoxedValue _);
+
+            MethodInvocationHelper helper2 = default;
+            helper2.TryLoad(typeof(TextBlockTest).GetMethod("SomeTestFunc2"), DefaultStringConverter.Instance);
+            helper2.TryInvoke(null, null, DefaultStringConverter.Instance, null, out NonBoxedValue _);
         }
 
         public void Update()
@@ -54,6 +64,16 @@ namespace BeauUtil.Examples
                 nodeText.text = node.Text();
                 m_Spawned.Add(nodeObj);
             }
+        }
+
+        [Preserve]
+        static public void SomeTestFunc() {
+            Log.Msg("yay i was called");
+        }
+
+        [Preserve, MonoPInvokeCallback(typeof(Action))]
+        static public void SomeTestFunc2() {
+            Log.Msg("yay i was also called");
         }
     }
 }
