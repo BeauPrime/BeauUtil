@@ -16,11 +16,19 @@
 // using function pointers on a JIT platform is not recommended.
 // We could end up with pointers to unoptimized code
 // if JIT compilation decides to recompile the function.
-// Therefore, only enable this optimization on AOT platforms.
 
-#if UNITY_2021_2_OR_NEWER && ENABLE_IL2CPP && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
-#define SPECIALIZE_WITH_FUNCTION_POINTERS
-#endif // UNITY_2021_2_OR_NEWER
+// Additionally, function pointers returned by Marshal.GetFunctionPointerForDelegate
+// are not compatible with the calling conventions we have available right now.
+// Therefore I'm disabling specialization with function pointers.
+
+// NOTE: MonoPInvokeCallbackAttribute requires a delegate type
+//#if UNITY_2021_2_OR_NEWER // && ENABLE_IL2CPP && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+//#define SPECIALIZE_WITH_FUNCTION_POINTERS
+//#endif // UNITY_2021_2_OR_NEWER && ENABLE_IL2CPP && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+
+#if SPECIALIZE_WITH_FUNCTION_POINTERS
+using AOT;
+#endif // SPECIALIZE_WITH_FUNCTION_POINTERS
 
 using System;
 using System.Collections;
@@ -163,12 +171,28 @@ namespace BeauUtil
                     m_Unspecialized.DefaultArguments = Array.Empty<object>();
 
                     m_Specialized.Type = (short) specializationIndex;
-                    m_Specialized.Delegate = inMethod.CreateDelegate(SpecializationTable[specializationIndex]);
+
 #if SPECIALIZE_WITH_FUNCTION_POINTERS
                     unsafe
                     {
-                        m_Specialized.FunctionPtr = (void*) Marshal.GetFunctionPointerForDelegate(m_Specialized.Delegate);
+                        if (inMethod.IsDefined(typeof(MonoPInvokeCallbackAttribute)))
+                        {
+                            var constructorData = inMethod.GetCustomAttributesData();
+                            foreach(var data in constructorData) {
+                                if (data.AttributeType == typeof(MonoPInvokeCallbackAttribute)) {
+                                    Type delegateType = (Type) data.ConstructorArguments[0].Value;
+                                    m_Specialized.Delegate = inMethod.CreateDelegate(delegateType);
+                                    m_Specialized.FunctionPtr = (void*) Marshal.GetFunctionPointerForDelegate(m_Specialized.Delegate);
+                                    //Debug.Log("Created function pointer");
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        m_Specialized.Delegate = m_Specialized.Delegate ?? inMethod.CreateDelegate(SpecializationTable[specializationIndex]);
                     }
+#else
+                    m_Specialized.Delegate = inMethod.CreateDelegate(SpecializationTable[specializationIndex]);
 #endif // SPECIALIZE_WITH_FUNCTION_POINTERS
                     if (firstParam != null && firstParam.IsOptional)
                     {
@@ -258,7 +282,7 @@ namespace BeauUtil
                 NonBoxedValue firstArg;
                 if (!inConverter.TryConvertTo(split[0], Signature.Parameters[m_Unspecialized.ContextOffset].ParameterType, inContext, out firstArg))
                 {
-                    UnityEngine.Debug.LogErrorFormat("[MethodInvocationHelper] Unable to convert string '{0}' to expected type {1}", split[1].ToString(), Signature.Parameters[m_Unspecialized.ContextOffset].ParameterType.Name);
+                    UnityEngine.Debug.LogErrorFormat("[MethodInvocationHelper] Unable to convert string '{0}' to expected type {1}", split[0].ToString(), Signature.Parameters[m_Unspecialized.ContextOffset].ParameterType.Name);
                     outReturnValue = null;
                     return false;
                 }
@@ -299,102 +323,106 @@ namespace BeauUtil
 #if SPECIALIZE_WITH_FUNCTION_POINTERS
                 unsafe
                 {
-                    void* func = m_Specialized.FunctionPtr;
+                    void* funcPtr = m_Specialized.FunctionPtr;
 
-                    switch (specializedType)
+                    if (funcPtr != null)
                     {
-                        case 0:
-                            ((delegate*<void>) func)();
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                        switch (specializedType)
+                        {
+                            case 0:
+                                ((delegate*<void>) funcPtr)();
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 1:
-                            outReturnValue = ((delegate*<bool>) func)();
-                            return true;
+                            case 1:
+                                outReturnValue = ((delegate*<bool>) funcPtr)();
+                                return true;
 
-                        case 2:
-                            outReturnValue = ((delegate*<int>) func)();
-                            return true;
+                            case 2:
+                                outReturnValue = ((delegate*<int>) funcPtr)();
+                                return true;
 
-                        case 3:
-                            outReturnValue = ((delegate*<float>) func)();
-                            return true;
+                            case 3:
+                                outReturnValue = ((delegate*<float>) funcPtr)();
+                                return true;
 
-                        case 4:
-                            outReturnValue = ((delegate*<StringHash32>) func)();
-                            return true;
+                            case 4:
+                                outReturnValue = ((delegate*<StringHash32>) funcPtr)();
+                                return true;
 
-                        case 5:
-                            outReturnValue = new NonBoxedValue(((delegate*<IEnumerator>) func)());
-                            return true;
+                            case 5:
+                                outReturnValue = new NonBoxedValue(((delegate*<IEnumerator>) funcPtr)());
+                                return true;
 
-                        case 6:
-                            ((delegate*<bool, void>) func)(inArgument.AsBool());
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                            case 6:
+                                ((delegate*<bool, void>) funcPtr)(inArgument.AsBool());
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 7:
-                            ((delegate*<int, void>) func)(inArgument.AsInt32());
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                            case 7:
+                                ((delegate*<int, void>) funcPtr)(inArgument.AsInt32());
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 8:
-                            ((delegate*<float, void>) func)(inArgument.AsFloat());
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                            case 8:
+                                ((delegate*<float, void>) funcPtr)(inArgument.AsFloat());
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 9:
-                            outReturnValue = new NonBoxedValue(((delegate*<float, IEnumerator>) func)(inArgument.AsFloat()));
-                            return true;
+                            case 9:
+                                outReturnValue = new NonBoxedValue(((delegate*<float, IEnumerator>) funcPtr)(inArgument.AsFloat()));
+                                return true;
 
-                        case 10:
-                            ((delegate*<StringHash32, void>) func)(inArgument.AsStringHash());
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                            case 10:
+                                ((delegate*<StringHash32, void>) funcPtr)(inArgument.AsStringHash());
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 11:
-                            outReturnValue = ((delegate*<StringHash32, bool>) func)(inArgument.AsStringHash());
-                            return true;
+                            case 11:
+                                outReturnValue = ((delegate*<StringHash32, bool>) funcPtr)(inArgument.AsStringHash());
+                                return true;
 
-                        case 12:
-                            outReturnValue = ((delegate*<StringHash32, int>) func)(inArgument.AsStringHash());
-                            return true;
+                            case 12:
+                                outReturnValue = ((delegate*<StringHash32, int>) funcPtr)(inArgument.AsStringHash());
+                                return true;
 
-                        case 13:
-                            outReturnValue = ((delegate*<StringHash32, float>) func)(inArgument.AsStringHash());
-                            return true;
+                            case 13:
+                                outReturnValue = ((delegate*<StringHash32, float>) funcPtr)(inArgument.AsStringHash());
+                                return true;
 
-                        case 14:
-                            outReturnValue = ((delegate*<StringHash32, StringHash32>) func)(inArgument.AsStringHash());
-                            return true;
+                            case 14:
+                                outReturnValue = ((delegate*<StringHash32, StringHash32>) funcPtr)(inArgument.AsStringHash());
+                                return true;
 
-                        case 15:
-                            outReturnValue = new NonBoxedValue(((delegate*<StringHash32, IEnumerator>) func)(inArgument.AsStringHash()));
-                            return true;
+                            case 15:
+                                outReturnValue = new NonBoxedValue(((delegate*<StringHash32, IEnumerator>) funcPtr)(inArgument.AsStringHash()));
+                                return true;
 
-                        case 16:
-                            ((delegate*<StringSlice, void>) func)(inArgument.AsStringSlice());
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                            case 16:
+                                ((delegate*<StringSlice, void>) funcPtr)(inArgument.AsStringSlice());
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 17:
-                            outReturnValue = ((delegate*<StringSlice, bool>) func)(inArgument.AsStringSlice());
-                            return true;
+                            case 17:
+                                outReturnValue = ((delegate*<StringSlice, bool>) funcPtr)(inArgument.AsStringSlice());
+                                return true;
 
-                        case 18:
-                            ((delegate*<string, void>) func)(inArgument.AsString());
-                            outReturnValue = default(NonBoxedValue);
-                            return true;
+                            case 18:
+                                ((delegate*<string, void>) funcPtr)(inArgument.AsString());
+                                outReturnValue = default(NonBoxedValue);
+                                return true;
 
-                        case 19:
-                            outReturnValue = ((delegate*<string, bool>) func)(inArgument.AsString());
-                            return true;
+                            case 19:
+                                outReturnValue = ((delegate*<string, bool>) funcPtr)(inArgument.AsString());
+                                return true;
 
-                        default:
-                            throw new InvalidOperationException("Unknown specialization index " + specializedType);
+                            default:
+                                throw new InvalidOperationException("Unknown specialization index " + specializedType);
+                        }
                     }
                 }
-#else
+#endif // SPECIALIZE_WITH_FUNCTION_POINTERS
+
                 Delegate func = m_Specialized.Delegate;
 
                 switch(specializedType)
@@ -490,7 +518,6 @@ namespace BeauUtil
                         throw new InvalidOperationException("Unknown specialization index " + specializedType);
                 }
 
-#endif // SPECIALIZE_WITH_FUNCTION_POINTERS
             }
 
             if (inPassedArgumentCount > 0)
