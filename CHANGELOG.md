@@ -1,7 +1,48 @@
-## Version 0.9.10
-**1 Dec 2023**
+## Version 0.10.0
+**9 Feb 2024**
 
-Further hotfix for MethodInvocationHelper
+Performance improvements
+Pointer alignment fixes
+`TypeIndex` can retrieve inheritance information
+Disabling experimental MethodInvocationHelper pointer specialization
+
+## Features
+* Added `UnsafeEnumerator` for iterating over unsafe memory
+* Added IntrinsicIL definitions for several operations
+  * Requires `TinyIL.Mono` package
+* Added `BitEnumerator32`, `BitEnumerator64`, `EnumMaskEnumerator` and `EnumBitEnumerator` structs for enumerating over set bits/mask values
+* Added `TypeIndex.GetAll` for retrieving indices up an inheritance chain
+
+## Improvements
+* Added conversion from `UnsafeSpan` to `Span` and `ReadOnlySpan`
+* Added conversion between `UnsafeSpan<T>` and `UnsafeSpan<U>`
+* Added `Unsafe.IsAligned` methods for checking value/pointer alignment
+* Added pointer alignment checks to critical aligned operations
+* Switch pointer-to-integral conversions to 32-bit on 32-bit machines
+* Added `CastableAction` and `CastableEvent` variants for 2, 3, and 4 parameters
+* Added `RingBuffer.Quicksort` shortcut for unmanaged element types
+* Added `Profiling.AvgTime` for averaging the duration for a set number of samples
+* Exposed `Unsafe.AllocAligned(Arena)`
+* Added `MeshData.Vertex` and `MeshData.Index` calls for modifying vertex and index values directly
+* Added `Geom.SetTranslation` for setting matrix translation
+* Added `Geom.Forward/Up/Right` shortcuts for faster quaternion-to-vector calculations
+
+## Fixes
+* Disabled MethodInvocationHelper pointer specialization optimizations
+* `ConsolePerformance` no longer starts the profiler automatically
+* `Profiling.Time` is more accurate and can be run on non-main threads
+* `RingBuffer.Compress` no longer allocates memory in the case of split segments
+* `AssetDBUtils.Find` calls now return the most accurate result, not just the first one
+* Fixed accidental recursion in `StringUtils.ToUpperInvariant`
+* Fixed missed cases of using `Comparer<T>.Default` instead of `CompareUtils.DefaultSort<T>()`
+
+## Breaking Changes
+* `RingBuffer.Compress` renamed to `RingBuffer.Linearize` for consistency
+* Events no longer exposed to inspector for the following components:
+  * `CollisionListener`/`CollisionListener2D`
+  * `TriggerListener`/`TriggerListener2D`
+  * `PointerListener`
+  * `RectTransformPinned`
 
 ## Version 0.9.9
 **1 Dec 2023**
