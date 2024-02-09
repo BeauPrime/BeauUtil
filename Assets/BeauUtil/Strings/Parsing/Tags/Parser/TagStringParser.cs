@@ -25,7 +25,7 @@ namespace BeauUtil.Tags
 
         // processors
 
-        protected IDelimiterRules m_Delimiters = RichTextDelimiters;
+        protected IDelimiterRules m_Delimiters = TagStringParser.RichTextDelimiters;
         protected IEventProcessor m_EventProcessor;
         protected IReplaceProcessor m_ReplaceProcessor;
 
@@ -78,7 +78,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses the given string into a TagString.
         /// </summary>
-        public TagString Parse(StringSlice inInput, object inContext = null)
+        public TagString Parse(StringSlice inInput, object inContext = default(object))
         {
             TagString str = new TagString();
             Parse(ref str, inInput, inContext);
@@ -88,7 +88,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses the given string into a TagString.
         /// </summary>
-        public void Parse(ref TagString outTarget, StringSlice inInput, object inContext = null)
+        public void Parse(ref TagString outTarget, StringSlice inInput, object inContext = default(object))
         {
             if (outTarget == null)
             {
@@ -127,9 +127,9 @@ namespace BeauUtil.Tags
         {
             bool bModified = false;
             bool bTrackRichText = m_Delimiters.RichText;
-            bool bHasRichDelims = HasSameDelims(m_Delimiters, RichTextDelimiters);
+            bool bHasRichDelims = TagStringParser.HasSameDelims(m_Delimiters, TagStringParser.RichTextDelimiters);
             bool bTrackTags = !bTrackRichText || !bHasRichDelims;
-            bool bIsCurlyBrace = HasSameDelims(m_Delimiters, CurlyBraceDelimiters);
+            bool bIsCurlyBrace = TagStringParser.HasSameDelims(m_Delimiters, TagStringParser.CurlyBraceDelimiters);
 
             if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
             {
@@ -158,7 +158,7 @@ namespace BeauUtil.Tags
                     else if (state.RichStart >= 0 && state.Input.AttemptMatch(charIdx, ">"))
                     {
                         StringSlice richSlice = state.Input.Substring(state.RichStart + 1, charIdx - state.RichStart - 1);
-                        TagData richTag = TagData.Parse(richSlice, RichTextDelimiters);
+                        TagData richTag = TagData.Parse(richSlice, TagStringParser.RichTextDelimiters);
 
                         CopyNonRichText(ref state, state.RichStart);
 
@@ -541,72 +541,5 @@ namespace BeauUtil.Tags
         }
     
         #endregion // IDisposable
-    
-        #region Utilities
-
-
-        /// <summary>
-        /// Returns if the given string contains any text or rich text tags.
-        /// </summary>
-        static public bool ContainsText(StringSlice inString, IDelimiterRules inDelimiters, ICollection<string> inTextTags = null)
-        {
-            bool bTrackRichText = inDelimiters.RichText;
-            bool bTrackTags = !bTrackRichText || !HasSameDelims(inDelimiters, RichTextDelimiters);
-
-            int length = inString.Length;
-            int charIdx = 0;
-            int richStart = -1;
-            int tagStart = -1;
-            int copyStart = 0;
-
-            while(charIdx < length)
-            {
-                if (bTrackRichText)
-                {
-                    if (inString.AttemptMatch(charIdx, "<"))
-                    {
-                        richStart = charIdx;
-                    }
-                    else if (richStart >= 0 && inString.AttemptMatch(charIdx, ">"))
-                    {
-                        return true;
-                    }
-                }
-
-                if (bTrackTags)
-                {
-                    if (inString.AttemptMatch(charIdx, inDelimiters.TagStartDelimiter))
-                    {
-                        tagStart = charIdx;
-                    }
-                    else if (tagStart >= 0 && inString.AttemptMatch(charIdx, inDelimiters.TagEndDelimiter))
-                    {
-                        StringSlice check = inString.Substring(copyStart, tagStart - copyStart);
-                        if (!check.IsWhitespace)
-                            return true;
-
-                        if (inTextTags != null)
-                        {
-                            TagData data = TagData.Parse(inString.Substring(tagStart, charIdx - tagStart + 1), inDelimiters);
-                            if (inTextTags.Contains(data.Id.ToString()))
-                            {
-                                return true;
-                            }
-                        }
-                        
-                        copyStart = charIdx + 1;
-                        tagStart = -1;
-                        richStart = -1;
-                    }
-                }
-
-                ++charIdx;
-            }
-
-            StringSlice finalCheck = inString.Substring(copyStart, length - copyStart);
-            return !finalCheck.IsWhitespace;
-        }
-
-        #endregion // Utilities
     }
 }

@@ -50,7 +50,25 @@ namespace BeauUtil
         /// Performs a safe modulo that consistently wraps correctly for negative values.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public float SafeMod(int inA, int inB)
+        static public double SafeMod(double inA, double inB)
+        {
+            return ((inA % inB) + inB) % inB;
+        }
+
+        /// <summary>
+        /// Performs a safe modulo that consistently wraps correctly for negative values.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int SafeMod(int inA, int inB)
+        {
+            return ((inA % inB) + inB) % inB;
+        }
+
+        /// <summary>
+        /// Performs a safe modulo that consistently wraps correctly for negative values.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long SafeMod(long inA, long inB)
         {
             return ((inA % inB) + inB) % inB;
         }
@@ -82,7 +100,6 @@ namespace BeauUtil
             return Mathf.Round(inValue);
         }
 
-
         /// <summary>
         /// Quantizes a value to the nearest increment.
         /// </summary>
@@ -108,6 +125,24 @@ namespace BeauUtil
         static public double Quantize(double inValue, double inIncrement)
         {
             return inIncrement * Math.Round(inValue / inIncrement);
+        }
+
+        /// <summary>
+        /// Quantizes a value to the nearest increment.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int Quantize(int inValue, int inIncrement)
+        {
+            return inIncrement * (int) Math.Round((float) inValue / inIncrement);
+        }
+
+        /// <summary>
+        /// Quantizes a value to the nearest increment.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long Quantize(long inValue, long inIncrement)
+        {
+            return inIncrement * (long) Math.Round((double) inValue / inIncrement);
         }
     }
 }

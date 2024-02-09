@@ -16,10 +16,6 @@ using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
-#if !SUPPORTS_FUNCTION_POINTERS
-using ActionPtr = System.Action;
-#endif // !SUPPORTS_FUNCTION_POINTERS
-
 namespace BeauUtil
 {
     /// <summary>
@@ -27,25 +23,29 @@ namespace BeauUtil
     /// </summary>
     public class ActionEvent
     {
-#if SUPPORTS_FUNCTION_POINTERS
         private struct ActionPtr
         {
             public readonly System.Action Delegate;
+#if SUPPORTS_FUNCTION_POINTERS
             public readonly unsafe delegate*<void> Ptr;
+#endif // SUPPORTS_FUNCTION_POINTERS
 
             public unsafe ActionPtr(System.Action inDelegate)
             {
                 Delegate = inDelegate;
+#if SUPPORTS_FUNCTION_POINTERS
                 Ptr = null;
+#endif // SUPPORTS_FUNCTION_POINTERS
             }
 
+#if SUPPORTS_FUNCTION_POINTERS
             public unsafe ActionPtr(delegate*<void> inPtr)
             {
                 Delegate = null;
                 Ptr = inPtr;
             }
-        }
 #endif // SUPPORTS_FUNCTION_POINTERS
+        }
 
         private int m_Length = 0;
         private ActionPtr[] m_Actions;
@@ -71,17 +71,14 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public void Register(Action inAction, UnityEngine.Object inContext = null)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
 
             EnsureCapacity(m_Length + 1);
-#if SUPPORTS_FUNCTION_POINTERS
             m_Actions[m_Length] = new ActionPtr(inAction);
-#else
-            m_Actions[m_Length] = inAction;
-#endif // SUPPORTS_FUNCTION_POINTERS
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
@@ -91,6 +88,7 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public unsafe IntPtr Register(delegate*<void> inPointer)
         {
             if (inPointer == null)
@@ -112,6 +110,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes the registered action.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public void Deregister(Action inAction)
         {
             if (inAction == null)
@@ -119,11 +118,7 @@ namespace BeauUtil
 
             for (int i = m_Length - 1; i >= 0; i--)
             {
-#if SUPPORTS_FUNCTION_POINTERS
                 if (m_Actions[i].Delegate == inAction)
-#else
-                if (m_Actions[i] == inAction)
-#endif // SUPPORTS_FUNCTION_POINTERS
                 {
                     RemoveAt(i);
                     break;
@@ -161,6 +156,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes the registered action.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public unsafe void Deregister(IntPtr inPointer)
         {
             if (inPointer == null)
@@ -182,6 +178,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes all actions bound to the given context.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int DeregisterAll(UnityEngine.Object inContext)
         {
             if (object.ReferenceEquals(inContext, null))
@@ -205,6 +202,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes all actions bound to a dead context.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int DeregisterAllWithDeadContext()
         {
             int deregisterCount = 0;
@@ -263,25 +261,24 @@ namespace BeauUtil
             while (idx < end)
             {
 #if SUPPORTS_FUNCTION_POINTERS
-                Invoke(m_Actions[idx++]);
+                unsafe
+                {
+                    ActionPtr ptr = m_Actions[idx++];
+                    if (ptr.Delegate != null)
+                        ptr.Delegate();
+                    else
+                        ptr.Ptr();
+                }
 #else
-                m_Actions[idx++].Invoke();
+                m_Actions[idx++].Delegate();
 #endif // SUPPORTS_FUNCTION_POINTERS
+
             }
         }
 
-#if SUPPORTS_FUNCTION_POINTERS
-        static private unsafe void Invoke(in ActionPtr inBox)
-        {
-            if (inBox.Delegate != null)
-                inBox.Delegate();
-            else
-                inBox.Ptr();
-        }
-#endif // SUPPORTS_FUNCTION_POINTERS
+#endregion // Invoke
 
-        #endregion // Invoke
-
+        [Il2CppSetOption(Option.NullChecks, false)]
         private void EnsureCapacity(int inSize)
         {
             if (m_Actions.Length < inSize)
@@ -292,6 +289,7 @@ namespace BeauUtil
             }
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         private void RemoveAt(int inIndex)
         {
             ArrayUtils.FastRemoveAt(m_Actions, m_Length, inIndex);

@@ -23,6 +23,7 @@ namespace BeauUtil.Debugger
         [SerializeField, Range(PerformanceTracker.MinBufferSize, PerformanceTracker.MaxBufferSize)]
         private int m_BufferSize = PerformanceTracker.DefaultBufferSize;
         [SerializeField, Range(10, 600)] private int m_UpdatePeriodFrames = 30;
+        [SerializeField] private bool m_UseUnityProfiler = false;
 
         [Header("Display")]
         [SerializeField] private TMP_Text m_FramerateText = null;
@@ -41,7 +42,7 @@ namespace BeauUtil.Debugger
 
         private void Awake()
         {
-            m_Tracker = new PerformanceTracker(m_BufferSize);
+            m_Tracker = new PerformanceTracker(m_BufferSize, m_UseUnityProfiler);
             m_EOF = new WaitForEndOfFrame();
             m_StatsBuilder = new StringBuilder(16);
         }

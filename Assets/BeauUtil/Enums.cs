@@ -32,6 +32,7 @@ namespace BeauUtil
         /// Casts the enum to a byte.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u1; ret")]
         static public byte ToByte<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -55,6 +56,7 @@ namespace BeauUtil
         /// Casts the enum to a signed byte.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i1; ret")]
         static public sbyte ToSByte<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -78,6 +80,7 @@ namespace BeauUtil
         /// Casts the enum to a short.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i2; ret")]
         static public short ToShort<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -101,6 +104,7 @@ namespace BeauUtil
         /// Casts the enum to an unsigned short.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u2; ret")] 
         static public ushort ToUShort<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -124,6 +128,7 @@ namespace BeauUtil
         /// Casts the enum to an integer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i4; ret")]
         static public int ToInt<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -147,6 +152,7 @@ namespace BeauUtil
         /// Casts the enum to an unsigned integer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u4; ret")]
         static public uint ToUInt<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -170,6 +176,7 @@ namespace BeauUtil
         /// Casts the enum to a long.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i8; ret")] 
         static public long ToLong<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -193,6 +200,7 @@ namespace BeauUtil
         /// Casts the enum to an unsigned long.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u8; ret")]
         static public ulong ToULong<T>(T inValue)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -229,14 +237,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<byte, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -252,14 +257,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<sbyte, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -275,14 +277,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<short, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -298,14 +297,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<ushort, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -321,14 +317,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<int, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -344,14 +337,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<uint, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -367,14 +357,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<long, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         /// <summary>
@@ -390,14 +377,11 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            #if UNMANAGED_CONSTRAINT
-            unsafe
-            {
-                return *(T*)(&inValue);
-            }
-            #else
+#if UNMANAGED_CONSTRAINT
+            return Unsafe.Reinterpret<ulong, T>(inValue);
+#else
             return (T) Enum.ToObject(typeof(T), inValue);
-            #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
         }
 
         #endregion // To Enum

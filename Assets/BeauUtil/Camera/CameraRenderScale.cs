@@ -173,15 +173,9 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static private int ErrorCorrection(int fullHeight, int desiredPixelHeight, double scale)
+        static private double ErrorCorrection(int fullHeight, int desiredPixelHeight, double scale)
         {
-            return desiredPixelHeight - (int) Math.Round(fullHeight * scale);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static private float Quantize(float value, float quantize)
-        {
-            return quantize * (float) Math.Round(value / quantize);
+            return (desiredPixelHeight + 0.4) - Math.Round(fullHeight * scale);
         }
 
         #if UNITY_EDITOR
@@ -257,9 +251,9 @@ namespace BeauUtil
                 m_OriginalCameraChanged = m_CameraTransform.hasChanged;
                 float invPixels = 1f / m_PixelsPerUnit;
                 Vector3 pos = m_CameraTransform.position;
-                pos.x = Quantize(pos.x, invPixels);
-                pos.y = Quantize(pos.y, invPixels);
-                pos.z = Quantize(pos.z, invPixels);
+                pos.x = MathUtils.Quantize(pos.x, invPixels);
+                pos.y = MathUtils.Quantize(pos.y, invPixels);
+                pos.z = MathUtils.Quantize(pos.z, invPixels);
                 m_CameraTransform.position = pos;
                 m_AppliedCameraQuantization = true;
             }

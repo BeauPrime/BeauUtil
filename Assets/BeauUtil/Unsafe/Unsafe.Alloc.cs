@@ -22,6 +22,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using BeauUtil.Debugger;
 
+#if UNITY_64 || UNITY_EDITOR_64
+using PointerIntegral = System.UInt64;
+using PointerDiff = System.Int64;
+#else
+using PointerIntegral = System.UInt32;
+using PointerDiff = System.Int32;
+#endif // UNITY_64 || UNITY_EDITOR_64
+
 namespace BeauUtil
 {
     /// <summary>
@@ -37,12 +45,12 @@ namespace BeauUtil
         public class MemoryCorruptionException : Exception
         {
             public unsafe MemoryCorruptionException(void* inAddress)
-                : base(string.Format("Memory corruption at address '0x{0:X}'", (ulong) inAddress))
+                : base(string.Format("Memory corruption at address '0x{0:X}'", (PointerIntegral) inAddress))
             {
             }
 
             public unsafe MemoryCorruptionException(void* inAddress, string inFormat, params object[] inArgs)
-                : base(string.Format("Memory corruption at address '0x{0:X}': {1}", (ulong) inAddress, string.Format(inFormat, inArgs)))
+                : base(string.Format("Memory corruption at address '0x{0:X}': {1}", (PointerIntegral) inAddress, string.Format(inFormat, inArgs)))
             {
             }
 

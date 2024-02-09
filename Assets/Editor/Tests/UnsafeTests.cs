@@ -372,7 +372,7 @@ namespace BeauUtil.UnitTests
         static public void CanTakeFunctionPointers_JitTest()
         {
             CastableAction<int> a = CastableAction<int>.Create(&InternalFunc_JitTest);
-            CastableAction<int> b = CastableAction<int>.Create(InternalFunc2);
+            CastableAction<int> b = CastableAction<int>.Create(InternalFunc2); 
 
             a.Invoke(15); 
             b.Invoke(16);

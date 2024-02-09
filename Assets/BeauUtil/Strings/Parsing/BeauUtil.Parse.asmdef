@@ -1,5 +1,6 @@
 {
     "name": "BeauUtil.Parse",
+    "rootNamespace": "",
     "references": [
         "BeauUtil"
     ],

@@ -15,17 +15,16 @@ namespace BeauUtil
 {
     public class CollisionListener2D : ColliderProxy2D
     {
-        #region Inspector
+        #region Events
 
-        [Header("Events")]
-        [SerializeField] private CollisionEvent m_OnCollisionEnter = new CollisionEvent();
-        [SerializeField] private TaggedCollisionEvent m_TaggedCollisionEnter = new TaggedCollisionEvent();
-        [SerializeField] private CollisionEvent m_OnCollisionExit = new CollisionEvent();
-        [SerializeField] private TaggedCollisionEvent m_TaggedCollisionExit = new TaggedCollisionEvent();
-        [SerializeField] private ColliderEvent m_OnCollisionCancel = new ColliderEvent();
-        [SerializeField] private TaggedColliderEvent m_TaggedCollisionCancel = new TaggedColliderEvent();
+        private readonly CollisionEvent m_OnCollisionEnter = new CollisionEvent();
+        private readonly TaggedCollisionEvent m_TaggedCollisionEnter = new TaggedCollisionEvent();
+        private readonly CollisionEvent m_OnCollisionExit = new CollisionEvent();
+        private readonly TaggedCollisionEvent m_TaggedCollisionExit = new TaggedCollisionEvent();
+        private readonly ColliderEvent m_OnCollisionCancel = new ColliderEvent();
+        private readonly TaggedColliderEvent m_TaggedCollisionCancel = new TaggedColliderEvent();
 
-        #endregion // Inspector
+        #endregion // Events
 
         public CollisionEvent onCollisionEnter { get { return m_OnCollisionEnter; } }
         public TaggedCollisionEvent onCollisionEnterTagged { get { return m_TaggedCollisionEnter; } }

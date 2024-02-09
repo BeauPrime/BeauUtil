@@ -13,15 +13,14 @@ namespace BeauUtil
 {
     public class TriggerListener : ColliderProxy
     {
-        #region Inspector
+        #region Events
 
-        [Header("Events")]
-        [SerializeField] private ColliderEvent m_OnTriggerEnter = new ColliderEvent();
-        [SerializeField] private TaggedColliderEvent m_TaggedTriggerEnter = new TaggedColliderEvent();
-        [SerializeField] private ColliderEvent m_OnTriggerExit = new ColliderEvent();
-        [SerializeField] private TaggedColliderEvent m_TaggedTriggerExit = new TaggedColliderEvent();
+        private readonly ColliderEvent m_OnTriggerEnter = new ColliderEvent();
+        private readonly TaggedColliderEvent m_TaggedTriggerEnter = new TaggedColliderEvent();
+        private readonly ColliderEvent m_OnTriggerExit = new ColliderEvent();
+        private readonly TaggedColliderEvent m_TaggedTriggerExit = new TaggedColliderEvent();
 
-        #endregion // Inspector
+        #endregion // Events
 
         public ColliderEvent onTriggerEnter { get { return m_OnTriggerEnter; } }
         public TaggedColliderEvent onTriggerEnterTagged { get { return m_TaggedTriggerEnter; } }

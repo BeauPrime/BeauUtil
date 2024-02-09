@@ -9,11 +9,13 @@
 
 #if CSHARP_7_3_OR_NEWER
 #define EXPANDED_REFS
+#define UNMANAGED_CONSTRAINT
 #endif // CSHARP_7_3_OR_NEWER
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -97,11 +99,96 @@ namespace BeauUtil
         /// </summary>
         static public void Sort<T>(this IRingBuffer<T> inBuffer)
         {
-            inBuffer.Sort(Comparer<T>.Default);
+            inBuffer.Sort(CompareUtils.DefaultSort<T>());
         }
 
+#if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Sorts the given unsafe buffer with the default comparer.
+        /// </summary>
+        static public unsafe void Quicksort<T>(this RingBuffer<T> inBuffer)
+            where T : unmanaged
+        {
+            if (inBuffer.Count <= 1)
+                return;
+
+            inBuffer.Unpack(out T[] arr, out int offset, out int length);
+            
+            fixed (T* ptr = arr)
+            {
+                Unsafe.Quicksort(ptr + offset, length, CompareUtils.DefaultSort<T>());
+            }
+        }
+
+        /// <summary>
+        /// Sorts the given unsafe buffer with the given comparer.
+        /// </summary>
+        static public unsafe void Quicksort<T>(this RingBuffer<T> inBuffer, Comparison<T> inComparison)
+            where T : unmanaged
+        {
+            if (inBuffer.Count <= 1)
+                return;
+
+            inBuffer.Unpack(out T[] arr, out int offset, out int length);
+            fixed (T* ptr = arr)
+            {
+                Unsafe.Quicksort(ptr + offset, length, inComparison);
+            }
+        }
+
+        /// <summary>
+        /// Sorts the given unsafe buffer with the given comparer.
+        /// </summary>
+        static public unsafe void Quicksort<T>(this RingBuffer<T> inBuffer, IComparer<T> inComparer)
+            where T : unmanaged
+        {
+            if (inBuffer.Count <= 1)
+                return;
+
+            inBuffer.Unpack(out T[] arr, out int offset, out int length);
+            fixed (T* ptr = arr)
+            {
+                Unsafe.Quicksort(ptr + offset, length, inComparer);
+            }
+        }
+
+        /// <summary>
+        /// Sorts the given unsafe buffer with the given comparer.
+        /// </summary>
+        static public unsafe void Quicksort<T>(this RingBuffer<T> inBuffer, Unsafe.ComparisonPtr<T> inComparer)
+            where T : unmanaged
+        {
+            if (inBuffer.Count <= 1)
+                return;
+
+            inBuffer.Unpack(out T[] arr, out int offset, out int length);
+            fixed (T* ptr = arr)
+            {
+                Unsafe.Quicksort(ptr + offset, length, inComparer);
+            }
+        }
+
+        /// <summary>
+        /// Sorts the given unsafe buffer with the given comparer.
+        /// </summary>
+        static public unsafe void Quicksort<T>(this RingBuffer<T> inBuffer, Unsafe.ComparisonGetSortingValue<T> inSortingValue)
+            where T : unmanaged
+        {
+            if (inBuffer.Count <= 1)
+                return;
+
+            inBuffer.Unpack(out T[] arr, out int offset, out int length);
+            fixed (T* ptr = arr)
+            {
+                Unsafe.Quicksort(ptr + offset, length, inSortingValue);
+            }
+        }
+
+#endif // UNMANAGED_CONSTRAINT
+
         #endregion // Sort
-    
+
         #region CopyTo
 
         /// <summary>

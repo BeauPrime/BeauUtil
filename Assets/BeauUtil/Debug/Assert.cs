@@ -21,6 +21,7 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -147,6 +148,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DoesNotReturn]
         static public void Fail()
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", null);
@@ -156,6 +158,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DoesNotReturn]
         static public void Fail(string inMessage)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", inMessage);
@@ -165,6 +168,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DoesNotReturn]
         static public void Fail<P0>(string inFormat, P0 inParam0)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0));
@@ -174,6 +178,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DoesNotReturn]
         static public void Fail<P0, P1>(string inFormat, P0 inParam0, P1 inParam1)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1));
@@ -183,6 +188,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DoesNotReturn]
         static public void Fail<P0, P1, P2>(string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1, inParam2));
@@ -192,6 +198,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DoesNotReturn]
         static public void Fail(string inFormat, params object[] inParams)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParams));
@@ -425,7 +432,155 @@ namespace BeauUtil.Debugger
             }
         }
 
-        #endregion // False
+        #endregion // NotNull
+
+        #region Finite
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite(float inValue)
+        {
+            if (!float.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), null);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite(float inValue, string inMessage)
+        {
+            if (!float.IsFinite(inValue)    )
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), inMessage);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite<P0>(float inValue, string inFormat, P0 inParam0)
+        {
+            if (!float.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite<P0, P1>(float inValue, string inFormat, P0 inParam0, P1 inParam1)
+        {
+            if (!float.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite<P0, P1, P2>(float inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
+        {
+            if (!float.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite(float inValue, string inFormat, params object[] inParams)
+        {
+            if (!float.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParams));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite(double inValue)
+        {
+            if (!double.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), null);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite(double inValue, string inMessage)
+        {
+            if (!double.IsFinite(inValue)    )
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), inMessage);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite<P0>(double inValue, string inFormat, P0 inParam0)
+        {
+            if (!double.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite<P0, P1>(double inValue, string inFormat, P0 inParam0, P1 inParam1)
+        {
+            if (!double.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite<P0, P1, P2>(double inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
+        {
+            if (!double.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a floating point value is finite.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void Finite(double inValue, string inFormat, params object[] inParams)
+        {
+            if (!double.IsFinite(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParams));
+            }
+        }
+
+        #endregion // Finite
 
         #region Internal
 
@@ -562,7 +717,7 @@ namespace BeauUtil.Debugger
                     int lastSlash = location.LastIndexOf('/');
                     if (lastSlash >= 0)
                         location = location.Substring(lastSlash + 1);
-                    return string.Format("{0} @{1}:{2}", method, lastSlash, lineNum);
+                    return string.Format("{0} @{1}:{2}", method, location, lineNum);
                 }
             }
             return StackTraceDisabledMessage;

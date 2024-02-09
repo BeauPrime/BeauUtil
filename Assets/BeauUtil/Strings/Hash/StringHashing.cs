@@ -16,6 +16,7 @@ using System.Runtime.CompilerServices;
 using System;
 using System.Text;
 using System.Reflection;
+using UnityEngine.Scripting;
 
 namespace BeauUtil
 {
@@ -818,6 +819,7 @@ namespace BeauUtil
     /// This MUST be declared on an assembly.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+    [Preserve]
     public sealed class StringHashReverseCacheInitialCapacityAttribute : Attribute
     {
         public readonly int Hash32;

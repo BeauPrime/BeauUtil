@@ -23,20 +23,15 @@ namespace BeauUtil.UI
     {
         #region Types
 
-        [Serializable]
-        public class PointerEvent : UnityEvent<PointerEventData> { }
+        public sealed class PointerEvent : TinyUnityEvent<PointerEventData> { }
 
         #endregion // Types
 
-        #region Inspector
-
-        [SerializeField] private PointerEvent m_OnPointerEnter = new PointerEvent();
-        [SerializeField] private PointerEvent m_OnPointerExit = new PointerEvent();
-        [SerializeField] private PointerEvent m_OnPointerDown = new PointerEvent();
-        [SerializeField] private PointerEvent m_OnPointerUp = new PointerEvent();
-        [SerializeField] private PointerEvent m_OnClick = new PointerEvent();
-
-        #endregion // Inspector
+        private readonly PointerEvent m_OnPointerEnter = new PointerEvent();
+        private readonly PointerEvent m_OnPointerExit = new PointerEvent();
+        private readonly PointerEvent m_OnPointerDown = new PointerEvent();
+        private readonly PointerEvent m_OnPointerUp = new PointerEvent();
+        private readonly PointerEvent m_OnClick = new PointerEvent();
 
         [NonSerialized] private uint m_EnteredMask;
         [NonSerialized] private uint m_DownMask;

@@ -21,15 +21,15 @@ namespace BeauUtil
     /// <summary>
     /// Invokable list of CastableAction instances.
     /// </summary>
-    public class CastableEvent<TInput>
+    public class CastableEvent<TInput0>
     {
         private int m_Length = 0;
-        private CastableAction<TInput>[] m_Actions;
+        private CastableAction<TInput0>[] m_Actions;
         private int[] m_ContextIds = Array.Empty<int>();
 
         public CastableEvent()
         {
-            m_Actions = Array.Empty<CastableAction<TInput>>();
+            m_Actions = Array.Empty<CastableAction<TInput0>>();
             m_ContextIds = Array.Empty<int>();
         }
         
@@ -38,7 +38,7 @@ namespace BeauUtil
             if (inCapacity < 0)
                 throw new ArgumentOutOfRangeException("inCapacity");
 
-            m_Actions = new CastableAction<TInput>[inCapacity];
+            m_Actions = new CastableAction<TInput0>[inCapacity];
             m_ContextIds = new int[inCapacity];
         }
 
@@ -47,10 +47,10 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public void Register(Action<TInput> inAction, UnityEngine.Object inContext = null)
+        public void Register(Action<TInput0> inAction, UnityEngine.Object inContext = null)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inAction);
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
@@ -58,10 +58,10 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public void Register(RefAction<TInput> inAction, UnityEngine.Object inContext = null)
+        public void Register(RefAction<TInput0> inAction, UnityEngine.Object inContext = null)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inAction);
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
@@ -72,7 +72,7 @@ namespace BeauUtil
         public void Register(Action inAction, UnityEngine.Object inContext = null)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inAction);
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
@@ -83,7 +83,7 @@ namespace BeauUtil
         public void Register<U>(Action<U> inAction, UnityEngine.Object inContext = null)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inAction);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inAction);
             m_ContextIds[m_Length] = UnityHelper.Id(inContext ?? inAction.Target as UnityEngine.Object);
             m_Length++;
         }
@@ -93,10 +93,10 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public unsafe IntPtr Register(delegate*<TInput, void> inPointer)
+        public unsafe IntPtr Register(delegate*<TInput0, void> inPointer)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inPointer);
             m_ContextIds[m_Length] = 0;
             m_Length++;
             return (IntPtr) inPointer;
@@ -105,10 +105,10 @@ namespace BeauUtil
         /// <summary>
         /// Registers an action.
         /// </summary>
-        public unsafe IntPtr Register(delegate*<ref TInput, void> inPointer)
+        public unsafe IntPtr Register(delegate*<ref TInput0, void> inPointer)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inPointer);
             m_ContextIds[m_Length] = 0;
             m_Length++;
             return (IntPtr) inPointer;
@@ -120,7 +120,7 @@ namespace BeauUtil
         public unsafe IntPtr Register(delegate*<void> inPointer)
         {
             EnsureCapacity(m_Length + 1);
-            m_Actions[m_Length] = CastableAction<TInput>.Create(inPointer);
+            m_Actions[m_Length] = CastableAction<TInput0>.Create(inPointer);
             m_ContextIds[m_Length] = 0;
             m_Length++;
             return (IntPtr) inPointer;
@@ -135,7 +135,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes the registered action.
         /// </summary>
-        public void Deregister(Action<TInput> inAction)
+        public void Deregister(Action<TInput0> inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
@@ -153,7 +153,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes the registered action.
         /// </summary>
-        public void Deregister(RefAction<TInput> inAction)
+        public void Deregister(RefAction<TInput0> inAction)
         {
             if (inAction == null)
                 throw new ArgumentNullException("inAction");
@@ -306,7 +306,7 @@ namespace BeauUtil
         /// Invokes all currently registered actions.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Invoke(TInput inInput)
+        public void Invoke(TInput0 inInput)
         {
             Invoke(ref inInput);
         }
@@ -316,7 +316,7 @@ namespace BeauUtil
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public void Invoke(ref TInput inInput)
+        public void Invoke(ref TInput0 inInput)
         {
             int idx = 0;
             int end = m_Length;

@@ -511,7 +511,7 @@ namespace BeauUtil.Debugger
         #region Update
 
         /// <summary>
-        /// Updates all element's 
+        /// Updates all elements 
         /// </summary>
         public void UpdateElements()
         {

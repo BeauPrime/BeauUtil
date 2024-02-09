@@ -8,6 +8,7 @@
  */
 
 using System.Runtime.CompilerServices;
+using BeauUtil.Debugger;
 using UnityEngine;
 
 namespace BeauUtil
@@ -41,6 +42,8 @@ namespace BeauUtil
         /// </summary>
         static public unsafe void TransformPoint3(Vector3* ioVectors, int inCount, ref Matrix4x4 inMatrix)
         {
+            Assert.True(Unsafe.IsAligned<Vector3>(ioVectors), "Vector3 pointer is not aligned");
+
             Vector3* ptr = ioVectors;
             int count = inCount;
             while (count-- > 0)
@@ -72,6 +75,9 @@ namespace BeauUtil
         /// </summary>
         static public unsafe void TransformPoint3Stride(byte* ioVectors, int inOffset, int inStride, int inCount, ref Matrix4x4 inMatrix)
         {
+            Assert.True(Unsafe.IsAligned<Vector3>(ioVectors + inOffset), "Vector3 pointer is not aligned");
+            Assert.True(Unsafe.IsAlignedN(inStride, Unsafe.AlignOf<Vector3>()), "Stride is not aligned");
+
             byte* ptr = ioVectors + inOffset;
             int count = inCount;
             while (count-- > 0)
@@ -101,6 +107,8 @@ namespace BeauUtil
         /// </summary>
         static public unsafe void TransformVector3(Vector3* ioVectors, int inCount, ref Matrix4x4 inMatrix)
         {
+            Assert.True(Unsafe.IsAligned<Vector3>(ioVectors), "Vector3 pointer is not aligned");
+
             Vector3* ptr = ioVectors;
             int count = inCount;
             while (count-- > 0)
@@ -132,6 +140,9 @@ namespace BeauUtil
         /// </summary>
         static public unsafe void TransformVector3Stride(byte* ioVectors, int inOffset, int inStride, int inCount, ref Matrix4x4 inMatrix)
         {
+            Assert.True(Unsafe.IsAligned<Vector3>(ioVectors + inOffset), "Vector3 pointer is not aligned");
+            Assert.True(Unsafe.IsAlignedN(inStride, Unsafe.AlignOf<Vector3>()), "Stride is not aligned");
+
             byte* ptr = ioVectors + inOffset;
             int count = inCount;
             while (count-- > 0)

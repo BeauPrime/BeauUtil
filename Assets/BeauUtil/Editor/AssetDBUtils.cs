@@ -27,14 +27,15 @@ namespace BeauUtil.Editor
         /// </summary>
         static public T[] FindAssets<T>(string inName = null, string[] inSearchFolders = null) where T : UnityEngine.Object
         {
-            string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(typeof(T), inName), inSearchFolders);
+            WildcardMatch match = WildcardMatch.Compile(inName, '*', true);
+            string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(typeof(T), match.Pattern), inSearchFolders);
             if (assetGuids == null)
                 return null;
             HashSet<T> assets = new HashSet<T>();
             for (int i = 0; i < assetGuids.Length; ++i)
             {
                 string path = AssetDatabase.GUIDToAssetPath(assetGuids[i]);
-                Filter<T>(path, inName, typeof(T), assets);
+                Filter<T>(path, match, typeof(T), assets);
             }
             return GetArray(assets);
         }
@@ -44,14 +45,15 @@ namespace BeauUtil.Editor
         /// </summary>
         static public UnityEngine.Object[] FindAssets(Type inType, string inName = null, string[] inSearchFolders = null)
         {
-            string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(inType, inName), inSearchFolders);
+            WildcardMatch match = WildcardMatch.Compile(inName, '*', true);
+            string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(inType, match.Pattern), inSearchFolders);
             if (assetGuids == null)
                 return null;
             HashSet<UnityEngine.Object> assets = new HashSet<UnityEngine.Object>();
             for (int i = 0; i < assetGuids.Length; ++i)
             {
                 string path = AssetDatabase.GUIDToAssetPath(assetGuids[i]);
-                Filter<UnityEngine.Object>(path, inName, inType, assets);
+                Filter<UnityEngine.Object>(path, match, inType, assets);
             }
             return GetArray(assets);
         }
@@ -69,11 +71,18 @@ namespace BeauUtil.Editor
         /// </summary>
         static public UnityEngine.Object FindAsset(Type inType, string inName = null, string[] inSearchFolders = null)
         {
-            string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(inType, inName), inSearchFolders);
+            WildcardMatch match = WildcardMatch.Compile(inName, '*', false);
+            string[] assetGuids = AssetDatabase.FindAssets(GenerateFilter(inType, match.Pattern), inSearchFolders);
             if (assetGuids == null || assetGuids.Length <= 0)
                 return null;
-            string path = AssetDatabase.GUIDToAssetPath(assetGuids[0]);
-            return Filter<UnityEngine.Object>(path, inName, inType);
+            for (int i = 0; i < assetGuids.Length; ++i)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(assetGuids[i]);
+                if (TryFilter<UnityEngine.Object>(path, match, inType, out UnityEngine.Object obj))
+                    return obj;
+            }
+
+            return null;
         }
 
         #endregion // Finding Assets
@@ -101,6 +110,10 @@ namespace BeauUtil.Editor
             if (inType == null)
                 return string.Empty;
 
+            // if we're looking for a component, then search for prefabs
+            if (typeof(UnityEngine.Component).IsAssignableFrom(inType))
+                return "t:Prefab";
+
             string fullname = inType.FullName;
             if (fullname.StartsWith("UnityEngine.") || fullname.StartsWith("UnityEditor."))
             {
@@ -109,7 +122,7 @@ namespace BeauUtil.Editor
             return "t:" + fullname;
         }
 
-        static private void Filter<T>(string inPath, string inName, Type inType, HashSet<T> outResults) where T : UnityEngine.Object
+        static private void Filter<T>(string inPath, WildcardMatch inName, Type inType, HashSet<T> outResults) where T : UnityEngine.Object
         {
             if (inType == typeof(UnityEngine.Object))
             {
@@ -122,12 +135,24 @@ namespace BeauUtil.Editor
                 return;
             }
 
-            string lowerSearch = inName?.ToLowerInvariant();
+            if (inType != null && typeof(Component).IsAssignableFrom(inType))
+            {
+                GameObject go = AssetDatabase.LoadAssetAtPath<GameObject>(inPath);
+                if (!inName.Match(go.name))
+                    return;
+                Component c = go.GetComponent(inType);
+                if (c != null)
+                {
+                    outResults.Add((T) (object) c);
+                }
+                return;
+            }
+
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
             {
                 if (inType == null || inType.IsAssignableFrom(obj.GetType()))
                 {
-                    if (!string.IsNullOrEmpty(lowerSearch) && !obj.name.ToLowerInvariant().Contains(lowerSearch))
+                    if (!inName.Match(obj.name))
                         continue;
 
                     outResults.Add((T) obj);
@@ -135,7 +160,7 @@ namespace BeauUtil.Editor
             }
         }
 
-        static private T Filter<T>(string inPath, string inName, Type inType) where T : UnityEngine.Object
+        static private bool TryFilter<T>(string inPath, WildcardMatch inName, Type inType, out T outObject) where T : UnityEngine.Object
         {
             if (inType == typeof(UnityEngine.Object))
             {
@@ -144,22 +169,43 @@ namespace BeauUtil.Editor
 
             if (inType == typeof(UnityEditor.SceneAsset))
             {
-                return ((T) (object) AssetDatabase.LoadAssetAtPath<SceneAsset>(inPath));
+                outObject = ((T) (object) AssetDatabase.LoadAssetAtPath<SceneAsset>(inPath));
+                return outObject != null;
             }
 
-            string lowerSearch = inName?.ToLowerInvariant();
+            if (inType != null && typeof(Component).IsAssignableFrom(inType))
+            {
+                GameObject go = AssetDatabase.LoadAssetAtPath<GameObject>(inPath);
+                if (!inName.Match(go.name))
+                {
+                    outObject = null;
+                    return false;
+                }
+                Component c = go.GetComponent(inType);
+                if (c != null)
+                {
+                    outObject = (T) (object) c;
+                    return true;
+                }
+
+                outObject = null;
+                return false;
+            }
+
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
             {
                 if (inType == null || inType.IsAssignableFrom(obj.GetType()))
                 {
-                    if (!string.IsNullOrEmpty(lowerSearch) && !obj.name.ToLowerInvariant().Contains(lowerSearch))
+                    if (!inName.Match(obj.name))
                         continue;
 
-                    return (T) obj;
+                    outObject = (T) obj;
+                    return true;
                 }
             }
 
-            return null;
+            outObject = null;
+            return false;
         }
 
         static private T[] GetArray<T>(HashSet<T> inSet)

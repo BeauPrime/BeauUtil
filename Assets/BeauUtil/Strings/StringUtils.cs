@@ -1784,7 +1784,7 @@ namespace BeauUtil
         {
             int charInt = inCharacter;
             if (charInt >= 128)
-                return StringUtils.ToUpperInvariant(inCharacter);
+                return char.ToUpperInvariant(inCharacter);
             
             if (charInt < 'a' || charInt > 'z')
                 return inCharacter;

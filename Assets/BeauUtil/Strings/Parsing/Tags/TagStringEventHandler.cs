@@ -71,11 +71,11 @@ namespace BeauUtil.Tags
                 CoroutineWithContext = inCoroutineWithContext;
             }
 
-            #if EXPANDED_REFS
+#if EXPANDED_REFS
             public IEnumerator Execute(in TagEventData inEvent, object inContext)
-            #else
+#else
             public IEnumerator Execute(EventData inEvent, object inContext)
-            #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
             {
                 if (Instant != null)
                 {

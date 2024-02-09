@@ -78,6 +78,19 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Copies memory from one buffer to another.
+        /// This assumes no aliasing and that the src and dest buffers do not overlap.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.2; ldarg.0; ldarg.1; sizeof !!T; mul; unaligned. 1; cpblk; ret")] 
+        static public void FastCopyArray<T>(T* inSrc, int inCount, T* inDest)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Buffer.MemoryCopy(inSrc, inDest, inCount * size, inCount * size);
+        }
+
+        /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -655,6 +668,17 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Copies memory from one buffer to another.
+        /// This assumes no aliasing and that the src and dest buffers do not overlap.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.2; ldarg.0; ldarg.1; unaligned. 1; cpblk; ret")]
+        static public void FastCopy(void* inSrc, int inSize, void* inDest)
+        {
+            Buffer.MemoryCopy(inSrc, inDest, inSize, inSize);
+        }
+
+        /// <summary>
         /// Copies memory from one buffer to another and increments the destination pointer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -759,7 +783,7 @@ namespace BeauUtil
         static public void Quicksort<T>(T* ioBuffer, int inLowerIndex, int inUpperIndex)
             where T : unmanaged
         {
-            Quicksort<T>(ioBuffer, inLowerIndex, inUpperIndex, Comparer<T>.Default);
+            Quicksort<T>(ioBuffer, inLowerIndex, inUpperIndex, CompareUtils.DefaultSort<T>());
         }
 
         /// <summary>
@@ -1103,7 +1127,7 @@ namespace BeauUtil
         static public void Quicksort<T>(void* ioBuffer, int inLowerIndex, int inUpperIndex)
             where T : struct
         {
-            Quicksort<T>(ioBuffer, inLowerIndex, inUpperIndex, Comparer<T>.Default);
+            Quicksort<T>(ioBuffer, inLowerIndex, inUpperIndex, CompareUtils.DefaultSort<T>());
         }
 
         /// <summary>
@@ -1413,18 +1437,33 @@ namespace BeauUtil
             }
         }
 
-		#endif // UNMANAGED_CONSTRAINT
+        /// <summary>
+        /// Shuffles the given unsafe buffer.
+        /// </summary>
+        static public void Shuffle<T>(this System.Random inRandom, UnsafeSpan<T> inSpan) where T : unmanaged
+        {
+            int i = inSpan.Length, j;
+            while (--i > 0)
+            {
+                T old = inSpan[i];
+                inSpan[i] = inSpan[j = inRandom.Next(0, i + 1)];
+                inSpan[j] = old;
+            }
+        }
+
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Shuffle
 
         #region Clear
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Clears all memory within the given buffer to 0.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ldc.i4.0; ldarg.1; unaligned. 1; initblk; ret")]
         static public void Clear(void* inSrc, int inSize)
         {
             if (inSize <= 0)
@@ -1448,6 +1487,7 @@ namespace BeauUtil
         /// Clears all memory within the given buffer to default.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ldc.i4.0; ldarg.1; sizeof !!T; mul; unaligned. 1; initblk; ret")]
         static public void Clear<T>(T* inSrc, int inSize) where T : unmanaged
         {
             Clear((void*) inSrc, sizeof(T) * inSize);
@@ -1459,7 +1499,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Clear<T>(UnsafeSpan<T> inSpan) where T : unmanaged
         {
-            Clear((void*) inSpan.Ptr, inSpan.Length);
+            Clear(inSpan.Ptr, inSpan.Length);
         }
 
         /// <summary>
@@ -1488,6 +1528,6 @@ namespace BeauUtil
 
 #endif // UNMANAGED_CONSTRAINT
 
-#endregion // Clear
-            }
+        #endregion // Clear
+    }
 }

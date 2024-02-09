@@ -64,17 +64,17 @@ namespace BeauUtil.Debugger
             internal TimeBlock(string inLabel, ProfileTimeUnits inUnits)
             {
                 m_Label = inLabel ?? "Unknown";
-                m_TickStart = Stopwatch.GetTimestamp();
-                m_FrameStart = UnityEngine.Time.frameCount;
+                m_FrameStart = UnityHelper.IsMainThread() ? UnityEngine.Time.frameCount : 0;
                 m_TimeUnits = inUnits;
+                m_TickStart = Stopwatch.GetTimestamp();
             }
 
             public void Dispose()
             {
                 if (m_TickStart > 0)
                 {
-                    int durationFrames = UnityEngine.Time.frameCount - m_FrameStart;
                     long elapsed = Stopwatch.GetTimestamp() - m_TickStart;
+                    int durationFrames = UnityHelper.IsMainThread() ? UnityEngine.Time.frameCount - m_FrameStart : 0;
                     switch (m_TimeUnits)
                     {
                         case ProfileTimeUnits.Milliseconds:
@@ -102,7 +102,67 @@ namespace BeauUtil.Debugger
 #endif // ENABLE_PROFILING_BEAUUTIL
         }
 
-#endregion // Time
+        /// <summary>
+        /// Returns a profiling block for computing an average time for a specific count of operations.
+        /// </summary>
+        static public AvgTimeBlock AvgTime(string inLabel, int inSampleCount, ProfileTimeUnits inTimeUnits = ProfileTimeUnits.Milliseconds)
+        {
+#if ENABLE_PROFILING_BEAUUTIL
+            return new AvgTimeBlock(inLabel, inSampleCount, inTimeUnits);
+#else
+            return default;
+#endif // ENABLE_PROFILING_BEAUUTIL
+        }
+
+        public readonly struct AvgTimeBlock : IDisposable
+        {
+#if ENABLE_PROFILING_BEAUUTIL
+            private readonly string m_Label;
+            private readonly long m_TickStart;
+            private readonly int m_SampleCount;
+            private readonly ProfileTimeUnits m_TimeUnits;
+
+            internal AvgTimeBlock(string inLabel, int inSampleCount, ProfileTimeUnits inUnits)
+            {
+                m_Label = inLabel ?? "Unknown";
+                m_TimeUnits = inUnits;
+                m_SampleCount = inSampleCount;
+                m_TickStart = Stopwatch.GetTimestamp();
+            }
+
+            public void Dispose()
+            {
+                if (m_TickStart > 0)
+                {
+                    long elapsed = Stopwatch.GetTimestamp() - m_TickStart;
+                    switch (m_TimeUnits)
+                    {
+                        case ProfileTimeUnits.Milliseconds:
+                            double durationMS = (double) elapsed / TimerFrequency * 1000;
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}ms ({2} samples, {3:0.00} avg)", m_Label, durationMS, m_SampleCount, durationMS / m_SampleCount));
+                            break;
+
+                        case ProfileTimeUnits.Microseconds:
+                            double durationMicroseconds = (double) elapsed / TimerFrequency * 1000000;
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1:0.00}μs ({2} samples, {3:0.00} avg)", m_Label, durationMicroseconds, m_SampleCount, durationMicroseconds / m_SampleCount));
+                            break;
+
+                        case ProfileTimeUnits.Ticks:
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took {1} ticks ({2} samples, {3:0.00} avg)", m_Label, elapsed, m_SampleCount, elapsed / (double) m_SampleCount));
+                            break;
+
+                        case ProfileTimeUnits.Cycles:
+                            UnityEngine.Debug.Log(string.Format("[Profiling] Task '{0}' took ~{1:0.00} est. cycles ({2} samples, {3} avg)", m_Label, elapsed * CyclesPerTick, m_SampleCount, elapsed * CyclesPerTick / m_SampleCount));
+                            break;
+                    }
+                }
+            }
+#else
+            public void Dispose() { }
+#endif // ENABLE_PROFILING_BEAUUTIL
+        }
+
+        #endregion // Time
 
         #region Unity Samples
 

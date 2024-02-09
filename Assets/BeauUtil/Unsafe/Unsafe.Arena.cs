@@ -16,6 +16,14 @@
 #define VALIDATE_ARENA_MEMORY
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
 
+#if UNITY_64 || UNITY_EDITOR_64
+using PointerIntegral = System.UInt64;
+using PointerDiff = System.Int64;
+#else
+using PointerIntegral = System.UInt32;
+using PointerDiff = System.Int32;
+#endif // UNITY_64 || UNITY_EDITOR_64
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -145,7 +153,7 @@ namespace BeauUtil
 
             public override int GetHashCode()
             {
-                return ((ulong) HeaderStart).GetHashCode();
+                return ((PointerIntegral) HeaderStart).GetHashCode();
             }
 
             public bool Equals(ArenaHandle other)
@@ -273,8 +281,8 @@ namespace BeauUtil
         static public ArenaHandle CreateArena(void* inUnmanaged, int inSize, StringHash32 inName = default, AllocatorFlags inFlags = 0)
         {
             // ensure this is aligned properly
-            void* block = (void*) AlignUpN((ulong) inUnmanaged, AlignOf<ArenaHeader>());
-            inSize -= (int) ((ulong) block - (ulong) inUnmanaged);
+            void* block = (void*) AlignUpN((PointerIntegral) inUnmanaged, AlignOf<ArenaHeader>());
+            inSize -= (int) ((PointerIntegral) block - (PointerIntegral) inUnmanaged);
 
             int requiredSize = ArenaHeader.MinimumSize;
             int arenaSize = inSize - requiredSize;
@@ -427,7 +435,7 @@ namespace BeauUtil
         /// <summary>
         /// Allocates from the given arena with the given alignment.
         /// </summary>
-        static internal void* AllocAligned(ArenaHandle inArena, int inLength, uint inAlignment)
+        static public void* AllocAligned(ArenaHandle inArena, int inLength, uint inAlignment)
         {
             if (!ValidateArena(inArena) || inLength <= 0)
                 return null;
@@ -438,7 +446,7 @@ namespace BeauUtil
             inLength = (int) AlignUp4((uint) inLength);
 #endif // VALIDATE_ARENA_MEMORY
             
-            byte* aligned = (byte*) AlignUpN((ulong) header->CurrentPtr, inAlignment);
+            byte* aligned = (byte*) AlignUpN((PointerIntegral) header->CurrentPtr, inAlignment);
             uint padding = (uint) (aligned - header->CurrentPtr);
             if (header->SizeRemaining < padding + inLength)
             {

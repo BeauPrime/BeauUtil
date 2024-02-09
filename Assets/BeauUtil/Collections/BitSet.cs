@@ -8,6 +8,8 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
 using UnityEngine;
@@ -36,7 +38,7 @@ namespace BeauUtil
     /// 32-bit mask.
     /// </summary>
     [Serializable]
-    public struct BitSet32 : IBitSet, IEquatable<BitSet32>
+    public struct BitSet32 : IBitSet, IEquatable<BitSet32>, IEnumerable<int>
     {
         [SerializeField] private unsafe uint m_Bits;
 
@@ -137,6 +139,25 @@ namespace BeauUtil
             outBits = m_Bits;
         }
 
+        #region Enumerable
+
+        public BitEnumerator32 GetEnumerator()
+        {
+            return new BitEnumerator32(m_Bits);
+        }
+
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion // Enumerable
+
         #region Operators
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -217,7 +238,7 @@ namespace BeauUtil
     /// 64-bit mask.
     /// </summary>
     [Serializable]
-    public struct BitSet64 : IBitSet, IEquatable<BitSet64>
+    public struct BitSet64 : IBitSet, IEquatable<BitSet64>, IEnumerable<int>
     {
         [SerializeField] private unsafe ulong m_Bits;
 
@@ -311,6 +332,25 @@ namespace BeauUtil
         {
             outBits = m_Bits;
         }
+
+        #region Enumerable
+
+        public BitEnumerator64 GetEnumerator()
+        {
+            return new BitEnumerator64(m_Bits);
+        }
+
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion // Enumerable
 
         #region Operators
 

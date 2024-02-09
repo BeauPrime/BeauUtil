@@ -1,8 +1,10 @@
 {
     "name": "BeauUtil.Editor",
+    "rootNamespace": "",
     "references": [
         "BeauUtil",
-        "BeauUtil.Parse"
+        "BeauUtil.Parse",
+        "BeauIL"
     ],
     "includePlatforms": [
         "Editor"
@@ -13,6 +15,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.nuget.mono-cecil",
+            "expression": "0.0.1",
+            "define": "USING_MONO_CECIL"
+        }
+    ],
     "noEngineReferences": false
 }

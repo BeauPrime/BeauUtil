@@ -190,6 +190,8 @@ namespace BeauUtil.UnitTests
             int collisionCount = 0;
             StringHashing.SetOnCollision((a, b, s, h) => collisionCount++);
 
+            StringHash32 someTest = "TestStringHash32";
+
             for(int i = -1000; i <= 1000; ++i)
             {
                 new StringHash32(i.ToString());
@@ -217,7 +219,9 @@ namespace BeauUtil.UnitTests
             int collisionCount = 0;
             StringHashing.SetOnCollision((a, b, s, h) => collisionCount++);
 
-            for(int i = -1000; i <= 1000; ++i)
+            StringHash64 someTest = "TestStringHash64";
+
+            for (int i = -1000; i <= 1000; ++i)
             {
                 new StringHash64(i.ToString());
             }

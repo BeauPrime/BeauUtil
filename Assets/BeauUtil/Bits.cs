@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 #if USING_MATHEMATICS
@@ -890,5 +891,370 @@ namespace BeauUtil
         }
 
         #endregion // Rotate
+
+        #region Enumerate
+
+        /// <summary>
+        /// Returns an enumerator over all bits in the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public BitEnumerator32 Enumerate(int inBitArray)
+        {
+            return new BitEnumerator32(inBitArray);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over all bits in the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public BitEnumerator32 Enumerate(uint inBitArray)
+        {
+            return new BitEnumerator32(inBitArray);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over all bits in the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public BitEnumerator64 Enumerate(long inBitArray)
+        {
+            return new BitEnumerator64(inBitArray);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over all bits in the given mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public BitEnumerator64 Enumerate(ulong inBitArray)
+        {
+            return new BitEnumerator64(inBitArray);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over all flags in the given enum mask.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public EnumMaskEnumerator<T> Enumerate<T>(T inBitArray)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return new EnumMaskEnumerator<T>(inBitArray);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over all bits in the given enum mask.
+        /// This operates on the assumption that U is an enum
+        /// whose values map to the bit indices of the bitset enum T
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public EnumBitEnumerator<U> Enumerate<T, U>(T inBitArray)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+            where U : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+            where U : unmanaged, Enum
+#else
+            where T : struct, IConvertible
+            where U : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return new EnumBitEnumerator<U>(Enums.ToULong(inBitArray));
+        }
+
+        #endregion // Enumerate
+    }
+
+    // TODO: Use tzcnt for enumerators?
+
+    /// <summary>
+    /// Enumerator going over all set bits in a 32-bit integer.
+    /// </summary>
+    public struct BitEnumerator32 : IEnumerator<int>, IEnumerable<int>, IDisposable
+    {
+        private uint m_Mask;
+        private int m_Offset;
+        private int m_Last;
+
+        public BitEnumerator32(uint inMask)
+        {
+            m_Mask = inMask;
+            m_Last = -1;
+            m_Offset = 0;
+        }
+
+        public BitEnumerator32(int inMask)
+        {
+            unsafe
+            {
+                m_Mask = *(uint*) &inMask;
+            }
+            m_Last = -1;
+            m_Offset = 0;
+        }
+
+        public int Current { get { return m_Last; } }
+
+        public bool MoveNext()
+        {
+            while(m_Mask != 0)
+            {
+                if ((m_Mask & 1) == 1)
+                {
+                    m_Last = m_Offset;
+                    m_Offset++;
+                    m_Mask >>= 1;
+                    return true;
+                }
+
+                m_Offset++;
+                m_Mask >>= 1;
+            }
+
+            return false;
+        }
+
+        public BitEnumerator32 GetEnumerator()
+        {
+            return this;
+        }
+
+        #region Interface
+
+        public void Reset() { }
+
+        public void Dispose() { }
+
+        object IEnumerator.Current { get { return m_Last; } }
+
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            return this;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this;
+        }
+
+        #endregion // Interface
+    }
+
+    /// <summary>
+    /// Enumerator going over all set bits in a 64-bit integer.
+    /// </summary>
+    public struct BitEnumerator64 : IEnumerator<int>, IEnumerable<int>, IDisposable
+    {
+        private ulong m_Mask;
+        private int m_Offset;
+        private int m_Last;
+
+        public BitEnumerator64(ulong inMask)
+        {
+            m_Mask = inMask;
+            m_Last = -1;
+            m_Offset = 0;
+        }
+
+        public BitEnumerator64(long inMask)
+        {
+            unsafe
+            {
+                m_Mask = *(ulong*) &inMask;
+            }
+            m_Last = -1;
+            m_Offset = 0;
+        }
+
+        public int Current { get { return m_Last; } }
+
+        public bool MoveNext()
+        {
+            while (m_Mask != 0)
+            {
+                if ((m_Mask & 1) == 1)
+                {
+                    m_Last = m_Offset;
+                    m_Offset++;
+                    m_Mask >>= 1;
+                    return true;
+                }
+
+                m_Offset++;
+                m_Mask >>= 1;
+            }
+
+            return false;
+        }
+
+        public BitEnumerator64 GetEnumerator()
+        {
+            return this;
+        }
+
+        #region Interface
+
+        public void Reset() { }
+
+        public void Dispose() { }
+
+        object IEnumerator.Current { get { return m_Last; } }
+
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            return this;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this;
+        }
+
+        #endregion // Interface
+    }
+
+    /// <summary>
+    /// Enumerator going over all flags in a flag enum value.
+    /// </summary>
+    public struct EnumMaskEnumerator<T> : IEnumerator<T>, IEnumerable<T>, IDisposable
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+    {
+        private ulong m_Mask;
+        private int m_Offset;
+        private T m_Last;
+
+        public EnumMaskEnumerator(T inMask)
+        {
+            m_Mask = Enums.ToULong(inMask);
+            m_Last = default;
+            m_Offset = 0;
+        }
+
+        public T Current { get { return m_Last; } }
+
+        public bool MoveNext()
+        {
+            while (m_Mask != 0)
+            {
+                if ((m_Mask & 1) == 1)
+                {
+                    m_Last = Enums.ToEnum<T>(1uL << m_Offset);
+                    m_Offset++;
+                    m_Mask >>= 1;
+                    return true;
+                }
+
+                m_Offset++;
+                m_Mask >>= 1;
+            }
+
+            return false;
+        }
+
+        public EnumMaskEnumerator<T> GetEnumerator()
+        {
+            return this;
+        }
+
+        #region Interface
+
+        public void Reset() { }
+
+        public void Dispose() { }
+
+        object IEnumerator.Current { get { return m_Last; } }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return this;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this;
+        }
+
+        #endregion // Interface
+    }
+
+    /// <summary>
+    /// Enumerator going over all bits in a flag enum value.
+    /// </summary>
+    public struct EnumBitEnumerator<T> : IEnumerator<T>, IEnumerable<T>, IDisposable
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+    {
+        private ulong m_Mask;
+        private int m_Offset;
+        private T m_Last;
+
+        public EnumBitEnumerator(ulong inMask)
+        {
+            m_Mask = inMask;
+            m_Last = default;
+            m_Offset = 0;
+        }
+
+        public T Current { get { return m_Last; } }
+
+        public bool MoveNext()
+        {
+            while (m_Mask != 0)
+            {
+                if ((m_Mask & 1) == 1)
+                {
+                    m_Last = Enums.ToEnum<T>(m_Offset);
+                    m_Offset++;
+                    m_Mask >>= 1;
+                    return true;
+                }
+
+                m_Offset++;
+                m_Mask >>= 1;
+            }
+
+            return false;
+        }
+
+        public EnumBitEnumerator<T> GetEnumerator()
+        {
+            return this;
+        }
+
+        #region Interface
+
+        public void Reset() { }
+
+        public void Dispose() { }
+
+        object IEnumerator.Current { get { return m_Last; } }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return this;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this;
+        }
+
+        #endregion // Interface
     }
 }

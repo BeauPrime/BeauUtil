@@ -494,5 +494,67 @@ namespace BeauUtil
         }
 
         #endregion // State Hash
+
+        #region Letterboxing
+
+        /// <summary>
+        /// Renders letterboxing in normalized viewport coordinates.
+        /// </summary>
+        static public void RenderLetterboxing(Rect inInnerRect, Color inOuterColor)
+        {
+            RenderLetterboxing(inInnerRect, new Rect(0, 0, 1, 1), inOuterColor);
+        }
+
+        /// <summary>
+        /// Renders letterboxing in normalized viewport coordinates.
+        /// </summary>
+        static public void RenderLetterboxing(Rect inInnerRect, Rect inOuterRect, Color inOuterColor)
+        {
+            float left = inInnerRect.x - inOuterRect.x, right = inOuterRect.xMax - inInnerRect.xMax,
+                bottom = inInnerRect.y - inOuterRect.y, top = inOuterRect.yMax - inInnerRect.yMax;
+
+            if (left > 0 || right > 0 || bottom > 0 || top > 0)
+            {
+                float scrW = Screen.width, scrH = Screen.height;
+                GL.PushMatrix();
+                GL.LoadOrtho();
+
+                Rect r = new Rect(inOuterRect.x * scrW, inOuterRect.y * scrH, 0, inOuterRect.height * scrH);
+                if (left > 0)
+                {
+                    r.width = scrW * left;
+                    GL.Viewport(r);
+                    GL.Clear(false, true, inOuterColor);
+                }
+                if (right > 0)
+                {
+                    r.width = scrW * right;
+                    r.x = scrW * inInnerRect.xMax;
+                    GL.Viewport(r);
+                    GL.Clear(false, true, inOuterColor);
+                }
+
+                r.x = scrW * inInnerRect.x;
+                r.width = inInnerRect.width * scrW;
+                if (bottom > 0)
+                {
+                    //r.y = inOuterRect.y * scrH;
+                    r.height = scrH * bottom;
+                    GL.Viewport(r);
+                    GL.Clear(false, true, inOuterColor);
+                }
+                if (top > 0)
+                {
+                    r.y = inInnerRect.yMax * scrH;
+                    r.height = scrH * top;
+                    GL.Viewport(r);
+                    GL.Clear(false, true, inOuterColor);
+                }
+
+                GL.PopMatrix();
+            }
+        }
+
+        #endregion // Letterboxing
     }
 }

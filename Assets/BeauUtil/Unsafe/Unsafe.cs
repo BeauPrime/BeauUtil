@@ -15,12 +15,25 @@
 #define NATIVE_ARRAY_EXT
 #endif // UNITY_2018_1_OR_NEWER
 
+#if UNITY_2021_1_OR_NEWER
+#define SUPPORTS_SPAN
+#endif // UNITY_2021_1_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using BeauUtil.Debugger;
+
+#if UNITY_64 || UNITY_EDITOR_64
+using PointerIntegral = System.UInt64;
+using PointerDiff = System.Int64;
+#else
+using PointerIntegral = System.UInt32;
+using PointerDiff = System.Int32;
+#endif // UNITY_64 || UNITY_EDITOR_64
 
 namespace BeauUtil
 {
@@ -45,6 +58,11 @@ namespace BeauUtil
         public const bool Is64 = (PointerSize == 8);
 
         /// <summary>
+        /// Pointer hex format.
+        /// </summary>
+        internal const string PointerStringFormat = Is64 ? "X16" : "X8";
+
+        /// <summary>
         /// Attempts to load the given address into the cache.
         /// </summary>
         static public void Prefetch(void* inAddress)
@@ -64,15 +82,16 @@ namespace BeauUtil
             where TFrom : unmanaged
             where TTo : unmanaged
         {
-            byte* buffer = stackalloc byte[Math.Max(sizeof(TFrom), sizeof(TTo))];
-            *((TFrom*) buffer) = inValue;
-            return *((TTo*) buffer);
+            TTo to;
+            FastCopy(&inValue, Math.Min(sizeof(TTo), sizeof(TFrom)), &to);
+            return to;
         }
 
         /// <summary>
         /// Reinterprets an indirect value as a value of another type.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ldobj !!TTo; ret")] 
         static public TTo FastReinterpret<TFrom, TTo>(TFrom* inValuePtr)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -85,6 +104,7 @@ namespace BeauUtil
         /// Behavior is undefined if <c>sizeof(TTo) > sizeof(TFrom)</c>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarga.s inValue; ldobj !!TTo; ret")]
         static public TTo FastReinterpret<TFrom, TTo>(TFrom inValue)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -92,19 +112,31 @@ namespace BeauUtil
             return *((TTo*) &inValue);
         }
 
-#endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT 
 
         #endregion // Reinterpret
 
         #region Alignment
 
         private struct AlignHelper<T>
-            where T : struct
+            where T : unmanaged
         {
             private byte _;
-            private T i;
+            internal T i;
 
-            static internal readonly uint Alignment = (uint) Marshal.OffsetOf<AlignHelper<T>>("i");
+            static internal readonly uint Alignment;
+
+            static AlignHelper()
+            {
+                Alignment = ExtractAlignment(default(AlignHelper<T>));
+                // UnityEngine.Debug.LogFormat("alignment of '{0}' is {1}", typeof(T).FullName, Alignment);
+            }
+
+            static private uint ExtractAlignment(AlignHelper<T> inHelper)
+            {
+                return (uint) ((PointerIntegral) (&inHelper.i) - (PointerIntegral) (&inHelper));
+                //return (uint) Marshal.OffsetOf<AlignHelper<T>>("i"); 
+            }
         }
 
         /// <summary>
@@ -112,27 +144,71 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignOf<T>()
-            where T : struct
+            where T : unmanaged
         {
             return AlignHelper<T>.Alignment;
+        }
+
+        #region 4
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned4(void* val)
+        {
+            return ((PointerIntegral) val & 0x3) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned4(int val)
+        {
+            return (val & 0x3) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned4(long val)
+        {
+            return (val & 0x3) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned4(uint val)
+        {
+            return (val & 0x3) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned4(ulong val)
+        {
+            return (val & 0x3) == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int AlignUp4(int val)
         {
-            return (val + 4 - 1) & ~(4 - 1);
+            return (val + (4 - 1)) & ~(4 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp4(uint val)
         {
-            return (val + 4u - 1) & ~(4u - 1);
+            return (val + (4u - 1)) & ~(4u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp4(ulong val)
         {
-            return (val + 4u - 1) & ~(ulong) (4u - 1);
+            return (val + (4u - 1)) & ~(ulong) (4u - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void* AlignUp4(void* val)
+        {
+            return (void*) (((PointerIntegral) val + (4 - 1)) & ~(4u - 1));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public byte* AlignUp4(byte* val)
+        {
+            return (byte*) (((PointerIntegral) val + (4 - 1)) & ~(4u - 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,21 +230,67 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void* AlignDown4(void* val)
+        {
+            return (void*) (((PointerIntegral) val) & ~(4u - 1));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public byte* AlignDown4(byte* val)
+        {
+            return (byte*) (((PointerIntegral) val) & ~(4u - 1));
+        }
+
+        #endregion // 4
+
+        #region 8
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned8(void* val)
+        {
+            return ((PointerIntegral) val & 0x7) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned8(int val)
+        {
+            return (val & 0x7) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned8(long val)
+        {
+            return (val & 0x7) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned8(uint val)
+        {
+            return (val & 0x7) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned8(ulong val)
+        {
+            return (val & 0x7) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int AlignUp8(int val)
         {
-            return (val + 8 - 1) & ~(8 - 1);
+            return (val + (8 - 1)) & ~(8 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp8(uint val)
         {
-            return (val + 8u - 1) & ~(8u - 1);
+            return (val + (8u - 1)) & ~(8u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp8(ulong val)
         {
-            return (val + 8u - 1) & ~(ulong) (8u - 1);
+            return (val + (8u - 1)) & ~(ulong) (8u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -189,22 +311,56 @@ namespace BeauUtil
             return (val) & ~(ulong) (8u - 1);
         }
 
+        #endregion // 8
+
+        #region 16
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned16(void* val)
+        {
+            return ((PointerIntegral) val & 0xF) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned16(int val)
+        {
+            return (val & 0xF) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned16(long val)
+        {
+            return (val & 0xF) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned16(uint val)
+        {
+            return (val & 0xF) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned16(ulong val)
+        {
+            return (val & 0xF) == 0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int AlignUp16(int val)
         {
-            return (val + 16 - 1) & ~(16 - 1);
+            return (val + (16 - 1)) & ~(16 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp16(uint val)
         {
-            return (val + 16u - 1) & ~(16u - 1);
+            return (val + (16u - 1)) & ~(16u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp16(ulong val)
         {
-            return (val + 16u - 1) & ~(ulong) (16u - 1);
+            return (val + (16u - 1)) & ~(ulong) (16u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -225,22 +381,56 @@ namespace BeauUtil
             return (val) & ~(ulong) (16u - 1);
         }
 
+        #endregion // 16
+
+        #region 32
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned32(void* val)
+        {
+            return ((PointerIntegral) val & 0x1F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned32(int val)
+        {
+            return (val & 0x1F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned32(long val)
+        {
+            return (val & 0x1F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned32(uint val)
+        {
+            return (val & 0x1F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned32(ulong val)
+        {
+            return (val & 0x1F) == 0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int AlignUp32(int val)
         {
-            return (val + 32 - 1) & ~(32 - 1);
+            return (val + (32 - 1)) & ~(32 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp32(uint val)
         {
-            return (val + 32u - 1) & ~(32u - 1);
+            return (val + (32u - 1)) & ~(32u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp32(ulong val)
         {
-            return (val + 32u - 1) & ~(ulong) (32u - 1);
+            return (val + (32u - 1)) & ~(ulong) (32u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -261,22 +451,56 @@ namespace BeauUtil
             return (val) & ~(ulong) (32u - 1);
         }
 
+        #endregion // 32
+
+        #region 64
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned64(void* val)
+        {
+            return ((PointerIntegral) val & 0x3F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned64(int val)
+        {
+            return (val & 0x3F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned64(long val)
+        {
+            return (val & 0x3F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned64(uint val)
+        {
+            return (val & 0x3F) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned64(ulong val)
+        {
+            return (val & 0x3F) == 0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int AlignUp64(int val)
         {
-            return (val + 64 - 1) & ~(64 - 1);
+            return (val + (64 - 1)) & ~(64 - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUp64(uint val)
         {
-            return (val + 64u - 1) & ~(64u - 1);
+            return (val + (64u - 1)) & ~(64u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUp64(ulong val)
         {
-            return (val + 64u - 1) & ~(ulong) (64u - 1);
+            return (val + (64u - 1)) & ~(ulong) (64u - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -297,22 +521,56 @@ namespace BeauUtil
             return (val) & ~(ulong) (64u - 1);
         }
 
+        #endregion // 64
+
+        #region N
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAlignedN(void* val, uint n)
+        {
+            return ((PointerIntegral) val & (n - 1)) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAlignedN(int val, uint n)
+        {
+            return (val & (n - 1)) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAlignedN(long val, uint n)
+        {
+            return (val & (n - 1)) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAlignedN(uint val, uint n)
+        {
+            return (val & (n - 1)) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAlignedN(ulong val, uint n)
+        {
+            return (val & (n - 1)) == 0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int AlignUpN(int val, int n)
         {
-            return (val + n - 1) & ~(n - 1);
+            return (val + (n - 1)) & ~(n - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint AlignUpN(uint val, uint n)
         {
-            return (val + n - 1) & ~(n - 1);
+            return (val + (n - 1)) & ~(n - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong AlignUpN(ulong val, uint n)
         {
-            return (val + n - 1) & ~(ulong) (n - 1);
+            return (val + (n - 1)) & ~(ulong) (n - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -333,6 +591,34 @@ namespace BeauUtil
             return (val) & ~(ulong) (n - 1);
         }
 
+        #endregion // N
+
+        #region Natural
+
+        /// <summary>
+        /// Returns if the given pointer is aligned to the alignment
+        /// of its type.
+        /// </summary>
+#if UNMANAGED_CONSTRAINT
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned<T>(T* inPtr) where T : unmanaged
+        {
+            return (((PointerIntegral) inPtr) & (AlignOf<T>() - 1)) == 0;
+        }
+#endif // UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Returns if the given pointer is aligned to the alignment
+        /// of the specified type.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsAligned<T>(void* inPtr) where T : unmanaged
+        {
+            return (((PointerIntegral) inPtr) & (AlignOf<T>() - 1)) == 0;
+        }
+
+        #endregion // Natural
+
         #endregion // Alignment
 
         #region Size
@@ -343,6 +629,7 @@ namespace BeauUtil
         /// Returns the size of the unmanaged type.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("sizeof !!T; ret")]
         static public int SizeOf<T>()
             where T : unmanaged
         {
@@ -355,6 +642,7 @@ namespace BeauUtil
         /// Returns the size of the unmanaged type.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("sizeof !!T; ret")]
         static public int SizeOf<T>()
             where T : struct
         {
@@ -434,6 +722,20 @@ namespace BeauUtil
             return nativeArray;
         }
 
+        /// <summary>
+        /// Returns a NativeArray wrapping the given unsafe span.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public Unity.Collections.NativeArray<T> NativeArray<T>(UnsafeSpan<T> inSpan)
+            where T : unmanaged
+        {
+            Unity.Collections.NativeArray<T> nativeArray = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(inSpan.Ptr, inSpan.Length, Unity.Collections.Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, Unity.Collections.LowLevel.Unsafe.AtomicSafetyHandle.GetTempUnsafePtrSliceHandle());
+#endif // ENABLE_UNITY_COLLECTIONS_CHECKS
+            return nativeArray;
+        }
+
 #else
 
         /// <summary>
@@ -471,6 +773,32 @@ namespace BeauUtil
 #endif // NATIVE_ARRAY_EXT
 
         #endregion // Unity Native
+
+        #region Spans
+
+#if SUPPORTS_SPAN
+
+        /// <summary>
+        /// Converts an UnsafeSpan to a Span.
+        /// </summary>
+        static public Span<T> AsSpan<T>(UnsafeSpan<T> inSpan)
+            where T : unmanaged
+        {
+            return new Span<T>(inSpan.Ptr, inSpan.Length);
+        }
+
+        /// <summary>
+        /// Converts an UnsafeSpan to a ReadOnlySpan.
+        /// </summary>
+        static public ReadOnlySpan<T> AsReadOnlySpan<T>(UnsafeSpan<T> inSpan)
+            where T : unmanaged
+        {
+            return new ReadOnlySpan<T>(inSpan.Ptr, inSpan.Length);
+        }
+
+#endif // SUPPORTS_SPAN
+
+        #endregion // Spans
 
         #region Pinning
 
@@ -646,7 +974,7 @@ namespace BeauUtil
                 throw new ArgumentException("inString", "Cannot pin a StringBuilder with more than one chunk");
 
             char[] chunkChars = (char[]) s_StringBuilderChunkField.GetValue(inString);
-            return new PinnedArrayHandle<char>(chunkChars);
+            return new PinnedArrayHandle<char>(chunkChars, inString.Length);
         }
 
         #endregion // Pinning
@@ -810,7 +1138,7 @@ namespace BeauUtil
 
             if (magnitude == 0)
             {
-                return string.Concat(inSize.ToStringLookup(), "B");
+                return string.Concat(inSize.ToStringLookup(), "B"); 
             }
 
             string suffix;
@@ -832,6 +1160,41 @@ namespace BeauUtil
             return string.Concat(size.ToString("F2"), suffix);
         }
 
+        /// <summary>
+        /// Formats the given memory size with the appropriate suffix.
+        /// </summary>
+        static public void FormatBytes(long inSize, StringBuilder ioStringBuilder)
+        {
+            int magnitude = 0; // 0 B, 1 KiB, 2 MiB, 3 GiB
+            double size = inSize;
+            while (size >= 1024 && magnitude < 3) {
+                size /= 1024;
+                magnitude++;
+            }
+
+            if (magnitude == 0) {
+                ioStringBuilder.AppendNoAlloc(inSize).Append('B');
+                return;
+            }
+
+            string suffix;
+            switch (magnitude) {
+                case 1:
+                    suffix = "KiB";
+                    break;
+                case 2:
+                    suffix = "MiB";
+                    break;
+                case 3:
+                    suffix = "GiB";
+                    break;
+                default:
+                    throw new IndexOutOfRangeException(); // should be impossible
+            }
+
+            ioStringBuilder.AppendNoAlloc(size, 2).Append(suffix);
+        }
+
         #endregion // Debug
 
         #region Hashing
@@ -847,6 +1210,8 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
+
+            Assert.True(IsAligned4(inData), "Pointers passed to Hash32 must be 4-byte aligned");
 
             // murmur2
             const uint m = 0x5bd1e995;
@@ -903,6 +1268,8 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
+
+            Assert.True(IsAligned8(inData), "Pointers passed to Hash64 must be 8-byte aligned");
 
             // murmur2 64a
             const ulong m = 0xc6a4a7935bd1e995;
@@ -1001,6 +1368,8 @@ namespace BeauUtil
             if (inLength <= 0)
                 return 0;
 
+            Assert.True(IsAligned4(inData), "Pointers passed to Hash32 must be 4-byte aligned");
+
             // murmur2
             const uint m = 0x5bd1e995;
             const int r = 24;
@@ -1056,6 +1425,8 @@ namespace BeauUtil
         {
             if (inLength <= 0)
                 return 0;
+
+            Assert.True(IsAligned8(inData), "Pointers passed to Hash64 must be 8-byte aligned");
 
             // murmur2 64a
             const ulong m = 0xc6a4a7935bd1e995;
@@ -1206,13 +1577,13 @@ namespace BeauUtil
             }
 
             T val = default(T);
-            if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
+            if (IsAlignedN(*ioBufferPtr, AlignOf<T>()))
             {
                 val = FastReinterpret<byte, T>(*ioBufferPtr);
             }
             else
             {
-                Copy(*ioBufferPtr, readSize, &val, readSize);
+                FastCopy(*ioBufferPtr, readSize, &val);
             }
 
             *ioBytesRemaining -= readSize;
@@ -1231,13 +1602,13 @@ namespace BeauUtil
             int readSize = sizeof(T);
 
             T val = default(T);
-            if ((((ulong) *ioBufferPtr) % AlignOf<T>()) == 0)
+            if (IsAlignedN(*ioBufferPtr, AlignOf<T>()))
             {
                 val = FastReinterpret<byte, T>(*ioBufferPtr);
             }
             else
             {
-                Copy(*ioBufferPtr, readSize, &val, readSize);
+                FastCopy(*ioBufferPtr, readSize, &val);
             }
 
             *ioBufferPtr += readSize;
@@ -1279,13 +1650,13 @@ namespace BeauUtil
             }
 
             T val = default(T);
-            if ((((ulong) ioBufferPtr) % AlignOf<T>()) == 0)
+            if (IsAlignedN(ioBufferPtr, AlignOf<T>()))
             {
                 val = FastReinterpret<byte, T>(ioBufferPtr);
             }
             else
             {
-                Copy(ioBufferPtr, readSize, &val, readSize);
+                FastCopy(ioBufferPtr, readSize, &val);
             }
 
             ioBytesRemaining -= readSize;
@@ -1304,13 +1675,13 @@ namespace BeauUtil
             int readSize = sizeof(T);
 
             T val = default(T);
-            if ((((ulong) ioBufferPtr) % AlignOf<T>()) == 0)
+            if (IsAlignedN(ioBufferPtr, AlignOf<T>()))
             {
                 val = FastReinterpret<byte, T>(ioBufferPtr);
             }
             else
             {
-                Copy(ioBufferPtr, readSize, &val, readSize);
+                FastCopy(ioBufferPtr, readSize, &val);
             }
 
             ioBufferPtr += readSize;
@@ -1423,7 +1794,7 @@ namespace BeauUtil
                 throw new InsufficientMemoryException(string.Format("No space left for writing {0} (size {1} vs remaining {2})", typeof(T).FullName, writeSize, inBufferCapacity - *ioBytesWritten));
             }
 
-            Copy(&inValue, writeSize, *ioBufferPtr);
+            FastCopy(&inValue, writeSize, *ioBufferPtr);
             *ioBytesWritten += writeSize;
             *ioBufferPtr += writeSize;
         }
@@ -1441,7 +1812,7 @@ namespace BeauUtil
                 throw new InsufficientMemoryException(string.Format("No space left for writing {0} (size {1} vs remaining {2})", typeof(T).FullName, writeSize, inBufferCapacity - ioBytesWritten));
             }
 
-            Copy(&inValue, writeSize, ioBufferPtr);
+            FastCopy(&inValue, writeSize, ioBufferPtr);
             ioBytesWritten += writeSize;
             ioBufferPtr += writeSize;
         }
@@ -1473,7 +1844,7 @@ namespace BeauUtil
                     throw new NotSupportedException("String encoded to a byte length greater than ushort.MaxValue - not supported by Unsave.WriteUTF8");
                 }
                 ushort utf8bytes = (ushort) utf8bytesRaw;
-                Copy(&utf8bytes, sizeof(ushort), lengthMarker, sizeof(ushort));
+                FastCopy(&utf8bytes, sizeof(ushort), lengthMarker);
                 *ioBufferPtr += utf8bytes;
                 *ioBytesWritten += utf8bytes;
             }
@@ -1506,7 +1877,7 @@ namespace BeauUtil
                     throw new NotSupportedException("String encoded to a byte length greater than ushort.MaxValue - not supported by Unsave.WriteUTF8");
                 }
                 ushort utf8bytes = (ushort) utf8bytesRaw;
-                Copy(&utf8bytes, sizeof(ushort), lengthMarker, sizeof(ushort));
+                FastCopy(&utf8bytes, sizeof(ushort), lengthMarker);
                 ioBufferPtr += utf8bytes;
                 ioBytesWritten += utf8bytes;
             }

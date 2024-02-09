@@ -31,10 +31,10 @@ namespace BeauUtil
             Rect
         }
 
-        public class PinBeginEvent : UnityEvent<Transform, bool, Vector3> { }
-        public class PinEvent : UnityEvent<Transform> { }
-        public class PinPositionEvent : UnityEvent<Transform, Vector3> { }
-        public class PinClampEvent : UnityEvent<Transform, RectEdges> { }
+        public class PinBeginEvent : TinyUnityEvent<Transform, bool, Vector3> { }
+        public class PinEvent : TinyUnityEvent<Transform> { }
+        public class PinPositionEvent : TinyUnityEvent<Transform, Vector3> { }
+        public class PinClampEvent : TinyUnityEvent<Transform, RectEdges> { }
 
         #endregion // Types
 
@@ -55,16 +55,14 @@ namespace BeauUtil
         [SerializeField] private PositionBehavior m_PositionBehavior = PositionBehavior.Snap;
         [SerializeField] private bool m_UnpinWhenDisabled = false;
 
-        [Header("Events")]
-
-        [SerializeField] private PinBeginEvent m_OnPinBegin = new PinBeginEvent();
-        [SerializeField] private PinEvent m_OnPinAppear = new PinEvent();
-        [SerializeField] private PinEvent m_OnPinDisappear = new PinEvent();
-        [SerializeField] private PinPositionEvent m_OnPinUpdate = new PinPositionEvent();
-        [SerializeField] private PinClampEvent m_OnClampUpdate = new PinClampEvent();
-        [SerializeField] private PinEvent m_OnPinEnd = new PinEvent();
-
         #endregion // Inspector
+
+        private readonly PinBeginEvent m_OnPinBegin = new PinBeginEvent();
+        private readonly PinEvent m_OnPinAppear = new PinEvent();
+        private readonly PinEvent m_OnPinDisappear = new PinEvent();
+        private readonly PinPositionEvent m_OnPinUpdate = new PinPositionEvent();
+        private readonly PinClampEvent m_OnClampUpdate = new PinClampEvent();
+        private readonly PinEvent m_OnPinEnd = new PinEvent();
 
         [NonSerialized] private CameraTrackGroup m_WorldCameraGroup;
         [NonSerialized] private CameraTrackGroup m_CanvasCameraGroup;
@@ -141,7 +139,6 @@ namespace BeauUtil
                     }
                 };
             }
-
         }
 
         #endif // UNITY_EDITOR

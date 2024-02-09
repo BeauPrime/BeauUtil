@@ -236,6 +236,19 @@ namespace BeauUtil
             return this;
         }
 
+        /// <summary>
+        /// Returns a reference to a vertex in the vertex buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public ref TVertex Vertex(int inIndex)
+        {
+            if (inIndex < 0 || inIndex >= m_IndexCount)
+                throw new ArgumentOutOfRangeException("inIndex");
+            return ref m_VertexBuffer[inIndex];
+        }
+
         #endregion // Vertices
 
         #region Indices
@@ -277,6 +290,19 @@ namespace BeauUtil
             m_IndexBuffer[m_IndexCount++] = inB;
             m_IndexBuffer[m_IndexCount++] = inC;
             return this;
+        }
+
+        /// <summary>
+        /// Returns a reference to a index in the index buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public ref ushort Index(int inIndex)
+        {
+            if (inIndex < 0 || inIndex >= m_IndexCount)
+                throw new ArgumentOutOfRangeException("inIndex");
+            return ref m_IndexBuffer[inIndex];
         }
 
         #endregion // Indices
@@ -684,6 +710,19 @@ namespace BeauUtil
             return this;
         }
 
+        /// <summary>
+        /// Returns a reference to a vertex in the vertex buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public ref TVertex Vertex(int inIndex)
+        {
+            if (inIndex < 0 || inIndex >= m_IndexCount)
+                throw new ArgumentOutOfRangeException("inIndex");
+            return ref m_VertexBuffer[inIndex];
+        }
+
         #endregion // Vertices
 
         #region Indices
@@ -725,6 +764,19 @@ namespace BeauUtil
             m_IndexBuffer[m_IndexCount++] = inB;
             m_IndexBuffer[m_IndexCount++] = inC;
             return this;
+        }
+
+        /// <summary>
+        /// Returns a reference to a index in the index buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public ref uint Index(int inIndex)
+        {
+            if (inIndex < 0 || inIndex >= m_IndexCount)
+                throw new ArgumentOutOfRangeException("inIndex");
+            return ref m_IndexBuffer[inIndex];
         }
 
         #endregion // Indices

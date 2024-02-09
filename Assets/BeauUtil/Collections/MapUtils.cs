@@ -74,7 +74,7 @@ namespace BeauUtil
 
         /// <summary>
         /// Ensures the capacity of the given dictionary.
-        /// In versions of .NET that don't support the built-in EnsureCapacity method.
+        /// In versions of .NET that don't support the built-in EnsureCapacity method, this will use reflection.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void EnsureCapacity<TKey, TValue>(ref Dictionary<TKey, TValue> ioDictionary, int inCapacity)
@@ -97,6 +97,7 @@ namespace BeauUtil
         /// <summary>
         /// Reserves space for the given number of elements.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Reserve<TKey, TValue>(this Dictionary<TKey, TValue> inDictionary, int inAdditionalCapacity)
         {
             EnsureCapacity(inDictionary, inDictionary.Count + inAdditionalCapacity);

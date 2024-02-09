@@ -14,6 +14,15 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using BeauUtil.Debugger;
+
+#if UNITY_64 || UNITY_EDITOR_64
+using PointerIntegral = System.UInt64;
+using PointerDiff = System.Int64;
+#else
+using PointerIntegral = System.UInt32;
+using PointerDiff = System.Int32;
+#endif // UNITY_64 || UNITY_EDITOR_64
 
 namespace BeauUtil
 {
@@ -32,6 +41,7 @@ namespace BeauUtil
 
         public unsafe UnsafePtr(T* inPtr)
         {
+            Assert.True(Unsafe.IsAligned(inPtr), "Unaligned pointer");
             Ptr = inPtr;
         }
 
@@ -51,6 +61,14 @@ namespace BeauUtil
         public unsafe T Deref()
         {
             return *Ptr;
+        }
+
+        /// <summary>
+        /// Converts this to a pointer of another type.
+        /// </summary>
+        public unsafe UnsafePtr<U> Cast<U>() where U : unmanaged
+        {
+            return new UnsafePtr<U>((U*) Ptr);
         }
 
         #region Interfaces
@@ -83,7 +101,7 @@ namespace BeauUtil
 
         public unsafe override string ToString()
         {
-            return ((ulong) Ptr).ToString("X16");
+            return ((PointerIntegral) Ptr).ToString(Unsafe.PointerStringFormat);
         }
 
         #endregion // Overrides
@@ -125,17 +143,17 @@ namespace BeauUtil
             return a.Ptr != b;
         }
 
-        static public unsafe UnsafePtr<T> operator +(UnsafePtr<T> a, int inOffset)
+        static public unsafe UnsafePtr<T> operator +(UnsafePtr<T> a, PointerDiff inOffset)
         {
             return new UnsafePtr<T>(a.Ptr + inOffset);
         }
 
-        static public unsafe UnsafePtr<T> operator -(UnsafePtr<T> a, int inOffset)
+        static public unsafe UnsafePtr<T> operator -(UnsafePtr<T> a, PointerDiff inOffset)
         {
             return new UnsafePtr<T>(a.Ptr - inOffset);
         }
 
-        static public unsafe long operator -(UnsafePtr<T> a, UnsafePtr<T> b)
+        static public unsafe PointerDiff operator -(UnsafePtr<T> a, UnsafePtr<T> b)
         {
             return a.Ptr - b.Ptr;
         }

@@ -293,7 +293,7 @@ namespace BeauUtil
             int low = 0;
             int high = inCollection.Count - 1;
 
-            Comparer<K> comparer = Comparer<K>.Default;
+            IComparer<K> comparer = CompareUtils.DefaultSort<K>();
 
             while(low <= high)
             {
@@ -323,7 +323,7 @@ namespace BeauUtil
             int low = 0;
             int high = inArray.Length - 1;
 
-            Comparer<K> comparer = Comparer<K>.Default;
+            IComparer<K> comparer = CompareUtils.DefaultSort<K>();
 
             while(low <= high)
             {
@@ -353,9 +353,9 @@ namespace BeauUtil
             int low = 0;
             int high = inCollection.Count - 1;
 
-            Comparer<K> comparer = Comparer<K>.Default;
+            IComparer<K> comparer = CompareUtils.DefaultSort<K>();
 
-            while(low <= high)
+            while (low <= high)
             {
                 int med = low + ((high - low) >> 1);
                 int comp = comparer.Compare(inCollection[med].Key, inKey);
@@ -383,7 +383,7 @@ namespace BeauUtil
             int low = 0;
             int high = inArray.Length - 1;
 
-            Comparer<K> comparer = Comparer<K>.Default;
+            IComparer<K> comparer = CompareUtils.DefaultSort<K>();
 
             while(low <= high)
             {

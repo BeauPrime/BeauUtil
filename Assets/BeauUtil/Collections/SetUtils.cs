@@ -100,6 +100,7 @@ namespace BeauUtil
         /// <summary>
         /// Reserves space for the given number of elements.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Reserve<T>(this HashSet<T> inHashSet, int inAdditionalCapacity)
         {
             EnsureCapacity(inHashSet, inHashSet.Count + inAdditionalCapacity);

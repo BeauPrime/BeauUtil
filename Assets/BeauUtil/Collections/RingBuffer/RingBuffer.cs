@@ -815,6 +815,18 @@ namespace BeauUtil
         #region Sorting
 
         /// <summary>
+        /// Sorts the buffer using the default comparer.
+        /// </summary>
+        public void Sort()
+        {
+            if (m_Count <= 1)
+                return;
+
+            Linearize(false);
+            Array.Sort(m_Data, m_Head, m_Count, CompareUtils.DefaultSort<T>());
+        }
+
+        /// <summary>
         /// Sorts the buffer using the given comparer.
         /// </summary>
         public void Sort(IComparer<T> inComparer)
@@ -822,7 +834,7 @@ namespace BeauUtil
             if (m_Count <= 1)
                 return;
 
-            Compress(false);
+            Linearize(false);
             Array.Sort(m_Data, m_Head, m_Count, inComparer);
         }
 
@@ -834,7 +846,7 @@ namespace BeauUtil
             if (m_Count <= 1)
                 return;
 
-            Compress(false);
+            Linearize(false);
             using(var noAllocCompare = ArrayUtils.WrapComparison(inComparer))
             {
                 Array.Sort(m_Data, m_Head, m_Count, noAllocCompare);
@@ -849,19 +861,28 @@ namespace BeauUtil
             if (m_Count <= 1)
                 return;
 
-            Compress(false);
+            Linearize(false);
             ArrayUtils.Reverse(m_Data, m_Head, m_Count);
         }
 
         /// <summary>
-        /// Compresses the buffer to ensure elements are contiguous in memory.
+        /// Linearizes the buffer to ensure elements are contiguous in memory.
         /// </summary>
+        [Obsolete("Compress renamed to Linearize (UnityUpgradable) -> Linearize", false)]
         public void Compress()
         {
-            Compress(true);
+            Linearize(true);
         }
 
-        private void Compress(bool inbForceToZero)
+        /// <summary>
+        /// Linearizes the buffer to ensure elements are contiguous in memory.
+        /// </summary>
+        public void Linearize()
+        {
+            Linearize(true);
+        }
+
+        private void Linearize(bool inbForceToZero)
         {
             if (m_Count == 0)
                 return;
@@ -883,18 +904,12 @@ namespace BeauUtil
                 return;
             }
 
-            // TODO(Beau): Implement this inline, without extra alloc
-
-            T[] newData = new T[m_Capacity];
             int headLength = m_Capacity - m_Head;
-            int tailLength = m_Count - headLength;
-
-            Array.Copy(m_Data, m_Head, newData, 0, headLength);
-            Array.Copy(m_Data, 0, newData, headLength, tailLength);
+            Array.Reverse(m_Data, 0, m_Head);
+            Array.Reverse(m_Data, m_Head, headLength);
+            Array.Reverse(m_Data);
             m_Head = 0;
             m_Tail = m_Count % m_Capacity;
-
-            m_Data = newData;
         }
 
         #endregion // Sorting
@@ -996,7 +1011,7 @@ namespace BeauUtil
         public int BinarySearch(T inValue, SearchFlags inFlags = 0)
 #endif // EXPANDED_REFS
         {
-            return BinarySearch(inValue, Comparer<T>.Default, inFlags);
+            return BinarySearch(inValue, CompareUtils.DefaultSort<T>(), inFlags);
         }
 
         /// <summary>
@@ -1211,6 +1226,21 @@ namespace BeauUtil
         }
 
         #endregion // Iteration
+
+        #region Unpack
+
+        /// <summary>
+        /// Unpacks the RingBuffer into its backing data and data range.
+        /// </summary>
+        public void Unpack(out T[] outArray, out int outOffset, out int outLength)
+        {
+            Linearize(false);
+            outArray = m_Data;
+            outOffset = m_Head;
+            outLength = m_Count;
+        }
+
+        #endregion // Unpack
 
         #region Interfaces
 

@@ -37,7 +37,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [-100, 100]
+        /// Range [-128, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -52,7 +52,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [-100, 100]
+        /// Range [-128, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -67,7 +67,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [-100, 100]
+        /// Range [-128, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -82,7 +82,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [-100, 100]
+        /// Range [-128, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -97,7 +97,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [0, 100]
+        /// Range [0, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -110,7 +110,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [0, 100]
+        /// Range [0, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -125,7 +125,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [0, 100]
+        /// Range [0, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -140,7 +140,7 @@ namespace BeauUtil
         /// <summary>
         /// Retrieves a cached version of the string
         /// representation of this integer value.
-        /// Range [0, 100]
+        /// Range [0, 255]
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [Il2CppSetOption(Option.NullChecks, false)]

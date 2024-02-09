@@ -62,13 +62,14 @@ namespace BeauUtil.Debugger
         private RingBuffer<ulong> m_RenderTimeBuffer;
 
         private bool m_FirstTick = true;
+        private bool m_UseProfiler;
         private bool m_Disposed;
 
         public PerformanceTracker()
             : this(DefaultBufferSize)
         { }
 
-        public PerformanceTracker(int inBufferSize)
+        public PerformanceTracker(int inBufferSize, bool inbUseUnityProfiler = false)
         {
             if (inBufferSize < MinBufferSize)
                 throw new ArgumentOutOfRangeException("inBufferSize", "Buffer size must be at least " + MinBufferSize);
@@ -80,6 +81,8 @@ namespace BeauUtil.Debugger
 
             m_RenderStopwatch = new Stopwatch();
             m_FrameStopwatch = new Stopwatch();
+
+            m_UseProfiler = inbUseUnityProfiler;
         }
 
         /// <summary>
@@ -92,7 +95,7 @@ namespace BeauUtil.Debugger
             if (m_FirstTick)
             {
                 HookCameras();
-                if (Profiler.supported)
+                if (m_UseProfiler && Profiler.supported)
                 {
                     Profiler.enabled = true;
                     Profiler.SetAreaEnabled(ProfilerArea.Memory, true);
@@ -119,6 +122,11 @@ namespace BeauUtil.Debugger
         public void Stop()
         {
             VerifyNotDisposed();
+
+            if (m_UseProfiler && Profiler.supported)
+            {
+                Profiler.enabled = false;
+            }
 
             m_FirstTick = true;
             m_FrameStopwatch.Stop();

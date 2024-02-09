@@ -7,6 +7,10 @@
  * Purpose: Geometry utility methods.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -252,7 +256,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public Vector3 Normalized(Quaternion inRotation, float inDistance = 1)
         {
-            return (inRotation * Vector3.forward) * inDistance;
+            return Forward(inRotation) * inDistance;
         }
 
         #endregion // Normals
@@ -453,8 +457,41 @@ namespace BeauUtil
             return check;
         }
 
+#if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Determines if a point is within the given polygon, assuming no holes.
+        /// </summary>
+        static public bool PointInPolygon(Vector2 inTest, UnsafeSpan<Vector2> inVertices)
+        {
+            int i, j;
+            bool check = false;
+
+            int numVerts = inVertices.Length;
+            float testX = inTest.x;
+            float testY = inTest.y;
+
+            float iX, iY, jX, jY;
+
+            for (i = 0, j = numVerts - 1; i < numVerts; j = i++)
+            {
+                iX = inVertices[i].x;
+                iY = inVertices[i].y;
+                jX = inVertices[j].x;
+                jY = inVertices[j].y;
+
+                if ((iY > testY) != (jY > testY) &&
+                    (testX < (jX - iX) * (testY - iY) / (jY - iY) + iX))
+                    check = !check;
+            }
+
+            return check;
+        }
+
+#endif // UNMANAGED_CONSTRAINT
+
         #endregion // Polygon Test
-    
+
         #region Bounds
 
         /// <summary>
@@ -469,7 +506,8 @@ namespace BeauUtil
         /// <summary>
         /// Generates the minimum AABB for the given two points.
         /// </summary>
-        static public Bounds AABB(Vector3 inPointA, Vector3 inPointB) {
+        static public Bounds AABB(Vector3 inPointA, Vector3 inPointB)
+        {
             Bounds b = default(Bounds);
             b.SetMinMax(inPointA, inPointB);
             return b;
@@ -478,7 +516,8 @@ namespace BeauUtil
         /// <summary>
         /// Generates the minimum AABB for the given two points.
         /// </summary>
-        static public Bounds AABB(Vector2 inPointA, Vector2 inPointB) {
+        static public Bounds AABB(Vector2 inPointA, Vector2 inPointB)
+        {
             Bounds b = default(Bounds);
             b.SetMinMax(inPointA, inPointB);
             return b;
@@ -493,7 +532,7 @@ namespace BeauUtil
                 return default(Bounds);
 
             Vector3 min = inPoints[0], max = min, point;
-            for(int i = 1, len = inPoints.Length; i < len; i++)
+            for (int i = 1, len = inPoints.Length; i < len; i++)
             {
                 point = inPoints[i];
                 min.x = Mathf.Min(min.x, point.x);
@@ -516,9 +555,9 @@ namespace BeauUtil
         {
             if (inPoints.Length == 0)
                 return default(Bounds);
-                
+
             Vector3 min = inPoints[0], max = min, point;
-            for(int i = 1, len = inPoints.Length; i < len; i++)
+            for (int i = 1, len = inPoints.Length; i < len; i++)
             {
                 point = inPoints[i];
                 min.x = Mathf.Min(min.x, point.x);
@@ -539,9 +578,9 @@ namespace BeauUtil
         {
             if (inPoints.Count == 0)
                 return default(Bounds);
-                
+
             Vector3 min = inPoints[0], max = min, point;
-            for(int i = 1, len = inPoints.Count; i < len; i++)
+            for (int i = 1, len = inPoints.Count; i < len; i++)
             {
                 point = inPoints[i];
                 min.x = Mathf.Min(min.x, point.x);
@@ -564,9 +603,9 @@ namespace BeauUtil
         {
             if (inPoints.Count == 0)
                 return default(Bounds);
-                
+
             Vector3 min = inPoints[0], max = min, point;
-            for(int i = 1, len = inPoints.Count; i < len; i++)
+            for (int i = 1, len = inPoints.Count; i < len; i++)
             {
                 point = inPoints[i];
                 min.x = Mathf.Min(min.x, point.x);
@@ -579,6 +618,58 @@ namespace BeauUtil
             b.SetMinMax(min, max);
             return b;
         }
+
+#if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Generates the minimum AABB for the given series of points.
+        /// </summary>
+        static public Bounds MinAABB(UnsafeSpan<Vector3> inPoints)
+        {
+            if (inPoints.Length == 0)
+                return default(Bounds);
+
+            Vector3 min = inPoints[0], max = min, point;
+            for (int i = 1, len = inPoints.Length; i < len; i++)
+            {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                min.z = Mathf.Min(min.z, point.z);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+                max.z = Mathf.Max(max.z, point.z);
+            }
+
+            Bounds b = default(Bounds);
+            b.SetMinMax(min, max);
+            return b;
+        }
+
+        /// <summary>
+        /// Generates the minimum AABB for the given series of points.
+        /// </summary>
+        static public Bounds MinAABB(UnsafeSpan<Vector2> inPoints)
+        {
+            if (inPoints.Length == 0)
+                return default(Bounds);
+
+            Vector3 min = inPoints[0], max = min, point;
+            for (int i = 1, len = inPoints.Length; i < len; i++)
+            {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+            }
+
+            Bounds b = default(Bounds);
+            b.SetMinMax(min, max);
+            return b;
+        }
+
+#endif // UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Remaps a vector from one bounds space into another.
@@ -605,5 +696,111 @@ namespace BeauUtil
         }
 
         #endregion // Bounds
+
+        #region Matrix
+
+        /// <summary>
+        /// Sets the translation for the given matrix.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SetTranslation(ref Matrix4x4 ioMatrix, Vector3 inPosition)
+        {
+            ioMatrix.m03 = inPosition.x;
+            ioMatrix.m13 = inPosition.y;
+            ioMatrix.m23 = inPosition.z;
+        }
+
+        /// <summary>
+        /// Sets the translation for the given matrix.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public Matrix4x4 SetTranslation(this Matrix4x4 inMatrix, Vector3 inPosition)
+        {
+            inMatrix.m03 = inPosition.x;
+            inMatrix.m13 = inPosition.y;
+            inMatrix.m23 = inPosition.z;
+            return inMatrix;
+        }
+
+        #endregion // Matrix
+
+        #region Quaternions
+
+        /// <summary>
+        /// Fast computation of Quaternion * Vector3.forward
+        /// </summary>
+        static public Vector3 Forward(in Quaternion inQuaternion)
+        {
+            float x = inQuaternion.x * 2F;
+            float y = inQuaternion.y * 2F;
+            float z = inQuaternion.z * 2F;
+            float xx = inQuaternion.x * x;
+            float yy = inQuaternion.y * y;
+            //float zz = inQuaternion.z * z;
+            //float xy = inQuaternion.x * y;
+            float xz = inQuaternion.x * z;
+            float yz = inQuaternion.y * z;
+            float wx = inQuaternion.w * x;
+            float wy = inQuaternion.w * y;
+            //float wz = inQuaternion.w * z;
+
+            Vector3 vec;
+            vec.x = (xz + wy);
+            vec.y = (yz - wx);
+            vec.z = (1f - (xx + yy));
+            return vec;
+        }
+
+        /// <summary>
+        /// Fast computation of Quaternion * Vector3.up
+        /// </summary>
+        static public Vector3 Up(in Quaternion inQuaternion)
+        {
+            float x = inQuaternion.x * 2F;
+            float y = inQuaternion.y * 2F;
+            float z = inQuaternion.z * 2F;
+            float xx = inQuaternion.x * x;
+            //float yy = inQuaternion.y * y;
+            float zz = inQuaternion.z * z;
+            float xy = inQuaternion.x * y;
+            //float xz = inQuaternion.x * z;
+            float yz = inQuaternion.y * z;
+            float wx = inQuaternion.w * x;
+            //float wy = inQuaternion.w * y;
+            float wz = inQuaternion.w * z;
+
+            Vector3 vec;
+            vec.x = (xy - wz);
+            vec.y = (1f - (xx + zz));
+            vec.z = (yz + wx);
+            return vec;
+        }
+
+        /// <summary>
+        /// Fast computation of Quaternion * Vector3.right
+        /// </summary>
+        static public Vector3 Right(in Quaternion inQuaternion)
+        {
+            //float x = inQuaternion.x * 2F;
+            float y = inQuaternion.y * 2F;
+            float z = inQuaternion.z * 2F;
+            //float xx = inQuaternion.x * x;
+            float yy = inQuaternion.y * y;
+            float zz = inQuaternion.z * z;
+            float xy = inQuaternion.x * y;
+            float xz = inQuaternion.x * z;
+            //float yz = inQuaternion.y * z;
+            //float wx = inQuaternion.w * x;
+            float wy = inQuaternion.w * y;
+            float wz = inQuaternion.w * z;
+
+            Vector3 vec;
+            vec.x = (1f - (yy + zz));
+            vec.y = (xy + wz);
+            vec.z = (xz - wy);
+            return vec;
+        }
+
+        #endregion // Quaternions
     }
 }

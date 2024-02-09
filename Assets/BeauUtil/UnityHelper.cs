@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -88,7 +89,7 @@ namespace BeauUtil
             // This is to see if the object hasn't been destroyed yet
             if (ioGameObject)
             {
-                UnityEngine.Object.Destroy(ioGameObject);
+                SafeDestroyEditorAware(ioGameObject);
             }
 
             ioGameObject = null;
@@ -107,7 +108,7 @@ namespace BeauUtil
             // This is to see if the object hasn't been destroyed yet
             if (ioTransform && ioTransform.gameObject)
             {
-                UnityEngine.Object.Destroy(ioTransform.gameObject);
+                SafeDestroyEditorAware(ioTransform.gameObject);
             }
 
             ioTransform = null;
@@ -588,19 +589,24 @@ namespace BeauUtil
         // }
 
         #endregion // Memory Usage
-    
-        #region Lookups
 
+        #region Internal Calls
+
+#if !USING_TINYIL
         private delegate UnityEngine.Object FindObjectDelegate(int inInstanceId);
         private delegate bool ObjectIdPredicate(int inInstanceId);
         private delegate bool ObjectPredicate(UnityEngine.Object inObject);
+        private delegate bool ParameterlessPrediate();
 
         static private readonly FindObjectDelegate s_FindDelegate;
         static private readonly ObjectIdPredicate s_AliveDelegate;
         static private readonly ObjectPredicate s_IsPersistentDelegate;
+        static private readonly ParameterlessPrediate s_IsMainThreadDelegate;
 
+#endif // !USING_TINYIL
         static UnityHelper()
         {
+#if !USING_TINYIL
             Type objType = typeof(UnityEngine.Object);
 
             MethodInfo findInfo = objType.GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
@@ -620,19 +626,32 @@ namespace BeauUtil
             {
                 s_IsPersistentDelegate = (ObjectPredicate) persistentInfo.CreateDelegate(typeof(ObjectPredicate));
             }
+
+            MethodInfo isMainThreadInfo = objType.GetMethod("CurrentThreadIsMainThread", BindingFlags.NonPublic | BindingFlags.Static);
+            if (isMainThreadInfo != null)
+            {
+                s_IsMainThreadDelegate = (ParameterlessPrediate) isMainThreadInfo.CreateDelegate(typeof(ParameterlessPrediate));
+            }
+#endif // !USING_TINYIL
         }
 
         /// <summary>
         /// Finds the Object instance with the given id.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); ret")]
         static public UnityEngine.Object Find(int inInstanceId)
         {
+#if !USING_TINYIL
             if (inInstanceId == 0 || s_FindDelegate == null)
             {
                 return null;
             }
             return s_FindDelegate(inInstanceId);
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
         }
 
         /// <summary>
@@ -640,44 +659,63 @@ namespace BeauUtil
         /// Will throw an exception if the Object type is not castable.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); castclass !!T; ret")]
         static public T Find<T>(int inInstanceId) where T : UnityEngine.Object
         {
+#if !USING_TINYIL
             if (inInstanceId == 0 || s_FindDelegate == null) {
                 return null;
             }
             return (T) s_FindDelegate(inInstanceId);
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
         }
 
         /// <summary>
         /// Finds the Object instance with the given id.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); isinst !!T; ret")]
         static public T SafeFind<T>(int inInstanceId) where T : UnityEngine.Object
         {
+#if !USING_TINYIL
             if (inInstanceId == 0 || s_FindDelegate == null)
             {
                 return null;
             }
             return s_FindDelegate(inInstanceId) as T;
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
         }
 
         /// <summary>
         /// Returns if the Object instance with the given id exists.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [IntrinsicIL("ldarg.0; call UnityEngine.Object::DoesObjectWithInstanceIDExist(int32); ret")]
         static public bool IsAlive(int inInstanceId)
         {
+#if !USING_TINYIL
             if (inInstanceId == 0 || s_AliveDelegate == null)
             {
                 return false;
             }
             return s_AliveDelegate(inInstanceId);
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
         }
 
         /// <summary>
         /// Returns the instance id for the given Object.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public int Id(UnityEngine.Object inObject)
         {
             return object.ReferenceEquals(inObject, null) ? 0 : inObject.GetInstanceID();
@@ -688,16 +726,40 @@ namespace BeauUtil
         /// (i.e. not a scene object)
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [IntrinsicIL("ldarg.0; call UnityEngine.Object::IsPersistent(UnityEngine.Object); ret")]
         static public bool IsPersistent(this UnityEngine.Object inObject)
         {
+#if !USING_TINYIL
             if (ReferenceEquals(inObject, null) || s_IsPersistentDelegate == null)
             {
                 return false;
             }
             return s_IsPersistentDelegate(inObject);
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
         }
 
-        #endregion // Lookups
+        /// <summary>
+        /// Returns if the current thread is the main thread.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("call UnityEngine.Object::CurrentThreadIsMainThread(); ret")]
+        static public bool IsMainThread()
+        {
+#if !USING_TINYIL
+            if (s_IsMainThreadDelegate == null)
+            {
+                return false;
+            }
+            return s_IsMainThreadDelegate();
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
+        }
+
+        #endregion // Internal Calls
     }
 
     /// <summary>

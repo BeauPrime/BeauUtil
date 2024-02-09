@@ -39,17 +39,10 @@ namespace BeauUtil
 
         #region Types
 
-        [Serializable]
-        public class CollisionEvent : UnityEvent<TCollision> { }
-
-        [Serializable]
-        public class TaggedCollisionEvent : UnityEvent<int, TCollision> { }
-
-        [Serializable]
-        public class ColliderEvent : UnityEvent<TCollider> { }
-
-        [Serializable]
-        public class TaggedColliderEvent : UnityEvent<int, TCollider> { }
+        public sealed class CollisionEvent : TinyUnityEvent<TCollision> { }
+        public sealed class TaggedCollisionEvent : TinyUnityEvent<int, TCollision> { }
+        public sealed class ColliderEvent : TinyUnityEvent<TCollider> { }
+        public sealed class TaggedColliderEvent : TinyUnityEvent<int, TCollider> { }
 
         #endregion // Types
 

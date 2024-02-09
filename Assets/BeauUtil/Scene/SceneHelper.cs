@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -28,6 +29,7 @@ namespace BeauUtil
                 s_IgnoredSceneFilters.Add(new SceneFilter(sceneName, null));
             }
 
+#if !USING_TINYIL
             Type sceneType = typeof(Scene);
 
             GetLoadingStateInternal = sceneType.GetMethod("GetLoadingStateInternal", BindingFlags.Static | BindingFlags.NonPublic);
@@ -37,6 +39,7 @@ namespace BeauUtil
             {
                 GetGUIDInternal = (GetGUIDInternalDelegate) getGUIDInternalMethod.CreateDelegate(typeof(GetGUIDInternalDelegate));
             }
+#endif // !USING_TINYIL
         }
 
         #region Load/Unload Events
@@ -579,6 +582,8 @@ namespace BeauUtil
             Unloading
         }
 
+#if !USING_TINYIL
+
         private delegate string GetGUIDInternalDelegate(int inHandle);
         static private readonly MethodInfo GetLoadingStateInternal;
         static private readonly GetGUIDInternalDelegate GetGUIDInternal;
@@ -586,11 +591,16 @@ namespace BeauUtil
         [ThreadStatic]
         static private object[] s_GetLoadingStateArgsArray;
 
+#endif // !USING_TINYIL
+
         /// <summary>
         /// Returns the loading state of the given scene.
         /// </summary>
+        [IntrinsicIL("ldarga.s inScene; call UnityEngine.SceneManagement.Scene::get_loadingState(); conv.i4; ret;")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public LoadingState GetLoadingState(this Scene inScene)
         {
+#if !USING_TINYIL
             if (!inScene.IsValid())
             {
                 return LoadingState.NotLoaded;
@@ -609,13 +619,19 @@ namespace BeauUtil
             {
                 return LoadingState.NotLoaded;
             }
+#else
+            throw new NotImplementedException();
+#endif // 
         }
 
         /// <summary>
         /// Returns the GUID of the given scene.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarga.s inScene; call UnityEngine.SceneManagement.Scene::get_guid(); ret;")]
         static public string GetGUID(this Scene inScene)
         {
+#if !USING_TINYIL
             if (GetGUIDInternal != null)
             {
                 return GetGUIDInternal(inScene.handle);
@@ -624,6 +640,9 @@ namespace BeauUtil
             {
                 return Guid.Empty.ToString();
             }
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
         }
 
         #endregion // Internal Methods

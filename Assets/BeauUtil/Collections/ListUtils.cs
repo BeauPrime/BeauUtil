@@ -80,6 +80,7 @@ namespace BeauUtil
         /// <summary>
         /// Reserves space for the given number of additional items.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Reserve<T>(this List<T> ioList, int inCapacity)
         {
             EnsureCapacity(ioList, ioList.Count + inCapacity);
