@@ -6,7 +6,8 @@
         "BeauData",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.Mathematics",
-        "Unity.Burst"
+        "Unity.Burst",
+        "TinyIL.Mono"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
