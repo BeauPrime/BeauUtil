@@ -118,6 +118,8 @@ namespace BeauUtil
             m_Camera.RemoveOnPostRender(this);
         }
 
+        #if !USING_URP
+
         private void OnRenderImage(RenderTexture src, RenderTexture dst)
         {
             switch(m_AppliedScale)
@@ -144,6 +146,8 @@ namespace BeauUtil
                 }
             }
         }
+
+        #endif // !USING_URP
 
         private float CalculateDesiredScale()
         {

@@ -27,13 +27,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BeauUtil.Debugger;
 
-#if UNITY_64 || UNITY_EDITOR_64
+#if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
 using PointerIntegral = System.UInt64;
 using PointerDiff = System.Int64;
 #else
 using PointerIntegral = System.UInt32;
 using PointerDiff = System.Int32;
-#endif // UNITY_64 || UNITY_EDITOR_64
+#endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
 
 namespace BeauUtil
 {

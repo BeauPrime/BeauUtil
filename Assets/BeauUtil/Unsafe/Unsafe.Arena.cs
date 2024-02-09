@@ -16,13 +16,13 @@
 #define VALIDATE_ARENA_MEMORY
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
 
-#if UNITY_64 || UNITY_EDITOR_64
+#if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
 using PointerIntegral = System.UInt64;
 using PointerDiff = System.Int64;
 #else
 using PointerIntegral = System.UInt32;
 using PointerDiff = System.Int32;
-#endif // UNITY_64 || UNITY_EDITOR_64
+#endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
 
 using System;
 using System.Collections.Generic;
