@@ -1,3 +1,9 @@
+## Version 0.10.1
+**21 Feb 2024**
+
+Fixed exception in `AssetDBUtils.Find` methods when encountering assets with missing types
+Added `BEAUUTIL_USE_LEGACY_UNITYEVENTS` define for reverting `PointerListener`, `TriggerListener[2D]`, and `CollisionListener[2D]` events to serializable UnityEvents
+
 ## Version 0.10.0
 **9 Feb 2024**
 

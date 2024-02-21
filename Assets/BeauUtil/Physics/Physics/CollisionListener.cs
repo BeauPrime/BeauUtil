@@ -17,12 +17,22 @@ namespace BeauUtil
     {
         #region Events
 
-        private readonly CollisionEvent m_OnCollisionEnter = new CollisionEvent();
-        private readonly TaggedCollisionEvent m_TaggedCollisionEnter = new TaggedCollisionEvent();
-        private readonly CollisionEvent m_OnCollisionExit = new CollisionEvent();
-        private readonly TaggedCollisionEvent m_TaggedCollisionExit = new TaggedCollisionEvent();
-        private readonly ColliderEvent m_OnCollisionCancel = new ColliderEvent();
-        private readonly TaggedColliderEvent m_TaggedCollisionCancel = new TaggedColliderEvent();
+#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
+        [Header("Events")]
+        [SerializeField] private CollisionEvent m_OnCollisionEnter = new CollisionEvent();
+        [SerializeField] private TaggedCollisionEvent m_TaggedCollisionEnter = new TaggedCollisionEvent();
+        [SerializeField] private CollisionEvent m_OnCollisionExit = new CollisionEvent();
+        [SerializeField] private TaggedCollisionEvent m_TaggedCollisionExit = new TaggedCollisionEvent();
+        [SerializeField] private ColliderEvent m_OnCollisionCancel = new ColliderEvent();
+        [SerializeField] private TaggedColliderEvent m_TaggedCollisionCancel = new TaggedColliderEvent();
+#else
+        private CollisionEvent m_OnCollisionEnter = new CollisionEvent();
+        private TaggedCollisionEvent m_TaggedCollisionEnter = new TaggedCollisionEvent();
+        private CollisionEvent m_OnCollisionExit = new CollisionEvent();
+        private TaggedCollisionEvent m_TaggedCollisionExit = new TaggedCollisionEvent();
+        private ColliderEvent m_OnCollisionCancel = new ColliderEvent();
+        private TaggedColliderEvent m_TaggedCollisionCancel = new TaggedColliderEvent();
+#endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
 
         #endregion // Events
 

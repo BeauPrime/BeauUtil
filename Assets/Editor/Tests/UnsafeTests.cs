@@ -104,13 +104,14 @@ namespace BeauUtil.UnitTests
         [Test]
         static public void QuickSortOnBuffer()
         {
-            float* buffer = stackalloc float[64];
-            for(int i = 0; i < 64; i++)
+            int count = ushort.MaxValue;
+            float* buffer = stackalloc float[count];
+            for(int i = 0; i < count; i++)
                 buffer[i] = UnityEngine.Random.value;
             
-            Unsafe.Quicksort<float>(buffer, 64);
+            Unsafe.Quicksort<float>(buffer, count);
 
-            for(int i = 1; i < 64; i++)
+            for(int i = 1; i < count; i++)
             {
                 Assert.GreaterOrEqual(buffer[i], buffer[i - 1]);
             }

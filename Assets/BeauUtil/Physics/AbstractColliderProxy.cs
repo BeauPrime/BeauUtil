@@ -39,11 +39,17 @@ namespace BeauUtil
 
         #region Types
 
+#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
+        [Serializable] public sealed class CollisionEvent : UnityEvent<TCollision> { }
+        [Serializable] public sealed class TaggedCollisionEvent : UnityEvent<int, TCollision> { }
+        [Serializable] public sealed class ColliderEvent : UnityEvent<TCollider> { }
+        [Serializable] public sealed class TaggedColliderEvent : UnityEvent<int, TCollider> { }
+#else
         public sealed class CollisionEvent : TinyUnityEvent<TCollision> { }
         public sealed class TaggedCollisionEvent : TinyUnityEvent<int, TCollision> { }
         public sealed class ColliderEvent : TinyUnityEvent<TCollider> { }
         public sealed class TaggedColliderEvent : TinyUnityEvent<int, TCollider> { }
-
+#endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
         #endregion // Types
 
         #region Inspector
@@ -440,7 +446,7 @@ namespace BeauUtil
 
         #endregion // Internal
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
 
         private void Reset()
         {
@@ -456,6 +462,6 @@ namespace BeauUtil
                 SetupCollider(m_Collider);
         }
 
-        #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
     }
 }

@@ -23,15 +23,26 @@ namespace BeauUtil.UI
     {
         #region Types
 
+#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
+        public sealed class PointerEvent : UnityEvent<PointerEventData> { }
+#else
         public sealed class PointerEvent : TinyUnityEvent<PointerEventData> { }
-
+#endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
         #endregion // Types
 
-        private readonly PointerEvent m_OnPointerEnter = new PointerEvent();
-        private readonly PointerEvent m_OnPointerExit = new PointerEvent();
-        private readonly PointerEvent m_OnPointerDown = new PointerEvent();
-        private readonly PointerEvent m_OnPointerUp = new PointerEvent();
-        private readonly PointerEvent m_OnClick = new PointerEvent();
+#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
+        [SerializeField] private PointerEvent m_OnPointerEnter = new PointerEvent();
+        [SerializeField] private PointerEvent m_OnPointerExit = new PointerEvent();
+        [SerializeField] private PointerEvent m_OnPointerDown = new PointerEvent();
+        [SerializeField] private PointerEvent m_OnPointerUp = new PointerEvent();
+        [SerializeField] private PointerEvent m_OnClick = new PointerEvent();
+#else
+        private PointerEvent m_OnPointerEnter = new PointerEvent();
+        private PointerEvent m_OnPointerExit = new PointerEvent();
+        private PointerEvent m_OnPointerDown = new PointerEvent();
+        private PointerEvent m_OnPointerUp = new PointerEvent();
+        private PointerEvent m_OnClick = new PointerEvent();
+#endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
 
         [NonSerialized] private uint m_EnteredMask;
         [NonSerialized] private uint m_DownMask;

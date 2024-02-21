@@ -131,13 +131,19 @@ namespace BeauUtil.Editor
 
             if (inType == typeof(UnityEditor.SceneAsset))
             {
-                outResults.Add((T) (object) AssetDatabase.LoadAssetAtPath<SceneAsset>(inPath));
+                SceneAsset asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(inPath);
+                if (asset)
+                {
+                    outResults.Add((T) (object) asset);
+                }
                 return;
             }
 
             if (inType != null && typeof(Component).IsAssignableFrom(inType))
             {
                 GameObject go = AssetDatabase.LoadAssetAtPath<GameObject>(inPath);
+                if (!go)
+                    return;
                 if (!inName.Match(go.name))
                     return;
                 Component c = go.GetComponent(inType);
@@ -150,6 +156,8 @@ namespace BeauUtil.Editor
 
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
             {
+                if (!obj)
+                    continue;
                 if (inType == null || inType.IsAssignableFrom(obj.GetType()))
                 {
                     if (!inName.Match(obj.name))
@@ -176,6 +184,11 @@ namespace BeauUtil.Editor
             if (inType != null && typeof(Component).IsAssignableFrom(inType))
             {
                 GameObject go = AssetDatabase.LoadAssetAtPath<GameObject>(inPath);
+                if (!go)
+                {
+                    outObject = null;
+                    return false;
+                }
                 if (!inName.Match(go.name))
                 {
                     outObject = null;
@@ -194,6 +207,9 @@ namespace BeauUtil.Editor
 
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(inPath))
             {
+                if (!obj)
+                    continue;
+
                 if (inType == null || inType.IsAssignableFrom(obj.GetType()))
                 {
                     if (!inName.Match(obj.name))

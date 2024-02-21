@@ -15,10 +15,18 @@ namespace BeauUtil
     {
         #region Events
 
-        private readonly ColliderEvent m_OnTriggerEnter = new ColliderEvent();
-        private readonly TaggedColliderEvent m_TaggedTriggerEnter = new TaggedColliderEvent();
-        private readonly ColliderEvent m_OnTriggerExit = new ColliderEvent();
-        private readonly TaggedColliderEvent m_TaggedTriggerExit = new TaggedColliderEvent();
+#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
+        [Header("Events")]
+        [SerializeField] private ColliderEvent m_OnTriggerEnter = new ColliderEvent();
+        [SerializeField] private TaggedColliderEvent m_TaggedTriggerEnter = new TaggedColliderEvent();
+        [SerializeField] private ColliderEvent m_OnTriggerExit = new ColliderEvent();
+        [SerializeField] private TaggedColliderEvent m_TaggedTriggerExit = new TaggedColliderEvent();
+#else
+        private ColliderEvent m_OnTriggerEnter = new ColliderEvent();
+        private TaggedColliderEvent m_TaggedTriggerEnter = new TaggedColliderEvent();
+        private ColliderEvent m_OnTriggerExit = new ColliderEvent();
+        private TaggedColliderEvent m_TaggedTriggerExit = new TaggedColliderEvent();
+#endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
 
         #endregion // Events
 
