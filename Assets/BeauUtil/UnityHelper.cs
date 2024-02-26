@@ -772,7 +772,7 @@ namespace BeauUtil
 
         static public int Clamp(int inOrder)
         {
-            return Math.Clamp(inOrder, Min, Max);
+            return Mathf.Clamp(inOrder, Min, Max);
         }
     }
 }

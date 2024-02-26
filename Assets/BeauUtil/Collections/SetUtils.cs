@@ -24,7 +24,7 @@ namespace BeauUtil
     static public class SetUtils
     {
 #if !EXTENDED_COLLECTIONS_METHODS
-        static private readonly Type[] s_ResizeTypes = new Type[] { typeof(int), typeof(bool) };
+        static private readonly Type[] s_ResizeTypes = new Type[] { typeof(int) };
 #endif // !NETSTANDARD
 
         static private class MethodCache<T>
@@ -39,6 +39,10 @@ namespace BeauUtil
             {
                 Type t = typeof(HashSet<T>);
                 GetBucketField = t.GetField("_buckets", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (GetBucketField == null)
+                {
+                    GetBucketField = t.GetField("buckets", BindingFlags.Instance | BindingFlags.NonPublic);
+                }
 #if !EXTENDED_COLLECTIONS_METHODS
                 InitMethod = t.GetMethod("Initialize", BindingFlags.Instance | BindingFlags.NonPublic);
                 ResizeMethod = t.GetMethod("SetCapacity", BindingFlags.Instance | BindingFlags.NonPublic, null, s_ResizeTypes, Array.Empty<ParameterModifier>());
@@ -54,7 +58,7 @@ namespace BeauUtil
         static public int GetCapacity<T>(this HashSet<T> inHashSet)
         {
             Array entries = (Array) MethodCache<T>.GetBucketField.GetValue(inHashSet);
-            return entries.Length;
+            return entries != null ? entries.Length : 0;
         }
 
         /// <summary>
@@ -67,7 +71,7 @@ namespace BeauUtil
 #if !EXTENDED_COLLECTIONS_METHODS
             if (GetCapacity(inHashSet) < inCapacity)
             {
-                MethodCache<T>.ResizeMethod.Invoke(inHashSet, new object[] { InternalHashUtils.GetPrime(inCapacity), false });
+                MethodCache<T>.ResizeMethod.Invoke(inHashSet, new object[] { InternalHashUtils.GetPrime(inCapacity) });
             }
 #else
             inHashSet.EnsureCapacity(inCapacity);

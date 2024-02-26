@@ -15,9 +15,9 @@
 #define NATIVE_ARRAY_EXT
 #endif // UNITY_2018_1_OR_NEWER
 
-#if UNITY_2021_1_OR_NEWER
+#if NETSTANDARD || NET_STANDARD
 #define SUPPORTS_SPAN
-#endif // UNITY_2021_1_OR_NEWER
+#endif // NETSTANDARD || NET_STANDARD
 
 using System;
 using System.Collections.Generic;
@@ -121,7 +121,7 @@ namespace BeauUtil
         private struct AlignHelper<T>
             where T : unmanaged
         {
-            private byte _;
+            private byte b;
             internal T i;
 
             static internal readonly uint Alignment;
@@ -134,8 +134,7 @@ namespace BeauUtil
 
             static private uint ExtractAlignment(AlignHelper<T> inHelper)
             {
-                return (uint) ((PointerIntegral) (&inHelper.i) - (PointerIntegral) (&inHelper));
-                //return (uint) Marshal.OffsetOf<AlignHelper<T>>("i"); 
+                return (uint) ((PointerIntegral) (&inHelper.i) - (PointerIntegral) (&inHelper.b));
             }
         }
 
@@ -706,6 +705,32 @@ namespace BeauUtil
             where T : unmanaged
         {
             return (T*) Unity.Collections.LowLevel.Unsafe.NativeSliceUnsafeUtility.GetUnsafePtr(inSlice);
+        }
+
+        /// <summary>
+        /// Returns a span for the given native buffer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public UnsafeSpan<T> NativeSpan<T>(Unity.Collections.NativeArray<T> inSlice)
+            where T : unmanaged
+        {
+            return new UnsafeSpan<T>(
+                (T*) Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(inSlice),
+                inSlice.Length
+            );
+        }
+
+        /// <summary>
+        /// Returns a span for the given native slice.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public UnsafeSpan<T> NativeSpan<T>(Unity.Collections.NativeSlice<T> inSlice)
+            where T : unmanaged
+        {
+            return new UnsafeSpan<T>(
+                (T*) Unity.Collections.LowLevel.Unsafe.NativeSliceUnsafeUtility.GetUnsafePtr(inSlice),
+                inSlice.Length
+            );
         }
 
         /// <summary>
@@ -1297,58 +1322,58 @@ namespace BeauUtil
             switch (inLength & 7)
             {
                 case 7:
-                    h ^= (ulong) ptr[6] << 48;
-                    h ^= (ulong) ptr[5] << 40;
-                    h ^= (ulong) ptr[4] << 32;
-                    h ^= (ulong) ptr[3] << 24;
-                    h ^= (ulong) ptr[2] << 16;
-                    h ^= (ulong) ptr[1] << 8;
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[6] << 48;
+                    h ^= (ulong) ptr2[5] << 40;
+                    h ^= (ulong) ptr2[4] << 32;
+                    h ^= (ulong) ptr2[3] << 24;
+                    h ^= (ulong) ptr2[2] << 16;
+                    h ^= (ulong) ptr2[1] << 8;
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
 
                 case 6:
-                    h ^= (ulong) ptr[5] << 40;
-                    h ^= (ulong) ptr[4] << 32;
-                    h ^= (ulong) ptr[3] << 24;
-                    h ^= (ulong) ptr[2] << 16;
-                    h ^= (ulong) ptr[1] << 8;
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[5] << 40;
+                    h ^= (ulong) ptr2[4] << 32;
+                    h ^= (ulong) ptr2[3] << 24;
+                    h ^= (ulong) ptr2[2] << 16;
+                    h ^= (ulong) ptr2[1] << 8;
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
 
                 case 5:
-                    h ^= (ulong) ptr[4] << 32;
-                    h ^= (ulong) ptr[3] << 24;
-                    h ^= (ulong) ptr[2] << 16;
-                    h ^= (ulong) ptr[1] << 8;
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[4] << 32;
+                    h ^= (ulong) ptr2[3] << 24;
+                    h ^= (ulong) ptr2[2] << 16;
+                    h ^= (ulong) ptr2[1] << 8;
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
 
                 case 4:
-                    h ^= (ulong) ptr[3] << 24;
-                    h ^= (ulong) ptr[2] << 16;
-                    h ^= (ulong) ptr[1] << 8;
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[3] << 24;
+                    h ^= (ulong) ptr2[2] << 16;
+                    h ^= (ulong) ptr2[1] << 8;
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
 
                 case 3:
-                    h ^= (ulong) ptr[2] << 16;
-                    h ^= (ulong) ptr[1] << 8;
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[2] << 16;
+                    h ^= (ulong) ptr2[1] << 8;
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
 
                 case 2:
-                    h ^= (ulong) ptr[1] << 8;
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[1] << 8;
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
 
                 case 1:
-                    h ^= (ulong) ptr[0];
+                    h ^= (ulong) ptr2[0];
                     h *= m;
                     break;
             }

@@ -35,9 +35,13 @@ namespace BeauUtil
 #endif // !EXTENDED_COLLECTIONS_METHODS
 
             static MethodCache()
-            {
+            { 
                 Type t = typeof(Dictionary<TKey, TValue>);
                 GetBucketField = t.GetField("_buckets", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (GetBucketField == null)
+                {
+                    GetBucketField = t.GetField("buckets", BindingFlags.Instance | BindingFlags.NonPublic);
+                }
 #if !EXTENDED_COLLECTIONS_METHODS
                 ResizeMethod = t.GetMethod("Resize", BindingFlags.Instance | BindingFlags.NonPublic, null, s_ResizeTypes, Array.Empty<ParameterModifier>());
 #endif // !EXTENDED_COLLECTIONS_METHODS
@@ -52,7 +56,7 @@ namespace BeauUtil
         static public int GetCapacity<TKey, TValue>(this Dictionary<TKey, TValue> inDictionary)
         {
             Array entries = (Array) MethodCache<TKey, TValue>.GetBucketField.GetValue(inDictionary);
-            return entries.Length;
+            return entries != null ? entries.Length : 0;
         }
 
         /// <summary>

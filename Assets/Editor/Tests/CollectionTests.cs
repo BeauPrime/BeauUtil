@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using NUnit.Framework;
@@ -684,7 +685,7 @@ namespace BeauUtil.UnitTests
         [Test]
         static public void CanCacheAttributeMappedCache()
         {
-            AttributeCache<SomeImportantAttribute, int> cache = new AttributeCache<SomeImportantAttribute, int>((a, t) => a.Value, 8);
+            AttributeCache<SomeImportantAttribute, int> cache = new AttributeCache<SomeImportantAttribute, int>((v, t) => v.Value, 8);
 
             int untagged = cache.Get<UntaggedStruct>();
             Assert.AreEqual(0, untagged);
@@ -786,6 +787,10 @@ namespace BeauUtil.UnitTests
         [Test]
         static public void CanUseMapUtils()
         {
+            foreach(var field in typeof(Dictionary<StringHash32, int>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance)) {
+                Debug.Log(field);
+            }
+
             Dictionary<StringHash32, int> dict = MapUtils.Create<StringHash32, int>(90);
 
             int capacity = dict.GetCapacity();
@@ -794,6 +799,22 @@ namespace BeauUtil.UnitTests
             dict.EnsureCapacity(256);
 
             Assert.AreEqual(293, dict.GetCapacity());
+        }
+
+        [Test]
+        static public void CanUseSetUtils() {
+            foreach (var field in typeof(HashSet<StringHash32>).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)) {
+                Debug.Log(field);
+            }
+
+            HashSet<StringHash32> set = SetUtils.Create<StringHash32>(90);
+
+            int capacity = set.GetCapacity();
+            Assert.AreEqual(107, capacity);
+
+            set.EnsureCapacity(256);
+
+            Assert.AreEqual(293, set.GetCapacity());
         }
     }
 }

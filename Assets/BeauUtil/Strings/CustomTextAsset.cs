@@ -161,8 +161,6 @@ namespace BeauUtil.Blocks
 
                 ctx.AddObjectToAsset("Text", asset);
                 ctx.SetMainObject(asset);
-
-                AssetDatabase.SaveAssets();
             }
         }
         

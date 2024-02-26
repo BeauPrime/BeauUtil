@@ -41,7 +41,8 @@ public class StateHashTest : MonoBehaviour
         {
             for (int i = 0; i < transformCount; i++)
             {
-                transforms[i].SetLocalPositionAndRotation(RNG.Instance.NextVector3(2, 200), Quaternion.Euler(RNG.Instance.NextVector3(0, 360)));
+                transforms[i].localPosition = RNG.Instance.NextVector3(2, 200);
+                transforms[i].localRotation = Quaternion.Euler(RNG.Instance.NextVector3(0, 360));
             }
             yield return null;
 
@@ -100,7 +101,8 @@ public class StateHashTest : MonoBehaviour
         {
             for (int i = 0; i < transformCount; i++)
             {
-                transforms[i].SetLocalPositionAndRotation(RNG.Instance.NextVector3(2, 200), Quaternion.Euler(RNG.Instance.NextVector3(0, 360)));
+                transforms[i].localPosition = RNG.Instance.NextVector3(2, 200);
+                transforms[i].localRotation = Quaternion.Euler(RNG.Instance.NextVector3(0, 360));
                 cameras[i].fieldOfView = RNG.Instance.NextFloat(10, 120);
             }
             yield return null;

@@ -109,6 +109,12 @@ namespace BeauUtil
                 }
             }
 
+            if (inType.IsDefined((typeof(NonIndexedAttribute)), false))
+            {
+                Assert.Fail("Attempting to allocate index for type '{0}' that is marked as NonIndexed", inType.FullName);
+                return NullIndex;
+            }
+
             ushort parentIndex = AllocateClassHierarchy(inType);
 
             ushort index = s_Allocated++;
@@ -127,7 +133,7 @@ namespace BeauUtil
             if (!inType.IsInterface)
             {
                 Type parentType = inType.BaseType;
-                if (parentType != typeof(TRootType) && typeof(TRootType).IsAssignableFrom(parentType))
+                if (parentType != typeof(TRootType) && typeof(TRootType).IsAssignableFrom(parentType) && !parentType.IsDefined(typeof(NonIndexedAttribute), false))
                 {
                     parentIndex = (ushort) Get(parentType);
                 }
@@ -317,6 +323,15 @@ namespace BeauUtil
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
     [Preserve]
     public sealed class IndexedAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Marks a type or interface as explicitly ignored by TypeIndex.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
+    [Preserve]
+    public sealed class NonIndexedAttribute : Attribute
     {
     }
 }

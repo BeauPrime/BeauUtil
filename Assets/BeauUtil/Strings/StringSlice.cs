@@ -7,6 +7,10 @@
  * Purpose: Read-only slice of a string.
  */
 
+#if NETSTANDARD || NET_STANDARD
+#define SUPPORTS_SPAN
+#endif // NETSTANDARD || NET_STANDARD
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -696,6 +700,24 @@ namespace BeauUtil
         }
 
         #endregion // Export
+
+        #region Spans
+
+#if SUPPORTS_SPAN
+
+        static public implicit operator ReadOnlySpan<char>(StringSlice slice)
+        {
+            return slice.Length > 0 ? MemoryExtensions.AsSpan(slice.m_Source, slice.m_StartIndex, slice.Length) : default(ReadOnlySpan<char>);
+        }
+
+        static public implicit operator ReadOnlyMemory<char>(StringSlice slice)
+        {
+            return slice.Length > 0 ? MemoryExtensions.AsMemory(slice.m_Source, slice.m_StartIndex, slice.Length) : default(ReadOnlyMemory<char>);
+        }
+
+#endif // SUPPORTS_SPAN
+
+        #endregion // Spans
 
         #region IReadOnlyList
 

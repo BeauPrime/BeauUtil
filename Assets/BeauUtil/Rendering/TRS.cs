@@ -159,7 +159,7 @@ namespace BeauUtil
 
         static public bool TryCreateFromMatrix(Matrix4x4 inMatrix, out TRS outTRS)
         {
-            outTRS.Position = inMatrix.GetPosition();
+            outTRS.Position = new Vector3(inMatrix.m03, inMatrix.m13, inMatrix.m23);
             outTRS.Scale = inMatrix.lossyScale;
             return TryGetRotation(inMatrix, out outTRS.Rotation) && inMatrix.ValidTRS();
         }

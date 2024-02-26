@@ -11,9 +11,9 @@
 #define UNMANAGED_CONSTRAINT
 #endif // CSHARP_7_3_OR_NEWER
 
-#if UNITY_2021_1_OR_NEWER
+#if NETSTANDARD || NET_STANDARD
 #define SUPPORTS_SPAN
-#endif // UNITY_2021_1_OR_NEWER
+#endif // NETSTANDARD || NET_STANDARD
 
 using System;
 using System.Collections.Generic;

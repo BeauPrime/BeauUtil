@@ -22,7 +22,7 @@ using System.Diagnostics;
 
 namespace BeauUtil
 {
-    #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
     /// <summary>
     /// Memory span enumerator.
@@ -39,7 +39,8 @@ namespace BeauUtil
             End = inPtr + inLength;
         }
 
-        public unsafe UnsafeEnumerator(T* inPtr, T* inEnd) {
+        public unsafe UnsafeEnumerator(T* inPtr, T* inEnd)
+        {
             Ptr = inPtr - 1;
             End = inEnd < inPtr ? inPtr : inEnd;
         }
@@ -48,18 +49,21 @@ namespace BeauUtil
 
         unsafe object IEnumerator.Current { get { return *Ptr; } }
 
-        public unsafe void Dispose() {
+        public unsafe void Dispose()
+        {
             Ptr = End = null;
         }
 
-        public unsafe bool MoveNext() {
+        public unsafe bool MoveNext()
+        {
             return ++Ptr < End;
         }
 
-        public void Reset() {
+        public void Reset()
+        {
             throw new NotSupportedException();
         }
     }
 
-    #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 }

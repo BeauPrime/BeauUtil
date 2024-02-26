@@ -1,4 +1,8 @@
-﻿using System;
+﻿#if UNITY_2021_2_OR_NEWER && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
+using System;
 using System.Text;
 using NUnit.Framework;
 using UnityEngine;
@@ -369,6 +373,8 @@ namespace BeauUtil.UnitTests
             Debug.Log("from delegate: " + a);
         }
 
+#if SUPPORTS_FUNCTION_POINTERS
+
         [Test]
         static public void CanTakeFunctionPointers_JitTest()
         {
@@ -387,6 +393,8 @@ namespace BeauUtil.UnitTests
 
             Debug.Log(a.Equals(&InternalFunc_JitTest));
         }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
 
         static private void SpecializedTestMethod()
         {

@@ -45,18 +45,22 @@ namespace BeauUtil
         #if EXPANDED_REFS
         bool Contains(in T inValue);
         int IndexOf(in T inValue);
+        bool Contains(T inValue);
+        int IndexOf(T inValue);
         new ref T this[int inIndex] { get; }
         
         void PushFront(in T inValue);
         void PushBack(in T inValue);
-        #else
+        void PushFront(T inValue);
+        void PushBack(T inValue);
+#else
         bool Contains(T inValue);
         int IndexOf(T inValue);
         T this[int inIndex] { get; set; }
 
         void PushFront(T inValue);
         void PushBack(T inValue);
-        #endif // // EXPANDED_REFS
+#endif // // EXPANDED_REFS
 
         T PopFront();
         T PeekFront();

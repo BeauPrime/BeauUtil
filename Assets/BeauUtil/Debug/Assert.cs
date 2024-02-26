@@ -15,13 +15,22 @@
 #define DISABLE_STACK_TRACE
 #endif // UNITY_WEBGL && !UNITY_EDITOR
 
+#if NETSTANDARD || NET_STANDARD
+#define CODEANALYSIS
+#define ISFINITE
+#endif // NETSTANDARD || NET_STANDARD
+
 using System.Diagnostics;
 using System;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
+#if CODEANALYSIS
 using System.Diagnostics.CodeAnalysis;
+#endif // CODEANALYSIS
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -62,10 +71,10 @@ namespace BeauUtil.Debugger
         private const string AssertConditionPrefix = "AssertException: " + AssertExceptionPrefix;
         private const string StackTraceDisabledMessage = "[Stack Trace Disabled]";
 
-        #if DEVELOPMENT
+#if DEVELOPMENT
         static private bool s_RegisteredLogHook;
         static private FailureMode s_FailureMode;
-        #endif // DEVELOPMENT
+#endif // DEVELOPMENT
 
         static private bool s_Broken;
         static private readonly HashSet<StringHash64> s_IgnoredLocations = new HashSet<StringHash64>();
@@ -73,29 +82,29 @@ namespace BeauUtil.Debugger
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static private void Initialize()
         {
-            #if DEVELOPMENT
+#if DEVELOPMENT
             UnityEngine.Application.logMessageReceived += Application_logMessageReceived;
             s_RegisteredLogHook = true;
-            #endif // DEVELOPMENT
+#endif // DEVELOPMENT
 
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             UnityEditor.EditorApplication.pauseStateChanged += (s) => {
                 if (s == PauseState.Unpaused)
                 {
                     s_Broken = false;
                 }
             };
-            #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
         }
 
         static private void Application_logMessageReceived(string condition, string stackTrace, UnityEngine.LogType type)
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
 
             if (EditorApplication.isCompiling || EditorApplication.isUpdating)
                 return;
 
-            #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
 
             switch(type)
             {
@@ -113,33 +122,33 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void RegisterLogHook()
         {
-            #if DEVELOPMENT
+#if DEVELOPMENT
             if (!s_RegisteredLogHook)
             {
                 s_RegisteredLogHook = true;
                 UnityEngine.Application.logMessageReceived += Application_logMessageReceived;
             }
-            #endif // DEVELOPMENT
+#endif // DEVELOPMENT
         }
 
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void DeregisterLogHook()
         {
-            #if DEVELOPMENT
+#if DEVELOPMENT
             if (s_RegisteredLogHook)
             {
                 s_RegisteredLogHook = false;
                 UnityEngine.Application.logMessageReceived -= Application_logMessageReceived;
             }
-            #endif // DEVELOPMENT
+#endif // DEVELOPMENT
         }
 
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void SetFailureMode(FailureMode inMode)
         {
-            #if DEVELOPMENT
+#if DEVELOPMENT
             s_FailureMode = inMode;
-            #endif // DEVELOPMENT
+#endif // DEVELOPMENT
         }
 
         #region Fail
@@ -148,7 +157,9 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+#if CODEANALYSIS
         [DoesNotReturn]
+#endif // CODEANALYSIS
         static public void Fail()
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", null);
@@ -158,7 +169,9 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+#if CODEANALYSIS
         [DoesNotReturn]
+#endif // CODEANALYSIS
         static public void Fail(string inMessage)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", inMessage);
@@ -168,7 +181,9 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+#if CODEANALYSIS
         [DoesNotReturn]
+#endif // CODEANALYSIS
         static public void Fail<P0>(string inFormat, P0 inParam0)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0));
@@ -178,7 +193,9 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+#if CODEANALYSIS
         [DoesNotReturn]
+#endif // CODEANALYSIS
         static public void Fail<P0, P1>(string inFormat, P0 inParam0, P1 inParam1)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1));
@@ -188,7 +205,9 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+#if CODEANALYSIS
         [DoesNotReturn]
+#endif // CODEANALYSIS
         static public void Fail<P0, P1, P2>(string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1, inParam2));
@@ -198,7 +217,9 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+#if CODEANALYSIS
         [DoesNotReturn]
+#endif // CODEANALYSIS
         static public void Fail(string inFormat, params object[] inParams)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParams));
@@ -436,13 +457,31 @@ namespace BeauUtil.Debugger
 
         #region Finite
 
+#if !ISFINITE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static private bool IsFinite(float inValue)
+        {
+            return !float.IsInfinity(inValue) && !float.IsNaN(inValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static private bool IsFinite(double inValue)
+        {
+            return !double.IsInfinity(inValue) && !double.IsNaN(inValue);
+        }
+#endif // !ISFINITE
+
         /// <summary>
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite(float inValue)
         {
+#if ISFINITE
             if (!float.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), null);
             }
@@ -454,7 +493,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite(float inValue, string inMessage)
         {
-            if (!float.IsFinite(inValue)    )
+#if ISFINITE
+            if (!float.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), inMessage);
             }
@@ -466,7 +509,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite<P0>(float inValue, string inFormat, P0 inParam0)
         {
+#if ISFINITE
             if (!float.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0));
             }
@@ -478,7 +525,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite<P0, P1>(float inValue, string inFormat, P0 inParam0, P1 inParam1)
         {
+#if ISFINITE
             if (!float.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1));
             }
@@ -490,7 +541,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite<P0, P1, P2>(float inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
+#if ISFINITE
             if (!float.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1, inParam2));
             }
@@ -502,7 +557,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite(float inValue, string inFormat, params object[] inParams)
         {
+#if ISFINITE
             if (!float.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParams));
             }
@@ -514,7 +573,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite(double inValue)
         {
+#if ISFINITE
             if (!double.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), null);
             }
@@ -526,7 +589,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite(double inValue, string inMessage)
         {
-            if (!double.IsFinite(inValue)    )
+#if ISFINITE
+            if (!double.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), inMessage);
             }
@@ -538,7 +605,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite<P0>(double inValue, string inFormat, P0 inParam0)
         {
+#if ISFINITE
             if (!double.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0));
             }
@@ -550,7 +621,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite<P0, P1>(double inValue, string inFormat, P0 inParam0, P1 inParam1)
         {
+#if ISFINITE
             if (!double.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1));
             }
@@ -562,7 +637,11 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite<P0, P1, P2>(double inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
+#if ISFINITE
             if (!double.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParam0, inParam1, inParam2));
             }
@@ -574,13 +653,17 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void Finite(double inValue, string inFormat, params object[] inParams)
         {
+#if ISFINITE
             if (!double.IsFinite(inValue))
+#else
+            if (!IsFinite(inValue))
+#endif // ISFINITE
             {
                 OnFail(GetLocationFromStack(1), string.Format("Floating point value {0} is not finite", inValue), Log.Format(inFormat, inParams));
             }
         }
 
-        #endregion // Finite
+		#endregion // Finite
 
         #region Internal
 
@@ -618,20 +701,20 @@ namespace BeauUtil.Debugger
             else if (result == ErrorResult.Break)
             {
                 s_Broken = true;
-                #if UNITY_EDITOR
+#if UNITY_EDITOR
                 if (EditorApplication.isPlaying)
                     UnityEngine.Debug.Break();
                 else
                     throw new AssertException(fullMessage);
-                #else
+#else
                 throw new AssertException(fullMessage);
-                #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
             }
         }
 
         static private ErrorResult ShowErrorMessage(string inMessage)
         {
-            #if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
             if (EditorApplication.isPlaying && !s_Broken && s_FailureMode == FailureMode.User)
             {
                 int result = EditorUtility.DisplayDialogComplex("Assert Failed", inMessage, "Ignore", "Ignore All", "Break");
@@ -640,14 +723,14 @@ namespace BeauUtil.Debugger
                 if (result == 1)
                     return ErrorResult.IgnoreAll;
             }
-            #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
+#endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
 
             return ErrorResult.Break;
         }
 
         static internal string GetLocationFromStack(int inDepth)
         {
-            #if !DISABLE_STACK_TRACE
+#if !DISABLE_STACK_TRACE
 
             StackTrace trace = new StackTrace();
             if (trace != null)
@@ -679,7 +762,7 @@ namespace BeauUtil.Debugger
                 }
             }
 
-            #endif // DISABLE_STACK_TRACE
+#endif // DISABLE_STACK_TRACE
 
             return StackTraceDisabledMessage;
         }
