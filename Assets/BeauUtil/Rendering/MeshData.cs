@@ -42,9 +42,41 @@ namespace BeauUtil
         MeshTopology Topology { get; }
 
         void Preallocate(int inVertexCount, int inIndexCount);
-        bool NeedsFlush(int inVertexCount);
+        bool NeedsFlush(int inVertexCount, int inIndexCount);
         void Clear();
-        void Upload(Mesh ioMesh);
+        void Upload(ref MeshDataTarget ioTarget, MeshDataUploadFlags inUploadFlags = 0);
+        void Release();
+    }
+
+    [Flags]
+    public enum MeshDataUploadFlags : uint
+    {
+        Default = 0,
+        MarkNoLongerReadable = 0x01,
+        DontRecalculateBounds = 0x02,
+        SkipIndexBufferUpload = 0x04
+    }
+
+    /// <summary>
+    /// MeshData upload target.
+    /// Provides several checks to avoid uploading duplicate data.
+    /// </summary>
+    public struct MeshDataTarget
+    {
+        public Mesh Mesh;
+        public ulong VertexFormatHash;
+        public IndexFormat IndexFormat;
+        public MeshTopology Topology;
+
+        static public MeshDataTarget CreateFromMesh(Mesh inMesh)
+        {
+            MeshDataTarget t;
+            t.VertexFormatHash = 0;
+            t.IndexFormat = (IndexFormat) (-1);
+            t.Topology = (MeshTopology) (-1);
+            t.Mesh = inMesh;
+            return t;
+        }
     }
 
     /// <summary>
@@ -63,18 +95,23 @@ namespace BeauUtil
         private ushort[] m_IndexBuffer;
         private TVertex[] m_VertexBuffer;
         private MeshTopology m_Topology;
+        private bool m_Flexible;
 
-        public MeshData16() : this(DefaultInitialCapacity, MeshTopology.Triangles) { }
+        public MeshData16() : this(DefaultInitialCapacity, MeshTopology.Triangles, true) { }
 
-        public MeshData16(int inInitialCapacity, MeshTopology inTopology = MeshTopology.Triangles)
+        public MeshData16(int inInitialCapacity, MeshTopology inTopology = MeshTopology.Triangles, bool inFlexible = true)
+            : this(inInitialCapacity, inInitialCapacity, inTopology, inFlexible) { }
+
+        public MeshData16(int inInitialVertexCapacity, int inInitialIndexCapacity, MeshTopology inTopology = MeshTopology.Triangles, bool inFlexible = true)
         {
             InitializeVertexLayout();
 
-            m_VertexBuffer = new TVertex[inInitialCapacity];
-            m_IndexBuffer = new ushort[inInitialCapacity];
+            m_VertexBuffer = new TVertex[inInitialVertexCapacity];
+            m_IndexBuffer = new ushort[inInitialIndexCapacity];
             m_VertexCount = 0;
             m_IndexCount = 0;
             m_Topology = inTopology;
+            m_Flexible = inFlexible;
         }
 
         public void Dispose()
@@ -106,9 +143,10 @@ namespace BeauUtil
         /// <summary>
         /// Returns if adding the given vertex count would exceed the vertex cap.
         /// </summary>
-        public bool NeedsFlush(int inVertexCount)
+        public bool NeedsFlush(int inVertexCount, int inIndexCount)
         {
-            return m_VertexCount + inVertexCount > MaxAllowedVertices;
+            return m_VertexCount + inVertexCount > MaxAllowedVertices
+                || m_IndexCount + inIndexCount > VertexUtility.MaxMeshIndexStreamSize16;
         }
 
         /// <summary>
@@ -118,6 +156,17 @@ namespace BeauUtil
         {
             m_VertexCount = 0;
             m_IndexCount = 0;
+        }
+
+
+        /// <summary>
+        /// Releases buffers.
+        /// </summary>
+        public void Release()
+        {
+            Clear();
+            m_VertexBuffer = Array.Empty<TVertex>();
+            m_IndexBuffer = Array.Empty<ushort>();
         }
 
         /// <summary>
@@ -156,6 +205,8 @@ namespace BeauUtil
             int required = m_VertexCount + inVertexCount;
             if (required > m_VertexBuffer.Length)
             {
+                if (!m_Flexible)
+                    throw new InvalidOperationException(string.Format("MeshData16 was marked inflexible, and can only have {0} vertices", m_VertexBuffer.Length));
                 if (required > MaxAllowedVertices)
                     throw new InvalidOperationException(string.Format("MeshData16<{0}> can only have up to {1} vertices", typeof(TVertex).Name, MaxAllowedVertices));
                 ArrayUtils.EnsureCapacity(ref m_VertexBuffer, Mathf.NextPowerOfTwo(required));
@@ -172,6 +223,8 @@ namespace BeauUtil
             int required = m_IndexCount + inIndexCount;
             if (required > m_IndexBuffer.Length)
             {
+                if (!m_Flexible)
+                    throw new InvalidOperationException(string.Format("MeshData16 was marked inflexible, and can only have {0} indices", m_IndexBuffer.Length));
                 if (required > VertexUtility.MaxMeshIndexStreamSize16)
                     throw new InvalidOperationException(string.Format("MeshData16 can only have up to {0} indices", VertexUtility.MaxMeshIndexStreamSize16));
                 ArrayUtils.EnsureCapacity(ref m_IndexBuffer, Mathf.NextPowerOfTwo(required));
@@ -244,7 +297,7 @@ namespace BeauUtil
         [Il2CppSetOption(Option.NullChecks, false)]
         public ref TVertex Vertex(int inIndex)
         {
-            if (inIndex < 0 || inIndex >= m_IndexCount)
+            if (inIndex < 0 || inIndex >= m_VertexCount)
                 throw new ArgumentOutOfRangeException("inIndex");
             return ref m_VertexBuffer[inIndex];
         }
@@ -330,6 +383,26 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Adds a triangle to the mesh.
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public OffsetLengthU16 AddTriangle(in Vertex3<TVertex> inVertices)
+    {
+            AllocateIndices(3);
+            int currentVertCount = m_VertexCount;
+            m_IndexBuffer[m_IndexCount++] = (ushort) currentVertCount;
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 1);
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 2);
+
+            AllocateVertices(3);
+            m_VertexBuffer[m_VertexCount++] = inVertices.A;
+            m_VertexBuffer[m_VertexCount++] = inVertices.B;
+            m_VertexBuffer[m_VertexCount++] = inVertices.C;
+            return new OffsetLengthU16((ushort) currentVertCount, 3);
+        }
+
+        /// <summary>
         /// Adds a quad to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -350,6 +423,30 @@ namespace BeauUtil
             m_VertexBuffer[m_VertexCount++] = inB;
             m_VertexBuffer[m_VertexCount++] = inC;
             m_VertexBuffer[m_VertexCount++] = inD;
+            return new OffsetLengthU16((ushort) currentVertCount, 4);
+        }
+
+        /// <summary>
+        /// Adds a quad to the mesh.
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public OffsetLengthU16 AddQuad(in Vertex4<TVertex> inVertices)
+        {
+            AllocateIndices(6);
+            int currentVertCount = m_VertexCount;
+            m_IndexBuffer[m_IndexCount++] = (ushort) currentVertCount;
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 1);
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 2);
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 3);
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 2);
+            m_IndexBuffer[m_IndexCount++] = (ushort) (currentVertCount + 1);
+
+            AllocateVertices(4);
+            m_VertexBuffer[m_VertexCount++] = inVertices.A;
+            m_VertexBuffer[m_VertexCount++] = inVertices.B;
+            m_VertexBuffer[m_VertexCount++] = inVertices.C;
+            m_VertexBuffer[m_VertexCount++] = inVertices.D;
             return new OffsetLengthU16((ushort) currentVertCount, 4);
         }
 
@@ -415,9 +512,10 @@ namespace BeauUtil
             }
 
             AllocateVertices(inVertexCount);
-            for (int i = 0, end = i + inVertexCount; i < end; i++)
+            fixed(TVertex* dst = &m_VertexBuffer[m_VertexCount])
             {
-                m_VertexBuffer[m_VertexCount++] = inVertices[i];
+                Unsafe.FastCopyArray<TVertex>(inVertices, inVertexCount, dst);
+                m_VertexCount += inVertexCount;
             }
             return new OffsetLengthU16((ushort) currentVertCount, (ushort) inVertexCount);
         }
@@ -460,39 +558,64 @@ namespace BeauUtil
         /// <summary>
         /// Uploads this mesh data to the given mesh.
         /// </summary>
-        public void Upload(Mesh ioMesh)
+        public void Upload(ref MeshDataTarget ioMesh, MeshDataUploadFlags inUploadFlags = 0)
         {
-            if (ioMesh == null)
-                throw new ArgumentNullException("ioMesh");
+            Mesh m = ioMesh.Mesh;
+            if (m == null)
+                throw new ArgumentNullException("ioMesh.Mesh");
+
+            bool uploadIndices = (inUploadFlags & MeshDataUploadFlags.SkipIndexBufferUpload) == 0 || ioMesh.IndexFormat != IndexFormat.UInt16;
 
 #if UNSAFE_BUFFER_COPY
             unsafe
             {
                 fixed (TVertex* verts = m_VertexBuffer)
                 {
-                    ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
-                    ioMesh.SetVertexBufferData(Unsafe.NativeArray(verts, m_VertexCount), 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
+                    if (Ref.Replace(ref ioMesh.VertexFormatHash, s_VertexLayout.Hash))
+                    {
+                        m.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
+                    }
+                    m.SetVertexBufferData(Unsafe.NativeArray(verts, m_VertexCount), 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
                 }
 
-                fixed (ushort* inds = m_IndexBuffer)
+                if (uploadIndices)
                 {
-                    ioMesh.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt16);
-                    ioMesh.SetIndexBufferData(Unsafe.NativeArray(inds, m_IndexCount), 0, 0, m_IndexCount, IgnoreAllUpdates);
+                    ioMesh.IndexFormat = IndexFormat.UInt16;
+                    m.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt16);
+                    fixed (ushort* inds = m_IndexBuffer)
+                    {
+                        m.SetIndexBufferData(Unsafe.NativeArray(inds, m_IndexCount), 0, 0, m_IndexCount, IgnoreAllUpdates);
+                    }
                 }
             }
 #else
-            ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
-            ioMesh.SetVertexBufferData(m_VertexBuffer, 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
+            if (ioMesh.VertexFormatHash != s_VertexLayout.Hash)
+            {
+                ioMesh.VertexFormatHash = s_VertexLayout.Hash;
+                m.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
+            }
+            m.SetVertexBufferData(m_VertexBuffer, 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
 
-            ioMesh.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt16);
-            ioMesh.SetIndexBufferData(m_IndexBuffer, 0, 0, m_IndexCount, IgnoreAllUpdates);
+            if (uploadIndices)
+            {
+                ioMesh.IndexFormat = IndexFormat.UInt16;
+                m.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt16);
+                m.SetIndexBufferData(m_IndexBuffer, 0, 0, m_IndexCount, IgnoreAllUpdates);
+            }
 #endif // UNSAFE_BUFFER_COPY
 
-            ioMesh.subMeshCount = 1;
-            ioMesh.SetSubMesh(0, new SubMeshDescriptor(0, m_IndexCount, m_Topology), IgnoreAllUpdates);
+            if (uploadIndices || ioMesh.Topology != m_Topology || m.subMeshCount != 1)
+            {
+                ioMesh.Topology = m_Topology;
+                m.subMeshCount = 1;
+                m.SetSubMesh(0, new SubMeshDescriptor(0, m_IndexCount, m_Topology), IgnoreAllUpdates);
+            }
 
-            ioMesh.RecalculateBounds();
-            ioMesh.UploadMeshData(false);
+            if ((inUploadFlags & MeshDataUploadFlags.DontRecalculateBounds) == 0)
+            {
+                m.RecalculateBounds();
+            }
+            m.UploadMeshData((inUploadFlags & MeshDataUploadFlags.MarkNoLongerReadable) != 0);
         }
 
         #endregion // Upload
@@ -510,7 +633,7 @@ namespace BeauUtil
         /// <summary>
         /// Overrides the vertex layout for this vertex type.
         /// </summary>
-        static public void OverrideLayout(VertexLayout inLayout)
+        static public void OverrideLayout(in VertexLayout inLayout)
         {
             if (!inLayout)
                 throw new ArgumentNullException("inLayout");
@@ -522,7 +645,7 @@ namespace BeauUtil
     }
 
     /// <summary>
-    /// Interleaved mesh data with a 132bit index buffer.
+    /// Interleaved mesh data with a 32-bit index buffer.
     /// </summary>
     public class MeshData32<TVertex> : IMeshData where TVertex : unmanaged
     {
@@ -537,18 +660,23 @@ namespace BeauUtil
         private uint[] m_IndexBuffer;
         private TVertex[] m_VertexBuffer;
         private MeshTopology m_Topology;
+        private bool m_Flexible;
 
-        public MeshData32() : this(DefaultInitialCapacity, MeshTopology.Triangles) { }
+        public MeshData32() : this(DefaultInitialCapacity, MeshTopology.Triangles, true) { }
 
-        public MeshData32(int inInitialCapacity, MeshTopology topology = MeshTopology.Triangles)
+        public MeshData32(int inInitialCapacity, MeshTopology inTopology = MeshTopology.Triangles, bool inFlexible = true)
+            : this(inInitialCapacity, inInitialCapacity, inTopology, inFlexible) { }
+
+        public MeshData32(int inInitialVertexCapacity, int inInitialIndexCapacity, MeshTopology inTopology = MeshTopology.Triangles, bool inFlexible = true)
         {
             InitializeVertexLayout();
 
-            m_VertexBuffer = new TVertex[inInitialCapacity];
-            m_IndexBuffer = new uint[inInitialCapacity];
+            m_VertexBuffer = new TVertex[inInitialVertexCapacity];
+            m_IndexBuffer = new uint[inInitialIndexCapacity];
             m_VertexCount = 0;
             m_IndexCount = 0;
-            m_Topology = topology;
+            m_Topology = inTopology;
+            m_Flexible = inFlexible;
         }
 
         public void Dispose()
@@ -580,9 +708,10 @@ namespace BeauUtil
         /// <summary>
         /// Returns if adding the given vertex count would exceed the vertex cap.
         /// </summary>
-        public bool NeedsFlush(int inVertexCount)
+        public bool NeedsFlush(int inVertexCount, int inIndexCount)
         {
-            return m_VertexCount + inVertexCount > MaxAllowedVertices;
+            return m_VertexCount + inVertexCount > MaxAllowedVertices
+                || m_IndexCount + inIndexCount > VertexUtility.MaxMeshIndexStreamSize32;
         }
 
         /// <summary>
@@ -592,6 +721,15 @@ namespace BeauUtil
         {
             m_VertexCount = 0;
             m_IndexCount = 0;
+        }
+
+        /// <summary>
+        /// Releases buffers.
+        /// </summary>
+        public void Release() {
+            Clear();
+            m_VertexBuffer = Array.Empty<TVertex>();
+            m_IndexBuffer = Array.Empty<uint>();
         }
 
         /// <summary>
@@ -630,6 +768,8 @@ namespace BeauUtil
             int required = m_VertexCount + inVertexCount;
             if (required > m_VertexBuffer.Length)
             {
+                if (!m_Flexible)
+                    throw new InvalidOperationException(string.Format("MeshData32 was marked inflexible, and can only have {0} vertices", m_VertexBuffer.Length));
                 if (required > MaxAllowedVertices)
                     throw new InvalidOperationException(string.Format("MeshData32<{0}> can only have up to {1} vertices", typeof(TVertex).Name, MaxAllowedVertices));
                 ArrayUtils.EnsureCapacity(ref m_VertexBuffer, Mathf.NextPowerOfTwo(required));
@@ -646,6 +786,8 @@ namespace BeauUtil
             int required = m_IndexCount + inIndexCount;
             if (required > m_IndexBuffer.Length)
             {
+                if (!m_Flexible)
+                    throw new InvalidOperationException(string.Format("MeshData32 was marked inflexible, and can only have {0} indices", m_IndexBuffer.Length));
                 if (required > VertexUtility.MaxMeshIndexStreamSize32)
                     throw new InvalidOperationException(string.Format("MeshData32 can only have up to {0} indices", VertexUtility.MaxMeshIndexStreamSize32));
                 ArrayUtils.EnsureCapacity(ref m_IndexBuffer, Mathf.NextPowerOfTwo(required));
@@ -718,7 +860,7 @@ namespace BeauUtil
         [Il2CppSetOption(Option.NullChecks, false)]
         public ref TVertex Vertex(int inIndex)
         {
-            if (inIndex < 0 || inIndex >= m_IndexCount)
+            if (inIndex < 0 || inIndex >= m_VertexCount)
                 throw new ArgumentOutOfRangeException("inIndex");
             return ref m_VertexBuffer[inIndex];
         }
@@ -804,6 +946,26 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Adds a triangle to the mesh.
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public OffsetLengthU32 AddTriangle(in Vertex3<TVertex> inVertices)
+        {
+            AllocateIndices(3);
+            int currentVertCount = m_VertexCount;
+            m_IndexBuffer[m_IndexCount++] = (uint) currentVertCount;
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 1);
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 2);
+
+            AllocateVertices(3);
+            m_VertexBuffer[m_VertexCount++] = inVertices.A;
+            m_VertexBuffer[m_VertexCount++] = inVertices.B;
+            m_VertexBuffer[m_VertexCount++] = inVertices.C;
+            return new OffsetLengthU32((uint) currentVertCount, 3);
+        }
+
+        /// <summary>
         /// Adds a quad to the mesh.
         /// </summary>
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -824,6 +986,30 @@ namespace BeauUtil
             m_VertexBuffer[m_VertexCount++] = inB;
             m_VertexBuffer[m_VertexCount++] = inC;
             m_VertexBuffer[m_VertexCount++] = inD;
+            return new OffsetLengthU32((uint) currentVertCount, 4);
+        }
+
+        /// <summary>
+        /// Adds a quad to the mesh.
+        /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        public OffsetLengthU32 AddQuad(in Vertex4<TVertex> inVertices)
+        {
+            AllocateIndices(6);
+            int currentVertCount = m_VertexCount;
+            m_IndexBuffer[m_IndexCount++] = (uint) currentVertCount;
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 1);
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 2);
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 3);
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 2);
+            m_IndexBuffer[m_IndexCount++] = (uint) (currentVertCount + 1);
+
+            AllocateVertices(4);
+            m_VertexBuffer[m_VertexCount++] = inVertices.A;
+            m_VertexBuffer[m_VertexCount++] = inVertices.B;
+            m_VertexBuffer[m_VertexCount++] = inVertices.C;
+            m_VertexBuffer[m_VertexCount++] = inVertices.D;
             return new OffsetLengthU32((uint) currentVertCount, 4);
         }
 
@@ -889,9 +1075,10 @@ namespace BeauUtil
             }
 
             AllocateVertices(inVertexCount);
-            for (int i = 0, end = i + inVertexCount; i < end; i++)
+            fixed (TVertex* dst = &m_VertexBuffer[m_VertexCount])
             {
-                m_VertexBuffer[m_VertexCount++] = inVertices[i];
+                Unsafe.FastCopyArray<TVertex>(inVertices, inVertexCount, dst);
+                m_VertexCount += inVertexCount;
             }
             return new OffsetLengthU32((uint) currentVertCount, (uint) inVertexCount);
         }
@@ -934,39 +1121,66 @@ namespace BeauUtil
         /// <summary>
         /// Uploads this mesh data to the given mesh.
         /// </summary>
-        public void Upload(Mesh ioMesh)
+        public void Upload(ref MeshDataTarget ioMesh, MeshDataUploadFlags inUploadFlags = 0)
         {
-            if (ioMesh == null)
-                throw new ArgumentNullException("ioMesh");
+            Mesh m = ioMesh.Mesh;
+
+            if (m == null)
+                throw new ArgumentNullException("ioMesh.Mesh");
+
+            bool uploadIndices = (inUploadFlags & MeshDataUploadFlags.SkipIndexBufferUpload) == 0 || ioMesh.IndexFormat != IndexFormat.UInt32;
 
 #if UNSAFE_BUFFER_COPY
             unsafe
             {
                 fixed (TVertex* verts = m_VertexBuffer)
                 {
-                    ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
-                    ioMesh.SetVertexBufferData(Unsafe.NativeArray(verts, m_VertexCount), 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
+                    if (Ref.Replace(ref ioMesh.VertexFormatHash, s_VertexLayout.Hash))
+                    {
+                        m.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
+                    }
+                    m.SetVertexBufferData(Unsafe.NativeArray(verts, m_VertexCount), 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
                 }
 
-                fixed (uint* inds = m_IndexBuffer)
+                if (uploadIndices)
                 {
-                    ioMesh.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt32);
-                    ioMesh.SetIndexBufferData(Unsafe.NativeArray(inds, m_IndexCount), 0, 0, m_IndexCount, IgnoreAllUpdates);
+                    ioMesh.IndexFormat = IndexFormat.UInt32;
+                    m.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt32);
+                    fixed (uint* inds = m_IndexBuffer)
+                    {
+                        m.SetIndexBufferData(Unsafe.NativeArray(inds, m_IndexCount), 0, 0, m_IndexCount, IgnoreAllUpdates);
+                    }
                 }
             }
 #else
-            ioMesh.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
-            ioMesh.SetVertexBufferData(m_VertexBuffer, 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
+            if (ioMesh.VertexFormatHash != s_VertexLayout.Hash)
+            {
+                ioMesh.VertexFormatHash = s_VertexLayout.Hash;
+                m.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
+            }
+            m.SetVertexBufferData(m_VertexBuffer, 0, 0, m_VertexCount, 0, IgnoreAllUpdates);
 
-            ioMesh.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt32);
-            ioMesh.SetIndexBufferData(m_IndexBuffer, 0, 0, m_IndexCount, IgnoreAllUpdates);
+            if (uploadIndices)
+            {
+                ioMesh.IndexFormat = IndexFormat.UInt32;
+                m.SetIndexBufferParams(m_IndexCount, IndexFormat.UInt32);
+                m.SetIndexBufferData(m_IndexBuffer, 0, 0, m_IndexCount, IgnoreAllUpdates);
+            }
 #endif // UNSAFE_BUFFER_COPY
 
-            ioMesh.subMeshCount = 1;
-            ioMesh.SetSubMesh(0, new SubMeshDescriptor(0, m_IndexCount, m_Topology), IgnoreAllUpdates);
+            if (uploadIndices || ioMesh.Topology != m_Topology || m.subMeshCount != 1)
+            {
+                ioMesh.Topology = m_Topology;
+                m.subMeshCount = 1;
+                m.SetSubMesh(0, new SubMeshDescriptor(0, m_IndexCount, m_Topology), IgnoreAllUpdates);
+            }
 
-            ioMesh.RecalculateBounds();
-            ioMesh.UploadMeshData(false);
+            if ((inUploadFlags & MeshDataUploadFlags.DontRecalculateBounds) == 0)
+            {
+                m.RecalculateBounds();
+            }
+            
+            m.UploadMeshData((inUploadFlags & MeshDataUploadFlags.MarkNoLongerReadable) != 0);
         }
 
         #endregion // Upload
@@ -984,7 +1198,7 @@ namespace BeauUtil
         /// <summary>
         /// Overrides the vertex layout for this vertex type.
         /// </summary>
-        static public void OverrideLayout(VertexLayout inLayout)
+        static public void OverrideLayout(in VertexLayout inLayout)
         {
             if (!inLayout)
                 throw new ArgumentNullException("inLayout");

@@ -572,6 +572,28 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Generates the minimum Rect for the given series of points.
+        /// </summary>
+        static public Rect MinRect(Vector2[] inPoints)
+        {
+            if (inPoints.Length == 0)
+                return default(Rect);
+
+            Vector3 min = inPoints[0], max = min, point;
+            for (int i = 1, len = inPoints.Length; i < len; i++) {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+            }
+
+            Rect r = default(Rect);
+            r.Set(min.x, min.y, max.x - min.x, max.y - min.y);
+            return r;
+        }
+
+        /// <summary>
         /// Generates the minimum AABB for the given series of points.
         /// </summary>
         static public Bounds MinAABB(IReadOnlyList<Vector3> inPoints)
@@ -617,6 +639,28 @@ namespace BeauUtil
             Bounds b = default(Bounds);
             b.SetMinMax(min, max);
             return b;
+        }
+
+        /// <summary>
+        /// Generates the minimum rect for the given series of points.
+        /// </summary>
+        static public Rect MinRect(IReadOnlyList<Vector2> inPoints)
+        {
+            if (inPoints.Count == 0)
+                return default(Rect);
+
+            Vector3 min = inPoints[0], max = min, point;
+            for (int i = 1, len = inPoints.Count; i < len; i++) {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+            }
+
+            Rect r = default(Rect);
+            r.Set(min.x, min.y, max.x - min.x, max.y - min.y);
+            return r;
         }
 
 #if UNMANAGED_CONSTRAINT
@@ -669,6 +713,28 @@ namespace BeauUtil
             return b;
         }
 
+        /// <summary>
+        /// Generates the minimum rect for the given series of points.
+        /// </summary>
+        static public Rect MinRect(UnsafeSpan<Vector2> inPoints)
+        {
+            if (inPoints.Length == 0)
+                return default(Rect);
+
+            Vector2 min = inPoints[0], max = min, point;
+            for (int i = 1, len = inPoints.Length; i < len; i++) {
+                point = inPoints[i];
+                min.x = Mathf.Min(min.x, point.x);
+                min.y = Mathf.Min(min.y, point.y);
+                max.x = Mathf.Max(max.x, point.x);
+                max.y = Mathf.Max(max.y, point.y);
+            }
+
+            Rect r = default(Rect);
+            r.Set(min.x, min.y, max.x - min.x, max.y - min.y);
+            return r;
+        }
+
 #endif // UNMANAGED_CONSTRAINT
 
         /// <summary>
@@ -708,6 +774,15 @@ namespace BeauUtil
             ioMatrix.m03 = inPosition.x;
             ioMatrix.m13 = inPosition.y;
             ioMatrix.m23 = inPosition.z;
+        }
+
+        /// <summary>
+        /// Sets the translation for the given matrix.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public unsafe void SetTranslation(Matrix4x4* ioMatrix, Vector3 inPosition)
+        {
+            *(Vector3*) (&ioMatrix->m03) = inPosition;
         }
 
         /// <summary>

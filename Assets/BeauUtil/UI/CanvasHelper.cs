@@ -13,6 +13,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
+using System.Reflection;
 
 #if ENABLE_TEXTMESHPRO
 using TMPro;
@@ -30,7 +31,7 @@ namespace BeauUtil
         /// </summary>
         static public bool TryGetCamera(this Canvas inCanvas, out Camera outCamera)
         {
-            switch(inCanvas.renderMode)
+            switch (inCanvas.renderMode)
             {
                 case RenderMode.WorldSpace:
                 {
@@ -113,7 +114,7 @@ namespace BeauUtil
         /// </summary>
         static private void RecursiveLayoutRebuild(RectTransform inTransform)
         {
-            for(int i = 0, count = inTransform.childCount; i < count; i++)
+            for (int i = 0, count = inTransform.childCount; i < count; i++)
             {
                 RectTransform r = inTransform.GetChild(i) as RectTransform;
                 if (r != null)
@@ -160,7 +161,7 @@ namespace BeauUtil
         /// </summary>
         static private void RecursiveMarkForRebuild(RectTransform inTransform)
         {
-            for(int i = 0, count = inTransform.childCount; i < count; i++)
+            for (int i = 0, count = inTransform.childCount; i < count; i++)
             {
                 RectTransform r = inTransform.GetChild(i) as RectTransform;
                 if (r != null)
@@ -194,10 +195,10 @@ namespace BeauUtil
             bool bIgnoreParentGroups = false;
             bool bRaycastValid = true;
             bool bContinueTraversal = true;
-            while(t != null)
+            while (t != null)
             {
                 t.GetComponents(components);
-                for(int i = 0, len = components.Count; i < len; ++i)
+                for (int i = 0, len = components.Count; i < len; ++i)
                 {
                     c = components[i];
 
@@ -280,7 +281,7 @@ namespace BeauUtil
 
         #region TextMeshPro
 
-        #if ENABLE_TEXTMESHPRO
+#if ENABLE_TEXTMESHPRO
 
         /// <summary>
         /// Sets text on the given TextMeshPro element from an unsafe char buffer.
@@ -344,7 +345,8 @@ namespace BeauUtil
                 s_CurrentCharBuffer = new char[s_CurrentCharBufferSize];
             }
 
-            string str; int offset, length;
+            string str;
+            int offset, length;
             inSlice.Unpack(out str, out offset, out length);
 
             if (length == str.Length)
@@ -375,7 +377,8 @@ namespace BeauUtil
                 return;
             }
 
-            StringBuilder str; int offset, length;
+            StringBuilder str;
+            int offset, length;
             inSlice.Unpack(out str, out offset, out length);
 
             if (length == str.Length)
@@ -394,16 +397,66 @@ namespace BeauUtil
                 {
                     s_CurrentCharBuffer = new char[s_CurrentCharBufferSize];
                 }
-                
+
                 str.CopyTo(offset, s_CurrentCharBuffer, 0, length);
                 inTextMeshPro.SetText(s_CurrentCharBuffer, 0, length);
             }
         }
 
-        #endif // ENABLE_TEXTMESHPRO
+#endif // ENABLE_TEXTMESHPRO
 
         #endregion // TextMeshPro
 
         #endregion // Text
+
+        #region Selectable
+
+#if !USING_TINYIL
+        static private MethodInfo s_Selectable_get_currentSelectionState;
+# endif // !USING_TINYIL
+
+        static CanvasHelper()
+        {
+#if !USING_TINYIL
+            s_Selectable_get_currentSelectionState = typeof(Selectable).GetProperty("currentSelectionState", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)?.GetMethod;
+#endif // !USING_TINYIL
+        }
+
+        /// <summary>
+        /// Returns the current selection state of the given selectable.
+        /// </summary>
+        [IntrinsicIL("ldarg.0; call [arg inSelectable]::get_currentSelectionState(); ret;")]
+        static public SelectionState GetSelectionState(this Selectable inSelectable)
+        {
+#if !USING_TINYIL
+            if (!inSelectable.IsInteractable())
+            {
+                return SelectionState.Disabled;
+            }
+            if (s_Selectable_get_currentSelectionState == null)
+            {
+                return SelectionState.Normal;
+            }
+
+            return (SelectionState) Convert.ToInt32(s_Selectable_get_currentSelectionState.Invoke(inSelectable, null));
+#else
+            throw new NotImplementedException();
+#endif // !USING_TINYIL
+        }
+
+        #endregion // Selectable
+    }
+
+    /// <summary>
+    /// Exposed selectable selection state.
+    /// </summary>
+    public enum SelectionState
+    {
+        Unset = -1,
+        Normal = 0,
+        Highlighted,
+        Pressed,
+        Selected,
+        Disabled
     }
 }

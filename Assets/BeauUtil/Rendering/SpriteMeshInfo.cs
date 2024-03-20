@@ -22,6 +22,7 @@ namespace BeauUtil
         public Vector2[] UV;
         public ushort[] Index;
         public Texture2D Texture;
+        public Bounds Bounds;
 
         public SpriteMeshInfo(Sprite inSource)
         {
@@ -29,6 +30,7 @@ namespace BeauUtil
             UV = inSource.uv;
             Index = inSource.triangles;
             Texture = inSource.texture;
+            Bounds = inSource.bounds;
         }
     }
 }

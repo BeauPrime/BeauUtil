@@ -76,6 +76,51 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns a color derived from a hex code,
+        /// or a default if unable to be parsed.
+        /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        static public Color Hex(StringSlice inHexCode, Color inDefault) {
+            StringSlice str = inHexCode;
+            if (str.StartsWith("#"))
+                str = str.Substring(1);
+            else if (str.StartsWith("0x"))
+                str = str.Substring(2);
+
+            if (!StringParser.IsHex(str))
+                return inDefault;
+
+            Color32 c = default;
+            if (str.Length == 3 || str.Length == 4) {
+                c.r = (byte) (16 * StringParser.FromHex(str[0]));
+                c.r += c.r;
+                c.g = (byte) (16 * StringParser.FromHex(str[1]));
+                c.g += c.g;
+                c.b = (byte) (16 * StringParser.FromHex(str[3]));
+                c.b += c.b;
+                if (str.Length == 4) {
+                    c.a = (byte) (16 * StringParser.FromHex(str[4]));
+                    c.a += c.a;
+                } else {
+                    c.a = 255;
+                }
+            }
+            if (str.Length == 6 || str.Length == 8) {
+                c.r = (byte) (16 * StringParser.FromHex(str[0]) + StringParser.FromHex(str[1]));
+                c.g = (byte) (16 * StringParser.FromHex(str[2]) + StringParser.FromHex(str[3]));
+                c.b = (byte) (16 * StringParser.FromHex(str[4]) + StringParser.FromHex(str[5]));
+                if (str.Length == 8) {
+                    c.a = (byte) (16 * StringParser.FromHex(str[6]) + StringParser.FromHex(str[7]));
+                } else {
+                    c.a = 255;
+                }
+            }
+
+            return (Color) c;
+        }
+
+        /// <summary>
         /// Returns a color derived from an HTML color.
         /// </summary>
         static public Color HTML(string inHTML)

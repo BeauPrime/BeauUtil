@@ -17,9 +17,9 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.unity.nuget.mono-cecil",
-            "expression": "0.0.1",
-            "define": "USING_MONO_CECIL"
+            "name": "com.beauprime.tinyil-mono",
+            "expression": "0.1.5",
+            "define": "USING_TINYIL"
         }
     ],
     "noEngineReferences": false

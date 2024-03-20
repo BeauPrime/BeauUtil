@@ -1,0 +1,244 @@
+== Murmur2_32
+// void* inData, int inLength, uint inSeed
+
+#var ptr uint8*
+#var len int32
+#var h uint32
+
+ldarg.0
+stloc.0
+
+ldarg.1
+stloc.1
+
+ldarg.2
+ldarg.1
+conv.u4
+xor
+stloc.2
+
+// main loop
+LOOP:
+	ldloc.1
+	ldc.i4.4
+	blt.s REMAINDER
+
+	ldloc.0
+	ldind.u4
+
+	ldc.i4 1540483477
+	mul
+	dup
+	ldc.i4 24
+	shr.un
+	xor
+	ldc.i4 1540483477
+	mul
+
+	ldloc.2
+	ldc.i4 1540483477
+	mul
+	xor
+	stloc.2
+
+	// increment
+	ldloc.0
+	ldc.i4.4
+	add
+	stloc.0
+
+	ldloc.1
+	ldc.i4.4
+	sub
+	stloc.1
+	br.s LOOP
+
+// switch block
+REMAINDER:
+	ldloc.2
+	ldloc.1
+	ldc.i4.3
+	and
+	switch REM_0, REM_1, REM_2, REM_3
+
+REM_3:
+	ldloc.0
+	ldc.i4.2
+	add
+	ldind.u1
+	ldc.i4 16
+	shl
+	xor
+
+REM_2:
+	ldloc.0
+	ldc.i4.1
+	add
+	ldind.u1
+	ldc.i4 8
+	shl
+	xor
+
+REM_1:
+	ldloc.0
+	ldind.u1
+	xor
+	ldc.i4 1540483477
+	mul
+
+REM_0:
+	dup
+	ldc.i4 13
+	shr.un
+	xor
+	ldc.i4 1540483477
+	mul
+	dup
+	ldc.i4 15
+	shr.un
+	xor
+	ret
+
+== Murmur2_64
+// void* inData, int inLength, ulong seed
+
+#var ptr uint8*
+#var len int32
+#var h uint64
+
+ldarg.0
+stloc.0
+
+ldarg.1
+stloc.1
+
+ldarg.2
+ldarg.1
+conv.u8
+xor
+stloc.2
+
+// main loop
+LOOP:
+	ldloc.1
+	ldc.i4.8
+	blt.s REMAINDER
+
+	ldloc.0
+	ldind.i8
+
+	ldc.i8 -4132994306676758123
+	mul
+	dup
+	ldc.i4 47
+	shr.un
+	xor
+	ldc.i8 -4132994306676758123
+	mul
+
+	ldloc.2
+	ldc.i8 -4132994306676758123
+	mul
+	xor
+	stloc.2
+
+	// increment
+	ldloc.0
+	ldc.i4.8
+	add
+	stloc.0
+
+	ldloc.1
+	ldc.i4.8
+	sub
+	stloc.1
+	br.s LOOP
+
+// switch block
+REMAINDER:
+	ldloc.2
+	ldloc.1
+	ldc.i4.7
+	and
+	switch REM_0, REM_1, REM_2, REM_3, REM_4, REM_5, REM_6, REM_7
+
+REM_7:
+	ldloc.0
+	ldc.i4.6
+	add
+	ldind.u1
+	conv.u8
+	ldc.i4 48
+	shl
+	xor
+
+REM_6:
+	ldloc.0
+	ldc.i4.5
+	add
+	ldind.u1
+	conv.u8
+	ldc.i4 40
+	shl
+	xor
+
+REM_5:
+	ldloc.0
+	ldc.i4.4
+	add
+	ldind.u1
+	conv.u8
+	ldc.i4 32
+	shl
+	xor
+
+REM_4:
+	ldloc.0
+	ldc.i4.3
+	add
+	ldind.u1
+	conv.u8
+	ldc.i4 24
+	shl
+	xor
+
+REM_3:
+	ldloc.0
+	ldc.i4.2
+	add
+	ldind.u1
+	conv.u8
+	ldc.i4 16
+	shl
+	xor
+
+REM_2:
+	ldloc.0
+	ldc.i4.1
+	add
+	ldind.u1
+	conv.u8
+	ldc.i4 8
+	shl
+	xor
+
+REM_1:
+	ldloc.0
+	ldind.u1
+	conv.u8
+	xor
+	ldc.i8 -4132994306676758123
+	mul
+
+REM_0:
+	dup
+	ldc.i4 47
+	shr.un
+	xor
+	ldc.i8 -4132994306676758123
+	mul
+	dup
+	ldc.i4 47
+	shr.un
+	xor
+	ret

@@ -7,8 +7,17 @@
  * Purpose: Reference value wrapper and some reference utility functions.
  */
 
+#if NET_4_6 || CSHARP_7_OR_LATER
+#define HAS_ENUM_CONSTRAINT
+#endif // NET_4_6 || CSHARP_7_OR_LATER
+
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -127,6 +136,146 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref byte ioObject, byte inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref sbyte ioObject, sbyte inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref short ioObject, short inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref ushort ioObject, ushort inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref int ioObject, int inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref uint ioObject, uint inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref long ioObject, long inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref ulong ioObject, ulong inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one integral with another.
+        /// </summary>
+        static public bool Replace(ref char ioObject, char inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one boolean with another.
+        /// </summary>
+        static public bool Replace(ref bool ioObject, bool inReplace)
+        {
+            if (ioObject == inReplace)
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces one enum with another.
+        /// </summary>
+        [IntrinsicIL("ldarg.0; ldobj !!T; ldarg.1; beq.s SKIP; ldarg.0; ldarg.1; stobj !!T; ldc.i4.1; br.s END; SKIP:; ldc.i4.0; END:; ret")]
+        static public bool ReplaceEnum<T>(ref T ioObject, T inReplace)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            if (CompareUtils.DefaultEquals<T>().Equals(ioObject, inReplace))
+                return false;
+
+            ioObject = inReplace;
+            return true;
+        }
+
+        /// <summary>
         /// Replaces a reference to one object with a reference to another.
         /// </summary>
         static public bool CompareExchange<T>(ref T ioObject, T inExpected, T inReplace)
@@ -141,6 +290,7 @@ namespace BeauUtil
         /// <summary>
         /// Swaps two references.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Swap<T>(ref T ioA, ref T ioB)
         {
             T temp = ioA;

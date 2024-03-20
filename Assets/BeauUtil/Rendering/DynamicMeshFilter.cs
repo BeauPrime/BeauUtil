@@ -18,6 +18,7 @@ namespace BeauUtil
     {
         [NonSerialized] private MeshFilter m_MeshFilter;
         [NonSerialized] private Mesh m_DynamicMesh;
+        [NonSerialized] private MeshDataTarget m_MeshUploadTarget;
 
         ~DynamicMeshFilter()
         {
@@ -27,7 +28,7 @@ namespace BeauUtil
         private void Awake()
         {
             m_MeshFilter = GetComponent<MeshFilter>();
-            m_MeshFilter.sharedMesh = GetMesh();
+            m_MeshFilter.sharedMesh = GetMeshTarget().Mesh;
         }
 
         private void OnDestroy()
@@ -36,7 +37,7 @@ namespace BeauUtil
             UnityHelper.SafeDestroy(ref m_DynamicMesh);
         }
 
-        private Mesh GetMesh()
+        private ref MeshDataTarget GetMeshTarget()
         {
             if (m_DynamicMesh == null)
             {
@@ -44,25 +45,34 @@ namespace BeauUtil
                 m_DynamicMesh.name = name;
                 m_DynamicMesh.hideFlags = HideFlags.DontSave;
                 m_DynamicMesh.MarkDynamic();
+                m_MeshUploadTarget.Mesh = m_DynamicMesh;
             }
 
-            return m_DynamicMesh;
+            return ref m_MeshUploadTarget;
         }
-    
+
         /// <summary>
         /// Retrieves the unique Mesh instance for this DynamicMeshFilter.
         /// </summary>
         public Mesh Mesh
         {
-            get { return GetMesh(); }
+            get { return GetMeshTarget().Mesh; }
+        }
+
+        /// <summary>
+        /// Retrieves a reference to the Mesh data target.
+        /// </summary>
+        public ref MeshDataTarget MeshTarget
+        {
+            get { return ref GetMeshTarget(); }
         }
 
         /// <summary>
         /// Uploads mesh data.
         /// </summary>
-        public void Upload(IMeshData inMeshData)
+        public void Upload(IMeshData inMeshData, MeshDataUploadFlags inUploadFlags = 0)
         {
-            inMeshData.Upload(GetMesh());
+            inMeshData.Upload(ref GetMeshTarget(), inUploadFlags);
         }
     }
 }

@@ -44,9 +44,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string ToStringLookup(this sbyte inValue)
         {
-            if (inValue >= INTEGER_MIN && inValue < INTEGER_MAX)
-                return s_IntegerTable[inValue - INTEGER_MIN];
-            return inValue.ToString();
+            return s_IntegerTable[inValue - INTEGER_MIN];
         }
 
         /// <summary>

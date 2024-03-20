@@ -85,14 +85,14 @@
 //#if HAS_DEBUGGER
 //                if (ValidatePool(this))
 //                {
-//                    return string.Format("[pool '{0}' size={1} remaining={2} flags={3}]", HeaderStart->Name.ToDebugString(), HeaderStart->Size, HeaderStart->SizeRemaining, HeaderStart->Flags);
+//                    return string.Format("[MemPool '{0}' size={1} remaining={2} flags={3}]", HeaderStart->Name.ToDebugString(), HeaderStart->Size, HeaderStart->SizeRemaining, HeaderStart->Flags);
 //                }
 //                else
 //                {
 //                    return "null";
 //                }
 //#else
-//                return "[PoolHandle]";
+//                return "[MemPool]";
 //#endif // HAS_DEBUGGER
 //            }
 
@@ -191,90 +191,23 @@
 //        }
 
 //        /// <summary>
-//        /// Creates a pool allocator from the memory of another ArenaHandle.
-//        /// </summary>
-//        static public PoolHandle CreatePool(ArenaHandle inBase, int inChunkSize, int inNumChunks, StringHash32 inName = default, AllocatorFlags inFlags = 0)
-//        {
-//            uint arenaSize = AlignUp32((uint) inSize);
-//            int totalSize = (int) (PoolHeader.MinimumSize + arenaSize);
-
-//            void* block = AllocAligned(inBase, totalSize, AlignOf<PoolHeader>());
-//            PoolHeader* blockHeader = (PoolHeader*) block;
-//            byte* dataStart = (byte*) block + PoolHeader.HeaderSize;
-
-//            PoolHeader header;
-//            header.Name = inName;
-//            header.StartPtr = header.CurrentPtr = dataStart;
-//            header.Size = header.SizeRemaining = arenaSize;
-//            header.Flags = AllocatorFlags.DoesNotOwnMemory | inFlags;
-//#if VALIDATE_ARENA_MEMORY
-//            header.Magic = PoolHeader.ExpectedMagic;
-//#else
-//            header.Magic = 0;
-//#endif // VALIDATE_ARENA_MEMORY
-
-//#if VALIDATE_ARENA_MEMORY
-//            WriteDebugMemoryBoundary(header.CurrentPtr);
-//#endif // VALIDATE_ARENA_MEMORY
-
-//            *blockHeader = header;
-
-//            return new PoolHandle(blockHeader);
-//        }
-
-//        /// <summary>
-//        /// Creates a pool allocator from an existing unmanaged buffer.
-//        /// </summary>
-//        static public PoolHandle CreatePool(void* inUnmanaged, int inSize, int inChunkSize, StringHash32 inName = default, AllocatorFlags inFlags = 0)
-//        {
-//            // ensure this is aligned properly
-//            void* block = (void*) AlignUpN((ulong) inUnmanaged, AlignOf<PoolHeader>());
-//            inSize -= (int) ((ulong) block - (ulong) inUnmanaged);
-
-//            int requiredSize = PoolHeader.MinimumSize;
-//            int arenaSize = inSize - requiredSize;
-//            if (arenaSize <= 32)
-//            {
-//                throw new InsufficientMemoryException(string.Format("Provided unmanaged buffer size of {0} is insufficient for at least 32 bytes of pool size and {1} required size", inSize, requiredSize));
-//            }
-
-//            PoolHeader* blockHeader = (PoolHeader*) block;
-//            byte* dataStart = (byte*) block + PoolHeader.HeaderSize;
-
-//            PoolHeader header;
-//            header.Name = inName;
-//            header.StartPtr = header.CurrentPtr = dataStart;
-//            header.Size = header.SizeRemaining = (uint) arenaSize;
-//            header.Flags = AllocatorFlags.DoesNotOwnMemory | inFlags;
-//#if VALIDATE_ARENA_MEMORY
-//            header.Magic = PoolHeader.ExpectedMagic;
-//#else
-//            header.Magic = 0;
-//#endif // VALIDATE_ARENA_MEMORY
-
-//            *blockHeader = header;
-
-//            return new PoolHandle(blockHeader);
-//        }
-
-//        /// <summary>
 //        /// Returns if the given arena has been initialized.
 //        /// </summary>
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-//        static public bool PoolInitialized(PoolHandle inArena)
+//        static public bool PoolInitialized(PoolHandle inPool)
 //        {
-//            return inArena.HeaderStart != null;
+//            return inPool.HeaderStart != null;
 //        }
 
 //        /// <summary>
 //        /// Destroys the given allocation arena.
 //        /// </summary>
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-//        static public void DestroyPool(PoolHandle inArena)
+//        static public void DestroyPool(PoolHandle inPool)
 //        {
-//            if (ValidatePool(inArena))
+//            if (ValidatePool(inPool))
 //            {
-//                PoolHeader* header = inArena.HeaderStart;
+//                PoolHeader* header = inPool.HeaderStart;
 //#if VALIDATE_ARENA_MEMORY
 //                CheckDebugMemoryBoundary(header->CurrentPtr);
 //                header->Magic = 0;
@@ -291,11 +224,11 @@
 //        /// <summary>
 //        /// Attempts to destroy the given allocation arena.
 //        /// </summary>
-//        static public bool TryDestroyPool(ref PoolHandle ioArena)
+//        static public bool TryDestroyPool(ref PoolHandle ioPool)
 //        {
-//            if (ValidatePool(ioArena))
+//            if (ValidatePool(ioPool))
 //            {
-//                PoolHeader* header = ioArena.HeaderStart;
+//                PoolHeader* header = ioPool.HeaderStart;
 //#if VALIDATE_ARENA_MEMORY
 //                CheckDebugMemoryBoundary(header->CurrentPtr);
 //                header->Magic = 0;
@@ -307,7 +240,7 @@
 //                    Free(header);
 //                }
 
-//                ioArena.HeaderStart = null;
+//                ioPool.HeaderStart = null;
 //                return true;
 //            }
 
@@ -328,18 +261,18 @@
 //        #region Checks
 
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-//        static internal bool ValidatePool(PoolHandle inArena)
+//        static internal bool ValidatePool(PoolHandle inPool)
 //        {
 //#if VALIDATE_ARENA_MEMORY
-//            if (inArena.HeaderStart != null)
+//            if (inPool.HeaderStart != null)
 //            {
-//                if (inArena.HeaderStart->Magic != PoolHeader.ExpectedMagic)
-//                    throw new MemoryCorruptionException(&inArena.HeaderStart->Magic, "Pool header magic value was {0:X} but expected {1:X}", inArena.HeaderStart->Magic, PoolHeader.ExpectedMagic);
+//                if (inPool.HeaderStart->Magic != PoolHeader.ExpectedMagic)
+//                    throw new MemoryCorruptionException(&inPool.HeaderStart->Magic, "Pool header magic value was {0:X} but expected {1:X}", inPool.HeaderStart->Magic, PoolHeader.ExpectedMagic);
 //                return true;
 //            }
 //            return false;
 //#else
-//            return inArena.HeaderStart != null;
+//            return inPool.HeaderStart != null;
 //#endif // VALIDATE_ARENA_MEMORY
 //        }
 
@@ -350,12 +283,12 @@
 //        /// <summary>
 //        /// Allocates from the given arena.
 //        /// </summary>
-//        static public void* Alloc(PoolHandle inArena)
+//        static public void* Alloc(PoolHandle inPool)
 //        {
-//            if (!ValidatePool(inArena))
+//            if (!ValidatePool(inPool))
 //                return null;
 
-//            PoolHeader* header = inArena.HeaderStart;
+//            PoolHeader* header = inPool.HeaderStart;
 
 //            if (header->SizeRemaining < inLength)
 //            {
@@ -378,12 +311,12 @@
 //        /// <summary>
 //        /// Frees back to the given arena.
 //        /// </summary>
-//        static public void* Free(PoolHandle inArena, void* inChunk)
+//        static public void* Free(PoolHandle inPool, void* inChunk)
 //        {
-//            if (!ValidatePool(inArena))
+//            if (!ValidatePool(inPool))
 //                return null;
 
-//            PoolHeader* header = inArena.HeaderStart;
+//            PoolHeader* header = inPool.HeaderStart;
 
 //            if (header->SizeRemaining < inLength)
 //            {
@@ -407,11 +340,11 @@
 //        /// Resets the given allocation pool, freeing all its allocations at once.
 //        /// </summary>
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-//        static public void ResetPool(PoolHandle inArena)
+//        static public void ResetPool(PoolHandle inPool)
 //        {
-//            if (ValidatePool(inArena))
+//            if (ValidatePool(inPool))
 //            {
-//                PoolHeader* header = inArena.HeaderStart;
+//                PoolHeader* header = inPool.HeaderStart;
 //                header->SizeRemaining = header->Size;
 //                header->CurrentPtr = header->StartPtr;
 //            }

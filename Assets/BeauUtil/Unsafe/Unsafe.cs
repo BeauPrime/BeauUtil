@@ -19,6 +19,10 @@
 #define SUPPORTS_SPAN
 #endif // NETSTANDARD || NET_STANDARD
 
+#if USING_TINYIL
+#define INNER_HASH_FUNCTIONS
+#endif // USING_TINYIL
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -78,6 +82,7 @@ namespace BeauUtil
         /// Reinterprets a value as a value of another type.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[ExternalIL("Reinterpret:SafeReinterpret")]
         static public TTo Reinterpret<TFrom, TTo>(TFrom inValue)
             where TFrom : unmanaged
             where TTo : unmanaged
@@ -1231,12 +1236,16 @@ namespace BeauUtil
         /// <summary>
         /// Hashes the given data.
         /// </summary>
+#if INNER_HASH_FUNCTIONS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif // INNER_HASH_FUNCTIONS
         static public uint Hash32(void* inData, int inLength)
         {
             if (inLength <= 0)
                 return 0;
 
             Assert.True(IsAligned4(inData), "Pointers passed to Hash32 must be 4-byte aligned");
+#if !INNER_HASH_FUNCTIONS
 
             // murmur2
             const uint m = 0x5bd1e995;
@@ -1246,7 +1255,7 @@ namespace BeauUtil
 
             byte* ptr = (byte*) inData;
             while(inLength >= 4)
-            {
+            { 
                 uint k = *((uint*)ptr);
 
                 k *= m;
@@ -1284,18 +1293,24 @@ namespace BeauUtil
             h ^= h >> 15;
 
             return h;
+#else
+            return Hash32_Inner(inData, inLength, 2166136261);
+#endif // !INNER_HASH_FUNCTIONS
         }
 
         /// <summary>
         /// Hashes the given data.
         /// </summary>
-        static public ulong Hash64(void* inData, int inLength)
-        {
+#if INNER_HASH_FUNCTIONS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif // INNER_HASH_FUNCTIONS
+        static public ulong Hash64(void* inData, int inLength) {
             if (inLength <= 0)
                 return 0;
 
             Assert.True(IsAligned8(inData), "Pointers passed to Hash64 must be 8-byte aligned");
 
+#if !INNER_HASH_FUNCTIONS
             // murmur2 64a
             const ulong m = 0xc6a4a7935bd1e995;
             const int r = 47;
@@ -1383,18 +1398,25 @@ namespace BeauUtil
             h ^= h >> r;
 
             return h;
+#else
+            return Hash64_Inner(inData, inLength, 14695981039346656037);
+#endif // !INNER_HASH_FUNCTIONS
         }
 
         /// <summary>
         /// Combines one hash with another.
         /// </summary>
+#if INNER_HASH_FUNCTIONS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif // INNER_HASH_FUNCTIONS
         static public uint CombineHash32(uint inInitial, void* inData, int inLength)
         {
             if (inLength <= 0)
-                return 0;
+                return inInitial;
 
             Assert.True(IsAligned4(inData), "Pointers passed to Hash32 must be 4-byte aligned");
 
+#if !INNER_HASH_FUNCTIONS
             // murmur2
             const uint m = 0x5bd1e995;
             const int r = 24;
@@ -1441,18 +1463,25 @@ namespace BeauUtil
             h ^= h >> 15;
 
             return h;
+#else
+            return Hash32_Inner(inData, inLength, inInitial);
+#endif // !INNER_HASH_FUNCTIONS
         }
 
         /// <summary>
         /// Combines one hash with another.
         /// </summary>
+#if INNER_HASH_FUNCTIONS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif // INNER_HASH_FUNCTIONS
         static public ulong CombineHash64(ulong inInitial, void* inData, int inLength)
         {
             if (inLength <= 0)
-                return 0;
+                return inInitial;
 
             Assert.True(IsAligned8(inData), "Pointers passed to Hash64 must be 8-byte aligned");
 
+#if !INNER_HASH_FUNCTIONS
             // murmur2 64a
             const ulong m = 0xc6a4a7935bd1e995;
             const int r = 47;
@@ -1540,7 +1569,24 @@ namespace BeauUtil
             h ^= h >> r;
 
             return h;
+#else
+            return Hash64_Inner(inData, inLength, inInitial);
+#endif // !INNER_HASH_FUNCTION
         }
+
+#if INNER_HASH_FUNCTIONS
+        [ExternalIL("Murmur:Murmur2_32")]
+        static private uint Hash32_Inner(void* inData, int inLength, uint inSeed)
+        {
+            throw new NotImplementedException();
+        }
+
+        [ExternalIL("Murmur:Murmur2_64")]
+        static private ulong Hash64_Inner(void* inData, int inLength, ulong inSeed)
+        {
+            throw new NotImplementedException(); 
+        }
+#endif // INNER_HASH_FUNCTIONS
 
 #if UNMANAGED_CONSTRAINT
 
@@ -1557,9 +1603,35 @@ namespace BeauUtil
         /// Hashes the given data.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint Hash32<T>(T[] inValues) where T : unmanaged
+        {
+            Assert.NotNull(inValues);
+            fixed(T* ptr = inValues)
+            {
+                return Hash32(ptr, sizeof(T) * inValues.Length);
+            }
+        }
+
+        /// <summary>
+        /// Hashes the given data.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong Hash64<T>(T inValue) where T : unmanaged
         {
             return Hash64(&inValue, sizeof(T));
+        }
+
+        /// <summary>
+        /// Hashes the given data.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong Hash64<T>(T[] inValues) where T : unmanaged
+        {
+            Assert.NotNull(inValues);
+            fixed(T* ptr = inValues)
+            {
+                return Hash64(ptr, sizeof(T) * inValues.Length);
+            }
         }
 
         /// <summary>
@@ -1575,14 +1647,40 @@ namespace BeauUtil
         /// Combines one hash with another.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public uint CombineHash32<T>(uint inInitial, T[] inValues) where T : unmanaged
+        {
+            Assert.NotNull(inValues);
+            fixed(T* ptr = inValues)
+            {
+                return CombineHash32(inInitial, ptr, sizeof(T) * inValues.Length);
+            }
+        }
+
+        /// <summary>
+        /// Combines one hash with another.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong CombineHash64<T>(ulong inInitial, T inValue) where T : unmanaged
         {
             return CombineHash64(inInitial, &inValue, sizeof(T));
         }
 
+        /// <summary>
+        /// Combines one hash with another.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ulong CombineHash64<T>(ulong inInitial, T[] inValues) where T : unmanaged
+        {
+            Assert.NotNull(inValues);
+            fixed(T* ptr = inValues)
+            {
+                return CombineHash64(inInitial, ptr, sizeof(T) * inValues.Length);
+            }
+        }
+
 #endif // UNMANAGED_CONSTRAINT
 
-        #endregion // Hashing
+		#endregion // Hashing
 
         #region Read/Write
 

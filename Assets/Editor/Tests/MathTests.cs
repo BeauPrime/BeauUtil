@@ -115,10 +115,26 @@ namespace BeauUtil.UnitTests
                 }
             }
 
+            using (Profiling.AvgTime("matrix mult", iterCount, ProfileTimeUnits.Cycles)) {
+                for (int i = 0; i < iterCount; i++) {
+                    translation = new Vector3(i * 4, i * -7 + 30, i * 13 - 24);
+                    freshMatrix = cachedOriginalMatrix * Matrix4x4.Translate(translation);
+                }
+            }
+
             using (Profiling.AvgTime("set translation", iterCount, ProfileTimeUnits.Cycles)) {
                 for (int i = 0; i < iterCount; i++) {
                     translation = new Vector3(i * 4, i * -7 + 30, i * 13 - 24);
                     Geom.SetTranslation(ref cachedOriginalMatrix, translation);
+                }
+            }
+
+            using (Profiling.AvgTime("set translation (simple)", iterCount, ProfileTimeUnits.Cycles)) {
+                for (int i = 0; i < iterCount; i++) {
+                    translation = new Vector3(i * 4, i * -7 + 30, i * 13 - 24);
+                    cachedOriginalMatrix.m03 = translation.x;
+                    cachedOriginalMatrix.m13 = translation.y;
+                    cachedOriginalMatrix.m23 = translation.z;
                 }
             }
         }

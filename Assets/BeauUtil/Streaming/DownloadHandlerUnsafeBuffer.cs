@@ -2,6 +2,10 @@
 #define DISPOSABLE_HACK
 #endif // !UNITY_2021_1_OR_NEWER
 
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -176,6 +180,18 @@ namespace BeauUtil.Streaming
         {
             get { return m_BufferWriteHeadAbsolute; }
         }
+
+#if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Span containing all received bytes.
+        /// </summary>
+        public UnsafeSpan<byte> Data
+        {
+            get { return new UnsafeSpan<byte>(m_BufferWriteHeadAbsolute, (uint) m_ReceivedBytes); }
+        }
+
+#endif // UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Location to write the downloaded bytes to.

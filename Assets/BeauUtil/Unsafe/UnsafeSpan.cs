@@ -99,6 +99,14 @@ namespace BeauUtil
             get { return Length * sizeof(T); }
         }
 
+        /// <summary>
+        /// Returns if this is either a null pointer or has a length of 0.
+        /// </summary>
+        public unsafe bool IsNullOrEmpty
+        {
+            get { return Ptr == null || Length <= 0; }
+        }
+
         #region Conversions
 
         /// <summary>

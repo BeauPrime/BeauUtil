@@ -14,6 +14,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Scripting;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using BeauUtil.Debugger;
 
 namespace BeauUtil
 {
@@ -54,13 +55,17 @@ namespace BeauUtil
                         offset += GetSize(descriptor.format) * descriptor.dimension;
                         attributeMask |= (ushort) (1 << (int) descriptor.attribute);
                     }
+                    else
+                    {
+                        throw new InvalidOperationException(string.Format("Type '{0}' has field '{1}' with no VertexAttrAttribute", inVertexType.FullName, field.Name));
+                    }
                 }
 
                 if (descriptorCount == 0)
                     throw new InvalidOperationException(string.Format("Type '{0}' had no valid fields marked with VertexAttr", inVertexType.FullName));
 
-                Array.Resize(ref descriptors, descriptorCount);
                 VertexLayout layout;
+                layout.Hash = Unsafe.Hash64(descriptors);
                 layout.Descriptors = descriptors;
                 layout.AttributeMask = attributeMask;
                 layout.SourceType = inVertexType;
@@ -90,15 +95,46 @@ namespace BeauUtil
         public const int MaxMeshIndexStreamSize32 = 1073741824 / 4;
 
         /// <summary>
+        /// Writes mesh data to the given mesh.
+        /// </summary>
+        static public void Upload(this IMeshData ioData, Mesh ioMesh, MeshDataUploadFlags inUploadFlags = 0)
+        {
+            MeshDataTarget t;
+            t.Mesh = ioMesh;
+            t.VertexFormatHash = 0;
+            t.IndexFormat = (IndexFormat) (-1);
+            t.Topology = (MeshTopology) (-1);
+            ioData.Upload(ref t, inUploadFlags);
+        }
+
+        /// <summary>
         /// Writes mesh data to the given mesh and clears the mesh data.
         /// </summary>
-        static public void Flush(this IMeshData ioData, Mesh ioMesh)
+        static public void Flush(this IMeshData ioData, Mesh ioMesh, MeshDataUploadFlags inUploadFlags = 0)
         {
-            ioData.Upload(ioMesh);
+            MeshDataTarget t;
+            t.Mesh = ioMesh;
+            t.VertexFormatHash = 0;
+            t.IndexFormat = (IndexFormat) (-1);
+            t.Topology = (MeshTopology) (-1);
+            ioData.Upload(ref t, inUploadFlags);
+            ioData.Clear();
+        }
+
+        /// <summary>
+        /// Writes mesh data to the given mesh and clears the mesh data.
+        /// </summary>
+        static public void Flush(this IMeshData ioData, ref MeshDataTarget ioMesh, MeshDataUploadFlags inUploadFlags = 0)
+        {
+            ioData.Upload(ref ioMesh, inUploadFlags);
             ioData.Clear();
         }
 
         #endregion // Mesh Data
+
+        #region Defaults
+
+        #endregion // Defaults
 
         #region Size
 
@@ -131,8 +167,13 @@ namespace BeauUtil
     /// <summary>
     /// Vertex layout data.
     /// </summary>
-    public struct VertexLayout
+    public struct VertexLayout : IEquatable<VertexLayout>
     {
+        /// <summary>
+        /// Hash code.
+        /// </summary>
+        public ulong Hash;
+
         /// <summary>
         /// Length of the vertex.
         /// </summary>
@@ -183,6 +224,119 @@ namespace BeauUtil
         {
             return layout.SourceType != null;
         }
+
+        static public bool operator==(VertexLayout a, VertexLayout b)
+        {
+            return a.Hash == b.Hash;
+        }
+
+        static public bool operator!=(VertexLayout a, VertexLayout b)
+        {
+            return a.Hash != b.Hash;
+        }
+
+        #region Overrides
+
+        public override int GetHashCode()
+        {
+            return (int) (Hash >> 32 ^ Hash);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is VertexLayout)
+                return Equals((VertexLayout) obj);
+            return false;
+        }
+
+        public bool Equals(VertexLayout other)
+        {
+            return Hash == other.Hash;
+        }
+
+        #endregion // Overrides
+    }
+
+    /// <summary>
+    /// Set of 3 vertices.
+    /// </summary>
+    public struct Vertex3<TVertex> where TVertex : unmanaged
+    {
+        public TVertex A;
+        public TVertex B;
+        public TVertex C;
+
+        public Vertex3(TVertex inA, TVertex inB, TVertex inC)
+        {
+            A = inA;
+            B = inB;
+            C = inC;
+        }
+
+        /// <summary>
+        /// Vertices by index.
+        /// </summary>
+        public unsafe TVertex this[int inIndex]
+        {
+            get
+            {
+                Assert.True(inIndex >= 0 && inIndex < 3);
+                fixed (TVertex* a = &A)
+                {
+                    return *(a + inIndex);
+                }
+            }
+            set
+            {
+                Assert.True(inIndex >= 0 && inIndex < 3);
+                fixed (TVertex* a = &A)
+                {
+                    *(a + inIndex) = value;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Set of 4 vertices.
+    /// </summary>
+    public struct Vertex4<TVertex> where TVertex : unmanaged
+    {
+        public TVertex A;
+        public TVertex B;
+        public TVertex C;
+        public TVertex D;
+
+        public Vertex4(TVertex inA, TVertex inB, TVertex inC, TVertex inD)
+        {
+            A = inA;
+            B = inB;
+            C = inC;
+            D = inD;
+        }
+
+        /// <summary>
+        /// Vertices by index.
+        /// </summary>
+        public unsafe TVertex this[int inIndex]
+        {
+            get
+            {
+                Assert.True(inIndex >= 0 && inIndex < 4);
+                fixed(TVertex* a = &A)
+                {
+                    return *(a + inIndex);
+                }
+            }
+            set
+            {
+                Assert.True(inIndex >= 0 && inIndex < 4);
+                fixed (TVertex* a = &A)
+                {
+                    *(a + inIndex) = value;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -194,6 +348,67 @@ namespace BeauUtil
         [VertexAttr(VertexAttribute.Position)] public Vector4 Position;
         [VertexAttr(VertexAttribute.Color)] public Color Color;
         [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+
+        /// <summary>
+        /// Generates coordinates for a texture-mapped quad.
+        /// </summary>
+        static public Vertex4<DefaultSpriteVertexFormat> DefaultQuad(Rect inRect, Color inColor)
+        {
+            Vector2 min = inRect.min, max = inRect.max;
+            return new Vertex4<DefaultSpriteVertexFormat>(
+                new DefaultSpriteVertexFormat{
+                    Position = min,
+                    Color = inColor,
+                    UV = new Vector2(0, 0)
+                },
+                new DefaultSpriteVertexFormat {
+                    Position = new Vector4(min.x, max.y),
+                    Color = inColor,
+                    UV = new Vector2(0, 1)
+                },
+                new DefaultSpriteVertexFormat {
+                    Position = new Vector4(max.x, min.y),
+                    Color = inColor,
+                    UV = new Vector2(1, 0)
+                },
+                new DefaultSpriteVertexFormat {
+                    Position = max,
+                    Color = inColor,
+                    UV = new Vector2(1, 1)
+                }
+            );
+        }
+
+        /// <summary>
+        /// Generates coordinates for a texture-mapped quad.
+        /// </summary>
+        static public Vertex4<DefaultSpriteVertexFormat> DefaultQuad(Rect inRect, Rect inUVs, Color inColor)
+        {
+            Vector2 min = inRect.min, max = inRect.max,
+                uMin = inUVs.min, uMax = inUVs.max;
+            return new Vertex4<DefaultSpriteVertexFormat>(
+                new DefaultSpriteVertexFormat{
+                    Position = min,
+                    Color = inColor,
+                    UV = uMin
+                },
+                new DefaultSpriteVertexFormat {
+                    Position = new Vector4(min.x, max.y),
+                    Color = inColor,
+                    UV = new Vector2(uMin.x, uMax.y)
+                },
+                new DefaultSpriteVertexFormat {
+                    Position = new Vector4(max.x, min.y),
+                    Color = inColor,
+                    UV = new Vector2(uMax.x, uMin.y)
+                },
+                new DefaultSpriteVertexFormat {
+                    Position = max,
+                    Color = inColor,
+                    UV = uMax
+                }
+            );
+        }
     }
 
     /// <summary>
@@ -205,6 +420,67 @@ namespace BeauUtil
         [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
         [VertexAttr(VertexAttribute.Color)] public Color32 Color;
         [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+
+        /// <summary>
+        /// Generates coordinates for a texture-mapped quad.
+        /// </summary>
+        static public Vertex4<VertexP3C1U2> DefaultQuad(Rect inRect, Color32 inColor)
+        {
+            Vector2 min = inRect.min, max = inRect.max;
+            return new Vertex4<VertexP3C1U2>(
+                new VertexP3C1U2 {
+                    Position = min,
+                    Color = inColor,
+                    UV = new Vector2(0, 0)
+                },
+                new VertexP3C1U2 {
+                    Position = new Vector4(min.x, max.y),
+                    Color = inColor,
+                    UV = new Vector2(0, 1)
+                },
+                new VertexP3C1U2 {
+                    Position = new Vector4(max.x, min.y),
+                    Color = inColor,
+                    UV = new Vector2(1, 0)
+                },
+                new VertexP3C1U2 {
+                    Position = max,
+                    Color = inColor,
+                    UV = new Vector2(1, 1)
+                }
+            );
+        }
+
+        /// <summary>
+        /// Generates coordinates for a texture-mapped quad.
+        /// </summary>
+        static public Vertex4<VertexP3C1U2> DefaultQuad(Rect inRect, Rect inUVs, Color32 inColor)
+        {
+            Vector2 min = inRect.min, max = inRect.max,
+                uMin = inUVs.min, uMax = inUVs.max;
+            return new Vertex4<VertexP3C1U2>(
+                new VertexP3C1U2 {
+                    Position = min,
+                    Color = inColor,
+                    UV = uMin
+                },
+                new VertexP3C1U2 {
+                    Position = new Vector4(min.x, max.y),
+                    Color = inColor,
+                    UV = new Vector2(uMin.x, uMax.y)
+                },
+                new VertexP3C1U2 {
+                    Position = new Vector4(max.x, min.y),
+                    Color = inColor,
+                    UV = new Vector2(uMax.x, uMin.y)
+                },
+                new VertexP3C1U2 {
+                    Position = max,
+                    Color = inColor,
+                    UV = uMax
+                }
+            );
+        }
     }
 
     /// <summary>
@@ -215,11 +491,101 @@ namespace BeauUtil
     {
         [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
         [VertexAttr(VertexAttribute.Color)] public Color32 Color;
+
+        /// <summary>
+        /// Generates coordinates for a colored quad.
+        /// </summary>
+        static public Vertex4<VertexP3C1> DefaultQuad(Rect inRect, Color32 inColor)
+        {
+            Vector2 min = inRect.min, max = inRect.max;
+            return new Vertex4<VertexP3C1>(
+                new VertexP3C1 {
+                    Position = min,
+                    Color = inColor,
+                },
+                new VertexP3C1 {
+                    Position = new Vector4(min.x, max.y),
+                    Color = inColor,
+                },
+                new VertexP3C1 {
+                    Position = new Vector4(max.x, min.y),
+                    Color = inColor,
+                },
+                new VertexP3C1 {
+                    Position = max,
+                    Color = inColor,
+                }
+            );
+        }
+    }
+
+    /// <summary>
+    /// Position, uv.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct VertexP3U2
+    {
+        [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
+        [VertexAttr(VertexAttribute.TexCoord0)] public Vector2 UV;
+
+        /// <summary>
+        /// Generates coordinates for a textured quad.
+        /// </summary>
+        static public Vertex4<VertexP3U2> DefaultQuad(Rect inRect)
+        {
+            Vector2 min = inRect.min, max = inRect.max;
+            return new Vertex4<VertexP3U2>(
+                new VertexP3U2 {
+                    Position = min,
+                    UV = new Vector2(0, 0)
+                },
+                new VertexP3U2 {
+                    Position = new Vector4(min.x, max.y),
+                    UV = new Vector2(0, 1)
+                },
+                new VertexP3U2 {
+                    Position = new Vector4(max.x, min.y),
+                    UV = new Vector2(1, 0)
+                },
+                new VertexP3U2 {
+                    Position = max,
+                    UV = new Vector2(1, 1)
+                }
+            );
+        }
+
+        /// <summary>
+        /// Generates coordinates for a textured quad.
+        /// </summary>
+        static public Vertex4<VertexP3U2> DefaultQuad(Rect inRect, Rect inUVs)
+        {
+            Vector2 min = inRect.min, max = inRect.max,
+                uMin = inUVs.min, uMax = inUVs.max;
+            return new Vertex4<VertexP3U2>(
+                new VertexP3U2 {
+                    Position = min,
+                    UV = uMin
+                },
+                new VertexP3U2 {
+                    Position = new Vector4(min.x, max.y),
+                    UV = new Vector2(uMin.x, uMax.y)
+                },
+                new VertexP3U2 {
+                    Position = new Vector4(max.x, min.y),
+                    UV = new Vector2(uMax.x, uMin.y)
+                },
+                new VertexP3U2 {
+                    Position = max,
+                    UV = uMax
+                }
+            );
+        }
     }
 
     /// <summary>
     /// Position, normal, uv.
     /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VertexP3N3U2
     {
         [VertexAttr(VertexAttribute.Position)] public Vector3 Position;
@@ -230,6 +596,7 @@ namespace BeauUtil
     /// <summary>
     /// Position, normal, color, uv.
     /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VertexP3N3C1U2
     {
         [VertexAttr(VertexAttribute.Position)] public Vector3 Position;

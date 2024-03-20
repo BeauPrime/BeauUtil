@@ -411,5 +411,71 @@ namespace BeauUtil.UnitTests
             bool invoked = helper.TryInvoke(null, default, DefaultStringConverter.Instance, null, out var _);
             Assert.IsTrue(invoked);
         }
+
+        static private readonly byte[] SomeHashableByteSequence = Encoding.UTF8.GetBytes("WhoaThereThisIsAHashableStringPardner");
+        static private readonly byte[] AnotherHashableByteSequence = Encoding.UTF8.GetBytes("What'reyadoingreadingthesetestingstringsanywho??");
+
+        [Test]
+        static public void CanHash32() {
+            string testInput = "CanThisHashMurmur";
+            fixed(char* ptr = testInput) {
+                uint hash = Unsafe.Hash32(ptr, testInput.Length * sizeof(char));
+                Debug.LogFormat("Hash32 of '{0}' of length {1} is {2}", testInput, testInput.Length * sizeof(char), hash);
+                Assert.AreEqual(657669070, hash);
+            }
+
+            uint* alignedSome = stackalloc uint[SomeHashableByteSequence.Length / 4 + 1];
+            byte* alignedSomeAsByte = (byte*) alignedSome;
+            fixed (byte* someBytes = SomeHashableByteSequence) {
+                Unsafe.FastCopy(someBytes, SomeHashableByteSequence.Length, alignedSomeAsByte);
+            }
+
+            uint someHash = Unsafe.Hash32(alignedSomeAsByte, SomeHashableByteSequence.Length);
+            Debug.LogFormat("Hash32 of SomeHashable of length {0} is {1}", SomeHashableByteSequence.Length, someHash);
+            Assert.AreEqual(288014056, someHash);
+
+            uint* alignedAnother = stackalloc uint[AnotherHashableByteSequence.Length / 4 + 1];
+            byte* alignedAnotherAsByte = (byte*) alignedAnother;
+            fixed (byte* anotherBytes = AnotherHashableByteSequence) {
+                Unsafe.FastCopy(anotherBytes, AnotherHashableByteSequence.Length, alignedAnother);
+            }
+
+            uint anotherHash = Unsafe.Hash32(alignedAnotherAsByte, AnotherHashableByteSequence.Length);
+            Debug.LogFormat("Hash32 of AnotherHashable of length {0} is {1}", AnotherHashableByteSequence.Length, anotherHash);
+            Assert.AreEqual(1034883058, anotherHash);
+        }
+
+        [Test]
+        static public void CanHash64() {
+            string testInput = "CanThisHashMurmur";
+            fixed (char* ptr = testInput) {
+                ulong* copy = stackalloc ulong[sizeof(char) * testInput.Length / 8 + 1];
+                Unsafe.FastCopy(ptr, testInput.Length * sizeof(char), copy);
+
+                ulong hash = Unsafe.Hash64(copy, testInput.Length * sizeof(char));
+                Debug.LogFormat("Hash64 of '{0}' of length {1} is {2}", testInput, testInput.Length * sizeof(char), hash);
+                Assert.AreEqual(17327309007015566179, hash);
+            }
+
+            ulong* alignedSome = stackalloc ulong[SomeHashableByteSequence.Length / 8 + 1];
+            byte* alignedSomeAsByte = (byte*) alignedSome;
+            fixed (byte* someBytes = SomeHashableByteSequence) {
+                Unsafe.FastCopy(someBytes, SomeHashableByteSequence.Length, alignedSomeAsByte);
+            }
+
+            ulong someHash = Unsafe.Hash64(alignedSomeAsByte, SomeHashableByteSequence.Length);
+            Debug.LogFormat("Hash64 of SomeHashable of length {0} is {1}", SomeHashableByteSequence.Length, someHash);
+            Assert.AreEqual(7260654691530379117, someHash);
+
+            ulong* alignedAnother = stackalloc ulong[AnotherHashableByteSequence.Length / 8 + 1];
+            byte* alignedAnotherAsByte = (byte*) alignedAnother;
+            fixed (byte* anotherBytes = AnotherHashableByteSequence) {
+                Unsafe.FastCopy(anotherBytes, AnotherHashableByteSequence.Length, alignedAnother);
+            }
+
+            ulong anotherHash = Unsafe.Hash64(alignedAnotherAsByte, AnotherHashableByteSequence.Length);
+            Debug.LogFormat("Hash64 of AnotherHashable of length {0} is {1}", AnotherHashableByteSequence.Length, anotherHash);
+            Assert.AreEqual(12925064926933939798, anotherHash); 
+        }
     }
 }

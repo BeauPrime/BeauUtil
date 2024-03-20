@@ -11,6 +11,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.beauprime.tinyil-mono",
+            "expression": "0.1.5",
+            "define": "USING_TINYIL"
+        }
+    ],
     "noEngineReferences": false
 }

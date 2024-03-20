@@ -223,9 +223,10 @@ namespace BeauUtil
             get { return MeshTopology.Triangles; }
         }
 
-        public bool NeedsFlush(int inVertexCount)
+        public bool NeedsFlush(int inVertexCount, int inIndexCount)
         {
-            return m_VertexCount + inVertexCount > ushort.MaxValue;
+            return m_VertexCount + inVertexCount > ushort.MaxValue
+                || m_IndexCount + inIndexCount > ushort.MaxValue;
         }
 
         public void Preallocate(int inVertexCount, int inIndexCount)
@@ -264,7 +265,7 @@ namespace BeauUtil
         /// <summary>
         /// Updates the given mesh mesh to match this mesh.
         /// </summary>
-        public void Upload(Mesh ioMesh)
+        public void Upload(Mesh ioMesh, MeshDataUploadFlags inUploadFlags = 0)
         {
             CheckDisposed();
 
@@ -278,8 +279,21 @@ namespace BeauUtil
 
             ioMesh.RecalculateNormals();
             ioMesh.RecalculateTangents();
-            ioMesh.RecalculateBounds();
-            ioMesh.UploadMeshData(false);
+
+            if ((inUploadFlags & MeshDataUploadFlags.DontRecalculateBounds) == 0)
+            {
+                ioMesh.RecalculateBounds();
+            }
+            ioMesh.UploadMeshData((inUploadFlags & MeshDataUploadFlags.MarkNoLongerReadable) != 0);
+        }
+
+        /// <summary>
+        /// Updates the given mesh mesh to match this mesh.
+        /// </summary>
+        public void Upload(ref MeshDataTarget ioMesh, MeshDataUploadFlags inUploadFlags = 0)
+        {
+            CheckDisposed();
+            Upload(ioMesh.Mesh, inUploadFlags);
         }
 
         #endregion // Upload
@@ -303,6 +317,14 @@ namespace BeauUtil
             m_Dirty = false;
             m_VertexCount = 0;
             m_IndexCount = 0;
+        }
+
+        /// <summary>
+        /// Releases buffers.
+        /// </summary>
+        public void Release()
+        {
+            Clear();
         }
 
         /// <summary>

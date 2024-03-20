@@ -43,7 +43,7 @@ public class MeshTest : MonoBehaviour
                 d.Position = center + new Vector2(-size.x, -size.y);
                 Matrix4x4 rot = Matrix4x4.Rotate(Quaternion.Euler(RNG.Instance.NextVector3(16, 32)));
                 var block = MeshData.AddQuad(a, b, c, d);
-                using (Profiling.Time("rotate mesh", ProfileTimeUnits.Microseconds))
+                //using (Profiling.Time("rotate mesh", ProfileTimeUnits.Microseconds))
                 {
                     MeshData.Transform(block, rot);
                 }
@@ -52,7 +52,7 @@ public class MeshTest : MonoBehaviour
 
         using (Profiling.Time("mesh upload", ProfileTime))
         {
-            MeshFilter.Upload(MeshData);
+            MeshFilter.Upload(MeshData, MeshDataUploadFlags.DontRecalculateBounds);
         }
     }
 }

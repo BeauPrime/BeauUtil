@@ -15,6 +15,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -22,7 +23,7 @@ namespace BeauUtil
     /// <summary>
     /// String utility methods.
     /// </summary>
-    static public class StringUtils
+    static public class StringUtils 
     {
         /// <summary>
         /// Custom escape definition.
@@ -1780,6 +1781,8 @@ namespace BeauUtil
         /// Fast StringUtils.ToUpperInvariant.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public char ToUpperInvariant(char inCharacter)
         {
             int charInt = inCharacter;

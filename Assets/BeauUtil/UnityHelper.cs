@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2017-2020. Autumn Beauchesne. All rights reserved.
+ * Copyright (C) 2017-2024. Autumn Beauchesne. All rights reserved.
  * Author:  Autumn Beauchesne
  * Date:    4 April 2019
  * 
@@ -127,7 +127,7 @@ namespace BeauUtil
             // This is to see if the object hasn't been destroyed yet
             if (ioComponent && ioComponent.gameObject)
             {
-                UnityEngine.Object.Destroy(ioComponent.gameObject);
+                SafeDestroyEditorAware(ioComponent.gameObject);
             }
 
             ioComponent = null;

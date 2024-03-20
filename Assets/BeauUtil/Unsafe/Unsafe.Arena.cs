@@ -129,14 +129,14 @@ namespace BeauUtil
 #if HAS_DEBUGGER
                 if (ValidateArena(this))
                 {
-                    return string.Format("[arena '{0}' size={1} remaining={2} flags={3}]", HeaderStart->Name.ToDebugString(), HeaderStart->Size, HeaderStart->SizeRemaining, HeaderStart->Flags);
+                    return string.Format("[MemArena '{0}' size={1} remaining={2} flags={3}]", HeaderStart->Name.ToDebugString(), HeaderStart->Size, HeaderStart->SizeRemaining, HeaderStart->Flags);
                 }
                 else
                 {
                     return "null";
                 }
 #else
-                return "[ArenaHandle]";
+                return "[MemArena]";
 #endif // HAS_DEBUGGER
             }
 
