@@ -141,7 +141,7 @@ namespace BeauUtil
         /// Returns if the given enum contains any of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; and; ldc.i4.0; cgt.un; ret")]
+        [IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; and; ldc.i4.0; conv.u8; cgt.un; ret")]
         static public bool ContainsAny<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum

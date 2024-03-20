@@ -1,4 +1,30 @@
 ## Version 0.10.1
+**20 March 2024**
+
+Fixed out-of-bounds memory access in `Unsafe.Hash64`
+Fixed incorrect bounds checking for `MeshData.Vertex` ref accessors
+
+## Features
+* Added `NonIndexedAttribute` for marking types as non-traversable with `TypeIndex`
+* Added `UnmanagedMeshData16` for reusable mesh data backed by unmanaged memory
+* `MeshData.Upload` now takes in an optional set of flags for reducing the amount of data uploaded
+
+## Improvements
+* Added implicit conversions from `StringSlice` to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`
+* `MeshData.Upload` tries to avoid uploading unchanged data to meshes by default
+* Improved performance of `Unsafe.Hash32` and `UnsafeHash64`
+* Added `Ref.Replace` overloads for primitives
+* Added `DownloadHandlerUnsafeBuffer.Data` for retrieving an `UnsafeSpan<byte>`
+* Added `CanvasHelper.GetSelectionState(Selectable)` for retrieving selection state of a `Selectable`
+* Added `Geom.MinRect` for calculating the minimum bounding rectangle for a set of points
+
+## Fixes
+* Fixed out-of-bounds memory access in `Unsafe.Hash64`
+* Restored Unity 2019 compatibility
+* Fixed `AssetDatabase.SaveAssets cannot be called during import` error in CustomTextAsset importer
+* Fixed `MeshData.Vertex` bounds checking against index count rather than vertex count
+
+## Version 0.10.1
 **21 Feb 2024**
 
 Fixed exception in `AssetDBUtils.Find` methods when encountering assets with missing types

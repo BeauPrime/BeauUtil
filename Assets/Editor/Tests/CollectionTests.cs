@@ -75,6 +75,7 @@ namespace BeauUtil.UnitTests
 
             Bits.Add(ref f, TestFlagEnum.F4);
             Assert.True(Bits.ContainsAny(f, TestFlagEnum.F4));
+            Assert.True(Bits.ContainsAll(f, TestFlagEnum.F4 | TestFlagEnum.F1));
 
             TestFlagEnum[] contents = new TestFlagEnum[3];
             int i = 0;

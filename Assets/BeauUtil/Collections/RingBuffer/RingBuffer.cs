@@ -122,33 +122,29 @@ namespace BeauUtil
             return m_Count == m_Capacity;
         }
 
-#if EXPANDED_REFS
         /// <summary>
         /// Returns if the given element is present in the buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if EXPANDED_REFS
         public bool Contains(in T inItem)
-        {
-            return IndexOf(inItem) >= 0;
-        }
-#endif // EXPANDED_REFS
-
-        /// <summary>
-        /// Returns if the given element is present in the buffer.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#else
         public bool Contains(T inItem)
+#endif // EXPANDED_REFS
         {
             return IndexOf(inItem) >= 0;
         }
 
-#if EXPANDED_REFS
         /// <summary>
         /// Returns the index of the given element in the buffer.
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+#if EXPANDED_REFS
         public int IndexOf(in T inItem)
+#else
+        public int IndexOf(T inItem)
+#endif // EXPANDED_REFS
         {
             if (m_Count <= 0)
                 return -1;
@@ -162,33 +158,6 @@ namespace BeauUtil
                 if (eq.Equals(m_Data[ptr], inItem))
                     return idx;
                 
-                ptr = (ptr + 1) % m_Capacity;
-                ++idx;
-            }
-
-            return -1;
-        }
-#endif // EXPANDED_REFS
-
-        /// <summary>
-        /// Returns the index of the given element in the buffer.
-        /// </summary>
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public int IndexOf(T inItem)
-        {
-            if (m_Count <= 0)
-                return -1;
-
-            var eq = m_Comparer;
-            int ptr = m_Head;
-            int idx = 0;
-            int count = m_Count;
-            while (idx < count)
-            {
-                if (eq.Equals(m_Data[ptr], inItem))
-                    return idx;
-
                 ptr = (ptr + 1) % m_Capacity;
                 ++idx;
             }
@@ -354,13 +323,16 @@ namespace BeauUtil
 
         #region Insert
 
-#if EXPANDED_REFS
         /// <summary>
         /// Pushes a value to the front of the buffer.
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+#if EXPANDED_REFS
         public void PushFront(in T inValue)
+#else
+        public void PushFront(T inValue)
+#endif // EXPANDED_REFS
         {
             if (m_Count >= m_Capacity)
             {
@@ -386,47 +358,17 @@ namespace BeauUtil
             m_Data[m_Head] = inValue;
             ++m_Count;
         }
-#endif // EXPANDED_REFS
 
-        /// <summary>
-        /// Pushes a value to the front of the buffer.
-        /// </summary>
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public void PushFront(T inValue)
-        {
-            if (m_Count >= m_Capacity)
-            {
-                switch (m_BufferMode)
-                {
-                    case RingBufferMode.Fixed:
-                        throw new InvalidOperationException("Ring buffer is full");
-                    case RingBufferMode.Overwrite:
-                        if (m_Capacity <= 0)
-                            throw new InvalidOperationException("Ring buffer has no capacity");
-                        m_Tail = (m_Tail + m_Capacity - 1) % m_Capacity;
-                        --m_Count;
-                        break;
-                    case RingBufferMode.Expand:
-                        SetCapacity(GetDesiredCapacity(m_Capacity + 1));
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unknown RingBufferMode");
-                }
-            }
-
-            m_Head = (m_Head + m_Capacity - 1) % m_Capacity;
-            m_Data[m_Head] = inValue;
-            ++m_Count;
-        }
-
-#if EXPANDED_REFS
         /// <summary>
         /// Pushes a value to the back of the buffer.
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+#if EXPANDED_REFS
         public void PushBack(in T inValue)
+#else
+        public void PushBack(T inValue)
+#endif // EXPANDED_REFS
         {
             if (m_Count >= m_Capacity)
             {
@@ -453,43 +395,9 @@ namespace BeauUtil
             m_Tail = (m_Tail + 1) % m_Capacity;
             ++m_Count;
         }
-#endif // EXPANDED_REFS
-
-        /// <summary>
-        /// Pushes a value to the back of the buffer.
-        /// </summary>
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        public void PushBack(T inValue)
-        {
-            if (m_Count >= m_Capacity)
-            {
-                switch (m_BufferMode)
-                {
-                    case RingBufferMode.Fixed:
-                        throw new InvalidOperationException("Ring buffer is full");
-                    case RingBufferMode.Overwrite:
-                        if (m_Capacity <= 0)
-                            throw new InvalidOperationException("Ring buffer has no capacity");
-                        m_Head = (m_Head + 1) % m_Capacity;
-                        --m_Count;
-                        break;
-                    case RingBufferMode.Expand:
-                        SetCapacity(GetDesiredCapacity(m_Capacity + 1));
-                        break;
-
-                    default:
-                        throw new InvalidOperationException("Unknown RingBufferMode");
-                }
-            }
-
-            m_Data[m_Tail] = inValue;
-            m_Tail = (m_Tail + 1) % m_Capacity;
-            ++m_Count;
-        }
 
         #endregion // Insert
-
+        
         #region Remove
 
         /// <summary>
