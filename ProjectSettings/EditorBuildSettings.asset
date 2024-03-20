@@ -8,13 +8,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Examples/BlockTest/BlockTest.unity
     guid: ab83ea0f68766dc4ba344f205af2ef6d
-  - enabled: 0
+  - enabled: 1
     path: Assets/Examples/StateHash/StateHash.unity
     guid: 3c81b8f88276a1f4f8733bb09e6bf114
-  - enabled: 0
+  - enabled: 1
     path: Assets/Examples/DownloadTest/DownloadTest.unity
     guid: 43812f030b48b264388db3789ff65e60
-  - enabled: 0
+  - enabled: 1
     path: Assets/Examples/MeshTest/MeshTest.unity
     guid: 33ffcb5c2fb829a40ac414c6dde9e4cf
   m_configObjects: {}

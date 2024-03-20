@@ -89,6 +89,8 @@ namespace BeauUtil
             return false;
         }
 
+        #region Interfaces
+
         /// <summary>
         /// Safetly disposes and switches a disposable object to another object.
         /// </summary>
@@ -122,6 +124,10 @@ namespace BeauUtil
 
             return true;
         }
+
+        #endregion // Interfaces
+
+        #region Replace
 
         /// <summary>
         /// Replaces a reference to one object with a reference to another.
@@ -258,22 +264,26 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one enum with another.
         /// </summary>
-        [IntrinsicIL("ldarg.0; ldobj !!T; ldarg.1; beq.s SKIP; ldarg.0; ldarg.1; stobj !!T; ldc.i4.1; br.s END; SKIP:; ldc.i4.0; END:; ret")]
+        [IntrinsicIL("ldarg.0; ldobj !!T; conv.u8; ldarg.1; conv.u8; beq.s SKIP; ldarg.0; ldarg.1; stobj !!T; ldc.i4.1; br.s END; SKIP:; ldc.i4.0; END:; ret")]
         static public bool ReplaceEnum<T>(ref T ioObject, T inReplace)
 #if UNMANAGED_CONSTRAINT
-            where T : unmanaged, Enum
+            where T : unmanaged, Enum 
 #elif HAS_ENUM_CONSTRAINT
             where T : struct, Enum
 #else
             where T : struct, IConvertible
 #endif // HAS_ENUM_CONSTRAINT
         {
-            if (CompareUtils.DefaultEquals<T>().Equals(ioObject, inReplace))
+            if (Enums.ToULong(ioObject) == Enums.ToULong(inReplace))
                 return false;
 
             ioObject = inReplace;
             return true;
         }
+
+        #endregion // Replace
+
+        #region CompareExchange
 
         /// <summary>
         /// Replaces a reference to one object with a reference to another.
@@ -286,6 +296,8 @@ namespace BeauUtil
             ioObject = inReplace;
             return true;
         }
+
+        #endregion // CompareExchange
 
         /// <summary>
         /// Swaps two references.

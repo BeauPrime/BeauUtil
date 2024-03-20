@@ -141,7 +141,7 @@ namespace BeauUtil
         /// Returns if the given enum contains any of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; ldarg.1; and; ldc.i4.0; cgt.un; ret")]
+        [IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; and; ldc.i4.0; cgt.un; ret")]
         static public bool ContainsAny<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -194,7 +194,7 @@ namespace BeauUtil
         /// Returns if the given enum contains all of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.1; ldarg.0; ldarg.1; and; ceq; ret")]
+        [IntrinsicIL("ldarg.1; conv.u8; ldarg.0; conv.u8; ldarg.1; conv.u8; and; ceq; ret")]
         static public bool ContainsAll<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -288,7 +288,7 @@ namespace BeauUtil
         /// Toggles the given mask in the given enum to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; ldarg.0; ldobj !!T; ldarg.1; or; stobj !!T; ret")]
+        //[IntrinsicIL("ldarg.0; ldarg.0; ldobj !!T; conv.u8; ldarg.1; conv.u8; or; stobj !!T; ret")]
         static public void Add<T>(ref T ioBitArray, T inMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -305,7 +305,7 @@ namespace BeauUtil
         /// Toggles the given mask in the given enum to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; ldarg.1; or; ret")]
+        //[IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; or; ret")]
         static public T Add<T>(T inBitArray, T inMask)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -394,7 +394,7 @@ namespace BeauUtil
         /// Toggles the given mask in the given enum to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; ldarg.0; ldobj !!T; ldarg.1; not; and; stobj !!T; ret;")]
+        //[IntrinsicIL("ldarg.0; ldarg.0; ldobj !!T; conv.u8; ldarg.1; conv.u8; not; and; stobj !!T; ret;")]
         static public void Remove<T>(ref T ioBitArray, T inMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -411,7 +411,7 @@ namespace BeauUtil
         /// Toggles the given mask in the given enum to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; ldarg.1; not; and; ret")]
+        //[IntrinsicIL("ldarg.0; ldarg.1; not; and; ret")]
         static public T Remove<T>(T inBitArray, T inMask)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
