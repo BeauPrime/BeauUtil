@@ -1,4 +1,9 @@
-## Version 0.10.1
+## Version 0.10.3
+**21 March 2024**
+
+Hotfix for `MeshData.Upload` not uploading modified vertex counts when reusing a `MeshDataTarget`
+
+## Version 0.10.2
 **20 March 2024**
 
 Fixed out-of-bounds memory access in `Unsafe.Hash64`

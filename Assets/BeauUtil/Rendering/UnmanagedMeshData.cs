@@ -504,12 +504,13 @@ namespace BeauUtil
             if (m == null)
                 throw new ArgumentNullException("ioMesh.Mesh");
 
-            bool uploadIndices = (inUploadFlags & MeshDataUploadFlags.SkipIndexBufferUpload) == 0 || ioMesh.IndexFormat != IndexFormat.UInt16;
+            bool uploadIndices = (inUploadFlags & MeshDataUploadFlags.SkipIndexBufferUpload) == 0 || ioMesh.IndexFormat != IndexFormat.UInt16
+                || m.subMeshCount == 0 || m.GetIndexCount(0) != m_IndexCount;
 
 #if UNSAFE_BUFFER_COPY
             unsafe
             {
-                if (Ref.Replace(ref ioMesh.VertexFormatHash, s_VertexLayout.Hash))
+                if (Ref.Replace(ref ioMesh.VertexFormatHash, s_VertexLayout.Hash) || m.vertexCount != m_VertexCount)
                 {
                     m.SetVertexBufferParams(m_VertexCount, s_VertexLayout.Descriptors);
                 }
