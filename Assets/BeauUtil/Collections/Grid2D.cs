@@ -135,7 +135,7 @@ namespace BeauUtil
 
         public bool IsValid(int inX, int inY)
         {
-            return inX > 0 && inY > 0 && inX < m_Width && inY < m_Height;
+            return inX >= 0 && inY >= 0 && inX < m_Width && inY < m_Height;
         }
 
         public int TryGetValue(int inX, int inY, out T outData)
