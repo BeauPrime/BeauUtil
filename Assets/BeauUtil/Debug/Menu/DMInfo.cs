@@ -186,8 +186,9 @@ namespace BeauUtil.Debugger
         /// If a submenu with the same name already exists,
         /// the contents of the given submenu will be merged
         /// into the existing one, optionally separated by a divider.
+        /// Returns the merged submenu.
         /// </summary>
-        static public void MergeSubmenu(DMInfo inParent, DMInfo inSubMenu, bool inbSeparateWithDivider = true)
+        static public DMInfo MergeSubmenu(DMInfo inParent, DMInfo inSubMenu, bool inbSeparateWithDivider = true)
         {
             DMInfo existingSubmenu = FindSubmenu(inParent, inSubMenu.Header.Label);
             if (existingSubmenu != null)
@@ -201,10 +202,13 @@ namespace BeauUtil.Debugger
                     existingSubmenu.Elements.PushBack(element);
                 }
                 existingSubmenu.MinimumWidth = Math.Max(inSubMenu.MinimumWidth, existingSubmenu.MinimumWidth);
+                inSubMenu.Clear();
+                return existingSubmenu;
             }
             else
             {
                 inParent.AddSubmenu(inSubMenu);
+                return inSubMenu;
             }
         }
 

@@ -1,3 +1,22 @@
+## Version 0.10.4
+**21 May 2024**
+
+Hotfix for `Grid2D.IsValid` failing on `x == 0` or `y == 0`
+
+## Features
+* Added `UnsafeBitSet`, an `IBitSet` backed by unsafe memory
+
+## Improvements
+* Added `Log.Trace` and `Log.Debug` for bypassing Unity's console log
+* Added `DMInfo.SortByLabel` for sorting menu elements alphabetically
+* Added `DMInfo.FindSubmenu` and `DMInfo.FindOrCreateSubmenu` for locating submenus
+* Added `DMInfo.MergeSubmenu` for merging submenus into a parent menu.
+* Reduced branching in `Bits.Set` (eliminated entirely with `TinyIL` package)
+* Adjusted `PerformanceTracker.TryGetMemoryUsage` output when profiler is active
+
+## Fixes
+* Fixed `Grid2D.IsValid` not considering `x == 0` or `y == 0` valid coordinates
+
 ## Version 0.10.3
 **21 March 2024**
 

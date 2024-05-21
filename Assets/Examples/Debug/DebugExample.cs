@@ -32,6 +32,11 @@ public class DebugExample : MonoBehaviour
             .AddText("Frame Count", () => Time.frameCount.ToString())
             .AddText("Scene GUID", () => guid);
 
+        DMInfo newMenu = new DMInfo("Gameplay");
+        newMenu.AddButton("Useless Button", () => { });
+
+        DMInfo.MergeSubmenu(rootMenu, newMenu);
+
         menuUI.GotoMenu(rootMenu);
     }
 
