@@ -207,7 +207,7 @@ namespace BeauUtil.Debugger
             }
             
             ulong unityBytes = (ulong) Profiler.GetTotalReservedMemoryLong() - (ulong) Profiler.GetTotalUnusedReservedMemoryLong();
-            ulong monoBytes = (ulong) Profiler.GetMonoUsedSizeLong();
+            ulong monoBytes = (ulong) GC.GetTotalMemory(false);
             outBytes = unityBytes + monoBytes;
             return true;
         }

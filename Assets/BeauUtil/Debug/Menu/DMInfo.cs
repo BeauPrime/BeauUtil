@@ -136,5 +136,78 @@ namespace BeauUtil.Debugger
         {
             return inPredicate == null || inPredicate();
         }
+
+        /// <summary>
+        /// Sorts the given menu alphabetically.
+        /// </summary>
+        static public void SortByLabel(DMInfo inMenu)
+        {
+            inMenu.Elements.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Label, b.Label));
+        }
+
+        #region Submenu Utilities
+
+        /// <summary>
+        /// Finds a named submenu within the given parent menu.
+        /// </summary>
+        static public DMInfo FindSubmenu(DMInfo inParent, string inLabel)
+        {
+            int index = inParent.Elements.FindIndex((e, l) => {
+                return e.Type == DMElementType.Submenu && e.Submenu.Submenu.Header.Label == l;
+            }, inLabel);
+            if (index >= 0)
+                return inParent.Elements[index].Submenu.Submenu;
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Finds or creates a named submenu within the given parent menu.
+        /// </summary>
+        static public DMInfo FindOrCreateSubmenu(DMInfo inParent, string inLabel)
+        {
+            int index = inParent.Elements.FindIndex((e, l) => {
+                return e.Type == DMElementType.Submenu && e.Submenu.Submenu.Header.Label == l;
+            }, inLabel);
+            if (index >= 0)
+            {
+                return inParent.Elements[index].Submenu.Submenu;
+            }
+            else
+            {
+                DMInfo newMenu = new DMInfo(inLabel);
+                inParent.AddSubmenu(newMenu);
+                return newMenu;
+            }
+        }
+
+        /// <summary>
+        /// Merges the given submenu into the given parent menu.
+        /// If a submenu with the same name already exists,
+        /// the contents of the given submenu will be merged
+        /// into the existing one, optionally separated by a divider.
+        /// </summary>
+        static public void MergeSubmenu(DMInfo inParent, DMInfo inSubMenu, bool inbSeparateWithDivider = true)
+        {
+            DMInfo existingSubmenu = FindSubmenu(inParent, inSubMenu.Header.Label);
+            if (existingSubmenu != null)
+            {
+                if (inbSeparateWithDivider && existingSubmenu.Elements.Count > 0)
+                {
+                    existingSubmenu.AddDivider();
+                }
+                foreach(var element in inSubMenu.Elements)
+                {
+                    existingSubmenu.Elements.PushBack(element);
+                }
+                existingSubmenu.MinimumWidth = Math.Max(inSubMenu.MinimumWidth, existingSubmenu.MinimumWidth);
+            }
+            else
+            {
+                inParent.AddSubmenu(inSubMenu);
+            }
+        }
+
+        #endregion // Submenu Utilities
     }
 }

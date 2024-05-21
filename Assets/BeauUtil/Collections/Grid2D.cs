@@ -14,6 +14,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -57,20 +58,23 @@ namespace BeauUtil
 
         public int Width
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Width; }
         }
 
         public int Height
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Height; }
         }
 
         public int Count
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Width * m_Height; }
         }
 
-        #if EXPANDED_REFS
+#if EXPANDED_REFS
 
         public ref T this[int inX, int inY]
         {
@@ -94,7 +98,7 @@ namespace BeauUtil
             }
         }
 
-        #else
+#else
 
         public T this[int inX, int inY]
         {
@@ -131,8 +135,9 @@ namespace BeauUtil
             }
         }
 
-        #endif // EXPANDED_REFS
+#endif // EXPANDED_REFS
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsValid(int inX, int inY)
         {
             return inX >= 0 && inY >= 0 && inX < m_Width && inY < m_Height;
@@ -151,16 +156,19 @@ namespace BeauUtil
             return index;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetX(int inIndex)
         {
             return inIndex % m_Width;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetY(int inIndex)
         {
             return (int)(inIndex / m_Width);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetXY(int inIndex, out int outX, out int outY)
         {
             if (inIndex < 0 || inIndex >= m_Data.Length)
@@ -170,6 +178,7 @@ namespace BeauUtil
             outY = (int)(inIndex / m_Width);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetIndex(int inX, int inY)
         {
             if (!IsValid(inX, inY))
@@ -207,11 +216,13 @@ namespace BeauUtil
             m_Height = inNewHeight;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
             Clear(default(T));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear(T inValue)
         {
             for (int i = 0; i < m_Data.Length; ++i)
@@ -240,6 +251,7 @@ namespace BeauUtil
             return GetEnumerator();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] GetArray()
         {
             return m_Data;

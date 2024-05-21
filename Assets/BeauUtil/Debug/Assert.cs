@@ -672,7 +672,7 @@ namespace BeauUtil.Debugger
             if (s_Broken)
                 return;
             
-            StringHash64 locationHash = string.Format("{0}@{1}", inCondition, inLocation);
+            StringHash64 locationHash = StringHash64.Fast(string.Format("{0}@{1}", inCondition, inLocation));
             if (s_IgnoredLocations.Contains(locationHash))
                 return;
 

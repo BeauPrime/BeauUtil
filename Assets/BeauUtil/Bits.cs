@@ -430,10 +430,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref uint ioBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                Add(ref ioBitArray, inBitIndex);
-            else
-                Remove(ref ioBitArray, inBitIndex);
+            uint mask = 1u << inBitIndex;
+            ioBitArray = (ioBitArray & ~mask) | (NegateBoolU32(inbState) & mask);
         }
 
         /// <summary>
@@ -442,10 +440,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public uint Set(uint inBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                return Add(inBitArray, inBitIndex);
-            else
-                return Remove(inBitArray, inBitIndex);
+            uint mask = 1u << inBitIndex;
+            return (inBitArray & ~mask) | (NegateBoolU32(inbState) & mask);
         }
 
         /// <summary>
@@ -454,10 +450,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref int ioBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                Add(ref ioBitArray, inBitIndex);
-            else
-                Remove(ref ioBitArray, inBitIndex);
+            int mask = 1 << inBitIndex;
+            ioBitArray = (ioBitArray & ~mask) | (NegateBool32(inbState) & mask);
         }
 
         /// <summary>
@@ -466,10 +460,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Set(int inBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                return Add(inBitArray, inBitIndex);
-            else
-                return Remove(inBitArray, inBitIndex);
+            int mask = 1 << inBitIndex;
+            return (inBitArray & ~mask) | (NegateBool32(inbState) & mask);
         }
 
         /// <summary>
@@ -478,10 +470,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref ulong ioBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                Add(ref ioBitArray, inBitIndex);
-            else
-                Remove(ref ioBitArray, inBitIndex);
+            ulong mask = (ulong) 1 << inBitIndex;
+            ioBitArray = (ioBitArray & ~mask) | (NegateBoolU64(inbState) & mask);
         }
 
         /// <summary>
@@ -490,10 +480,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ulong Set(ulong inBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                return Add(inBitArray, inBitIndex);
-            else
-                return Remove(inBitArray, inBitIndex);
+            ulong mask = (ulong) 1 << inBitIndex;
+            return (inBitArray & ~mask) | (NegateBoolU64(inbState) & mask);
         }
 
         /// <summary>
@@ -502,10 +490,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Set(ref long ioBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                Add(ref ioBitArray, inBitIndex);
-            else
-                Remove(ref ioBitArray, inBitIndex);
+            long mask = (long) 1 << inBitIndex;
+            ioBitArray = (ioBitArray & ~mask) | (NegateBool64(inbState) & mask);
         }
 
         /// <summary>
@@ -514,10 +500,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public long Set(long inBitArray, int inBitIndex, bool inbState)
         {
-            if (inbState)
-                return Add(inBitArray, inBitIndex);
-            else
-                return Remove(inBitArray, inBitIndex);
+            long mask = (long) 1 << inBitIndex;
+            return (inBitArray & ~mask) | (NegateBool64(inbState) & mask);
         }
 
         /// <summary>
@@ -974,6 +958,38 @@ namespace BeauUtil
         }
 
         #endregion // Enumerate
+
+        #region Helpers
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i4; neg; ret")]
+        static private int NegateBool32(bool inBool)
+        {
+            return inBool ? -1 : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i4; neg; ret")]
+        static private uint NegateBoolU32(bool inBool)
+        {
+            return inBool ? uint.MaxValue : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i8; neg; ret")]
+        static private long NegateBool64(bool inBool)
+        {
+            return inBool ? -1 : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.i8; neg; ret")]
+        static private ulong NegateBoolU64(bool inBool)
+        {
+            return inBool ? ulong.MaxValue : 0;
+        }
+
+        #endregion // Helpers
     }
 
     // TODO: Use tzcnt for enumerators?

@@ -7,6 +7,10 @@
  * Purpose: Various bit sets.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -61,7 +65,8 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Bits == 0; }
         }
 
@@ -112,14 +117,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int inIndex, bool inValue)
         {
-            if (inValue)
-            {
-                Set(inIndex);
-            }
-            else
-            {
-                Unset(inIndex);
-            }
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            Bits.Set(ref m_Bits, inIndex, inValue);
         }
 
         /// <summary>
@@ -182,7 +181,7 @@ namespace BeauUtil
         {
             unsafe
             {
-                fixed(uint* bits = &m_Bits)
+                fixed (uint* bits = &m_Bits)
                 {
                     return Unsafe.DumpMemory(bits, 4, ' ', 4);
                 }
@@ -261,7 +260,8 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Bits == 0; }
         }
 
@@ -457,7 +457,8 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Bits0 == 0 && m_Bits1 == 0; }
         }
 
@@ -481,7 +482,7 @@ namespace BeauUtil
             Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
             unsafe
             {
-                fixed(ulong* bits = &m_Bits0)
+                fixed (ulong* bits = &m_Bits0)
                 {
                     return Bits.Contains(bits[inIndex >> 6], inIndex & 0x3F);
                 }
@@ -526,13 +527,13 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int inIndex, bool inValue)
         {
-            if (inValue)
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            unsafe
             {
-                Set(inIndex);
-            }
-            else
-            {
-                Unset(inIndex);
+                fixed (ulong* bits = &m_Bits0)
+                {
+                    Bits.Set(ref bits[inIndex >> 6], inIndex & 0x3F, inValue);
+                }
             }
         }
 
@@ -667,7 +668,8 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Bits0 == 0 && m_Bits1 == 0 && m_Bits2 == 0 && m_Bits3 == 0; }
         }
 
@@ -736,13 +738,13 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int inIndex, bool inValue)
         {
-            if (inValue)
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            unsafe
             {
-                Set(inIndex);
-            }
-            else
-            {
-                Unset(inIndex);
+                fixed (ulong* bits = &m_Bits0)
+                {
+                    Bits.Set(ref bits[inIndex >> 6], inIndex & 0x3F, inValue);
+                }
             }
         }
 
@@ -869,7 +871,8 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return m_Bits0.IsEmpty && m_Bits1.IsEmpty; }
         }
 
@@ -938,13 +941,13 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int inIndex, bool inValue)
         {
-            if (inValue)
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            unsafe
             {
-                Set(inIndex);
-            }
-            else
-            {
-                Unset(inIndex);
+                fixed (BitSet256* bits = &m_Bits0)
+                {
+                    bits[inIndex >> 8].Set(inIndex & 0xFF, inValue);
+                }
             }
         }
 
@@ -1047,8 +1050,8 @@ namespace BeauUtil
 
         public BitSetN(int inCapacity)
         {
-            if (inCapacity < 64)
-                throw new ArgumentOutOfRangeException("inCapacity", "BitSetN capacity must be at least 64");
+            if (inCapacity < 32)
+                throw new ArgumentOutOfRangeException("inCapacity", "BitSetN capacity must be at least 32");
 
             inCapacity = Unsafe.AlignUp32(inCapacity);
             m_Capacity = inCapacity;
@@ -1086,10 +1089,14 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty {
-            get {
-                for(int i = 0; i < m_ChunkCount; i++) {
-                    if (m_Bits[i] != 0) {
+        public bool IsEmpty
+        {
+            get
+            {
+                for (int i = 0; i < m_ChunkCount; i++)
+                {
+                    if (m_Bits[i] != 0)
+                    {
                         return false;
                     }
                 }
@@ -1144,14 +1151,8 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int inIndex, bool inValue)
         {
-            if (inValue)
-            {
-                Set(inIndex);
-            }
-            else
-            {
-                Unset(inIndex);
-            }
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            Bits.Set(ref m_Bits[inIndex >> 5], inIndex & 0x1F, inValue);
         }
 
         /// <summary>
@@ -1199,5 +1200,170 @@ namespace BeauUtil
         }
 
         #endregion // Serialization
+    }
+
+    /// <summary>
+    /// Bit mask, using unsafe memory.
+    /// </summary>
+    public unsafe struct UnsafeBitSet : IBitSet
+    {
+        private readonly uint* m_Bits;
+        private readonly int m_ChunkCount;
+
+        public UnsafeBitSet(uint* inBits, int inLength)
+        {
+            if (inBits == null)
+                throw new ArgumentNullException("inBits");
+            if (inLength < 0)
+                throw new ArgumentOutOfRangeException("inLength", "UnsafeBitSet length must be at least 0");
+
+            m_Bits = inBits;
+            m_ChunkCount = inLength;
+        }
+
+#if UNMANAGED_CONSTRAINT
+        public UnsafeBitSet(UnsafeSpan<uint> inBits)
+        {
+            if (!inBits)
+                throw new ArgumentOutOfRangeException("inBits", "UnsafeBitSet backing cannot be null");
+
+            m_Bits = inBits.Ptr;
+            m_ChunkCount = inBits.Length;
+        }
+#endif // UNMANAGED_CONSTRAINT
+
+        public int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get { return m_ChunkCount << 5; }
+        }
+
+        /// <summary>
+        /// Number of set bits.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                int count = 0;
+                for (int i = 0; i < m_ChunkCount; i++)
+                    count += Bits.Count(m_Bits[i]);
+                return count;
+            }
+        }
+
+        /// <summary>
+        /// If the set is empty.
+        /// </summary>
+        public bool IsEmpty
+        {
+            get
+            {
+                for (int i = 0; i < m_ChunkCount; i++)
+                {
+                    if (m_Bits[i] != 0)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets/sets the value of the bit at the given index.
+        /// </summary>
+        public bool this[int inIndex]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get { return IsSet(inIndex); }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set { Set(inIndex, value); }
+        }
+
+        /// <summary>
+        /// Returns if the bit at the given index is set.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsSet(int inIndex)
+        {
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            return Bits.Contains(m_Bits[inIndex >> 5], inIndex & 0x1F);
+        }
+
+        /// <summary>
+        /// Sets the bit at the given index.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Set(int inIndex)
+        {
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            Bits.Add(ref m_Bits[inIndex >> 5], inIndex & 0x1F);
+        }
+
+        /// <summary>
+        /// Unsets the bit at the given index.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Unset(int inIndex)
+        {
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            Bits.Remove(ref m_Bits[inIndex >> 5], inIndex & 0x1F);
+        }
+
+        /// <summary>
+        /// Sets the bit at the given index to the given value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Set(int inIndex, bool inValue)
+        {
+            Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
+            Bits.Set(ref m_Bits[inIndex >> 5], inIndex & 0x1F, inValue);
+        }
+
+        /// <summary>
+        /// Clears all set bits.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Clear()
+        {
+            Unsafe.Clear(m_Bits, m_ChunkCount);
+        }
+
+#if UNMANAGED_CONSTRAINT
+        /// <summary>
+        /// Unpacks the bit data.
+        /// </summary>
+        public void Unpack(out UnsafeSpan<uint> outBits)
+        {
+            outBits = new UnsafeSpan<uint>(m_Bits, m_ChunkCount);
+        }
+#endif // UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Unpacks the bit data.
+        /// </summary>
+        public void Unpack(out uint* outBits, out int outChunks)
+        {
+            outBits = m_Bits;
+            outChunks = m_ChunkCount;
+        }
+
+        #region Operators
+
+        public override string ToString()
+        {
+            unsafe
+            {
+                return Unsafe.DumpMemory(m_Bits, m_ChunkCount * 4, ' ', 4);
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return (int) Unsafe.Hash32(m_Bits, m_ChunkCount * 4);
+        }
+
+        #endregion // Operators
     }
 }

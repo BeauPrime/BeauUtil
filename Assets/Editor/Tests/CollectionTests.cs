@@ -74,6 +74,7 @@ namespace BeauUtil.UnitTests
             Assert.False(Bits.ContainsAny(f, TestFlagEnum.F4));
 
             Bits.Add(ref f, TestFlagEnum.F4);
+            Bits.Set(ref f, TestFlagEnum.F4, true);
             Assert.True(Bits.ContainsAny(f, TestFlagEnum.F4));
             Assert.True(Bits.ContainsAll(f, TestFlagEnum.F4 | TestFlagEnum.F1));
 
@@ -96,7 +97,8 @@ namespace BeauUtil.UnitTests
             BitSet32 bitSet = new BitSet32();
             bitSet.Set(17);
             bitSet.Set(23);
-            bitSet.Set(2);
+            bitSet.Set(2, true);
+            bitSet.Set(16, false);
 
             Assert.True(bitSet.IsSet(17));
             Assert.AreEqual(3, bitSet.Count);
@@ -112,7 +114,8 @@ namespace BeauUtil.UnitTests
         {
             BitSet64 bitSet = new BitSet64();
             bitSet.Set(17);
-            bitSet.Set(53);
+            bitSet.Set(53, true);
+            bitSet.Set(16, false);
 
             Assert.True(bitSet.IsSet(17));
             Assert.AreEqual(2, bitSet.Count);
@@ -127,7 +130,8 @@ namespace BeauUtil.UnitTests
         {
             BitSet128 bitSet = new BitSet128();
             bitSet.Set(98);
-            bitSet.Set(13);
+            bitSet.Set(13, true);
+            bitSet.Set(16, false);
 
             Assert.True(bitSet.IsSet(13));
             Assert.AreEqual(2, bitSet.Count);
@@ -146,7 +150,8 @@ namespace BeauUtil.UnitTests
             bitSet.Set(99);
             bitSet.Set(99);
             bitSet.Set(199);
-            bitSet.Set(213);
+            bitSet.Set(213, true);
+            bitSet.Set(16, false);
 
             Assert.True(bitSet.IsSet(213));
             Assert.True(bitSet.IsSet(99));
@@ -166,7 +171,8 @@ namespace BeauUtil.UnitTests
             bitSet.Set(99);
             bitSet.Set(99);
             bitSet.Set(199);
-            bitSet.Set(501);
+            bitSet.Set(501, true);
+            bitSet.Set(16, false);
 
             Assert.True(bitSet.IsSet(501));
             Assert.False(bitSet.IsSet(203));
@@ -188,7 +194,8 @@ namespace BeauUtil.UnitTests
             bitSet.Set(99);
             bitSet.Set(199);
             bitSet.Set(501);
-            bitSet.Set(8000);
+            bitSet.Set(8000, true);
+            bitSet.Set(16, false);
 
             Assert.True(bitSet.IsSet(501));
             Assert.False(bitSet.IsSet(203));

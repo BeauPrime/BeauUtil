@@ -11,9 +11,9 @@
 #define ENABLE_LOGGING_BEAUUTIL
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
 
-#if NET_4_6
+#if NET_4_6 || NETSTANDARD || NET_STANDARD
 #define INJECT_LOCATION
-#endif // NET_4_6
+#endif // NET_4_6 || NETSTANDARD || NET_STANDARD
 
 using System;
 using System.Diagnostics;
@@ -108,6 +108,74 @@ namespace BeauUtil.Debugger
 
         #endregion // Formatting
     
+        #region Trace
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Trace(string inMessage)
+        {
+            Console.WriteLine(inMessage);
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Trace(string inMessage, object inArg0)
+        {
+            Console.WriteLine(Format(inMessage, inArg0));
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Trace(string inMessage, object inArg0, object inArg1)
+        {
+            Console.WriteLine(Format(inMessage, inArg0, inArg1));
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Trace(string inMessage, object inArg0, object inArg1, object inArg2)
+        {
+            Console.WriteLine(Format(inMessage, inArg0, inArg1, inArg2));
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Trace(string inMessage, params object[] inArgs)
+        {
+            Console.WriteLine(Format(inMessage, inArgs));
+        }
+
+        #endregion // Trace
+
+        #region Debug
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Debug(string inMessage)
+        {
+            Console.WriteLine(inMessage);
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Debug(string inMessage, object inArg0)
+        {
+            Console.WriteLine(Format(inMessage, inArg0));
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Debug(string inMessage, object inArg0, object inArg1)
+        {
+            Console.WriteLine(Format(inMessage, inArg0, inArg1));
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Debug(string inMessage, object inArg0, object inArg1, object inArg2)
+        {
+            Console.WriteLine(Format(inMessage, inArg0, inArg1, inArg2));
+        }
+
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
+        static public void Debug(string inMessage, params object[] inArgs)
+        {
+            Console.WriteLine(Format(inMessage, inArgs));
+        }
+
+        #endregion // Debug
+
         #region Message
 
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD"), Conditional("ENABLE_LOGGING_BEAUUTIL")]
