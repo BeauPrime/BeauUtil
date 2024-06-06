@@ -1,12 +1,17 @@
+## Version 0.10.5
+**5 June 2024**
+
+Hotfix for TinyIL integration build process revisions
+
 ## Version 0.10.4
 **21 May 2024**
 
 Hotfix for `Grid2D.IsValid` failing on `x == 0` or `y == 0`
 
-## Features
+### Features
 * Added `UnsafeBitSet`, an `IBitSet` backed by unsafe memory
 
-## Improvements
+### Improvements
 * Added `Log.Trace` and `Log.Debug` for bypassing Unity's console log
 * Added `DMInfo.SortByLabel` for sorting menu elements alphabetically
 * Added `DMInfo.FindSubmenu` and `DMInfo.FindOrCreateSubmenu` for locating submenus
@@ -14,7 +19,7 @@ Hotfix for `Grid2D.IsValid` failing on `x == 0` or `y == 0`
 * Reduced branching in `Bits.Set` (eliminated entirely with `TinyIL` package)
 * Adjusted `PerformanceTracker.TryGetMemoryUsage` output when profiler is active
 
-## Fixes
+### Fixes
 * Fixed `Grid2D.IsValid` not considering `x == 0` or `y == 0` valid coordinates
 
 ## Version 0.10.3
@@ -28,12 +33,12 @@ Hotfix for `MeshData.Upload` not uploading modified vertex counts when reusing a
 Fixed out-of-bounds memory access in `Unsafe.Hash64`
 Fixed incorrect bounds checking for `MeshData.Vertex` ref accessors
 
-## Features
+### Features
 * Added `NonIndexedAttribute` for marking types as non-traversable with `TypeIndex`
 * Added `UnmanagedMeshData16` for reusable mesh data backed by unmanaged memory
 * `MeshData.Upload` now takes in an optional set of flags for reducing the amount of data uploaded
 
-## Improvements
+### Improvements
 * Added implicit conversions from `StringSlice` to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`
 * `MeshData.Upload` tries to avoid uploading unchanged data to meshes by default
 * Improved performance of `Unsafe.Hash32` and `UnsafeHash64`
@@ -42,7 +47,7 @@ Fixed incorrect bounds checking for `MeshData.Vertex` ref accessors
 * Added `CanvasHelper.GetSelectionState(Selectable)` for retrieving selection state of a `Selectable`
 * Added `Geom.MinRect` for calculating the minimum bounding rectangle for a set of points
 
-## Fixes
+### Fixes
 * Fixed out-of-bounds memory access in `Unsafe.Hash64`
 * Restored Unity 2019 compatibility
 * Fixed `AssetDatabase.SaveAssets cannot be called during import` error in CustomTextAsset importer
@@ -62,14 +67,14 @@ Pointer alignment fixes
 `TypeIndex` can retrieve inheritance information
 Disabling experimental MethodInvocationHelper pointer specialization
 
-## Features
+### Features
 * Added `UnsafeEnumerator` for iterating over unsafe memory
 * Added IntrinsicIL definitions for several operations
   * Requires `TinyIL.Mono` package
 * Added `BitEnumerator32`, `BitEnumerator64`, `EnumMaskEnumerator` and `EnumBitEnumerator` structs for enumerating over set bits/mask values
 * Added `TypeIndex.GetAll` for retrieving indices up an inheritance chain
 
-## Improvements
+### Improvements
 * Added conversion from `UnsafeSpan` to `Span` and `ReadOnlySpan`
 * Added conversion between `UnsafeSpan<T>` and `UnsafeSpan<U>`
 * Added `Unsafe.IsAligned` methods for checking value/pointer alignment
@@ -83,7 +88,7 @@ Disabling experimental MethodInvocationHelper pointer specialization
 * Added `Geom.SetTranslation` for setting matrix translation
 * Added `Geom.Forward/Up/Right` shortcuts for faster quaternion-to-vector calculations
 
-## Fixes
+### Fixes
 * Disabled MethodInvocationHelper pointer specialization optimizations
 * `ConsolePerformance` no longer starts the profiler automatically
 * `Profiling.Time` is more accurate and can be run on non-main threads
@@ -92,7 +97,7 @@ Disabling experimental MethodInvocationHelper pointer specialization
 * Fixed accidental recursion in `StringUtils.ToUpperInvariant`
 * Fixed missed cases of using `Comparer<T>.Default` instead of `CompareUtils.DefaultSort<T>()`
 
-## Breaking Changes
+### Breaking Changes
 * `RingBuffer.Compress` renamed to `RingBuffer.Linearize` for consistency
 * Events no longer exposed to inspector for the following components:
   * `CollisionListener`/`CollisionListener2D`
@@ -105,11 +110,11 @@ Disabling experimental MethodInvocationHelper pointer specialization
 
 Hotfix for MethodInvocationHelper on IL2CPP platforms
 
-## Improvements
+### Improvements
 * Added rect-aware clamping mode to `RectTransformPinned`
 * Added experimental `TRS.TryCreateFromMatrix`
 
-## Fixes
+### Fixes
 * Fixed specialized method invocation from `MethodInvocationHelper` on IL2CPP platforms
 * Fixed potential overflow issue when calling `Bits.IndexOf(Enum)` with a 64-bit enum
 * Fixed erroneous inclusion of context argument in `CastableEvent` and `ActionEvent` unsafe delegate registration methods
@@ -124,15 +129,15 @@ Hotfix for out-of-range execution order values.
 
 Hotfix for `AttributeCache.Get`
 
-## Improvements
+### Improvements
 * `Reflect.FindAllAssemblies` can now cache all loaded assemblies on IL2CPP builds
 
-## Fixes
+### Fixes
 * `AttributeCache.Get` now works correctly for non-MemberInfo inputs
 * `SerializedAttributeSet.Read` correctly skips over assemblies it could not find
 * Fixed `Persist` default execution order
 
-## Breaking Changes
+### Breaking Changes
 * `SerializedAttributeSet.Read` now requires a list of assemblies as input
 
 ## Version 0.9.6
@@ -140,32 +145,32 @@ Hotfix for `AttributeCache.Get`
 
 Hotfix for `StringHashing` compilation error in non-debug builds
 
-## Features
+### Features
 * Added `RegularPolyGraphic` for rendering regular polygons
 * Support for function pointers in 2021.2+ in function wrappers and `MethodInvocationHelper`
 
-## Improvements
+### Improvements
 * `Unsafe.Hash` functions now use Murmur2 instead of FNV-1a
 * Added various `Reserve` extension methods for `Dictionary`, `List`, `HashSet`, and `StringBuilder`
 * Added tick rate conversion methods to `Profiling`
 * Added extension method polyfills for several `Dictionary` and `HashSet` methods present in .NET standard but not earlier versions
 * Added `CameraHelper.GetStateHash` and `TransformHelper.GetStateHash` for quickly checking camera and transform changes
 
-## Fixes
+### Fixes
 * Fixed `StringHashing.DumpReverseLookupStats` compilation error in non-debug builds
 * Fixed `Unsafe.PinString(StringBuilder)` to properly catch instances of chained StringBuilders
 
 ## Version 0.9.5
 **14 Nov 2023**
 
-## Features
+### Features
 * Added `UnityHelper.IsPersistent` for checking if an asset is a persistent asset
 * Added `SceneHelper.GetLoadingState` and `SceneHelper.GetGUID` for returning info about scenes
 * Added `SerializedAttributeSet` class for serializing reflection information
 * Added `ReloadableRef<T>` struct for references to assets with custom importers that may be reloaded during the editor
 * Added `AssetOnlyAttribute` property attribute for restricting an object reference to persistent objects only
 
-## Improvements
+### Improvements
 * Added optional `Unity.Mathematics` integration for several bit calls
 * Inlined some `Reflect.Find` enumerable calls for better performance
 * Some `Reflect.Find` calls can now make use of the editor type cache in the editor
@@ -173,10 +178,10 @@ Hotfix for `StringHashing` compilation error in non-debug builds
 * Added `StringHashReverseCacheInitialCapacityAttribute` attribute for setting the initial capacity of the reverse lookup table
 * Added `Unsafe.FormatBytes` for formatting byte counts
 
-## Fixes
+### Fixes
 * Fixed several incompatibilities with Unity 2019
 
-## Breaking Changes
+### Breaking Changes
 * `UnsafePtr.Ref` renamed to `UnsafePtr.AsRef`
 
 ## Version 0.9.4
@@ -186,12 +191,12 @@ New time-bound execution utilities
 Fix for `SceneReference` serialization
 New `Unsafe` features
 
-## Features
+### Features
 * Added `WorkSlider` utility for time-bound execution of work queues
 * Added `AttributeCache` classes for caching attribute information
 * Added `Unsafe.Clear` for clearing memory to defaults
 
-## Improvements
+### Improvements
 * All versions of `OffsetLength` structs are now serializable
 * Added `OffsetLength.Contains` method to OffsetLength types for checking if value is within range
 * Improved `RingBuffer` and `UnsafeSpan` debugger views
@@ -202,10 +207,10 @@ New `Unsafe` features
 * Added `AllocArray` and `AllocSpan` methods to `Unsafe.ArenaHandle` API
 * Added `Unsafe.AllocatorFlags.ZeroOnAllocate` for zeroing out allocated memory
 
-## Fixes
+### Fixes
 * Fixed potential data format inconsistencies when using `SceneReference` in build
 
-## Breaking Changes
+### Breaking Changes
 * `Unsafe.Reinterpret(TFrom*)` renamed in favor of `Unsafe.FastReinterpret(TFrom*)` to clarity reinterpretation method
 
 ## Version 0.9.3
@@ -218,15 +223,15 @@ Hotfix for incorrect `Unsafe.Read` behavior when arguments passed as `ref`
 
 Hotfix for `UniqueIdAllocator` exception when exceeding initial capacity
 
-## Improvements
+### Improvements
 * `DownloadHandlerUnsafeBuffer` can be passed allocation and free delegates instead of a pre-allocated buffer
 * New `AnimatorStateSnapshot` class for storing and restoring Animator layer and parameter information
 * All versions of `BitSet` are now serializable
 
-## Fixes
+### Fixes
 * `UniqueIdAllocator` no longer throws an exception when reserving more identifier slots than initially allocated
 
-## Breaking Changes
+### Breaking Changes
 * All variants of `Unsafe.Read/Write(string)` renamed to `Unsafe.ReadUTF8/WriteUTF8` for consistency
 
 ## Version 0.9.1
@@ -240,7 +245,7 @@ Hotfix for `TypeIndex` custom capacity
 New collection types
 `MeshData` improvements
 
-## Features
+### Features
 * New `BitSet` structs for easier access to bit sets
 * New `LruCache` fixed-size cache type
 * New `LLTable` collection, for array-backed linked lists
@@ -250,7 +255,7 @@ New collection types
 * New `OffsetLength` struct and utilities for representing ranges of data in 1-dimensional arrays/buffers
 * New `TypeIndex<T>` utility for statically mapping types to indices (for faster array lookups)
 
-## Improvements
+### Improvements
 * `Bits` utilities now work on 64-bit integrals
 * Improved `MeshData.Upload` performance
 * Added `MeshData.Topology`, specified in constructor
@@ -260,7 +265,7 @@ New collection types
 * `CameraHelper` can now register global pre-cull, pre-render, and post-render handlers
 * `VertexUtility.GenerateLayout` also now returns size, attribute, and offset information
 
-## Fixes
+### Fixes
 * `MeshData` correctly calculates maximum vertices based on index format and vertex size
 
 ### Breaking Changes
@@ -274,19 +279,19 @@ New collection types
 New `Mesh` construction utilities
 Support for `Slider` control type in `DMMenu`
 
-## Features
+### Features
 * New `MeshData16<Vertex>` class for interleaved mesh construction
 * Added `Slider` control support to `DMMenu`
 * Added `Push`/`Pop` methods to arena allocator for more fine-grained freeing of memory
 * Added `ArrayUtils.EnsureCapacity` to match `ListUtils.EnsureCapacity`
 
-## Improvements
+### Improvements
 * Assert arguments are passed in using generics to avoid boxing
 * Added Quantization methods to `MathUtils`
 * Added endian swap methods to `Unsafe`
 * Added `RingBuffer.MoveFrontToBack` and similar methods for moving elements between head and tail
 
-## Fixes
+### Fixes
 * Fixed `RNG.Shuffle(RingBuffer)` call inference issue
 * `UnityHelper.SafeDestroy` can now correctly destroy runtime assets in editor
 * Important attributes like `BindContext`, `BlockMeta` and `BlockContent` now derive from `PreserveAttribute`
@@ -384,14 +389,14 @@ Reduced garbage generated by string methods
 ### Breaking Changes
 * `MathUtil` renamed to `MathUtils` for consistency
 
-### Version 0.7.12
+## Version 0.7.12
 **4 Sept 2022**
 
 Hotfix for incorrect `SerializedHash32` hashes being masked in editor
 Hotfix for BlockParser block error state not propagating correctly
 Added support for `IGNORE_UNITY_EDITOR` define to disable debug checks in editor
 
-### Version 0.7.11
+## Version 0.7.11
 **29 Aug 2022**
 
 Hotfix for `RectTransformPinned` to handle objects behind camera
@@ -399,83 +404,83 @@ Hotfix for `CameraHelper.HeightForDistanceAndFOV` calculation
 Memory "dump to string" utilities
 Reduced memory usage of debug font
 
-### Version 0.7.10
+## Version 0.7.10
 **19 Aug 2022**
 
 Hotfix for `CameraRenderScale.PixelHeight` setter
 Improved consistency `CameraFOVPlane.SetTargetPreserveFOV`
 
-### Version 0.7.9
+## Version 0.7.9
 **19 July 2022**
 
 Hotfix for `StringUtils.Args.Splitter` state corruption
 
-### Version 0.7.8
+## Version 0.7.8
 **19 July 2022**
 
 Hotfix for `Bits.Count` hang
 
-### Version 0.7.7
+## Version 0.7.7
 **18 July 2022**
 
 StringSlice.Split improvements for thread safety and better configurability
 
-#### Features
+### Features
 * Added `StringSlice.Split` configuration option to limit number of slices
 * New `Enums` utility class to convert generic enums to/from integral types
 * Added methods in `Bits` utility class to operate on generic flag enums
 * New `Batch` utility class to group items together by batch id and dispatch callbacks on sets
 
-#### Breaking Changes
+### Breaking Changes
 * `Bits.ContainsMask` renamed to `Bits.ContainsAny`
 * `CharStreamParams` factory methods contain an additional `Owner` argument, to ensure garbage collection doesn't sweep up source of pinned buffers
 
-#### Fixes
+### Fixes
 * Using `Colors.Hex` in a static initializer will no longer crash
 
-#### Improvements
+### Improvements
 * Improved thread safety of `StringSlice.Split` operations involving `ISplitter`
 * `StringUtils.ArgsList.Splitter` can now specify if quotes should be stripped from arguments
 
-### Version 0.7.6
+## Version 0.7.6
 **12 July 2022**
 
 Fixed BlockParser leftover buffer corruption issues.
 Added additional StringBuilder argument to IBlockGenerator callbacks
 
-#### Fixes
+### Fixes
 * Fixed `CharStream.Insert` occasional buffer corruption
 
-#### Improvements
+### Improvements
 * Added `StringBuilder` argument to `IBlockGenerator.TryEvaluatePackage` and `IBlockGenerator.TryEvaluateMeta` as additional context
 
-### Version 0.7.5
+## Version 0.7.5
 **10 July 2022**
 
 Updating for 2020.1+ compatibility.
 Adjusted CameraFOVPlane math for stability when altering clipping planes.
 
-#### Breaking Changes
+### Breaking Changes
 * `CameraHelper.TryGetDistance` methods now return distance from the camera transform to the target plane, not the distance from the near clip plane to the target plane.
 
-#### Fixes
+### Fixes
 * `BlockParser` no longer erroneously reports errors when setting content via a `BlockContent` attribute
 
-#### Improvements
+### Improvements
 * Updated several classes to avoid compiler warnings/errors in Unity 2020.1+.
 
-### Version 0.7.4
+## Version 0.7.4
 **21 June 2022**
 
 Critical bug fix in BlockParser for a stream insertion error.
 
-#### Fixes
+### Fixes
 * `IBlockParserUtil.InsertStream` will properly defer processing on any unprocessed characters from the current stream
 
-#### Improvements
+### Improvements
 * Implemented `CharStream.InsertBytes` and `CharStream.InsertChars`, making buffer types a proper deque
 
-### Version 0.7.3
+## Version 0.7.3
 **20 June 2022**
 
 Unified character/byte stream interface. Implemented `BlockParser` streaming behavior.

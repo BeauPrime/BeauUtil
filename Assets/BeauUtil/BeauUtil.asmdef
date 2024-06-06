@@ -7,7 +7,8 @@
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.Mathematics",
         "Unity.Burst",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "TinyIL.Mono"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -44,7 +45,7 @@
         },
         {
             "name": "com.beauprime.tinyil-mono",
-            "expression": "0.1.5",
+            "expression": "0.2.0",
             "define": "USING_TINYIL"
         }
     ],
