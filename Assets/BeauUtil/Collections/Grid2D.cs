@@ -15,6 +15,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -76,6 +77,8 @@ namespace BeauUtil
 
 #if EXPANDED_REFS
 
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         public ref T this[int inX, int inY]
         {
             get
@@ -87,6 +90,8 @@ namespace BeauUtil
             }
         }
 
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         public ref T this[int inIndex]
         {
             get
@@ -223,6 +228,8 @@ namespace BeauUtil
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         public void Clear(T inValue)
         {
             for (int i = 0; i < m_Data.Length; ++i)

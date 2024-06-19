@@ -81,18 +81,6 @@ namespace BeauUtil
             }
         }
 
-        public struct AttributePair<TAttr> where TAttr : Attribute
-        {
-            public readonly TAttr Attribute;
-            public readonly MemberInfo Info;
-
-            public AttributePair(TAttr inAttribute, MemberInfo inMember)
-            {
-                Info = inMember;
-                Attribute = inAttribute;
-            }
-        }
-
         #endregion // Types
 
         #region Data
@@ -119,7 +107,7 @@ namespace BeauUtil
         /// <summary>
         /// Reads all attribute pairs from this info set.
         /// </summary>
-        public IEnumerable<AttributePair<TAttr>> Read<TAttr>(IEnumerable<Assembly> inAssemblies) where TAttr : Attribute
+        public IEnumerable<AttributeBinding<TAttr, MemberInfo>> Read<TAttr>(IEnumerable<Assembly> inAssemblies) where TAttr : Attribute
         {
             if (!typeof(TAttr).FullName.Equals(AttributeTypeName, StringComparison.Ordinal))
             {
@@ -157,7 +145,7 @@ namespace BeauUtil
                     {
                         foreach (TAttr attr in type.GetCustomAttributes(typeof(TAttr), LookupInherit))
                         {
-                            yield return new AttributePair<TAttr>(attr, type);
+                            yield return new AttributeBinding<TAttr, MemberInfo>(attr, type);
                         }
                     }
 
@@ -194,7 +182,7 @@ namespace BeauUtil
                         }
                         foreach (TAttr attr in info.GetCustomAttributes(typeof(TAttr), LookupInherit))
                         {
-                            yield return new AttributePair<TAttr>(attr, info);
+                            yield return new AttributeBinding<TAttr, MemberInfo>(attr, info);
                         }
                     }
 
@@ -204,7 +192,7 @@ namespace BeauUtil
                         MemberInfo method = type.GetMethod(overloadedMethod.MethodName, LookupFlags, Type.DefaultBinder, RetrieveTypeArray(overloadedMethod.ParameterTypeRefs), Array.Empty<ParameterModifier>());
                         foreach (TAttr attr in method.GetCustomAttributes(typeof(TAttr), LookupInherit))
                         {
-                            yield return new AttributePair<TAttr>(attr, method);
+                            yield return new AttributeBinding<TAttr, MemberInfo>(attr, method);
                         }
                     }
                 }
@@ -214,7 +202,7 @@ namespace BeauUtil
         /// <summary>
         /// Reads all attribute pairs from this info set.
         /// </summary>
-        public IEnumerable<AttributePair<Attribute>> Read(IEnumerable<Assembly> inAssemblies, Type inAttributeType)
+        public IEnumerable<AttributeBinding<Attribute, MemberInfo>> Read(IEnumerable<Assembly> inAssemblies, Type inAttributeType)
         {
             if (inAttributeType == null)
             {
@@ -257,7 +245,7 @@ namespace BeauUtil
                     {
                         foreach (Attribute attr in type.GetCustomAttributes(inAttributeType, LookupInherit))
                         {
-                            yield return new AttributePair<Attribute>(attr, type);
+                            yield return new AttributeBinding<Attribute, MemberInfo>(attr, type);
                         }
                     }
 
@@ -294,7 +282,7 @@ namespace BeauUtil
                         }
                         foreach (Attribute attr in info.GetCustomAttributes(inAttributeType, LookupInherit))
                         {
-                            yield return new AttributePair<Attribute>(attr, info);
+                            yield return new AttributeBinding<Attribute, MemberInfo>(attr, info);
                         }
                     }
 
@@ -304,7 +292,7 @@ namespace BeauUtil
                         MemberInfo method = type.GetMethod(overloadedMethod.MethodName, LookupFlags, Type.DefaultBinder, RetrieveTypeArray(overloadedMethod.ParameterTypeRefs), Array.Empty<ParameterModifier>());
                         foreach (Attribute attr in method.GetCustomAttributes(inAttributeType, LookupInherit))
                         {
-                            yield return new AttributePair<Attribute>(attr, method);
+                            yield return new AttributeBinding<Attribute, MemberInfo>(attr, method);
                         }
                     }
                 }

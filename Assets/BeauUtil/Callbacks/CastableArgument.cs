@@ -7,9 +7,13 @@
  * Purpose: Argument conversion for CastableAction and CastableFunc.
  */
 
-using System;
+#if UNITY_2021_2_OR_NEWER && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System.Runtime.CompilerServices;
 using BeauUtil.Variants;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
@@ -38,23 +42,89 @@ namespace BeauUtil
             RegisterConverter<NonBoxedValue, object>((v) => v.AsObject());
         }
 
-        static public void RegisterConverter<TInput, TOutput>(CastableArgumentConverter<TInput, TOutput> inConverterInstance)
+        /// <summary>
+        /// Registers a custom argument converter from the given input type to the given output type.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void RegisterConverter<TInput, TOutput>(CastableArgumentConverter<TInput, TOutput> inConverterDelegate)
         {
-            Cache<TInput, TOutput>.ConverterInstance = inConverterInstance;
+            Cache<TInput, TOutput>.Configure(inConverterDelegate);
         }
+
+#if SUPPORTS_FUNCTION_POINTERS
+        /// <summary>
+        /// Registers a custom argument converter from the given input type to the given output type.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public unsafe void RegisterConverter<TInput, TOutput>(delegate*<TInput, TOutput> inConverterPtr)
+        {
+            Cache<TInput, TOutput>.Configure(inConverterPtr);
+        }
+#endif // SUPPORTS_FUNCTION_POINTERS
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public TOutput Cast<TInput, TOutput>(TInput inInput)
         {
-            var custom = Cache<TInput, TOutput>.ConverterInstance;
-            if (custom != null)
-                return custom(inInput);
-            return (TOutput) (object) inInput; // brute force hack
+#if SUPPORTS_FUNCTION_POINTERS
+            unsafe {
+                return Cache<TInput, TOutput>.ConverterPtr(inInput);
+            }
+#else
+            return Cache<TInput, TOutput>.ConverterDelegate(inInput);
+#endif // SUPPORTS_FUNCTION_POINTERS
         }
 
-        static private class Cache<TInput, TOutput>
+        static private unsafe class Cache<TInput, TOutput>
         {
-            static internal CastableArgumentConverter<TInput, TOutput> ConverterInstance;
+            static Cache()
+            {
+#if SUPPORTS_FUNCTION_POINTERS
+                ConverterPtr = &DefaultCast;
+#else
+                ConverterDelegate = DefaultCast;
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
+
+#if SUPPORTS_FUNCTION_POINTERS
+            static internal delegate*<TInput, TOutput> ConverterPtr;
+
+            [Il2CppSetOption(Option.NullChecks, false)]
+            static private TOutput DelegateCast(TInput inInput)
+            {
+                return ConverterDelegate(inInput);
+            }
+
+            static internal void Configure(delegate*<TInput, TOutput> inPtr)
+            {
+                ConverterDelegate = null;
+                ConverterPtr = inPtr != null ? inPtr : &DefaultCast;
+            }
+#endif // SUPPORTS_FUNCTION_POINTERS
+
+            static internal CastableArgumentConverter<TInput, TOutput> ConverterDelegate;
+
+            static internal void Configure(CastableArgumentConverter<TInput, TOutput> inDelegate)
+            {
+#if SUPPORTS_FUNCTION_POINTERS
+                if (inDelegate != null)
+                {
+                    ConverterPtr = &DelegateCast;
+                    ConverterDelegate = inDelegate;
+                } else
+                {
+                    ConverterPtr = &DefaultCast;
+                    ConverterDelegate = null;
+                }
+#else
+                ConverterDelegate = inDelegate ?? DefaultCast;
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
+
+            static private TOutput DefaultCast(TInput inInput)
+            {
+                return (TOutput) (object) inInput; // brute force hack
+            }
         }
     }
 

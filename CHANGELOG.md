@@ -1,3 +1,14 @@
+## Version 0.10.6
+**7 June 2024**
+
+New `SceneReference` constructors, Performance improvements
+
+### Improvements
+* Added `SceneReference(string path)` and `SceneReference(int buildIndex)` constructors
+* `SerializedAttributeSet` now reuses `AttributeBinding<TAttr, MemberInfo>` instead of its own identical type
+* Added support for registering function pointers to `CastableArgument`
+* Made `CastableArgument.Cast` cost more consistent 
+
 ## Version 0.10.5
 **5 June 2024**
 

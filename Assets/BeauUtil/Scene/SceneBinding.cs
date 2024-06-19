@@ -43,6 +43,10 @@ namespace BeauUtil
             Id = Path;
         }
 
+        public SceneBinding(int inBuildIndex)
+            : this(inBuildIndex, SceneUtility.GetScenePathByBuildIndex(inBuildIndex))
+        { }
+
         public SceneBinding(int inBuildIndex, string inPath)
         {
             Path = inPath;

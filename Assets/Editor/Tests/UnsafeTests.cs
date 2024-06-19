@@ -368,25 +368,31 @@ namespace BeauUtil.UnitTests
             Debug.Log("from pointer: " + a);
         }
 
-        static void InternalFunc2(int a)
+        static void InternalFunc2(float a)
         {
-            Debug.Log("from delegate: " + a);
+            a *= 1.3f;
+            Debug.Log("from casted delegate x1.3: " + a);
         }
 
 #if SUPPORTS_FUNCTION_POINTERS
+
+        static float itof(int i) {
+            return (float) i;
+        }
 
         [Test]
         static public void CanTakeFunctionPointers_JitTest()
         {
             CastableAction<int> a = CastableAction<int>.Create(&InternalFunc_JitTest);
-            CastableAction<int> b = CastableAction<int>.Create(InternalFunc2); 
+            CastableAction<int> b = CastableAction<int>.Create<float>(InternalFunc2);
+
+            CastableArgument.RegisterConverter<int, float>(&itof);
 
             a.Invoke(15); 
             b.Invoke(16);
 
             // invoke many times in succession to hopefully trigger JIT compilation
-            for(int i = 0; i < 10000; i++)
-            {
+            for (int i = 0; i < 10000; i++) {
                 a.Invoke(i);
                 //b.Invoke(i);
             }

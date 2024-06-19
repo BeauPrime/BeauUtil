@@ -32,18 +32,55 @@ namespace BeauUtil
         [SerializeField] private string m_GUID;
         [NonSerialized] private string m_CachedName;
 
-        public SceneReference(Scene scene)
+        public SceneReference(string inPath)
         {
-            m_ScenePath = scene.path;
-            m_GUID = SceneHelper.GetGUID(scene);
-            m_CachedName = scene.name;
+            m_ScenePath = inPath;
+#if UNITY_EDITOR
+            m_GUID = AssetDatabase.AssetPathToGUID(inPath, AssetPathToGUIDOptions.OnlyExistingAssets);
+            if (string.IsNullOrEmpty(m_GUID))
+            {
+                throw new ArgumentException(string.Format("No scene with path '{0}'", inPath), "inPath");
+            }
+#else
+            m_GUID = null;
+            if (SceneUtility.GetBuildIndexByScenePath(inPath) < 0)
+            {
+                throw new ArgumentException(string.Format("No scene with path '{0}'", inPath), "inPath");
+            }
+#endif // UNITY_EDITOR
+
+            m_CachedName = System.IO.Path.GetFileNameWithoutExtension(m_ScenePath);
         }
 
-        public SceneReference(SceneBinding scene)
+        public SceneReference(int inBuildIndex)
         {
-            m_ScenePath = scene.Path;
-            m_GUID = SceneHelper.GetGUID(scene.Scene);
-            m_CachedName = scene.Name;
+            if (inBuildIndex < 0 || inBuildIndex >= SceneManager.sceneCountInBuildSettings)
+            {
+                throw new ArgumentOutOfRangeException("inBuildIndex");
+            }
+
+            m_ScenePath = SceneUtility.GetScenePathByBuildIndex(inBuildIndex);
+#if UNITY_EDITOR
+            m_GUID = AssetDatabase.AssetPathToGUID(m_ScenePath);
+#else
+            m_GUID = null;
+#endif // UNITY_EDITOR
+
+            m_CachedName = System.IO.Path.GetFileNameWithoutExtension(m_ScenePath);
+        }
+
+        public SceneReference(Scene inScene)
+        {
+            m_ScenePath = inScene.path;
+            m_GUID = SceneHelper.GetGUID(inScene);
+            m_CachedName = inScene.name;
+        }
+
+        public SceneReference(SceneBinding inScene)
+        {
+            m_ScenePath = inScene.Path;
+            m_GUID = SceneHelper.GetGUID(inScene.Scene);
+            m_CachedName = inScene.Name;
         }
 
         public string Name
@@ -81,7 +118,7 @@ namespace BeauUtil
             return new SceneReference(scene);
         }
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 
         public void OnAfterDeserialize()
         {
@@ -151,6 +188,6 @@ namespace BeauUtil
             }
         }
 
-        #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
     }
 }
