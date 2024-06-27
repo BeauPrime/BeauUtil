@@ -793,21 +793,21 @@ namespace BeauUtil
         static public BitSet256 operator |(in BitSet256 inA, in BitSet256 inB)
         {
             return new BitSet256(inA.m_Bits0 | inB.m_Bits0, inA.m_Bits1 | inB.m_Bits1,
-                inA.m_Bits2 | inB.m_Bits2, inA.m_Bits3 | inA.m_Bits3);
+                inA.m_Bits2 | inB.m_Bits2, inA.m_Bits3 | inB.m_Bits3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public BitSet256 operator &(in BitSet256 inA, in BitSet256 inB)
         {
             return new BitSet256(inA.m_Bits0 & inB.m_Bits0, inA.m_Bits1 & inB.m_Bits1,
-                inA.m_Bits2 & inB.m_Bits2, inA.m_Bits3 & inA.m_Bits3);
+                inA.m_Bits2 & inB.m_Bits2, inA.m_Bits3 & inB.m_Bits3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public BitSet256 operator ^(in BitSet256 inA, in BitSet256 inB)
         {
             return new BitSet256(inA.m_Bits0 ^ inB.m_Bits0, inA.m_Bits1 ^ inB.m_Bits1,
-                inA.m_Bits2 ^ inB.m_Bits2, inA.m_Bits3 ^ inA.m_Bits3);
+                inA.m_Bits2 ^ inB.m_Bits2, inA.m_Bits3 ^ inB.m_Bits3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
