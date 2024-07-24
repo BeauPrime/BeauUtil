@@ -30,6 +30,7 @@ namespace BeauUtil
             public readonly unsafe delegate*<void> Ptr;
 #endif // SUPPORTS_FUNCTION_POINTERS
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public unsafe ActionPtr(System.Action inDelegate)
             {
                 Delegate = inDelegate;
@@ -39,6 +40,7 @@ namespace BeauUtil
             }
 
 #if SUPPORTS_FUNCTION_POINTERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public unsafe ActionPtr(delegate*<void> inPtr)
             {
                 Delegate = null;

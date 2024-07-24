@@ -36,6 +36,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using BeauUtil.Debugger;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -56,6 +57,7 @@ namespace BeauUtil
         public readonly unsafe T* Ptr;
         public readonly int Length;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe UnsafeSpan(T* inPtr, uint inLength)
         {
             Assert.True(Unsafe.IsAligned(inPtr), "Unaligned pointer");
@@ -63,6 +65,7 @@ namespace BeauUtil
             Length = (int) inLength;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe UnsafeSpan(T* inPtr, int inLength)
         {
             Assert.True(Unsafe.IsAligned(inPtr), "Unaligned pointer");

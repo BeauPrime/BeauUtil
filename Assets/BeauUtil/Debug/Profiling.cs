@@ -44,6 +44,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Returns a profiling block for time.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TimeBlock Time(string inLabel, ProfileTimeUnits inTimeUnits = ProfileTimeUnits.Milliseconds)
         {
 #if ENABLE_PROFILING_BEAUUTIL
@@ -105,6 +106,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Returns a profiling block for computing an average time for a specific count of operations.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public AvgTimeBlock AvgTime(string inLabel, int inSampleCount, ProfileTimeUnits inTimeUnits = ProfileTimeUnits.Milliseconds)
         {
 #if ENABLE_PROFILING_BEAUUTIL
@@ -169,6 +171,7 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Returns a profiling block for the Unity Profiler.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public SampleBlock Sample(string inLabel)
         {
 #if ENABLE_PROFILING_BEAUUTIL

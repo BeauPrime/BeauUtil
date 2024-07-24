@@ -12,6 +12,7 @@
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -57,13 +58,15 @@ namespace BeauUtil
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TRS(Vector3 inPosition)
         {
             Position = inPosition;
-            Scale = s_Identity.Scale;
+            Scale = Vector3.one;
             Rotation = Quaternion.identity;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TRS(Vector3 inPosition, Quaternion inRotation, Vector3 inScale)
         {
             Position = inPosition;

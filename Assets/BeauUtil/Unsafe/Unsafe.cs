@@ -76,6 +76,16 @@ namespace BeauUtil
 
         #region Reinterpret
 
+        /// <summary>
+        /// Unchecked cast.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ret;")]
+        static public T FastCast<T>(object inValue) where T : class
+        {
+            return (T) inValue;
+        }
+
 #if UNMANAGED_CONSTRAINT
 
         /// <summary>

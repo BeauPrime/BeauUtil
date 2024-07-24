@@ -180,15 +180,27 @@ namespace BeauUtil
 
         #region Callbacks
 
-        private struct CameraCallbackEntry<T>
+        private struct CameraCallbackEntry<T> : IComparable<CameraCallbackEntry<T>>
         {
             public readonly Camera Camera;
             public readonly T Callback;
+            public readonly int Order;
 
-            public CameraCallbackEntry(Camera inCamera, T inCallback)
+            public CameraCallbackEntry(Camera inCamera, T inCallback, int inOrder)
             {
                 Camera = inCamera;
                 Callback = inCallback;
+                Order = inOrder;
+            }
+
+            public int CompareTo(CameraCallbackEntry<T> other)
+            {
+                int sort = Order - other.Order;
+                if (sort == 0)
+                {
+                    sort = Camera.GetInstanceID() - other.Camera.GetInstanceID();
+                }
+                return sort;
             }
         }
 
@@ -199,10 +211,20 @@ namespace BeauUtil
         static private List<CameraCallbackEntry<ICameraPreRenderCallback>> s_PreRenderCallbacks;
         static private List<CameraCallbackEntry<ICameraPostRenderCallback>> s_PostRenderCallbacks;
 
-        static private void ForEachCallback<T>(List<CameraCallbackEntry<T>> inList, Camera inTargetCamera, CameraCallbackSource inSource, CallbackInvoker<T> inExecute)
+        static private bool s_PreCullDirty;
+        static private bool s_PreRenderDirty;
+        static private bool s_PostRenderDirty;
+
+        static private void ForEachCallback<T>(List<CameraCallbackEntry<T>> inList, Camera inTargetCamera, CameraCallbackSource inSource, CallbackInvoker<T> inExecute, ref bool ioDirtyFlag)
         {
             if (inList == null)
                 return;
+
+            if (ioDirtyFlag)
+            {
+                inList.Sort();
+                ioDirtyFlag = false;
+            }
             
             for(int i = 0; i < inList.Count; i++)
             {
@@ -244,22 +266,24 @@ namespace BeauUtil
         /// <summary>
         /// Adds a handler, invoked before culling occurs for this camera.
         /// </summary>
-        static public void AddOnPreCull(this Camera inCamera, ICameraPreCullCallback inPreCull)
+        static public void AddOnPreCull(this Camera inCamera, ICameraPreCullCallback inPreCull, int inOrder = 0)
         {
             if (s_PreCullCallbacks == null)
             {
                 s_PreCullCallbacks = new List<CameraCallbackEntry<ICameraPreCullCallback>>(2);
             }
-            s_PreCullCallbacks.Add(new CameraCallbackEntry<ICameraPreCullCallback>(inCamera, inPreCull));
+            s_PreCullCallbacks.Add(new CameraCallbackEntry<ICameraPreCullCallback>(inCamera, inPreCull, inOrder));
+            s_PreCullDirty = true;
             RegisterCallbacks();
         }
 
         /// <summary>
         /// Adds a global handler, invoked before culling occurs for any camera.
         /// </summary>
-        static public void AddOnPreCull(ICameraPreCullCallback inPreCull)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddOnPreCull(ICameraPreCullCallback inPreCull, int inOrder = 0)
         {
-            AddOnPreCull(null, inPreCull);
+            AddOnPreCull(null, inPreCull, inOrder);
         }
 
         /// <summary>
@@ -269,6 +293,7 @@ namespace BeauUtil
         {
             if (RemoveCallback(s_PreCullCallbacks, inCamera, inPreCull))
             {
+                s_PreCullDirty = true;
                 if (!HasCameraCallbacks())
                 {
                     DeregisterCallbacks();
@@ -279,6 +304,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes a global pre-cull handler.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RemoveOnPreCull(ICameraPreCullCallback inPreCull)
         {
             RemoveOnPreCull(null, inPreCull);
@@ -287,22 +313,24 @@ namespace BeauUtil
         /// <summary>
         /// Adds a handler, invoked before rendering occurs for this camera.
         /// </summary>
-        static public void AddOnPreRender(this Camera inCamera, ICameraPreRenderCallback inPreRender)
+        static public void AddOnPreRender(this Camera inCamera, ICameraPreRenderCallback inPreRender, int inOrder = 0)
         {
             if (s_PreRenderCallbacks == null)
             {
                 s_PreRenderCallbacks = new List<CameraCallbackEntry<ICameraPreRenderCallback>>(2);
             }
-            s_PreRenderCallbacks.Add(new CameraCallbackEntry<ICameraPreRenderCallback>(inCamera, inPreRender));
+            s_PreRenderCallbacks.Add(new CameraCallbackEntry<ICameraPreRenderCallback>(inCamera, inPreRender, inOrder));
+            s_PreRenderDirty = true;
             RegisterCallbacks();
         }
 
         /// <summary>
         /// Adds a global handler, invoked before rendering occurs for any camera.
         /// </summary>
-        static public void AddOnPreRender(ICameraPreRenderCallback inPreRender)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddOnPreRender(ICameraPreRenderCallback inPreRender, int inOrder = 0)
         {
-            AddOnPreRender(null, inPreRender);
+            AddOnPreRender(null, inPreRender, inOrder);
         }
 
         /// <summary>
@@ -312,6 +340,7 @@ namespace BeauUtil
         {
             if (RemoveCallback(s_PreRenderCallbacks, inCamera, inPreRender))
             {
+                s_PreRenderDirty = true;
                 if (!HasCameraCallbacks())
                 {
                     DeregisterCallbacks();
@@ -322,6 +351,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes a global pre-render handler.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RemoveOnPreRender(ICameraPreRenderCallback inPreRender)
         {
             RemoveOnPreRender(null, inPreRender);
@@ -330,22 +360,24 @@ namespace BeauUtil
         /// <summary>
         /// Adds a handler, invoked after rendering occurs for this camera.
         /// </summary>
-        static public void AddOnPostRender(this Camera inCamera, ICameraPostRenderCallback inPostRender)
+        static public void AddOnPostRender(this Camera inCamera, ICameraPostRenderCallback inPostRender, int inOrder = 0)
         {
             if (s_PostRenderCallbacks == null)
             {
                 s_PostRenderCallbacks = new List<CameraCallbackEntry<ICameraPostRenderCallback>>(2);
             }
-            s_PostRenderCallbacks.Add(new CameraCallbackEntry<ICameraPostRenderCallback>(inCamera, inPostRender));
+            s_PostRenderCallbacks.Add(new CameraCallbackEntry<ICameraPostRenderCallback>(inCamera, inPostRender, inOrder));
+            s_PostRenderDirty = true;
             RegisterCallbacks();
         }
 
         /// <summary>
         /// Adds a global handler, invoked after rendering occurs for any camera.
         /// </summary>
-        static public void AddOnPostRender(ICameraPostRenderCallback inPostRender)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddOnPostRender(ICameraPostRenderCallback inPostRender, int inOrder = 0)
         {
-            AddOnPostRender(null, inPostRender);
+            AddOnPostRender(null, inPostRender, inOrder);
         }
 
         /// <summary>
@@ -355,6 +387,7 @@ namespace BeauUtil
         {
             if (RemoveCallback(s_PostRenderCallbacks, inCamera, inPostRender))
             {
+                s_PostRenderDirty = true;
                 if (!HasCameraCallbacks())
                 {
                     DeregisterCallbacks();
@@ -365,6 +398,7 @@ namespace BeauUtil
         /// <summary>
         /// Removes a global post-render handler.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RemoveOnPostRender(ICameraPostRenderCallback inPostRender)
         {
             RemoveOnPostRender(null, inPostRender);
@@ -406,17 +440,17 @@ namespace BeauUtil
 
         static private void OnCameraPreCull(Camera inCamera)
         {
-            ForEachCallback(s_PreCullCallbacks, inCamera, CameraCallbackSource.Default, (p, c, s) => p.OnCameraPreCull(c, s));
+            ForEachCallback(s_PreCullCallbacks, inCamera, CameraCallbackSource.Default, (p, c, s) => p.OnCameraPreCull(c, s), ref s_PreCullDirty);
         }
 
         static private void OnCameraPreRender(Camera inCamera)
         {
-            ForEachCallback(s_PreRenderCallbacks, inCamera, CameraCallbackSource.Default, (p, c, s) => p.OnCameraPreRender(c, s));
+            ForEachCallback(s_PreRenderCallbacks, inCamera, CameraCallbackSource.Default, (p, c, s) => p.OnCameraPreRender(c, s), ref s_PreRenderDirty);
         }
 
         static private void OnCameraPostRender(Camera inCamera)
         {
-            ForEachCallback(s_PostRenderCallbacks, inCamera, CameraCallbackSource.Default, (p, c, s) => p.OnCameraPostRender(c, s));
+            ForEachCallback(s_PostRenderCallbacks, inCamera, CameraCallbackSource.Default, (p, c, s) => p.OnCameraPostRender(c, s), ref s_PostRenderDirty);
         }
 
         #endregion // Default
@@ -449,13 +483,13 @@ namespace BeauUtil
 
         static private void OnSRPPreRender(ScriptableRenderContext inContext, Camera inCamera)
         {
-            ForEachCallback(s_PreCullCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPreCull(c, s));
-            ForEachCallback(s_PreRenderCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPreRender(c, s));
+            ForEachCallback(s_PreCullCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPreCull(c, s), ref s_PreCullDirty);
+            ForEachCallback(s_PreRenderCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPreRender(c, s), ref s_PreRenderDirty);
         }
 
         static private void OnSRPPostRender(ScriptableRenderContext inContext, Camera inCamera)
         {
-            ForEachCallback(s_PostRenderCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPostRender(c, s));
+            ForEachCallback(s_PostRenderCallbacks, inCamera, CameraCallbackSource.SRP, (p, c, s) => p.OnCameraPostRender(c, s), ref s_PostRenderDirty);
         }
 
 #endif // USE_SRP
@@ -500,15 +534,15 @@ namespace BeauUtil
         /// <summary>
         /// Renders letterboxing in normalized viewport coordinates.
         /// </summary>
-        static public void RenderLetterboxing(Rect inInnerRect, Color inOuterColor)
+        static public void RenderLetterboxing(Rect inInnerRect, Color inOuterColor, bool inbClearDepth = true)
         {
-            RenderLetterboxing(inInnerRect, new Rect(0, 0, 1, 1), inOuterColor);
+            RenderLetterboxing(inInnerRect, new Rect(0, 0, 1, 1), inOuterColor, inbClearDepth);
         }
 
         /// <summary>
         /// Renders letterboxing in normalized viewport coordinates.
         /// </summary>
-        static public void RenderLetterboxing(Rect inInnerRect, Rect inOuterRect, Color inOuterColor)
+        static public void RenderLetterboxing(Rect inInnerRect, Rect inOuterRect, Color inOuterColor, bool inbClearDepth)
         {
             float left = inInnerRect.x - inOuterRect.x, right = inOuterRect.xMax - inInnerRect.xMax,
                 bottom = inInnerRect.y - inOuterRect.y, top = inOuterRect.yMax - inInnerRect.yMax;
@@ -524,14 +558,14 @@ namespace BeauUtil
                 {
                     r.width = scrW * left;
                     GL.Viewport(r);
-                    GL.Clear(false, true, inOuterColor);
+                    GL.Clear(inbClearDepth, true, inOuterColor);
                 }
                 if (right > 0)
                 {
                     r.width = scrW * right;
                     r.x = scrW * inInnerRect.xMax;
                     GL.Viewport(r);
-                    GL.Clear(false, true, inOuterColor);
+                    GL.Clear(inbClearDepth, true, inOuterColor);
                 }
 
                 r.x = scrW * inInnerRect.x;
@@ -541,14 +575,14 @@ namespace BeauUtil
                     //r.y = inOuterRect.y * scrH;
                     r.height = scrH * bottom;
                     GL.Viewport(r);
-                    GL.Clear(false, true, inOuterColor);
+                    GL.Clear(inbClearDepth, true, inOuterColor);
                 }
                 if (top > 0)
                 {
                     r.y = inInnerRect.yMax * scrH;
                     r.height = scrH * top;
                     GL.Viewport(r);
-                    GL.Clear(false, true, inOuterColor);
+                    GL.Clear(inbClearDepth, true, inOuterColor);
                 }
 
                 GL.PopMatrix();

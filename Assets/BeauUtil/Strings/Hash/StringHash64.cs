@@ -30,16 +30,19 @@ namespace BeauUtil
     {
         [SerializeField, HideInInspector] private ulong m_HashValue;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash64(string inString)
         {
             m_HashValue = StringHashing.StoreHash64(inString, 0, inString == null ? 0 : inString.Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash64(StringSlice inSlice)
         {
             m_HashValue = inSlice.CalculateHash64();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash64(ulong inHash)
         {
             m_HashValue = inHash;

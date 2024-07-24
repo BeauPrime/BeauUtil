@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {
@@ -33,12 +34,14 @@ namespace BeauUtil
         public unsafe T* Ptr;
         public unsafe T* End;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe UnsafeEnumerator(T* inPtr, uint inLength)
         {
             Ptr = inPtr - 1;
             End = inPtr + inLength;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe UnsafeEnumerator(T* inPtr, T* inEnd)
         {
             Ptr = inPtr - 1;

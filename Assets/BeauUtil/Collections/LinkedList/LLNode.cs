@@ -27,6 +27,7 @@ namespace BeauUtil
         /// </summary>
         public int Prev;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public LLNode(int inPrev, int inNext)
         {
             Next = inNext;
@@ -121,6 +122,7 @@ namespace BeauUtil
         /// </summary>
         public TTag Tag;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public LLNode(int inPrev, int inNext, in TTag inTag)
         {
             Next = inNext;

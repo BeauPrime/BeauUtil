@@ -46,6 +46,7 @@ namespace BeauUtil
     {
         [SerializeField] private unsafe uint m_Bits;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitSet32(uint inData)
         {
             m_Bits = inData;
@@ -241,6 +242,7 @@ namespace BeauUtil
     {
         [SerializeField] private unsafe ulong m_Bits;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitSet64(ulong inData)
         {
             m_Bits = inData;
@@ -437,6 +439,7 @@ namespace BeauUtil
         [SerializeField] private unsafe ulong m_Bits0;
         [SerializeField] private unsafe ulong m_Bits1;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitSet128(ulong inData0, ulong inData1)
         {
             m_Bits0 = inData0;
@@ -642,6 +645,7 @@ namespace BeauUtil
         [SerializeField] private unsafe ulong m_Bits2;
         [SerializeField] private unsafe ulong m_Bits3;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private BitSet256(ulong inData0, ulong inData1, ulong inData2, ulong inData3)
         {
             m_Bits0 = inData0;
@@ -848,6 +852,7 @@ namespace BeauUtil
         [SerializeField] private unsafe BitSet256 m_Bits0;
         [SerializeField] private unsafe BitSet256 m_Bits1;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private BitSet512(in BitSet256 inData0, in BitSet256 inData1)
         {
             m_Bits0 = inData0;

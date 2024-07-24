@@ -35,7 +35,14 @@ namespace BeauUtil.Debugger
             m_IndentGroup.padding = padding;
 
             m_Label.SetText(inInfo.Label);
-            m_Value.SetText(inInfo.Text.Getter());
+            if (inInfo.Text.Getter != null)
+            {
+                m_Value.gameObject.SetActive(true);
+                m_Value.SetText(inInfo.Text.Getter());
+            } else
+            {
+                m_Value.gameObject.SetActive(false);
+            }
         }
 
         public void UpdateValue(string inValue)

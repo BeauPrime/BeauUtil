@@ -44,6 +44,11 @@ public unsafe class DownloadTest : MonoBehaviour
 
         Debug.Log("Is64: " + Unsafe.Is64);
 
+        Enums.AreEqual(PrimitiveType.Capsule, PrimitiveType.Cube);
+        Enums.Or(CollisionFlags.Below, CollisionFlags.Above);
+        Enums.Not(CollisionFlags.Below);
+        Enums.Xor(CollisionFlags.CollidedBelow, CollisionFlags.CollidedAbove);
+
         StartCoroutine(TestCoroutine());
     }
 

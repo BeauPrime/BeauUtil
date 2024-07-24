@@ -358,7 +358,8 @@ namespace BeauUtil
         #endif // HAS_ENUM_CONSTRAINT
         {
 #if UNMANAGED_CONSTRAINT
-            return Unsafe.Reinterpret<long, T>(inValue);
+            // can guarantee that the enum type is of the same size or shorter, and will be aligned
+            return Unsafe.FastReinterpret<long, T>(inValue);
 #else
             return (T) Enum.ToObject(typeof(T), inValue);
 #endif // UNMANAGED_CONSTRAINT
@@ -378,12 +379,148 @@ namespace BeauUtil
         #endif // HAS_ENUM_CONSTRAINT
         {
 #if UNMANAGED_CONSTRAINT
-            return Unsafe.Reinterpret<ulong, T>(inValue);
+            // can guarantee that the enum type is of the same size or shorter, and will be aligned
+            return Unsafe.FastReinterpret<ulong, T>(inValue);
 #else
             return (T) Enum.ToObject(typeof(T), inValue);
 #endif // UNMANAGED_CONSTRAINT
         }
 
         #endregion // To Enum
+
+        #region Bitwise
+
+        /// <summary>
+        /// Bitwise AND of two enums.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if ENABLE_MONO
+        [IntrinsicIL("ldarg.0; ldarg.1; and; ret")]
+#endif // 
+        static public T And<T>(T inA, T inB)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToEnum<T>(ToULong(inA) & ToULong(inB));
+        }
+
+        /// <summary>
+        /// Bitwise OR of two enums.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if ENABLE_MONO
+        [IntrinsicIL("ldarg.0; ldarg.1; or; ret")]
+#endif // ENABLE_MONO
+        static public T Or<T>(T inA, T inB)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToEnum<T>(ToULong(inA) | ToULong(inB));
+        }
+
+        /// <summary>
+        /// Bitwise XOR of two enums.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if ENABLE_MONO
+        [IntrinsicIL("ldarg.0; ldarg.1; xor; ret")]
+#endif // ENABLE_MONO
+        static public T Xor<T>(T inA, T inB)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToEnum<T>(ToULong(inA) ^ ToULong(inB));
+        }
+
+        /// <summary>
+        /// Bitwise NOT of an enum.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if ENABLE_MONO
+        [IntrinsicIL("ldarg.0; not; ret")]
+#endif // ENABLE_MONO
+        static public T Not<T>(T inA)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToEnum<T>(~ToULong(inA));
+        }
+
+        /// <summary>
+        /// Returns if the given generic enum is not zero.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u8; ldc.i4.0; cgt; ret")]
+        static public bool IsNotZero<T>(T inA)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToULong(inA) != 0;
+        }
+
+        /// <summary>
+        /// Returns if the given generic enum is zero.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u8; ldc.i4.0; ceq; ret")]
+        static public bool IsZero<T>(T inA)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToULong(inA) == 0;
+        }
+
+        /// <summary>
+        /// Returns if two generic enums are equal.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if ENABLE_MONO
+        [IntrinsicIL("ldarg.0; ldarg.1; ceq; ret")]
+#else
+        [IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; ceq; ret")]
+#endif // ENABLE_MONO
+        static public bool AreEqual<T>(T inA, T inB)
+#if UNMANAGED_CONSTRAINT
+            where T : unmanaged, Enum
+#elif HAS_ENUM_CONSTRAINT
+            where T : struct, Enum
+#else
+            where T : struct, IConvertible
+#endif // HAS_ENUM_CONSTRAINT
+        {
+            return ToULong(inA) == ToULong(inB);
+        }
+
+#endregion // Bitwise
     }
 }

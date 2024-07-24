@@ -274,7 +274,7 @@ namespace BeauUtil
             where T : struct, IConvertible
 #endif // HAS_ENUM_CONSTRAINT
         {
-            if (Enums.ToULong(ioObject) == Enums.ToULong(inReplace))
+            if (Enums.AreEqual(ioObject, inReplace))
                 return false;
 
             ioObject = inReplace;

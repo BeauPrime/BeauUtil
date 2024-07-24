@@ -17,6 +17,7 @@ namespace BeauUtil.Debugger
         public DMElementType Type;
         public string Label;
         public object Data;
+        public float MinimumWidth;
 
         public DMButtonInfo Button { get { return (DMButtonInfo) Data; } }
         public DMToggleInfo Toggle { get { return (DMToggleInfo) Data; } }

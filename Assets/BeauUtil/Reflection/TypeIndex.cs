@@ -62,7 +62,7 @@ namespace BeauUtil
             }
             else
             {
-                Capacity = 512;
+                Capacity = 128;
             }
 
             if (Capacity >= NullIndex || Capacity < 8)
@@ -117,11 +117,14 @@ namespace BeauUtil
 
             ushort parentIndex = AllocateClassHierarchy(inType);
 
-            ushort index = s_Allocated++;
-            s_TypeMap.Add(inType, index);
-            s_IndexMap[index] = inType;
-            s_ParentMap[index] = parentIndex;
-            return index;
+            lock (s_TypeMap)
+            {
+                ushort index = s_Allocated++;
+                s_TypeMap.Add(inType, index);
+                s_IndexMap[index] = inType;
+                s_ParentMap[index] = parentIndex;
+                return index;
+            }
         }
 
         /// <summary>
@@ -130,7 +133,7 @@ namespace BeauUtil
         static private ushort AllocateClassHierarchy(Type inType)
         {
             ushort parentIndex = NullIndex;
-            if (!inType.IsInterface)
+            if (!inType.IsInterface && !inType.IsValueType)
             {
                 Type parentType = inType.BaseType;
                 if (parentType != typeof(TRootType) && typeof(TRootType).IsAssignableFrom(parentType) && !parentType.IsDefined(typeof(NonIndexedAttribute), false))
@@ -320,7 +323,7 @@ namespace BeauUtil
     /// <summary>
     /// Marks a type or interface as available to be tracked by TypeIndex.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
     [Preserve]
     public sealed class IndexedAttribute : Attribute
     {
@@ -329,7 +332,7 @@ namespace BeauUtil
     /// <summary>
     /// Marks a type or interface as explicitly ignored by TypeIndex.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
     [Preserve]
     public sealed class NonIndexedAttribute : Attribute
     {

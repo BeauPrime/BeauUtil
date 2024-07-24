@@ -39,6 +39,7 @@ namespace BeauUtil.Variants
 
         #region Constructors
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal Variant(VariantType inType, uint inRaw)
             : this()
         {

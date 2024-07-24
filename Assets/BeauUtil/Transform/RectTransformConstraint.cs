@@ -12,6 +12,7 @@
 #endif // UNITY_2018_3_OR_NEWER
 
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -229,15 +230,16 @@ namespace BeauUtil
         protected virtual bool CheckForChanges() { return false; }
         protected virtual void ApplyConstraints() { }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         protected bool ShouldProcess
         {
             get { return (m_PreviewInEditMode && !UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) || Application.IsPlaying(gameObject); }
         }
-        #else
+#else
         protected const bool ShouldProcess = true;
-        #endif // UNITY_EDITOR
+#endif // UNITY_EDITOR
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static protected T GetTarget<T>(T inTarget, T inDefault) where T : UnityEngine.Object
         {
             if (!ReferenceEquals(inTarget, null) && inTarget)

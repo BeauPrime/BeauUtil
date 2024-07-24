@@ -141,7 +141,6 @@ namespace BeauUtil
         /// Returns if the given enum contains any of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; and; ldc.i4.0; conv.u8; cgt.un; ret")]
         static public bool ContainsAny<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -151,7 +150,7 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            return (Enums.ToULong(inBitArray) & Enums.ToULong(inBitMask)) != 0;
+            return Enums.IsNotZero(Enums.And(inBitArray, inBitMask));
         }
 
         /// <summary>
@@ -194,7 +193,6 @@ namespace BeauUtil
         /// Returns if the given enum contains all of the given mask.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.1; conv.u8; ldarg.0; conv.u8; ldarg.1; conv.u8; and; ceq; ret")]
         static public bool ContainsAll<T>(T inBitArray, T inBitMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -204,8 +202,7 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            ulong mask = Enums.ToULong(inBitMask);
-            return (Enums.ToULong(inBitArray) & mask) == mask;
+            return Enums.AreEqual(Enums.And(inBitArray, inBitMask), inBitMask);
         }
 
         #endregion // Contains
@@ -288,7 +285,6 @@ namespace BeauUtil
         /// Toggles the given mask in the given enum to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //[IntrinsicIL("ldarg.0; ldarg.0; ldobj !!T; conv.u8; ldarg.1; conv.u8; or; stobj !!T; ret")]
         static public void Add<T>(ref T ioBitArray, T inMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -298,14 +294,13 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            ioBitArray = Enums.ToEnum<T>(Enums.ToULong(ioBitArray) | Enums.ToULong(inMask));
+            ioBitArray = Enums.Or(ioBitArray, inMask);
         }
 
         /// <summary>
         /// Toggles the given mask in the given enum to on.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //[IntrinsicIL("ldarg.0; conv.u8; ldarg.1; conv.u8; or; ret")]
         static public T Add<T>(T inBitArray, T inMask)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -315,7 +310,7 @@ namespace BeauUtil
             where T : struct, IConvertible
 #endif // HAS_ENUM_CONSTRAINT
         {
-            return Enums.ToEnum<T>(Enums.ToULong(inBitArray) | Enums.ToULong(inMask));
+            return Enums.Or(inBitArray, inMask);
         }
 
         /// <summary>
@@ -394,7 +389,6 @@ namespace BeauUtil
         /// Toggles the given mask in the given enum to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //[IntrinsicIL("ldarg.0; ldarg.0; ldobj !!T; conv.u8; ldarg.1; conv.u8; not; and; stobj !!T; ret;")]
         static public void Remove<T>(ref T ioBitArray, T inMask)
         #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -404,14 +398,13 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            ioBitArray = Enums.ToEnum<T>(Enums.ToULong(ioBitArray) & ~Enums.ToULong(inMask));
+            ioBitArray = Enums.And(ioBitArray, Enums.Not(inMask));
         }
 
         /// <summary>
         /// Toggles the given mask in the given enum to off.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //[IntrinsicIL("ldarg.0; ldarg.1; not; and; ret")]
         static public T Remove<T>(T inBitArray, T inMask)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -421,7 +414,7 @@ namespace BeauUtil
             where T : struct, IConvertible
 #endif // HAS_ENUM_CONSTRAINT
         {
-            return Enums.ToEnum<T>(Enums.ToULong(inBitArray) & ~Enums.ToULong(inMask));
+            return Enums.And(inBitArray, Enums.Not(inMask));
         }
 
         /// <summary>

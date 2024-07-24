@@ -52,6 +52,7 @@ namespace BeauUtil
             m_HashValue = new StringHash32(inSource).HashValue;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SerializedHash32(StringHash32 inHash)
         {
             m_Source = null;

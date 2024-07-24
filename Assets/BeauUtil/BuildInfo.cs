@@ -171,7 +171,7 @@ namespace BeauUtil
             }
             s_CachedBuildTag = string.Empty;
             s_CachedBundleVersion = UnityEditor.PlayerSettings.bundleVersion ?? string.Empty;
-            s_CachedBuildBranch = string.Empty;
+            s_CachedBuildBranch = InjectedReadBranchName?.Invoke() ?? string.Empty;
 
             Loaded();
             #else
@@ -325,14 +325,20 @@ namespace BeauUtil
             }
         }
 
+#if UNITY_EDITOR
+
+        static internal Func<string> InjectedReadBranchName = (Func<string>) (Type.GetType("BeauUtil.Editor.BuildUtils, BeauUtil.Editor")?.GetMethod("GetSourceControlBranchName", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)?.CreateDelegate(typeof(Func<string>)));
+
+#endif // UNITY_EDITOR
+
         #endregion // Loading
 
         /// <summary>
-        /// Utility method, generates a a datetime string.
+        /// Utility method, generates a datetime string.
         /// </summary>
         static internal string GenerateBuildDate(DateTime inTime)
         {
-            return inTime.ToString("yyyy MMM dd @ HH:mm:ss");
+            return inTime.ToString("yyyy MMM dd HH:mm:ss");
         }
     }
 }

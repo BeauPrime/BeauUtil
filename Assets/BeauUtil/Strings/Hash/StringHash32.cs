@@ -31,16 +31,19 @@ namespace BeauUtil
     {
         [SerializeField, FormerlySerializedAs("m_Hash"), HideInInspector] private uint m_HashValue;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash32(string inString)
         {
             m_HashValue = StringHashing.StoreHash32(inString, 0, inString == null ? 0 : inString.Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash32(StringSlice inSlice)
         {
             m_HashValue = inSlice.CalculateHash32();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringHash32(uint inHash)
         {
             m_HashValue = inHash;

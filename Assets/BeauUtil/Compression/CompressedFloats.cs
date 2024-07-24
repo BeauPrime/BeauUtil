@@ -11,6 +11,8 @@ using UnityEngine;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System;
+using System.Runtime.CompilerServices;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif // UNITY_EDITOR
@@ -28,6 +30,7 @@ namespace BeauUtil
 
         [SerializeField] private byte m_Value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Fraction8(float inValue)
         {
             m_Value = (byte) (inValue * MaxValue);
@@ -35,7 +38,10 @@ namespace BeauUtil
 
         public float Value
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Value / (float) MaxValue; }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { m_Value = (byte) (value * MaxValue); }
         }
 
@@ -120,6 +126,7 @@ namespace BeauUtil
 
         [SerializeField] private ushort m_Value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Fraction16(float inValue)
         {
             m_Value = (ushort) (inValue * MaxValue);
@@ -127,7 +134,9 @@ namespace BeauUtil
 
         public float Value
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Value / (float) MaxValue; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { m_Value = (byte) (value * MaxValue); }
         }
 
@@ -212,6 +221,7 @@ namespace BeauUtil
 
         [SerializeField] private sbyte m_Value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Normal8(float inValue)
         {
             m_Value = (sbyte) (inValue * MaxValue);
@@ -219,7 +229,9 @@ namespace BeauUtil
 
         public float Value
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Value / (float) MaxValue; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { m_Value = (sbyte) (value * MaxValue); }
         }
 
@@ -304,6 +316,7 @@ namespace BeauUtil
 
         [SerializeField] private short m_Value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Normal16(float inValue)
         {
             m_Value = (sbyte) (inValue * MaxValue);
@@ -311,7 +324,9 @@ namespace BeauUtil
 
         public float Value
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Value / (float) MaxValue; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { m_Value = (short) (value * MaxValue); }
         }
 

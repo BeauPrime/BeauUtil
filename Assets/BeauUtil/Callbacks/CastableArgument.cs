@@ -40,6 +40,15 @@ namespace BeauUtil
             RegisterConverter<NonBoxedValue, float>((v) => v.AsFloat());
             RegisterConverter<NonBoxedValue, uint>((v) => v.AsUInt32());
             RegisterConverter<NonBoxedValue, object>((v) => v.AsObject());
+
+            // StringHash32 and SerializedHash32
+            RegisterConverter<StringHash32, SerializedHash32>((v) => v);
+            RegisterConverter<SerializedHash32, StringHash32>((v) => v);
+
+            // String to StringHash32
+            RegisterConverter<string, StringHash32>((v) => v);
+            RegisterConverter<string, SerializedHash32>((v) => v);
+            RegisterConverter<StringSlice, StringHash32>((v) => v);
         }
 
         /// <summary>

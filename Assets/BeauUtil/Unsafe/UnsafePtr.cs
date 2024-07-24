@@ -39,6 +39,7 @@ namespace BeauUtil
     {
         public readonly unsafe T* Ptr;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe UnsafePtr(T* inPtr)
         {
             Assert.True(Unsafe.IsAligned(inPtr), "Unaligned pointer");

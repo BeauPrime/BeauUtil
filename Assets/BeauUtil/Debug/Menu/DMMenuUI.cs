@@ -111,6 +111,8 @@ namespace BeauUtil.Debugger
 
             m_Header.Init(inMenu.Header, inMenu.MinimumWidth, m_MenuStack.Count > 1);
 
+            float minWidth = inMenu.MinimumWidth;
+
             int usedButtons = 0;
             int usedTexts = 0;
             int usedDividers = 0;
@@ -125,6 +127,8 @@ namespace BeauUtil.Debugger
                 elementIndex = i + elementOffset;
 
                 DMElementInfo info = inMenu.Elements[elementIndex];
+                minWidth = (float) Math.Max(info.MinimumWidth, minWidth);
+
                 switch(info.Type)
                 {
                     case DMElementType.Divider:
@@ -200,6 +204,8 @@ namespace BeauUtil.Debugger
                         }
                 }
             }
+
+            m_Header.UpdateMinimumWidth(minWidth);
 
             int buttonsToRemove = m_ActiveButtons.Count - usedButtons;
             while(buttonsToRemove > 0)
@@ -533,7 +539,10 @@ namespace BeauUtil.Debugger
             foreach(var text in m_ActiveTexts)
             {
                 DMTextInfo textInfo = m_CurrentMenu.Menu.Elements[text.ElementIndex].Text;
-                text.UpdateValue(textInfo.Getter());
+                if (textInfo.Getter != null)
+                {
+                    text.UpdateValue(textInfo.Getter());
+                }
             }
 
             foreach(var slider in m_ActiveSliders)

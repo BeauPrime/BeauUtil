@@ -10,6 +10,7 @@
 using System;
 using UnityEngine;
 using TMPro;
+using System.Text;
 
 namespace BeauUtil.Debugger
 {
@@ -22,6 +23,10 @@ namespace BeauUtil.Debugger
         [SerializeField] private TMP_Text m_BuildVersionText = null;
         [SerializeField] private TMP_Text m_BuildTagText = null;
         [SerializeField] private TMP_Text m_BuildBranchText = null;
+
+        [Header("Condensed")]
+        [SerializeField] private TMP_Text m_BuildInfoCondensedText = null;
+        [SerializeField] private bool m_CondensedUseBundleVersion = true;
 
         #endregion // Inspector
 
@@ -66,6 +71,43 @@ namespace BeauUtil.Debugger
             if (m_BuildBranchText)
             {
                 m_BuildBranchText.SetText(BuildInfo.Branch());
+            }
+
+            if (m_BuildInfoCondensedText)
+            {
+                StringBuilder sb = new StringBuilder(512);
+                sb.Append(BuildInfo.Id())
+                    .Append(' ');
+                
+                string branch = BuildInfo.Branch();
+                if (!string.IsNullOrEmpty(branch))
+                {
+                    sb.Append(branch)
+                        .Append(' ');
+                }
+
+                if (m_CondensedUseBundleVersion)
+                {
+                    string ver = BuildInfo.BundleVersion();
+                    if (!string.IsNullOrEmpty(ver))
+                    {
+                        sb.Append(ver)
+                            .Append(' ');
+                    }
+                }
+
+                string tag = BuildInfo.Tag();
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    sb.Append(tag)
+                        .Append(' ');
+                }
+
+                sb.Append('@')
+                    .Append(BuildInfo.Date());
+                
+                m_BuildInfoCondensedText.SetText(sb);
+                sb.Clear();
             }
 
             m_Populated = true;

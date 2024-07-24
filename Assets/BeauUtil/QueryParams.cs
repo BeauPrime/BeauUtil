@@ -248,16 +248,14 @@ namespace BeauUtil
                     parm.Key = key.ToString();
 
                     StringSlice value = equalIdx >= chunk.Length - 1 ? string.Empty : UnEscapeURL(chunk.Substring(equalIdx + 1));
-                    
-                    Variant variantValue;
-                    if (Variant.TryParse(value, false, out variantValue))
-                    {
-                        parm.VariantValue = variantValue;
+                    StringSlice strValue = value;
+
+                    // ensure double-quotes are removed before writing the string value
+                    if (strValue.Length >= 2 && strValue.StartsWith('"') && strValue.EndsWith('"')) {
+                        strValue = strValue.Substring(1, strValue.Length - 1);
                     }
-                    else
-                    {
-                        parm.StringValue = value.ToString();
-                    }
+                    parm.StringValue = strValue.ToString();
+                    Variant.TryParse(value, false, out parm.VariantValue);
                 }
 
                 m_Parameters.PushBack(parm);

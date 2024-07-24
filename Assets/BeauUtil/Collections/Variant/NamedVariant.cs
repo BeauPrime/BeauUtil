@@ -9,6 +9,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace BeauUtil.Variants
@@ -25,6 +26,7 @@ namespace BeauUtil.Variants
         public StringHash32 Id;
         public Variant Value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NamedVariant(StringHash32 inId, Variant inValue)
         {
             Id = inId;

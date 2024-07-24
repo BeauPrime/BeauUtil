@@ -35,6 +35,14 @@ namespace BeauUtil.Debugger
             }
         }
 
+        public void UpdateMinimumWidth(float inMinWidth)
+        {
+            if (m_Layout)
+            {
+                m_Layout.minWidth = inMinWidth > 0 ? inMinWidth : -1;
+            }
+        }
+
         public void SetBackCallback(UnityAction inCallback)
         {
             m_BackButton.onClick.AddListener(inCallback);
