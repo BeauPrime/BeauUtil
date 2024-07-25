@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.beauprime.beaudata": {
+      "version": "0.3.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
+    },
     "com.beauprime.tinyil-mono": {
       "version": "0.2.0",
       "depth": 0,

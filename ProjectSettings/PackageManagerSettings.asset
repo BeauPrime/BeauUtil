@@ -30,6 +30,7 @@ MonoBehaviour:
     m_Name: package.openupm.com
     m_Url: https://package.openupm.com
     m_Scopes:
+    - com.beauprime.beaudata
     - com.beauprime.tinyil-mono
     - com.openupm
     m_IsDefault: 0

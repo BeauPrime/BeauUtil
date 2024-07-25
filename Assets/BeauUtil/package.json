@@ -1,6 +1,6 @@
 {
   "name": "com.beauprime.beauutil",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "displayName": "BeauUtil",
   "description": "Utility library for Unity3d.",
   "unity": "2019.3",

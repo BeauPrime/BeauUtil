@@ -1,3 +1,24 @@
+## Version 0.10.7
+**25 July 2024**
+
+Hotfix for `BitSet256` bitwise operators
+
+### Breaking Changes
+* Default `TypeIndex` capacity lowered from 512 to 128
+* `QueryParams` always preserves parameter string value, even if it can be parsed to a `Variant`
+
+### Improvements
+* Added optional ordering parameter to `CameraHelper` callback registration
+* Improved performance of `ToEnum(long)` and `ToEnum(ulong`
+* Added `MinWidth` property to all `DMElementInfo` types
+* Added generic comparison and bitwise operators to `Enums` utility
+* Added `Unsafe.FastCast` to unchecked cast class types
+* Made `BitSet32` and `BitSet64` serializable via proxy when BeauData package is present
+* Condensed default debug console layout
+
+### Fixes
+* `BitSet256` bitwise operators corrected
+
 ## Version 0.10.6
 **7 June 2024**
 

@@ -43,6 +43,9 @@ namespace BeauUtil
     /// </summary>
     [Serializable]
     public struct BitSet32 : IBitSet, IEquatable<BitSet32>, IEnumerable<int>
+#if USING_BEAUDATA
+        , BeauData.ISerializedProxy<uint>
+#endif // USING_BEAUDATA
     {
         [SerializeField] private unsafe uint m_Bits;
 
@@ -139,6 +142,14 @@ namespace BeauUtil
             outBits = m_Bits;
         }
 
+        /// <summary>
+        /// Overwrites bit data with the given data.
+        /// </summary>
+        public void Overwrite(uint inBits)
+        {
+            m_Bits = inBits;
+        }
+
         #region Enumerable
 
         public BitEnumerator32 GetEnumerator()
@@ -232,6 +243,24 @@ namespace BeauUtil
         }
 
         #endregion // Operators
+
+        #region ISerializedProxy
+
+#if USING_BEAUDATA
+
+        public uint GetProxyValue(BeauData.ISerializerContext unused)
+        {
+            return m_Bits;
+        }
+
+        public void SetProxyValue(uint inValue, BeauData.ISerializerContext unused)
+        {
+            m_Bits = inValue;
+        }
+
+#endif // USING_BEAUDATA
+
+        #endregion // ISerializedProxy
     }
 
     /// <summary>
@@ -239,6 +268,9 @@ namespace BeauUtil
     /// </summary>
     [Serializable]
     public struct BitSet64 : IBitSet, IEquatable<BitSet64>, IEnumerable<int>
+#if USING_BEAUDATA
+        , BeauData.ISerializedProxy<ulong>
+#endif // USING_BEAUDATA
     {
         [SerializeField] private unsafe ulong m_Bits;
 
@@ -335,6 +367,14 @@ namespace BeauUtil
             outBits = m_Bits;
         }
 
+        /// <summary>
+        /// Overwrites bit data with the given data.
+        /// </summary>
+        public void Overwrite(ulong inBits)
+        {
+            m_Bits = inBits;
+        }
+
         #region Enumerable
 
         public BitEnumerator64 GetEnumerator()
@@ -428,6 +468,24 @@ namespace BeauUtil
         }
 
         #endregion // Operators
+
+        #region ISerializedProxy
+
+#if USING_BEAUDATA
+
+        public ulong GetProxyValue(BeauData.ISerializerContext unused)
+        {
+            return m_Bits;
+        }
+
+        public void SetProxyValue(ulong inValue, BeauData.ISerializerContext unused)
+        {
+            m_Bits = inValue;
+        }
+
+#endif // USING_BEAUDATA
+
+        #endregion // ISerializedProxy
     }
 
     /// <summary>
@@ -556,6 +614,15 @@ namespace BeauUtil
         {
             outBits0 = m_Bits0;
             outBits1 = m_Bits1;
+        }
+
+        /// <summary>
+        /// Overwrites bit data with the given data.
+        /// </summary>
+        public void Overwrite(ulong inBits0, ulong inBits1)
+        {
+            m_Bits0 = inBits0;
+            m_Bits1 = inBits1;
         }
 
         #region Operators
