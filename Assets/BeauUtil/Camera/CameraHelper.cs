@@ -182,13 +182,13 @@ namespace BeauUtil
 
         private struct CameraCallbackEntry<T> : IComparable<CameraCallbackEntry<T>>
         {
-            public readonly Camera Camera;
+            public readonly int CameraId;
             public readonly T Callback;
             public readonly int Order;
 
             public CameraCallbackEntry(Camera inCamera, T inCallback, int inOrder)
             {
-                Camera = inCamera;
+                CameraId = inCamera ? inCamera.GetInstanceID() : 0;
                 Callback = inCallback;
                 Order = inOrder;
             }
@@ -198,7 +198,7 @@ namespace BeauUtil
                 int sort = Order - other.Order;
                 if (sort == 0)
                 {
-                    sort = Camera.GetInstanceID() - other.Camera.GetInstanceID();
+                    sort = CameraId - other.CameraId;
                 }
                 return sort;
             }
@@ -225,11 +225,13 @@ namespace BeauUtil
                 inList.Sort();
                 ioDirtyFlag = false;
             }
+
+            int targetId = inTargetCamera ? inTargetCamera.GetInstanceID() : 0;
             
             for(int i = 0; i < inList.Count; i++)
             {
                 var entry = inList[i];
-                if (object.ReferenceEquals(entry.Camera, null) || object.ReferenceEquals(entry.Camera, inTargetCamera))
+                if (entry.CameraId == 0 || entry.CameraId == targetId)
                 {
                     inExecute(entry.Callback, inTargetCamera, inSource);
                 }
@@ -241,10 +243,12 @@ namespace BeauUtil
             if (inList == null)
                 return false;
 
+            int targetId = inTargetCamera ? inTargetCamera.GetInstanceID() : 0;
+
             for(int i = 0, len = inList.Count; i < len; i++)
             {
                 var entry = inList[i];
-                if (object.ReferenceEquals(entry.Camera, inTargetCamera) && object.ReferenceEquals(entry.Callback, inCallback))
+                if (entry.CameraId == 0 || entry.CameraId == targetId)
                 {
                     inList.FastRemoveAt(i);
                     return true;
