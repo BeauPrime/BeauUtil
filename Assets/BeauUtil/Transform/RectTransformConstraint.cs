@@ -247,5 +247,14 @@ namespace BeauUtil
 
             return inDefault;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static protected T GetTarget<T>(T inTarget, Func<T> inDefault) where T : UnityEngine.Object
+        {
+            if (!ReferenceEquals(inTarget, null) && inTarget)
+                return inTarget;
+
+            return inDefault();
+        }
     }
 }

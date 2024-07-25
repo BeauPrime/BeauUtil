@@ -1,3 +1,8 @@
+## Version 0.10.8
+**25 July 2024**
+
+Hotfix for `CameraHelper` global camera ordering
+
 ## Version 0.10.7
 **25 July 2024**
 
