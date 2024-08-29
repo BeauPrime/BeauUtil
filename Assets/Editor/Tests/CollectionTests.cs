@@ -809,6 +809,9 @@ namespace BeauUtil.UnitTests
             dict.EnsureCapacity(256);
 
             Assert.AreEqual(293, dict.GetCapacity());
+
+            Dictionary<StringHash32, int> newDict = new Dictionary<StringHash32, int>();
+            newDict.EnsureCapacity(256);
         }
 
         [Test]
@@ -825,6 +828,9 @@ namespace BeauUtil.UnitTests
             set.EnsureCapacity(256);
 
             Assert.AreEqual(293, set.GetCapacity());
+
+            HashSet<StringHash32> newSet = new HashSet<StringHash32>();
+            newSet.EnsureCapacity(256);
         }
     }
 }

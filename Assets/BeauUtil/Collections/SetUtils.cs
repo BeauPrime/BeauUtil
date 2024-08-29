@@ -8,13 +8,17 @@
  */
 
 #if NETSTANDARD || NET_STANDARD
-#define EXTENDED_COLLECTIONS_METHODS
+    #define EXTENDED_COLLECTIONS_METHODS
+#else
+    #define USE_REFLECTED_METHODS
 #endif // NETSTANDARD || NET_STANDARD
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace BeauUtil
 {
@@ -23,17 +27,17 @@ namespace BeauUtil
     /// </summary>
     static public class SetUtils
     {
-#if !EXTENDED_COLLECTIONS_METHODS
+#if USE_REFLECTED_METHODS
         static private readonly Type[] s_ResizeTypes = new Type[] { typeof(int) };
-#endif // !NETSTANDARD
+#endif // USE_REFLECTED_METHODS
 
         static private class MethodCache<T>
         {
             static internal FieldInfo GetBucketField;
-#if !EXTENDED_COLLECTIONS_METHODS
-            static internal MethodInfo InitMethod;
+#if USE_REFLECTED_METHODS
+            static internal MethodInfo InitializeMethod;
             static internal MethodInfo ResizeMethod;
-#endif // !EXTENDED_COLLECTIONS_METHODS
+#endif // USE_REFLECTED_METHODS
 
             static MethodCache()
             {
@@ -43,10 +47,10 @@ namespace BeauUtil
                 {
                     GetBucketField = t.GetField("buckets", BindingFlags.Instance | BindingFlags.NonPublic);
                 }
-#if !EXTENDED_COLLECTIONS_METHODS
-                InitMethod = t.GetMethod("Initialize", BindingFlags.Instance | BindingFlags.NonPublic);
+#if USE_REFLECTED_METHODS
+                InitializeMethod = t.GetMethod("Initialize", BindingFlags.Instance | BindingFlags.NonPublic);
                 ResizeMethod = t.GetMethod("SetCapacity", BindingFlags.Instance | BindingFlags.NonPublic, null, s_ResizeTypes, Array.Empty<ParameterModifier>());
-#endif // !EXTENDED_COLLECTIONS_METHODS
+#endif // USE_REFLECTED_METHODS
             }
         }
 
@@ -68,14 +72,19 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void EnsureCapacity<T>(this HashSet<T> inHashSet, int inCapacity)
         {
-#if !EXTENDED_COLLECTIONS_METHODS
-            if (GetCapacity(inHashSet) < inCapacity)
+#if USE_REFLECTED_METHODS
+            Array entries = (Array) MethodCache<T>.GetBucketField.GetValue(inHashSet);
+            if (entries == null)
+            {
+                MethodCache<T>.InitializeMethod.Invoke(inHashSet, new object[] { inCapacity });
+            }
+            else if (entries.Length < inCapacity)
             {
                 MethodCache<T>.ResizeMethod.Invoke(inHashSet, new object[] { InternalHashUtils.GetPrime(inCapacity) });
             }
 #else
             inHashSet.EnsureCapacity(inCapacity);
-#endif // !EXTENDED_COLLECTIONS_METHODS
+#endif // USE_REFLECTED_METHODS
         }
 
         /// <summary>
@@ -91,14 +100,7 @@ namespace BeauUtil
                 return;
             }
 
-#if !EXTENDED_COLLECTIONS_METHODS
-            if (GetCapacity(ioHashSet) < inCapacity)
-            {
-                MethodCache<T>.ResizeMethod.Invoke(ioHashSet, new object[] { InternalHashUtils.GetPrime(inCapacity), false });
-            }
-#else
-            ioHashSet.EnsureCapacity(inCapacity);
-#endif // !EXTENDED_COLLECTIONS_METHODS
+            EnsureCapacity(ioHashSet, inCapacity);
         }
 
         /// <summary>
@@ -119,9 +121,9 @@ namespace BeauUtil
         {
 #if EXTENDED_COLLECTIONS_METHODS
             return new HashSet<T>(inCapacity, CompareUtils.DefaultEquals<T>());
-#else
+#elif USE_REFLECTED_METHODS
             HashSet<T> hashSet = new HashSet<T>(CompareUtils.DefaultEquals<T>());
-            MethodCache<T>.InitMethod.Invoke(hashSet, new object[] { inCapacity });
+            MethodCache<T>.InitializeMethod.Invoke(hashSet, new object[] { inCapacity });
             return hashSet;
 #endif // EXTENDED_COLLECTIONS_METHODS
         }

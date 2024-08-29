@@ -212,6 +212,22 @@ namespace BeauUtil.Variants
             }
         }
 
+        public UnityEngine.Object AsUnityInstance()
+        {
+            switch (m_Type)
+            {
+                case VariantType.Null:
+                    return null;
+
+
+                case VariantType.InstanceId:
+                    return UnityHelper.Find(m_IntValue);
+
+                default:
+                    throw new InvalidOperationException("Variant type " + m_Type.ToString() + " cannot be treated as a Unity object");
+            }
+        }
+
         #endregion // Cast
 
         #region Consts
@@ -309,6 +325,13 @@ namespace BeauUtil.Variants
                             return m_StringHashValue.IsEmpty;
                         return other.m_Type == VariantType.StringHash && m_StringHashValue == other.m_StringHashValue;
                     }
+
+                case VariantType.InstanceId:
+                    {
+                        if (other.m_Type == VariantType.Null)
+                            return m_IntValue == 0;
+                        return other.m_Type == VariantType.InstanceId && m_IntValue == other.m_IntValue;
+                    }
                 
                 default:
                     throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());
@@ -392,7 +415,20 @@ namespace BeauUtil.Variants
                         }
                         break;
                     }
-                
+
+                case VariantType.InstanceId:
+                    {
+                        if (other.m_Type == VariantType.InstanceId)
+                        {
+                            return m_IntValue.CompareTo(other.m_IntValue);
+                        }
+                        else if (other.m_Type == VariantType.Null)
+                        {
+                            return m_IntValue.CompareTo(0);
+                        }
+                        break;
+                    }
+
                 default:
                     throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());
             }
@@ -433,6 +469,8 @@ namespace BeauUtil.Variants
                     return m_FloatValue.ToString();
                 case VariantType.StringHash:
                     return m_StringHashValue.ToString();
+                case VariantType.InstanceId:
+                    return string.Concat("instance-", m_IntValue.ToString());
                 
                 default:
                     throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());
@@ -455,7 +493,12 @@ namespace BeauUtil.Variants
                     return m_FloatValue.ToString();
                 case VariantType.StringHash:
                     return string.Format("\"{0}\"", m_StringHashValue.ToDebugString());
-                
+                case VariantType.InstanceId:
+                    {
+                        var inst = UnityHelper.Find(m_IntValue);
+                        return inst ? inst.name : string.Concat("dead-instance-", m_IntValue.ToString());
+                    }
+
                 default:
                     throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());
             }
@@ -754,6 +797,12 @@ namespace BeauUtil.Variants
                 return true;
             }
 
+            if (inObject is UnityEngine.Object)
+            {
+                outVariant = new Variant((UnityEngine.Object) inObject);
+                return true;
+            }
+
             TypeCode code = System.Type.GetTypeCode(inObject.GetType());
 
             switch(code)
@@ -858,6 +907,12 @@ namespace BeauUtil.Variants
                 return true;
             }
 
+            if (typeof(UnityEngine.Object).IsAssignableFrom(inType))
+            {
+                outObject = inVariant.AsUnityInstance();
+                return true;
+            }
+
             TypeCode code = System.Type.GetTypeCode(inType);
 
             switch(code)
@@ -959,6 +1014,12 @@ namespace BeauUtil.Variants
             if (inType == typeof(NonBoxedValue))
             {
                 outObject = new NonBoxedValue(inVariant);
+                return true;
+            }
+
+            if (typeof(UnityEngine.Object).IsAssignableFrom(inType))
+            {
+                outObject = new NonBoxedValue(inVariant.AsUnityInstance());
                 return true;
             }
 
