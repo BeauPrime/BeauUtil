@@ -18,11 +18,12 @@ namespace BeauUtil
     public sealed class UniqueIdAllocator16
     {
         private byte[] m_Versions;
-        private RingBuffer<ushort> m_FreeList;
+        private readonly RingBuffer<ushort> m_FreeList;
         private int m_Capacity = 0;
         private int m_MaxFree = 0;
+        private readonly bool m_Flexible;
 
-        public UniqueIdAllocator16(int inInitialCapacity)
+        public UniqueIdAllocator16(int inInitialCapacity, bool inbFlexible = true)
         {
             if (inInitialCapacity < 1)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Initial capacity must be at least 1");
@@ -30,8 +31,9 @@ namespace BeauUtil
             if (m_Capacity > UniqueId16.MaxIndex)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Capacity, rounded up, exceeds maximum UniqueId16 index");
 
+            m_Flexible = inbFlexible;
             m_Versions = new byte[m_Capacity];
-            m_FreeList = new RingBuffer<ushort>(m_Capacity, RingBufferMode.Expand);
+            m_FreeList = new RingBuffer<ushort>(m_Capacity, inbFlexible ? RingBufferMode.Expand : RingBufferMode.Fixed);
 
             m_MaxFree = 1;
             m_Versions[0] = 1;
@@ -82,6 +84,11 @@ namespace BeauUtil
                 m_Versions[m_MaxFree] = 1;
                 m_FreeList.PushBack((ushort) m_MaxFree++);
                 return;
+            }
+
+            if (!m_Flexible)
+            {
+                throw new InvalidOperationException(string.Format("Inflexible UniqueIdAllocator16 - unable to expand to accomodate more than {0} entries", m_Capacity));
             }
 
             if (m_Capacity + inCount > UniqueId16.MaxIndex)
@@ -146,11 +153,12 @@ namespace BeauUtil
     public sealed class UniqueIdAllocator32
     {
         private byte[] m_Versions;
-        private RingBuffer<uint> m_FreeList;
+        private readonly RingBuffer<uint> m_FreeList;
         private int m_Capacity = 0;
         private int m_MaxFree;
+        private readonly bool m_Flexible;
 
-        public UniqueIdAllocator32(int inInitialCapacity)
+        public UniqueIdAllocator32(int inInitialCapacity, bool inbFlexible = true)
         {
             if (inInitialCapacity < 1)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Initial capacity must be at least 1");
@@ -158,8 +166,9 @@ namespace BeauUtil
             if (m_Capacity > UniqueId32.MaxIndex)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Capacity, rounded up, exceeds maximum UniqueId16 index");
 
+            m_Flexible = inbFlexible;
             m_Versions = new byte[m_Capacity];
-            m_FreeList = new RingBuffer<uint>(m_Capacity, RingBufferMode.Expand);
+            m_FreeList = new RingBuffer<uint>(m_Capacity, inbFlexible ? RingBufferMode.Expand : RingBufferMode.Fixed);
 
             m_Versions[0] = 1;
             m_MaxFree = 1;
@@ -210,6 +219,11 @@ namespace BeauUtil
                 m_Versions[m_MaxFree] = 1;
                 m_FreeList.PushBack((uint) m_MaxFree++);
                 return;
+            }
+
+            if (!m_Flexible)
+            {
+                throw new InvalidOperationException(string.Format("Inflexible UniqueIdAllocator32 - unable to expand to accomodate more than {0} entries", m_Capacity));
             }
 
             if (m_Capacity + inCount > UniqueId32.MaxIndex)

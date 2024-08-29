@@ -82,6 +82,20 @@ namespace BeauUtil.Variants
             m_StringHashValue = inValue;
         }
 
+        public Variant(UnityEngine.Object inValue)
+            : this()
+        {
+            if (ReferenceEquals(inValue, null))
+            {
+                m_Type = VariantType.Null;
+            }
+            else
+            {
+                m_Type = VariantType.InstanceId;
+                m_IntValue = UnityHelper.Id(inValue);
+            }
+        }
+
         #endregion // Constructors
 
         #region Cast
@@ -111,6 +125,9 @@ namespace BeauUtil.Variants
 
                 case VariantType.StringHash:
                     return !m_StringHashValue.IsEmpty;
+
+                case VariantType.InstanceId:
+                    return m_IntValue != 0;
 
                 default:
                     throw new InvalidOperationException("Variant type " + m_Type.ToString() + " not recognized");
@@ -586,6 +603,11 @@ namespace BeauUtil.Variants
             return new Variant(inValue.Hash());
         }
 
+        static public implicit operator Variant(UnityEngine.Object inValue)
+        {
+            return new Variant(inValue);
+        }
+
         #endregion // Operators
 
         #region Parse
@@ -836,12 +858,6 @@ namespace BeauUtil.Variants
                 return true;
             }
 
-            if (inVariant == null)
-            {
-                outObject = Null;
-                return true;
-            }
-
             TypeCode code = System.Type.GetTypeCode(inType);
 
             switch(code)
@@ -943,12 +959,6 @@ namespace BeauUtil.Variants
             if (inType == typeof(NonBoxedValue))
             {
                 outObject = new NonBoxedValue(inVariant);
-                return true;
-            }
-
-            if (inVariant == null)
-            {
-                outObject = null;
                 return true;
             }
 
@@ -1084,6 +1094,12 @@ namespace BeauUtil.Variants
                         ioSerializer.UInt32Proxy("value", ref m_StringHashValue);
                         break;
                     }
+
+                case VariantType.InstanceId:
+                    {
+                        UnityEngine.Debug.LogWarningFormat("[Variant] Serializing InstanceId is not permitted");
+                        break;
+                    }
             }
         }
 
@@ -1103,6 +1119,8 @@ namespace BeauUtil.Variants
         Float,
 
         Bool,
-        StringHash
+        StringHash,
+
+        InstanceId
     }
 }

@@ -144,6 +144,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref byte ioObject, byte inReplace)
         {
             if (ioObject == inReplace)
@@ -156,6 +157,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref sbyte ioObject, sbyte inReplace)
         {
             if (ioObject == inReplace)
@@ -168,6 +170,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref short ioObject, short inReplace)
         {
             if (ioObject == inReplace)
@@ -192,6 +195,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref int ioObject, int inReplace)
         {
             if (ioObject == inReplace)
@@ -204,6 +208,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref uint ioObject, uint inReplace)
         {
             if (ioObject == inReplace)
@@ -216,6 +221,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref long ioObject, long inReplace)
         {
             if (ioObject == inReplace)
@@ -228,6 +234,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref ulong ioObject, ulong inReplace)
         {
             if (ioObject == inReplace)
@@ -240,6 +247,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref char ioObject, char inReplace)
         {
             if (ioObject == inReplace)
@@ -252,6 +260,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one boolean with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref bool ioObject, bool inReplace)
         {
             if (ioObject == inReplace)
@@ -264,7 +273,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one enum with another.
         /// </summary>
-        [IntrinsicIL("ldarg.0; ldobj !!T; conv.u8; ldarg.1; conv.u8; beq.s SKIP; ldarg.0; ldarg.1; stobj !!T; ldc.i4.1; br.s END; SKIP:; ldc.i4.0; END:; ret")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool ReplaceEnum<T>(ref T ioObject, T inReplace)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum 

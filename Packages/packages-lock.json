@@ -8,7 +8,7 @@
       "url": "https://package.openupm.com"
     },
     "com.beauprime.tinyil-mono": {
-      "version": "0.2.0",
+      "version": "0.2.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -32,7 +32,7 @@
       }
     },
     "com.unity.burst": {
-      "version": "1.8.13",
+      "version": "1.8.16",
       "depth": 0,
       "source": "registry",
       "dependencies": {

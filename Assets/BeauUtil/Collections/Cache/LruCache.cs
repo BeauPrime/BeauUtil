@@ -26,11 +26,11 @@ namespace BeauUtil
         private readonly Dictionary<TKey, int> m_KeyLookup;
         private readonly TKey[] m_KeyTable;
         private readonly TValue[] m_ValueTable;
-        private readonly ulong[] m_UseTable;
+        private readonly LLTable m_UseTable;
         private readonly CacheCallbacks<TKey, TValue> m_Config;
 
-        private ulong m_AccessCount;
         private bool m_Locked;
+        private LLIndexList m_UseTableList;
 
         private int m_EntryCount;
         private readonly int m_Capacity;
@@ -79,7 +79,7 @@ namespace BeauUtil
             m_Capacity = inCapacity;
             m_KeyTable = new TKey[inCapacity];
             m_ValueTable = new TValue[inCapacity];
-            m_UseTable = new ulong[inCapacity];
+            m_UseTable = new LLTable(inCapacity, false);
             m_Config = inConfig;
             m_KeyLookup = new Dictionary<TKey, int>(inCapacity, CompareUtils.DefaultEquals<TKey>());
         }
@@ -139,7 +139,6 @@ namespace BeauUtil
                 {
                     index = Insert(inKey, CacheOperation.Read);
                     m_ValueTable[index] = value;
-                    m_UseTable[index] = m_AccessCount;
                 }
             }
             else
@@ -150,10 +149,9 @@ namespace BeauUtil
                 OnHit?.Invoke(inKey, CacheOperation.Read);
 
                 value = m_ValueTable[index];
-                m_UseTable[index] = m_AccessCount;
+                m_UseTable.MoveToFront(ref m_UseTableList, index);
             }
 
-            m_AccessCount++;
             return value;
         }
 
@@ -179,7 +177,7 @@ namespace BeauUtil
 #endif // DEVELOPMENT
             OnHit?.Invoke(inKey, CacheOperation.Read);
 
-            m_UseTable[index] = m_AccessCount++;
+            m_UseTable.MoveToFront(ref m_UseTableList, index);
             outValue = m_ValueTable[index];
             return true;
         }
@@ -203,7 +201,6 @@ namespace BeauUtil
                     TValue value = Fetch(inKey);
                     index = Insert(inKey, CacheOperation.Read);
                     m_ValueTable[index] = value;
-                    m_UseTable[index] = m_AccessCount++;
                 }
             }
             else
@@ -212,7 +209,7 @@ namespace BeauUtil
                 m_Stats.m_ReadStats.Hit++;
 #endif // DEVELOPMENT
                 OnHit?.Invoke(inKey, CacheOperation.Read);
-                m_UseTable[index] = m_AccessCount++;
+                m_UseTable.MoveToFront(ref m_UseTableList, index);
             }
         }
 
@@ -233,7 +230,6 @@ namespace BeauUtil
                 {
                     index = Insert(inKey, CacheOperation.Write);
                     m_ValueTable[index] = inValue;
-                    m_UseTable[index] = m_AccessCount;
                 }
             }
             else
@@ -244,10 +240,9 @@ namespace BeauUtil
                 OnHit?.Invoke(inKey, CacheOperation.Write);
 
                 Overwrite(index, ref inValue);
-                m_UseTable[index] = m_AccessCount;
+                m_UseTable.MoveToFront(ref m_UseTableList, index);
             }
 
-            m_AccessCount++;
             return inValue;
         }
 
@@ -268,7 +263,6 @@ namespace BeauUtil
                 {
                     index = Insert(inKey, CacheOperation.Write);
                     m_ValueTable[index] = ioValue;
-                    m_UseTable[index] = m_AccessCount;
                 }
             }
             else
@@ -279,10 +273,8 @@ namespace BeauUtil
                 OnHit?.Invoke(inKey, CacheOperation.Write);
 
                 Overwrite(index, ref ioValue);
-                m_UseTable[index] = m_AccessCount;
+                m_UseTable.MoveToFront(ref m_UseTableList, index);
             }
-
-            m_AccessCount++;
         }
 
         /// <summary>
@@ -313,8 +305,6 @@ namespace BeauUtil
             {
                 Evict(m_EntryCount - 1);
             }
-
-            m_AccessCount = 0;
         }
 
         #endregion // Read/Write
@@ -351,10 +341,6 @@ namespace BeauUtil
         #endregion // Locking
 
         #region Operations
-
-        // TODO: Switch to using LLTable
-        // That removes the (incredibly remote) potential of ulong overflow
-        // also makes determining which key to eject O(1) instead of O(n)
 
         /// <summary>
         /// Finds the index for the given key.
@@ -394,8 +380,9 @@ namespace BeauUtil
                 Evict(FindLRUIndex(), inOperation);
             }
 
-            m_KeyTable[m_EntryCount] = inKey;
-            m_KeyLookup[inKey] = m_EntryCount;
+            int idx = m_UseTable.PushFront(ref m_UseTableList);
+            m_KeyTable[idx] = inKey;
+            m_KeyLookup[inKey] = idx;
             return m_EntryCount++;
         }
 
@@ -404,20 +391,7 @@ namespace BeauUtil
         /// </summary>
         private int FindLRUIndex()
         {
-            int smallestAccessIdx = -1;
-            ulong smallestAccess = ulong.MaxValue;
-            ulong access;
-            for(int i = 0, len = m_EntryCount; i < len; i++)
-            {
-                access = m_UseTable[i];
-                if (access < smallestAccess)
-                {
-                    smallestAccessIdx = i;
-                    smallestAccess = access;
-                }
-            }
-
-            return smallestAccessIdx;
+            return m_UseTableList.Tail;
         }
 
         /// <summary>
@@ -446,20 +420,10 @@ namespace BeauUtil
             m_Config.Evict(ref current);
             current = default(TValue);
 
-            ArrayUtils.FastRemoveAt(m_UseTable, m_EntryCount, inIndex);
-            ArrayUtils.FastRemoveAt(m_KeyTable, m_EntryCount, inIndex);
-            ArrayUtils.FastRemoveAt(m_ValueTable, m_EntryCount, inIndex);
+            m_UseTable.Remove(ref m_UseTableList, inIndex);
+            m_KeyTable[inIndex] = default;
+            m_ValueTable[inIndex] = default;
             m_EntryCount--;
-
-            if (m_EntryCount == 0)
-            {
-                m_AccessCount = 0;
-            }
-            else if (inIndex < m_EntryCount)
-            {
-                // ensure this gets remapped to account for the swap
-                m_KeyLookup[m_KeyTable[inIndex]] = inIndex;
-            }
         }
 
         #endregion // Operations

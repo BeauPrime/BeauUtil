@@ -21,9 +21,9 @@ namespace BeauUtil
         private TValue[] m_Data;
         private readonly TValue m_Default;
 
-        public UniqueIdMap16(int inInitialCapacity, TValue inDefault = default(TValue))
+        public UniqueIdMap16(int inInitialCapacity, TValue inDefault = default(TValue), bool inbFlexible = true)
         {
-            m_IdAllocator = new UniqueIdAllocator16(inInitialCapacity);
+            m_IdAllocator = new UniqueIdAllocator16(inInitialCapacity, inbFlexible);
             m_Data = new TValue[m_IdAllocator.Capacity];
             m_Default = inDefault;
         }
@@ -118,9 +118,9 @@ namespace BeauUtil
         private TValue[] m_Data;
         private readonly TValue m_Default;
 
-        public UniqueIdMap32(int inInitialCapacity, TValue inDefault = default(TValue))
+        public UniqueIdMap32(int inInitialCapacity, TValue inDefault = default(TValue), bool inbFlexible = true)
         {
-            m_IdAllocator = new UniqueIdAllocator32(inInitialCapacity);
+            m_IdAllocator = new UniqueIdAllocator32(inInitialCapacity, inbFlexible);
             m_Data = new TValue[m_IdAllocator.Capacity];
             m_Default = inDefault;
         }

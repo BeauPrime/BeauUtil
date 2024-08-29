@@ -7,6 +7,10 @@
  * Purpose: Unity-specific helper functions.
  */
 
+#if UNITY_2020_2_OR_NEWER
+#define HAS_RESOURCES_INSTANCE_METHODS
+#endif // UNITY_2020_2_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -602,8 +606,8 @@ namespace BeauUtil
         static private readonly ObjectIdPredicate s_AliveDelegate;
         static private readonly ObjectPredicate s_IsPersistentDelegate;
         static private readonly ParameterlessPrediate s_IsMainThreadDelegate;
-
 #endif // !USING_TINYIL
+
         static UnityHelper()
         {
 #if !USING_TINYIL
@@ -643,7 +647,9 @@ namespace BeauUtil
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); ret")]
         static public UnityEngine.Object Find(int inInstanceId)
         {
-#if !USING_TINYIL
+#if HAS_RESOURCES_INSTANCE_METHODS
+            return Resources.InstanceIDToObject(inInstanceId);
+#elif !USING_TINYIL
             if (inInstanceId == 0 || s_FindDelegate == null)
             {
                 return null;
@@ -663,7 +669,9 @@ namespace BeauUtil
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); castclass !!T; ret")]
         static public T Find<T>(int inInstanceId) where T : UnityEngine.Object
         {
-#if !USING_TINYIL
+#if HAS_RESOURCES_INSTANCE_METHODS
+            return (T) Resources.InstanceIDToObject(inInstanceId);
+#elif !USING_TINYIL
             if (inInstanceId == 0 || s_FindDelegate == null) {
                 return null;
             }
@@ -681,7 +689,9 @@ namespace BeauUtil
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); isinst !!T; ret")]
         static public T SafeFind<T>(int inInstanceId) where T : UnityEngine.Object
         {
-#if !USING_TINYIL
+#if HAS_RESOURCES_INSTANCE_METHODS
+            return Resources.InstanceIDToObject(inInstanceId) as T;
+#elif !USING_TINYIL
             if (inInstanceId == 0 || s_FindDelegate == null)
             {
                 return null;
@@ -700,7 +710,9 @@ namespace BeauUtil
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::DoesObjectWithInstanceIDExist(int32); ret")]
         static public bool IsAlive(int inInstanceId)
         {
-#if !USING_TINYIL
+#if HAS_RESOURCES_INSTANCE_METHODS && UNITY_2022_3_OR_NEWER
+            return Resources.InstanceIDIsValid(inInstanceId);
+#elif !USING_TINYIL
             if (inInstanceId == 0 || s_AliveDelegate == null)
             {
                 return false;

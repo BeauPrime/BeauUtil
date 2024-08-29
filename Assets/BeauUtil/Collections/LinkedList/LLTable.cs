@@ -29,12 +29,14 @@ namespace BeauUtil
         private LLNode[] m_Data;
         private LLIndexList m_FreeList;
         private int m_Capacity;
+        private readonly bool m_Flexible;
 
-        public LLTable(int inCapacity)
+        public LLTable(int inCapacity, bool inbFlexible = true)
         {
             m_Data = new LLNode[inCapacity];
             m_FreeList = LLIndexList.Empty;
             m_Capacity = inCapacity;
+            m_Flexible = inbFlexible;
 
             AddRangeToFree(0, inCapacity);
         }
@@ -132,6 +134,9 @@ namespace BeauUtil
         {
             if (m_FreeList.Length < inNodeCount)
             {
+                if (!m_Flexible)
+                    throw new InvalidOperationException(string.Format("LLTable has run out of room at {0} entries", m_Capacity));
+
                 int oldLength = m_Data.Length;
                 int newLength = Mathf.NextPowerOfTwo(m_Capacity + inNodeCount);
                 Array.Resize(ref m_Data, newLength);
@@ -300,7 +305,7 @@ namespace BeauUtil
                 throw new ArgumentException("Index not present in provided list", "inIndex");
 #endif // DEVELOPMENT
 
-            if (ioList.Length < 2)
+            if (ioList.Length < 2 || ioList.Head == inIndex)
                 return;
 
             RemoveImpl(ref ioList, inIndex);
@@ -317,7 +322,7 @@ namespace BeauUtil
                 throw new ArgumentException("Index not present in provided list", "inIndex");
 #endif // DEVELOPMENT
 
-            if (ioList.Length < 2)
+            if (ioList.Length < 2 || ioList.Tail == inIndex)
                 return;
 
             RemoveImpl(ref ioList, inIndex);
@@ -610,13 +615,15 @@ namespace BeauUtil
         private LLIndexList m_FreeList;
         private int m_Capacity;
         private readonly IEqualityComparer<TTag> m_TagComparer;
+        private readonly bool m_Flexible;
 
-        public LLTable(int inCapacity)
+        public LLTable(int inCapacity, bool inbFlexible = true)
         {
             m_Data = new LLNode<TTag>[inCapacity];
             m_FreeList = LLIndexList.Empty;
             m_Capacity = inCapacity;
             m_TagComparer = CompareUtils.DefaultEquals<TTag>();
+            m_Flexible = inbFlexible;
 
             AddRangeToFree(0, inCapacity);
         }
@@ -741,6 +748,9 @@ namespace BeauUtil
         {
             if (m_FreeList.Length < inNodeCount)
             {
+                if (!m_Flexible)
+                    throw new InvalidOperationException(string.Format("LLTable has run out of room at {0} entries", m_Capacity));
+
                 int oldLength = m_Data.Length;
                 int newLength = Mathf.NextPowerOfTwo(m_Capacity + inNodeCount);
                 Array.Resize(ref m_Data, newLength);
@@ -861,6 +871,9 @@ namespace BeauUtil
                 throw new ArgumentException("Index not present in provided list", "inIndex");
 #endif // DEVELOPMENT
 
+            if (ioList.Length < 2 || ioList.Head == inIndex)
+                return;
+
             RemoveImpl(ref ioList, inIndex);
             PushFrontImpl(ref ioList, inIndex);
         }
@@ -874,6 +887,9 @@ namespace BeauUtil
             if (!Contains(ioList, inIndex))
                 throw new ArgumentException("Index not present in provided list", "inIndex");
 #endif // DEVELOPMENT
+
+            if (ioList.Length < 2 || ioList.Tail == inIndex)
+                return;
 
             RemoveImpl(ref ioList, inIndex);
             PushBackImpl(ref ioList, inIndex);

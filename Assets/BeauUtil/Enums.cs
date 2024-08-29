@@ -470,7 +470,7 @@ namespace BeauUtil
         /// Returns if the given generic enum is not zero.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; conv.u8; ldc.i4.0; cgt; ret")]
+        [IntrinsicIL("ldarg.0; conv.u8; ldc.i4.0; conv.u8; cgt; ret")]
         static public bool IsNotZero<T>(T inA)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum
@@ -487,7 +487,7 @@ namespace BeauUtil
         /// Returns if the given generic enum is zero.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.0; conv.u8; ldc.i4.0; ceq; ret")]
+        [IntrinsicIL("ldarg.0; conv.u8; ldc.i4.0; conv.u8; ceq; ret")]
         static public bool IsZero<T>(T inA)
 #if UNMANAGED_CONSTRAINT
             where T : unmanaged, Enum

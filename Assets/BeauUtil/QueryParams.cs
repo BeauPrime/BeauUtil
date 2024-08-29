@@ -147,7 +147,7 @@ namespace BeauUtil
             int idx = GetParamIndexByKey(inKey);
             if (idx >= 0)
                 return m_Parameters[idx].VariantValue;
-            return null;
+            return Variant.Null;
         }
 
         /// <summary>

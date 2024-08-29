@@ -2117,5 +2117,84 @@ namespace BeauUtil
         }
 
         #endregion // Endianness
+
+        #region Magic
+
+#if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Returns a null reference to the given type.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldc.i4.0; conv.u; ret")]
+        static public ref T NullRef<T>()
+#if !USING_TINYIL
+            where T : unmanaged
+#endif // !USING_TINYIL
+        {
+#if USING_TINYIL
+            throw new NotImplementedException();
+#else
+            return ref *((T*) null);
+#endif // USING_TINYIL
+        }
+
+        /// <summary>
+        /// Returns if the given reference is a null reference.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u; ldc.i4.0; conv.u; ceq; ret")]
+        static public bool IsNullRef<T>(ref T val)
+#if !USING_TINYIL
+            where T : unmanaged
+#endif // !USING_TINYIL
+        {
+#if USING_TINYIL
+            throw new NotImplementedException();
+#else
+            fixed (T* ptr = &val) {
+                return ptr == null;
+            }
+#endif // USING_TINYIL
+        }
+
+#if USING_TINYIL
+        /// <summary>
+        /// Converts a reference into a pointer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u; ret")]
+        static public void* AsPointer<T>(ref T val)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Converts a reference into a typed pointer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u; ret")]
+        static public T* AsTypedPointer<T>(ref T val)
+            where T : unmanaged
+        {
+            throw new NotImplementedException();
+        }
+#else
+        /// <summary>
+        /// Converts a reference into a typed pointer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T* AsTypedPointer<T>(ref T val)
+            where T : unmanaged
+        {
+            fixed (T* ptr = &val) {
+                return ptr;
+            }
+        }
+#endif // USING_TINYIL
+
+#endif // UNMANAGED_CONSTRAINT
+
+        #endregion // Magic
     }
 }

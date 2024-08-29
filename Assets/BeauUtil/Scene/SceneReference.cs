@@ -36,7 +36,7 @@ namespace BeauUtil
         {
             m_ScenePath = inPath;
 #if UNITY_EDITOR
-            m_GUID = AssetDatabase.AssetPathToGUID(inPath, AssetPathToGUIDOptions.OnlyExistingAssets);
+            m_GUID = AssetDatabase.AssetPathToGUID(inPath);
             if (string.IsNullOrEmpty(m_GUID))
             {
                 throw new ArgumentException(string.Format("No scene with path '{0}'", inPath), "inPath");
@@ -108,6 +108,8 @@ namespace BeauUtil
                 return SceneManager.GetSceneByPath(Path);
         }
 
+        #region Operators
+
         static public implicit operator SceneReference(Scene scene)
         {
             return new SceneReference(scene);
@@ -117,6 +119,8 @@ namespace BeauUtil
         {
             return new SceneReference(scene);
         }
+
+        #endregion // Operators
 
 #if UNITY_EDITOR
 

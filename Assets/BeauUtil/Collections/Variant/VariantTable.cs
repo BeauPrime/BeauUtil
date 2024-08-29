@@ -130,7 +130,7 @@ namespace BeauUtil.Variants
             if (idx >= 0)
             {
                 m_Values.FastRemoveAt(idx);
-                OnUpdated?.Invoke(new NamedVariant(inId, null));
+                OnUpdated?.Invoke(new NamedVariant(inId, Variant.Null));
                 m_Optimized = false;
                 return true;
             }
