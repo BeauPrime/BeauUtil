@@ -303,7 +303,23 @@ namespace BeauUtil
 
             while (m_EntryCount > 0)
             {
-                Evict(m_EntryCount - 1);
+                Evict(FindLRUIndex());
+            }
+        }
+
+        /// <summary>
+        /// Invalidates the specified number of entries from the cache.
+        /// </summary>
+        public void InvalidateCount(int inCount)
+        {
+            if (m_Locked)
+                return;
+
+            inCount = Math.Min(inCount, m_EntryCount);
+
+            while(m_EntryCount > 0 && inCount-- > 0)
+            {
+                Evict(FindLRUIndex());
             }
         }
 

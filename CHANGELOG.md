@@ -1,3 +1,18 @@
+## Version 0.10.9
+**29 August 2024**
+
+Hotfix for `Enums.IsZero` and `Enums.IsNotZero`, Unity 2019 compatibility
+
+### Improvements
+* `UniqueIdAllocator`, `UniqueIdMap` and `LLTable` can now be set to a fixed capacity (non-flexible)
+* `UnityHelper.Find` and similar use the new `Resources.InstanceIdToObject` and similar API
+* `LruCache` eviction now uses a linked list instead of an access counter for O(1) perf instead of O(N)
+* Implemented `Unsafe.NullRef`, `Unsafe.IsNullRef`, `Unsafe.AsPointer`, and `Unsafe.AsTypedPointer` as alternatives to unavailable .NET `Unsafe` api
+
+### Fixes
+* `Enums.IsZero` and `Enums.IsNotZero` no longer emit improper IL when using TinyIL
+* `SceneReference` constructor made compatible with Unity 2019 editor again
+
 ## Version 0.10.8
 **25 July 2024**
 

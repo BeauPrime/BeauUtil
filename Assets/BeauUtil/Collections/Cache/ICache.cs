@@ -101,6 +101,11 @@ namespace BeauUtil
         void InvalidateAll();
 
         /// <summary>
+        /// Evicts the specified number of values from the cache.
+        /// </summary>
+        void InvalidateCount(int inCount);
+
+        /// <summary>
         /// Returns if the cache is locked.
         /// Locked caches do not evict or fetch new values.
         /// </summary>

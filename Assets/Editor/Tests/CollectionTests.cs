@@ -423,6 +423,8 @@ namespace BeauUtil.UnitTests
             toStringCache.Read(19);
             Assert.AreEqual(1, evictCount);
             Assert.False(toStringCache.Contains(8));
+
+            toStringCache.InvalidateCount(19);
         }
 
         [Test]
