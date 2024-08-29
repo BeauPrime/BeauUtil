@@ -33,7 +33,7 @@ namespace BeauUtil
         {
             base.UpdateTrackers();
 
-            m_TargetCameraGroup.Replace(GetTarget(m_Camera, Camera.main), false);
+            m_TargetCameraGroup.Replace(GetTarget(m_Camera, () => Camera.main), false);
         }
 
         protected override bool CheckForChanges()
