@@ -1,3 +1,15 @@
+## Version 0.10.10
+**30 August 2024**
+
+Hotfix for `MapUtils.EnsureCapacity` and `SetUtils.EnsureCapacity` in Unity 2019
+
+### Features
+* `Variant` can now store an instance id as a reference to a unity object
+  * Note that if BeauData is included, this value type cannot be serialized 
+
+### Fixes
+* `MapUtils.EnsureCapacity` and `SetUtils.EnsureCapacity` now work in Unity 2019 for collections constructed without an initial capacity
+
 ## Version 0.10.9
 **29 August 2024**
 
