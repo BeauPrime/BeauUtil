@@ -1,3 +1,20 @@
+## Version 0.10.11
+**25 September 2024**
+
+Hotfix for pointer truncation in `Unsafe.Align[...](void*)` on Android
+Hotfix for Mono build crashes when using TinyIL
+
+### Features
+* Added `STuple` readonly struct as replacement for `System.Tuple` 
+
+### Improvements
+* Added `Equals`, `GetHashCode`, and `Compare` shortcuts to `CompareUtils`
+
+### Fixes
+* Made word size detection in `Unsafe` more robust
+* Fixed pointer truncation in `Unsafe.Align[...](void*)` on Android
+* Builds targeting Mono will no longer crash upon calling internal call shortcuts when compiled with TinyIL
+
 ## Version 0.10.10
 **30 August 2024**
 
