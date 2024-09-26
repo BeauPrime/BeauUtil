@@ -11,6 +11,10 @@
 #define HAS_RESOURCES_INSTANCE_METHODS
 #endif // UNITY_2020_2_OR_NEWER
 
+#if !USING_TINYIL || (!UNITY_EDITOR && !ENABLE_IL2CPP)
+#define RESTRICT_INTERNAL_CALLS
+#endif // !USING_TINYIL || (!UNITY_EDITOR && !ENABLE_IL2CPP)
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -596,7 +600,7 @@ namespace BeauUtil
 
         #region Internal Calls
 
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
         private delegate UnityEngine.Object FindObjectDelegate(int inInstanceId);
         private delegate bool ObjectIdPredicate(int inInstanceId);
         private delegate bool ObjectPredicate(UnityEngine.Object inObject);
@@ -606,11 +610,11 @@ namespace BeauUtil
         static private readonly ObjectIdPredicate s_AliveDelegate;
         static private readonly ObjectPredicate s_IsPersistentDelegate;
         static private readonly ParameterlessPrediate s_IsMainThreadDelegate;
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
 
         static UnityHelper()
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             Type objType = typeof(UnityEngine.Object);
 
             MethodInfo findInfo = objType.GetMethod("FindObjectFromInstanceID", BindingFlags.NonPublic | BindingFlags.Static);
@@ -636,7 +640,7 @@ namespace BeauUtil
             {
                 s_IsMainThreadDelegate = (ParameterlessPrediate) isMainThreadInfo.CreateDelegate(typeof(ParameterlessPrediate));
             }
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
@@ -644,7 +648,9 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Il2CppSetOption(Option.NullChecks, false)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); ret")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public UnityEngine.Object Find(int inInstanceId)
         {
 #if HAS_RESOURCES_INSTANCE_METHODS
@@ -666,7 +672,9 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Il2CppSetOption(Option.NullChecks, false)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); castclass !!T; ret")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public T Find<T>(int inInstanceId) where T : UnityEngine.Object
         {
 #if HAS_RESOURCES_INSTANCE_METHODS
@@ -686,7 +694,9 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Il2CppSetOption(Option.NullChecks, false)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::FindObjectFromInstanceID(int32); isinst !!T; ret")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public T SafeFind<T>(int inInstanceId) where T : UnityEngine.Object
         {
 #if HAS_RESOURCES_INSTANCE_METHODS
@@ -707,7 +717,9 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Il2CppSetOption(Option.NullChecks, false)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::DoesObjectWithInstanceIDExist(int32); ret")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public bool IsAlive(int inInstanceId)
         {
 #if HAS_RESOURCES_INSTANCE_METHODS && UNITY_2022_3_OR_NEWER
@@ -739,7 +751,9 @@ namespace BeauUtil
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Il2CppSetOption(Option.NullChecks, false)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarg.0; call UnityEngine.Object::IsPersistent(UnityEngine.Object); ret")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public bool IsPersistent(this UnityEngine.Object inObject)
         {
 #if !USING_TINYIL
@@ -757,7 +771,9 @@ namespace BeauUtil
         /// Returns if the current thread is the main thread.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("call UnityEngine.Object::CurrentThreadIsMainThread(); ret")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public bool IsMainThread()
         {
 #if !USING_TINYIL

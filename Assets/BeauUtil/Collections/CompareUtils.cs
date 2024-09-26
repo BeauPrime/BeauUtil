@@ -10,8 +10,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine.Scripting;
+using static BeauUtil.StringHash64;
 
 namespace BeauUtil
 {
@@ -38,42 +40,45 @@ namespace BeauUtil
         /// Retrieves the default equality comparer for the given type.
         /// For UnityEngine.Object-derived types this is more efficient than the standard comparer.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IEqualityComparer<T> DefaultEquals<T>()
         {
-            IEqualityComparer<T> comparer = Cache<T>.DefaultEquals;
-            if (comparer == null)
+            return Cache<T>.DefaultEquals ?? CreateCachedEquals<T>();
+        }
+
+        static private IEqualityComparer<T> CreateCachedEquals<T>()
+        {
+            IEqualityComparer<T> comparer;
+            Type type = typeof(T);
+            if (type.IsPrimitive)
             {
-                Type type = typeof(T);
-                if (type.IsPrimitive)
+                comparer = EqualityComparer<T>.Default;
+            }
+            else if (type == typeof(string))
+            {
+                comparer = (IEqualityComparer<T>) StringComparer.Ordinal;
+            }
+            else if (type.IsDefined(typeof(DefaultEqualityComparerAttribute), true))
+            {
+                var attr = Reflect.GetAttribute<DefaultEqualityComparerAttribute>(type, true);
+                if (Cache<T>.DefaultSort != null && Cache<T>.DefaultSort.GetType() == attr.EqualityComparerType)
                 {
-                    comparer = EqualityComparer<T>.Default;
-                }
-                else if (type == typeof(string))
-                {
-                    comparer = (IEqualityComparer<T>) StringComparer.Ordinal;
-                }
-                else if (type.IsDefined(typeof(DefaultEqualityComparerAttribute), true))
-                {
-                    var attr = Reflect.GetAttribute<DefaultEqualityComparerAttribute>(type, true);
-                    if (Cache<T>.DefaultSort != null && Cache<T>.DefaultSort.GetType() == attr.EqualityComparerType)
-                    {
-                        comparer = (IEqualityComparer<T>) Cache<T>.DefaultSort;
-                    }
-                    else
-                    {
-                        comparer = (IEqualityComparer<T>) Activator.CreateInstance(attr.EqualityComparerType);
-                    }
-                }
-                else if (s_UnityObjectType.IsAssignableFrom(type))
-                {
-                    comparer = ReferenceEqualityComparer<T>.Default;
+                    comparer = (IEqualityComparer<T>) Cache<T>.DefaultSort;
                 }
                 else
                 {
-                    comparer = EqualityComparer<T>.Default;
+                    comparer = (IEqualityComparer<T>) Activator.CreateInstance(attr.EqualityComparerType);
                 }
-                Cache<T>.DefaultEquals = comparer;
             }
+            else if (s_UnityObjectType.IsAssignableFrom(type))
+            {
+                comparer = ReferenceEqualityComparer<T>.Default;
+            }
+            else
+            {
+                comparer = EqualityComparer<T>.Default;
+            }
+            Cache<T>.DefaultEquals = comparer;
             return comparer;
         }
 
@@ -81,38 +86,41 @@ namespace BeauUtil
         /// Retrieves the default sorting comparer for the given type.
         /// For UnityEngine.Object-derived types this is more efficient than the standard comparer.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IComparer<T> DefaultSort<T>()
         {
-            IComparer<T> comparer = Cache<T>.DefaultSort;
-            if (comparer == null)
+            return Cache<T>.DefaultSort ?? CreateCachedSorter<T>();
+        }
+
+        static private IComparer<T> CreateCachedSorter<T>()
+        {
+            IComparer<T> comparer;
+            Type type = typeof(T);
+            if (type.IsPrimitive)
             {
-                Type type = typeof(T);
-                if (type.IsPrimitive)
+                comparer = Comparer<T>.Default;
+            }
+            else if (type == typeof(string))
+            {
+                comparer = (IComparer<T>) StringComparer.Ordinal;
+            }
+            else if (type.IsDefined(typeof(DefaultSorterAttribute), true))
+            {
+                var attr = Reflect.GetAttribute<DefaultSorterAttribute>(type, true);
+                if (Cache<T>.DefaultEquals != null && Cache<T>.DefaultEquals.GetType() == attr.ComparerType)
                 {
-                    comparer = Comparer<T>.Default;
-                }
-                else if (type == typeof(string))
-                {
-                    comparer = (IComparer<T>) StringComparer.Ordinal;
-                }
-                else if (type.IsDefined(typeof(DefaultSorterAttribute), true))
-                {
-                    var attr = Reflect.GetAttribute<DefaultSorterAttribute>(type, true);
-                    if (Cache<T>.DefaultEquals != null && Cache<T>.DefaultEquals.GetType() == attr.ComparerType)
-                    {
-                        comparer = (IComparer<T>) Cache<T>.DefaultEquals;
-                    }
-                    else
-                    {
-                        comparer = (IComparer<T>) Activator.CreateInstance(attr.ComparerType);
-                    }
+                    comparer = (IComparer<T>) Cache<T>.DefaultEquals;
                 }
                 else
                 {
-                    comparer = Comparer<T>.Default;
+                    comparer = (IComparer<T>) Activator.CreateInstance(attr.ComparerType);
                 }
-                Cache<T>.DefaultSort = comparer;
             }
+            else
+            {
+                comparer = Comparer<T>.Default;
+            }
+            Cache<T>.DefaultSort = comparer;
             return comparer;
         }
 
@@ -123,6 +131,33 @@ namespace BeauUtil
         static public ReferenceEqualityComparer<string> StringReferenceEquals
         {
             get { return s_InternedStringRefComparer ?? (s_InternedStringRefComparer = new ReferenceEqualityComparer<string>()); }
+        }
+
+        /// <summary>
+        /// Returns if two values are equal, using their default equality comparer.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool Equals<T>(in T inA, in T inB)
+        {
+            return DefaultEquals<T>().Equals(inA, inB);
+        }
+
+        /// <summary>
+        /// Returns the comparison between two values, using their default comparison.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int Compare<T>(in T inA, in T inB)
+        {
+            return DefaultSort<T>().Compare(inA, inB);
+        }
+
+        /// <summary>
+        /// Returns the comparison between two values, using their default comparison.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int GetHashCode<T>(in T inA)
+        {
+            return DefaultEquals<T>().GetHashCode(inA);
         }
 
         /// <summary>

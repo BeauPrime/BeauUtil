@@ -7,6 +7,10 @@
  * Purpose: Scene utility methods.
  */
 
+#if !USING_TINYIL || (!UNITY_EDITOR && !ENABLE_IL2CPP)
+#define RESTRICT_INTERNAL_CALLS
+#endif // !USING_TINYIL || (!UNITY_EDITOR && !ENABLE_IL2CPP)
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -29,7 +33,7 @@ namespace BeauUtil
                 s_IgnoredSceneFilters.Add(new SceneFilter(sceneName, null));
             }
 
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             Type sceneType = typeof(Scene);
 
             GetLoadingStateInternal = sceneType.GetMethod("GetLoadingStateInternal", BindingFlags.Static | BindingFlags.NonPublic);
@@ -39,7 +43,7 @@ namespace BeauUtil
             {
                 GetGUIDInternal = (GetGUIDInternalDelegate) getGUIDInternalMethod.CreateDelegate(typeof(GetGUIDInternalDelegate));
             }
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         #region Load/Unload Events
@@ -582,7 +586,7 @@ namespace BeauUtil
             Unloading
         }
 
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
 
         private delegate string GetGUIDInternalDelegate(int inHandle);
         static private readonly MethodInfo GetLoadingStateInternal;
@@ -591,16 +595,18 @@ namespace BeauUtil
         [ThreadStatic]
         static private object[] s_GetLoadingStateArgsArray;
 
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
 
         /// <summary>
         /// Returns the loading state of the given scene.
         /// </summary>
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarga.s inScene; call UnityEngine.SceneManagement.Scene::get_loadingState(); conv.i4; ret;")]
+#endif // !RESTRICT_INTERNAL_CALLS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public LoadingState GetLoadingState(this Scene inScene)
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             if (!inScene.IsValid())
             {
                 return LoadingState.NotLoaded;
@@ -621,17 +627,19 @@ namespace BeauUtil
             }
 #else
             throw new NotImplementedException();
-#endif // 
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
         /// Returns the GUID of the given scene.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarga.s inScene; call UnityEngine.SceneManagement.Scene::get_guid(); ret;")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public string GetGUID(this Scene inScene)
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             if (GetGUIDInternal != null)
             {
                 return GetGUIDInternal(inScene.handle);
@@ -642,7 +650,7 @@ namespace BeauUtil
             }
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         #endregion // Internal Methods

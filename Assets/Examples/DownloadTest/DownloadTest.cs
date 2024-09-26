@@ -43,6 +43,7 @@ public unsafe class DownloadTest : MonoBehaviour
         }
 
         Debug.Log("Is64: " + Unsafe.Is64);
+        Debug.Log("IsPointerSizeCompileTimeConstant: " + Unsafe.IsPointerSizeCompileTimeConstant);
 
         Enums.AreEqual(PrimitiveType.Capsule, PrimitiveType.Cube);
         Enums.Or(CollisionFlags.Below, CollisionFlags.Above);

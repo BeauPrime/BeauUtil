@@ -23,6 +23,14 @@
 #define INNER_HASH_FUNCTIONS
 #endif // USING_TINYIL
 
+#if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64 || ENABLE_WASM64
+    #define WORD_SIZE_64
+#elif !UNITY_EDITOR && UNITY_WEBGL
+    #define WORD_SIZE_32
+#else
+    #define WORD_SIZE_RUNTIME
+#endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64 || ENABLE_WASM64
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -31,13 +39,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BeauUtil.Debugger;
 
-#if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
+#if WORD_SIZE_64 || WORD_SIZE_RUNTIME
 using PointerIntegral = System.UInt64;
 using PointerDiff = System.Int64;
 #else
 using PointerIntegral = System.UInt32;
 using PointerDiff = System.Int32;
-#endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
+#endif // WORD_SIZE_64 || WORD_SIZE_RUNTIME
 
 namespace BeauUtil
 {
@@ -49,22 +57,44 @@ namespace BeauUtil
         /// <summary>
         /// Size of an unmanaged pointer.
         /// </summary>
+#if WORD_SIZE_RUNTIME
+        static public readonly uint PointerSize = (uint) IntPtr.Size;
+#else
         public const uint PointerSize =
-#if UNITY_64 || UNITY_EDITOR_64
+#if WORD_SIZE_64
             8u;
 #else
             4u;
-#endif // UNITY_64 || UNITY_EDITOR_64
+#endif // WORD_SIZE_64
+#endif // WORD_SIZE_RUNTIME
+
+        /// <summary>
+        /// If the size of an unmanaged pointer was baked in at compile time.
+        /// </summary>
+        public const bool IsPointerSizeCompileTimeConstant =
+#if WORD_SIZE_RUNTIME
+            false;
+#else
+            true;
+#endif // WORD_SIZE_RUNTIME
 
         /// <summary>
         /// If this is a 64-bit environment.
         /// </summary>
+#if WORD_SIZE_RUNTIME
+        static public readonly bool Is64 = (PointerSize == 8);
+#else
         public const bool Is64 = (PointerSize == 8);
+#endif // WORD_SIZE_RUNTIME
 
         /// <summary>
         /// Pointer hex format.
         /// </summary>
+#if WORD_SIZE_RUNTIME
+        static internal readonly string PointerStringFormat = Is64 ? "X16" : "X8";
+#else
         internal const string PointerStringFormat = Is64 ? "X16" : "X8";
+#endif // WORD_SIZE_RUNTIME
 
         /// <summary>
         /// Attempts to load the given address into the cache.
@@ -1690,7 +1720,7 @@ namespace BeauUtil
 
 #endif // UNMANAGED_CONSTRAINT
 
-		#endregion // Hashing
+        #endregion // Hashing
 
         #region Read/Write
 

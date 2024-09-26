@@ -7,6 +7,10 @@
  * Purpose: Helper methods for canvas objects.
  */
 
+#if !USING_TINYIL || (!UNITY_EDITOR && !ENABLE_IL2CPP)
+#define RESTRICT_INTERNAL_CALLS
+#endif // !USING_TINYIL || (!UNITY_EDITOR && !ENABLE_IL2CPP)
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -411,24 +415,26 @@ namespace BeauUtil
 
         #region Selectable
 
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
         static private MethodInfo s_Selectable_get_currentSelectionState;
-# endif // !USING_TINYIL
+# endif // RESTRICT_INTERNAL_CALLS
 
         static CanvasHelper()
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             s_Selectable_get_currentSelectionState = typeof(Selectable).GetProperty("currentSelectionState", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)?.GetMethod;
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
         /// Returns the current selection state of the given selectable.
         /// </summary>
+#if !RESTRICT_INTERNAL_CALLS
         [IntrinsicIL("ldarg.0; call [arg inSelectable]::get_currentSelectionState(); ret;")]
+#endif // !RESTRICT_INTERNAL_CALLS
         static public SelectionState GetSelectionState(this Selectable inSelectable)
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             if (!inSelectable.IsInteractable())
             {
                 return SelectionState.Disabled;
@@ -441,7 +447,7 @@ namespace BeauUtil
             return (SelectionState) Convert.ToInt32(s_Selectable_get_currentSelectionState.Invoke(inSelectable, null));
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         #endregion // Selectable

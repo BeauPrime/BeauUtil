@@ -11,17 +11,25 @@
 #define UNMANAGED_CONSTRAINT
 #endif // CSHARP_7_3_OR_NEWER
 
-using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+#if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64 || ENABLE_WASM64
+#define WORD_SIZE_64
+#elif !UNITY_EDITOR && UNITY_WEBGL
+#define WORD_SIZE_32
+#else
+#define WORD_SIZE_RUNTIME
+#endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64 || ENABLE_WASM64
 
-#if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
+#if WORD_SIZE_64 || WORD_SIZE_RUNTIME
 using PointerIntegral = System.UInt64;
 using PointerDiff = System.Int64;
 #else
 using PointerIntegral = System.UInt32;
 using PointerDiff = System.Int32;
-#endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64
+#endif // WORD_SIZE_64 || WORD_SIZE_RUNTIME
+
+using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace BeauUtil
 {

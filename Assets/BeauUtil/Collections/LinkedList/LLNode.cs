@@ -166,7 +166,7 @@ namespace BeauUtil
 
         public bool Equals(LLNode<TTag> other)
         {
-            return Next == other.Next && Prev == other.Prev && CompareUtils.DefaultEquals<TTag>().Equals(Tag, other.Tag);
+            return Next == other.Next && Prev == other.Prev && CompareUtils.Equals(Tag, other.Tag);
         }
 
         public override int GetHashCode()
