@@ -1,3 +1,20 @@
+## Version 0.10.12
+**22 Nov 2024**
+
+Hotfix for occasional `UniqueIdAllocator` `Alloc` and `Reserve` exception
+
+### Features
+* `DMMenuUI` can now accept navigational input
+
+### Improvements
+* `SerializedAttributeSet.Read` can filter by member type
+* `Bits.Set(Enum)` made branchless
+* Added `StringHashing.DumpReverseLookupTables` for dumping string hash tables to stream
+* Added `Unsafe.Quicksort(delegate*)`
+
+### Fixes
+* `UniqueIdAllocator.Reserve` no longer crashes after expanding capacity
+
 ## Version 0.10.11
 **25 September 2024**
 

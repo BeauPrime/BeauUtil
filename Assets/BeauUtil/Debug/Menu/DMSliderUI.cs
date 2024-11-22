@@ -111,7 +111,7 @@ namespace BeauUtil.Debugger
         {
             float currentValue = m_Slider.value;
             float nextValue = currentValue + m_RemappedIncrement * inTickCount;
-            nextValue = Math.Clamp(nextValue, 0, m_Slider.maxValue);
+            nextValue = Mathf.Clamp(nextValue, 0, m_Slider.maxValue);
             m_Slider.value = nextValue;
         }
 
