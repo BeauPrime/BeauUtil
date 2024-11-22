@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
 using UnityEngine;
 
@@ -47,7 +48,6 @@ namespace BeauUtil
         {
             ListUtils.EnsureCapacityPow2(ref outColliders, outColliders.Count + inLength);
 
-            if (outColliders.Capacity < outColliders.Count + inLength)
             for(int i = 0; i < inLength; ++i)
                 outColliders.Add(inBuffer[i].collider);
         }
@@ -389,7 +389,8 @@ namespace BeauUtil
         #endregion // Scaling
 
         #region Math
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private void Vec3Abs(ref Vector3 inVec)
         {
             inVec.x = Math.Abs(inVec.x);
@@ -397,6 +398,7 @@ namespace BeauUtil
             inVec.z = Math.Abs(inVec.z);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private Vector3 Vec3Mult(Vector3 inA, Vector3 inB)
         {
             Vector3 result;

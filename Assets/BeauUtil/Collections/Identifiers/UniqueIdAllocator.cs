@@ -79,10 +79,13 @@ namespace BeauUtil
             if (m_FreeList.Count >= inCount)
                 return;
 
-            if (m_MaxFree < m_Capacity)
+            if (m_MaxFree + inCount <= m_Capacity)
             {
-                m_Versions[m_MaxFree] = 1;
-                m_FreeList.PushBack((ushort) m_MaxFree++);
+                while (inCount-- > 0)
+                {
+                    m_Versions[m_MaxFree] = 1;
+                    m_FreeList.PushBack((ushort) m_MaxFree++);
+                }
                 return;
             }
 
@@ -99,7 +102,13 @@ namespace BeauUtil
             int newLength = Math.Min(m_Capacity * 2, UniqueId16.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
             m_FreeList.SetCapacity(newLength);
-            m_FreeList.PushBack((ushort) m_MaxFree++);
+            m_Capacity = newLength;
+
+            while (inCount-- > 0)
+            {
+                m_Versions[m_MaxFree] = 1;
+                m_FreeList.PushBack((ushort) m_MaxFree++);
+            }
         }
 
         /// <summary>
@@ -214,10 +223,13 @@ namespace BeauUtil
             if (m_FreeList.Count >= inCount)
                 return;
 
-            if (m_MaxFree < m_Capacity)
+            if (m_MaxFree + inCount <= m_Capacity)
             {
-                m_Versions[m_MaxFree] = 1;
-                m_FreeList.PushBack((uint) m_MaxFree++);
+                while (inCount-- > 0)
+                {
+                    m_Versions[m_MaxFree] = 1;
+                    m_FreeList.PushBack((uint) m_MaxFree++);
+                }
                 return;
             }
 
@@ -234,7 +246,13 @@ namespace BeauUtil
             int newLength = Math.Min(m_Capacity * 2, UniqueId32.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
             m_FreeList.SetCapacity(newLength);
-            m_FreeList.PushBack((ushort) m_MaxFree++);
+            m_Capacity = newLength;
+
+            while (inCount-- > 0)
+            {
+                m_Versions[m_MaxFree] = 1;
+                m_FreeList.PushBack((uint) m_MaxFree++);
+            }
         }
 
         /// <summary>

@@ -15,6 +15,10 @@
 #define SUPPORTS_SPAN
 #endif // NETSTANDARD || NET_STANDARD
 
+#if UNITY_2021_2_OR_NEWER && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -29,7 +33,7 @@ namespace BeauUtil
     {
         #region Copy
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         // pointer to pointer
 
@@ -82,7 +86,7 @@ namespace BeauUtil
         /// This assumes no aliasing and that the src and dest buffers do not overlap.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [IntrinsicIL("ldarg.2; ldarg.0; ldarg.1; sizeof !!T; mul; unaligned. 1; cpblk; ret")] 
+        [IntrinsicIL("ldarg.2; ldarg.0; ldarg.1; sizeof !!T; mul; unaligned. 1; cpblk; ret")]
         static public void FastCopyArray<T>(T* inSrc, int inCount, T* inDest)
             where T : unmanaged
         {
@@ -149,7 +153,7 @@ namespace BeauUtil
         static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest)
             where T : unmanaged
         {
-            fixed(T* destPtr = inDest)
+            fixed (T* destPtr = inDest)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
@@ -163,7 +167,7 @@ namespace BeauUtil
         static public void CopyArray<T>(T* inSrc, long inSrcCount, T[] inDest)
             where T : unmanaged
         {
-            fixed(T* destPtr = inDest)
+            fixed (T* destPtr = inDest)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(inSrc, destPtr, inDest.Length * size, inSrcCount * size);
@@ -177,7 +181,7 @@ namespace BeauUtil
         static public void CopyArray<T>(T* inSrc, int inSrcCount, T[] inDest, int inDestOffset)
             where T : unmanaged
         {
-            fixed(T* destPtr = inDest)
+            fixed (T* destPtr = inDest)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(inSrc, destPtr + inDestOffset, (inDest.Length - inDestOffset) * size, inSrcCount * size);
@@ -191,7 +195,7 @@ namespace BeauUtil
         static public void CopyArray<T>(T* inSrc, long inSrcCount, T[] inDest, long inDestOffset)
             where T : unmanaged
         {
-            fixed(T* destPtr = inDest)
+            fixed (T* destPtr = inDest)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(inSrc, destPtr + inDestOffset, (inDest.Length - inDestOffset) * size, inSrcCount * size);
@@ -247,7 +251,7 @@ namespace BeauUtil
         static public void CopyArray<T>(T[] inSrc, int inSrcOffset, int inSrcCount, T* inDest, int inDestCount)
             where T : unmanaged
         {
-            fixed(T* srcPtr = inSrc)
+            fixed (T* srcPtr = inSrc)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, inSrcCount * size);
@@ -261,7 +265,7 @@ namespace BeauUtil
         static public void CopyArray<T>(T[] inSrc, long inSrcOffset, long inSrcCount, T* inDest, long inDestCount)
             where T : unmanaged
         {
-            fixed(T* srcPtr = inSrc)
+            fixed (T* srcPtr = inSrc)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(srcPtr + inSrcOffset, inDest, inDestCount * size, inSrcCount * size);
@@ -314,7 +318,7 @@ namespace BeauUtil
         static public void CopyArrayIncrement<T>(T[] inSrc, int inSrcOffset, int inSrcCount, T** inDest, int* inDestCountRemaining)
             where T : unmanaged
         {
-            fixed(T* srcPtr = inSrc)
+            fixed (T* srcPtr = inSrc)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(srcPtr + inSrcOffset, *inDest, *inDestCountRemaining * size, inSrcCount * size);
@@ -329,7 +333,7 @@ namespace BeauUtil
         static public void CopyArrayIncrement<T>(T[] inSrc, long inSrcOffset, long inSrcCount, T** inDest, long* inDestCountRemaining)
             where T : unmanaged
         {
-            fixed(T* srcPtr = inSrc)
+            fixed (T* srcPtr = inSrc)
             {
                 int size = sizeof(T);
                 Buffer.MemoryCopy(srcPtr + inSrcOffset, *inDest, *inDestCountRemaining * size, inSrcCount * size);
@@ -338,7 +342,7 @@ namespace BeauUtil
             }
         }
 
-        #else
+#else
 
         // pointer to pointer
 
@@ -629,7 +633,7 @@ namespace BeauUtil
             }
         }
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Copies memory from one buffer to another.
@@ -685,7 +689,7 @@ namespace BeauUtil
         static public void CopyIncrement(void* inSrc, int inSrcSize, void** inDest, int* inDestSizeRemaining)
         {
             Buffer.MemoryCopy(inSrc, *inDest, *inDestSizeRemaining, inSrcSize);
-            (*(byte**)inDest) += inSrcSize;
+            (*(byte**) inDest) += inSrcSize;
             *inDestSizeRemaining -= inSrcSize;
         }
 
@@ -696,7 +700,7 @@ namespace BeauUtil
         static public void CopyIncrement(void* inSrc, long inSrcSize, void** inDest, long* inDestSizeRemaining)
         {
             Buffer.MemoryCopy(inSrc, *inDest, *inDestSizeRemaining, inSrcSize);
-            (*(byte**)inDest) += inSrcSize;
+            (*(byte**) inDest) += inSrcSize;
             *inDestSizeRemaining -= inSrcSize;
         }
 
@@ -707,7 +711,7 @@ namespace BeauUtil
         static public void CopyIncrement(void* inSrc, int inSize, void** inDest)
         {
             Buffer.MemoryCopy(inSrc, *inDest, inSize, inSize);
-            (*(byte**)inDest) += inSize;
+            (*(byte**) inDest) += inSize;
         }
 
         /// <summary>
@@ -717,14 +721,14 @@ namespace BeauUtil
         static public void CopyIncrement(void* inSrc, long inSize, void** inDest)
         {
             Buffer.MemoryCopy(inSrc, *inDest, inSize, inSize);
-            (*(byte**)inDest) += inSize;
+            (*(byte**) inDest) += inSize;
         }
 
         #endregion // Copy
 
         #region Sort
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
@@ -776,6 +780,30 @@ namespace BeauUtil
             Quicksort<T>(ioBuffer, 0, inCount - 1, inSortingValues);
         }
 
+#if SUPPORTS_FUNCTION_POINTERS
+
+        /// <summary>
+        /// Quicksorts a buffer using the given comparison function.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Quicksort<T>(T* ioBuffer, int inCount, delegate*<T, T, int> inComparison)
+            where T : unmanaged
+        {
+            Quicksort<T>(ioBuffer, 0, inCount - 1, inComparison);
+        }
+
+        /// <summary>
+        /// Quicksorts a buffer using the given comparison function.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Quicksort<T>(T* ioBuffer, int inCount, delegate*<T*, T*, int> inComparison)
+            where T : unmanaged
+        {
+            Quicksort<T>(ioBuffer, 0, inCount - 1, inComparison);
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
+
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
         /// </summary>
@@ -802,7 +830,7 @@ namespace BeauUtil
                 indexStack[++indexStackTop] = inLowerIndex;
                 indexStack[++indexStackTop] = inUpperIndex;
 
-                while(indexStackTop >= 1)
+                while (indexStackTop >= 1)
                 {
                     inUpperIndex = indexStack[indexStackTop--];
                     inLowerIndex = indexStack[indexStackTop--];
@@ -838,7 +866,7 @@ namespace BeauUtil
                 indexStack[++indexStackTop] = inLowerIndex;
                 indexStack[++indexStackTop] = inUpperIndex;
 
-                while(indexStackTop >= 1)
+                while (indexStackTop >= 1)
                 {
                     inUpperIndex = indexStack[indexStackTop--];
                     inLowerIndex = indexStack[indexStackTop--];
@@ -874,7 +902,44 @@ namespace BeauUtil
                 indexStack[++indexStackTop] = inLowerIndex;
                 indexStack[++indexStackTop] = inUpperIndex;
 
-                while(indexStackTop >= 1)
+                while (indexStackTop >= 1)
+                {
+                    inUpperIndex = indexStack[indexStackTop--];
+                    inLowerIndex = indexStack[indexStackTop--];
+
+                    pivotIndex = Quicksort_Partition(ioBuffer, inLowerIndex, inUpperIndex, inComparison);
+                    if (inLowerIndex < pivotIndex)
+                    {
+                        indexStack[++indexStackTop] = inLowerIndex;
+                        indexStack[++indexStackTop] = pivotIndex;
+                    }
+                    if (inUpperIndex > pivotIndex + 1)
+                    {
+                        indexStack[++indexStackTop] = pivotIndex + 1;
+                        indexStack[++indexStackTop] = inUpperIndex;
+                    }
+                }
+            }
+        }
+
+#if SUPPORTS_FUNCTION_POINTERS
+        /// <summary>
+        /// Quicksorts a buffer using the given comparison function.
+        /// </summary>
+        static public void Quicksort<T>(T* ioBuffer, int inLowerIndex, int inUpperIndex, delegate*<T, T, int> inComparison)
+            where T : unmanaged
+        {
+            if (inLowerIndex >= 0 && inLowerIndex < inUpperIndex)
+            {
+                // lower higher
+                int* indexStack = stackalloc int[inUpperIndex - inLowerIndex + 1];
+                int indexStackTop = -1;
+                int pivotIndex;
+
+                indexStack[++indexStackTop] = inLowerIndex;
+                indexStack[++indexStackTop] = inUpperIndex;
+
+                while (indexStackTop >= 1)
                 {
                     inUpperIndex = indexStack[indexStackTop--];
                     inLowerIndex = indexStack[indexStackTop--];
@@ -895,6 +960,43 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Quicksorts a buffer using the given comparison function.
+        /// </summary>
+        static public void Quicksort<T>(T* ioBuffer, int inLowerIndex, int inUpperIndex, delegate*<T*, T*, int> inComparison)
+            where T : unmanaged
+        {
+            if (inLowerIndex >= 0 && inLowerIndex < inUpperIndex)
+            {
+                // lower higher
+                int* indexStack = stackalloc int[inUpperIndex - inLowerIndex + 1];
+                int indexStackTop = -1;
+                int pivotIndex;
+
+                indexStack[++indexStackTop] = inLowerIndex;
+                indexStack[++indexStackTop] = inUpperIndex;
+
+                while (indexStackTop >= 1)
+                {
+                    inUpperIndex = indexStack[indexStackTop--];
+                    inLowerIndex = indexStack[indexStackTop--];
+
+                    pivotIndex = Quicksort_Partition(ioBuffer, inLowerIndex, inUpperIndex, inComparison);
+                    if (inLowerIndex < pivotIndex)
+                    {
+                        indexStack[++indexStackTop] = inLowerIndex;
+                        indexStack[++indexStackTop] = pivotIndex;
+                    }
+                    if (inUpperIndex > pivotIndex + 1)
+                    {
+                        indexStack[++indexStackTop] = pivotIndex + 1;
+                        indexStack[++indexStackTop] = inUpperIndex;
+                    }
+                }
+            }
+        }
+#endif // SUPPORTS_FUNCTION_POINTERS
+
+        /// <summary>
         /// Quicksorts a buffer using the given sorting value function.
         /// </summary>
         static public void Quicksort<T>(T* ioBuffer, int inLowerIndex, int inUpperIndex, ComparisonGetSortingValue<T> inSortingValues)
@@ -910,7 +1012,7 @@ namespace BeauUtil
                 indexStack[++indexStackTop] = inLowerIndex;
                 indexStack[++indexStackTop] = inUpperIndex;
 
-                while(indexStackTop >= 1)
+                while (indexStackTop >= 1)
                 {
                     inUpperIndex = indexStack[indexStackTop--];
                     inLowerIndex = indexStack[indexStackTop--];
@@ -939,20 +1041,20 @@ namespace BeauUtil
             int i = inLower - 1;
             int j = inHigher + 1;
 
-            while(true)
+            while (true)
             {
                 do
                 {
                     i++;
                 }
-                while(inComparison.Compare(ioBuffer[i], centerVal) < 0);
+                while (inComparison.Compare(ioBuffer[i], centerVal) < 0);
 
                 do
                 {
                     j--;
                 }
-                while(inComparison.Compare(ioBuffer[j], centerVal) > 0);
-                
+                while (inComparison.Compare(ioBuffer[j], centerVal) > 0);
+
                 if (i >= j)
                 {
                     return j;
@@ -971,20 +1073,20 @@ namespace BeauUtil
             int i = inLower - 1;
             int j = inHigher + 1;
 
-            while(true)
+            while (true)
             {
                 do
                 {
                     i++;
                 }
-                while(inComparison(ioBuffer[i], centerVal) < 0);
+                while (inComparison(ioBuffer[i], centerVal) < 0);
 
                 do
                 {
                     j--;
                 }
-                while(inComparison(ioBuffer[j], centerVal) > 0);
-                
+                while (inComparison(ioBuffer[j], centerVal) > 0);
+
                 if (i >= j)
                 {
                     return j;
@@ -1003,20 +1105,20 @@ namespace BeauUtil
             int i = inLower - 1;
             int j = inHigher + 1;
 
-            while(true)
+            while (true)
             {
                 do
                 {
                     i++;
                 }
-                while(inComparison(&ioBuffer[i], centerPtr) < 0);
+                while (inComparison(&ioBuffer[i], centerPtr) < 0);
 
                 do
                 {
                     j--;
                 }
-                while(inComparison(&ioBuffer[j], centerPtr) > 0);
-                
+                while (inComparison(&ioBuffer[j], centerPtr) > 0);
+
                 if (i >= j)
                 {
                     return j;
@@ -1035,20 +1137,20 @@ namespace BeauUtil
             int i = inLower - 1;
             int j = inHigher + 1;
 
-            while(true)
+            while (true)
             {
                 do
                 {
                     i++;
                 }
-                while(inSortingValues(&ioBuffer[i]) < centerVal);
+                while (inSortingValues(&ioBuffer[i]) < centerVal);
 
                 do
                 {
                     j--;
                 }
-                while(inSortingValues(&ioBuffer[j]) > centerVal);
-                
+                while (inSortingValues(&ioBuffer[j]) > centerVal);
+
                 if (i >= j)
                 {
                     return j;
@@ -1058,17 +1160,85 @@ namespace BeauUtil
             }
         }
 
+#if SUPPORTS_FUNCTION_POINTERS
+
+        static private int Quicksort_Partition<T>(T* ioBuffer, int inLower, int inHigher, delegate*<T, T, int> inComparison)
+            where T : unmanaged
+        {
+            int center = (inLower + inHigher) >> 1;
+            T centerVal = ioBuffer[center];
+
+            int i = inLower - 1;
+            int j = inHigher + 1;
+
+            while (true)
+            {
+                do
+                {
+                    i++;
+                }
+                while (inComparison(ioBuffer[i], centerVal) < 0);
+
+                do
+                {
+                    j--;
+                }
+                while (inComparison(ioBuffer[j], centerVal) > 0);
+
+                if (i >= j)
+                {
+                    return j;
+                }
+
+                Ref.Swap(ref ioBuffer[i], ref ioBuffer[j]);
+            }
+        }
+
+        static private int Quicksort_Partition<T>(T* ioBuffer, int inLower, int inHigher, delegate*<T*, T*, int> inComparison)
+            where T : unmanaged
+        {
+            int center = (inLower + inHigher) >> 1;
+            T* centerPtr = &ioBuffer[center];
+
+            int i = inLower - 1;
+            int j = inHigher + 1;
+
+            while (true)
+            {
+                do
+                {
+                    i++;
+                }
+                while (inComparison(&ioBuffer[i], centerPtr) < 0);
+
+                do
+                {
+                    j--;
+                }
+                while (inComparison(&ioBuffer[j], centerPtr) > 0);
+
+                if (i >= j)
+                {
+                    return j;
+                }
+
+                Ref.Swap(ref ioBuffer[i], ref ioBuffer[j]);
+            }
+        }
+
+#endif // SUPPORTS_FUNCTION_POINTERS
+
         /// <summary>
         /// Comparison delegate for comparing the contents of two unmanaged objects.
         /// </summary>
         public delegate int ComparisonPtr<T>(T* x, T* y) where T : unmanaged;
-        
+
         /// <summary>
         /// Comparison delegate that generates the sorting value for the given unmanaged object.
         /// </summary>
         public delegate float ComparisonGetSortingValue<T>(T* x) where T : unmanaged;
 
-        #else
+#else
 
         /// <summary>
         /// Quicksorts a buffer using the default comparer object.
@@ -1415,13 +1585,13 @@ namespace BeauUtil
         /// </summary>
         public delegate float ComparisonGetSortingValue<T>(void* x) where T : struct;
 
-        #endif // UNMANAGED_CONSTRAINT
+#endif // UNMANAGED_CONSTRAINT
 
         #endregion // Sort
 
         #region Shuffle
 
-        #if UNMANAGED_CONSTRAINT
+#if UNMANAGED_CONSTRAINT
 
         /// <summary>
         /// Shuffles the given unsafe buffer.
@@ -1429,7 +1599,7 @@ namespace BeauUtil
         static public void Shuffle<T>(this System.Random inRandom, T* inBuffer, int inLength) where T : unmanaged
         {
             int i = inLength, j;
-            while(--i > 0)
+            while (--i > 0)
             {
                 T old = inBuffer[i];
                 inBuffer[i] = inBuffer[j = inRandom.Next(0, i + 1)];

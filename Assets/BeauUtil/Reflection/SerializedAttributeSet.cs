@@ -16,6 +16,7 @@ namespace BeauUtil
     public class SerializedAttributeSet
     {
         public const BindingFlags DefaultBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+        private const MemberTypes AnyMemberFilter = MemberTypes.Property | MemberTypes.Event | MemberTypes.Method | MemberTypes.Field;
 
         #region Types
 
@@ -109,6 +110,14 @@ namespace BeauUtil
         /// </summary>
         public IEnumerable<AttributeBinding<TAttr, MemberInfo>> Read<TAttr>(IEnumerable<Assembly> inAssemblies) where TAttr : Attribute
         {
+            return Read<TAttr, MemberInfo>(inAssemblies);
+        }
+
+        /// <summary>
+        /// Reads all attribute pairs from this info set.
+        /// </summary>
+        public IEnumerable<AttributeBinding<TAttr, TMember>> Read<TAttr, TMember>(IEnumerable<Assembly> inAssemblies) where TAttr : Attribute where TMember : MemberInfo
+        {
             if (!typeof(TAttr).FullName.Equals(AttributeTypeName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("TAttr");
@@ -120,6 +129,7 @@ namespace BeauUtil
             }
 
             Assembly[] assemblyArr = GetAssemblyArray(inAssemblies);
+            MemberTypes types = GetMemberTypeFilterForType(typeof(TMember));
 
             uint typeIndex = 0;
             uint memberIndex = 0;
@@ -141,58 +151,73 @@ namespace BeauUtil
                     TypeBucket typeBucket = Types[typeIndex++];
                     Type type = asm.GetType(typeBucket.TypeName, true, false);
 
-                    if (typeBucket.Self)
+                    if ((types & MemberTypes.TypeInfo) != 0)
                     {
-                        foreach (TAttr attr in type.GetCustomAttributes(typeof(TAttr), LookupInherit))
+                        if (typeBucket.Self)
                         {
-                            yield return new AttributeBinding<TAttr, MemberInfo>(attr, type);
+                            foreach (TAttr attr in type.GetCustomAttributes(typeof(TAttr), LookupInherit))
+                            {
+                                yield return new AttributeBinding<TAttr, TMember>(attr, Unsafe.FastCast<TMember>(type));
+                            }
                         }
                     }
 
-                    while (typeBucket.MemberCount-- > 0)
+                    if ((types & AnyMemberFilter) != 0)
                     {
-                        Member member = Members[memberIndex++];
-                        MemberInfo info;
-                        switch ((MemberTypes) member.Type)
+                        while (typeBucket.MemberCount-- > 0)
                         {
-                            case MemberTypes.Field:
+                            Member member = Members[memberIndex++];
+                            MemberInfo info;
+                            MemberTypes infoType = (MemberTypes) member.Type;
+                            if ((types & infoType) == 0)
                             {
-                                info = type.GetField(member.MemberName, LookupFlags);
-                                break;
+                                continue;
                             }
-                            case MemberTypes.Property:
+
+                            switch (infoType)
                             {
-                                info = type.GetProperty(member.MemberName, LookupFlags);
-                                break;
+                                case MemberTypes.Field:
+                                {
+                                    info = type.GetField(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                case MemberTypes.Property:
+                                {
+                                    info = type.GetProperty(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                case MemberTypes.Event:
+                                {
+                                    info = type.GetEvent(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                case MemberTypes.Method:
+                                {
+                                    info = type.GetMethod(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                default:
+                                {
+                                    throw new NotSupportedException();
+                                }
                             }
-                            case MemberTypes.Event:
+                            foreach (TAttr attr in info.GetCustomAttributes(typeof(TAttr), LookupInherit))
                             {
-                                info = type.GetEvent(member.MemberName, LookupFlags);
-                                break;
+                                yield return new AttributeBinding<TAttr, TMember>(attr, Unsafe.FastCast<TMember>(info));
                             }
-                            case MemberTypes.Method:
-                            {
-                                info = type.GetMethod(member.MemberName, LookupFlags);
-                                break;
-                            }
-                            default:
-                            {
-                                throw new NotSupportedException();
-                            }
-                        }
-                        foreach (TAttr attr in info.GetCustomAttributes(typeof(TAttr), LookupInherit))
-                        {
-                            yield return new AttributeBinding<TAttr, MemberInfo>(attr, info);
                         }
                     }
 
-                    while (typeBucket.OverloadCount-- > 0)
+                    if ((types & MemberTypes.Method) != 0)
                     {
-                        OverloadedMethod overloadedMethod = OverloadedMethods[overloadIndex++];
-                        MemberInfo method = type.GetMethod(overloadedMethod.MethodName, LookupFlags, Type.DefaultBinder, RetrieveTypeArray(overloadedMethod.ParameterTypeRefs), Array.Empty<ParameterModifier>());
-                        foreach (TAttr attr in method.GetCustomAttributes(typeof(TAttr), LookupInherit))
+                        while (typeBucket.OverloadCount-- > 0)
                         {
-                            yield return new AttributeBinding<TAttr, MemberInfo>(attr, method);
+                            OverloadedMethod overloadedMethod = OverloadedMethods[overloadIndex++];
+                            MemberInfo method = type.GetMethod(overloadedMethod.MethodName, LookupFlags, Type.DefaultBinder, RetrieveTypeArray(overloadedMethod.ParameterTypeRefs), Array.Empty<ParameterModifier>());
+                            foreach (TAttr attr in method.GetCustomAttributes(typeof(TAttr), LookupInherit))
+                            {
+                                yield return new AttributeBinding<TAttr, TMember>(attr, Unsafe.FastCast<TMember>(method));
+                            }
                         }
                     }
                 }
@@ -203,6 +228,14 @@ namespace BeauUtil
         /// Reads all attribute pairs from this info set.
         /// </summary>
         public IEnumerable<AttributeBinding<Attribute, MemberInfo>> Read(IEnumerable<Assembly> inAssemblies, Type inAttributeType)
+        {
+            return Read<MemberInfo>(inAssemblies, inAttributeType);
+        }
+
+        /// <summary>
+        /// Reads all attribute pairs from this info set.
+        /// </summary>
+        public IEnumerable<AttributeBinding<Attribute, TMember>> Read<TMember>(IEnumerable<Assembly> inAssemblies, Type inAttributeType) where TMember : MemberInfo
         {
             if (inAttributeType == null)
             {
@@ -220,6 +253,7 @@ namespace BeauUtil
             }
 
             Assembly[] assemblyArr = GetAssemblyArray(inAssemblies);
+            MemberTypes types = GetMemberTypeFilterForType(typeof(TMember));
 
             uint typeIndex = 0;
             uint memberIndex = 0;
@@ -241,58 +275,73 @@ namespace BeauUtil
                     TypeBucket typeBucket = Types[typeIndex++];
                     Type type = asm.GetType(typeBucket.TypeName, true, false);
 
-                    if (typeBucket.Self)
+                    if ((types & MemberTypes.TypeInfo) != 0)
                     {
-                        foreach (Attribute attr in type.GetCustomAttributes(inAttributeType, LookupInherit))
+                        if (typeBucket.Self)
                         {
-                            yield return new AttributeBinding<Attribute, MemberInfo>(attr, type);
+                            foreach (Attribute attr in type.GetCustomAttributes(inAttributeType, LookupInherit))
+                            {
+                                yield return new AttributeBinding<Attribute, TMember>(attr, Unsafe.FastCast<TMember>(type));
+                            }
                         }
                     }
 
-                    while (typeBucket.MemberCount-- > 0)
+                    if ((types & AnyMemberFilter) != 0)
                     {
-                        Member member = Members[memberIndex++];
-                        MemberInfo info;
-                        switch ((MemberTypes) member.Type)
+                        while (typeBucket.MemberCount-- > 0)
                         {
-                            case MemberTypes.Field:
+                            Member member = Members[memberIndex++];
+                            MemberInfo info;
+                            MemberTypes infoType = (MemberTypes) member.Type;
+                            if ((types & infoType) == 0)
                             {
-                                info = type.GetField(member.MemberName, LookupFlags);
-                                break;
+                                continue;
                             }
-                            case MemberTypes.Property:
+
+                            switch (infoType)
                             {
-                                info = type.GetProperty(member.MemberName, LookupFlags);
-                                break;
+                                case MemberTypes.Field:
+                                {
+                                    info = type.GetField(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                case MemberTypes.Property:
+                                {
+                                    info = type.GetProperty(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                case MemberTypes.Event:
+                                {
+                                    info = type.GetEvent(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                case MemberTypes.Method:
+                                {
+                                    info = type.GetMethod(member.MemberName, LookupFlags);
+                                    break;
+                                }
+                                default:
+                                {
+                                    throw new NotSupportedException();
+                                }
                             }
-                            case MemberTypes.Event:
+                            foreach (Attribute attr in info.GetCustomAttributes(inAttributeType, LookupInherit))
                             {
-                                info = type.GetEvent(member.MemberName, LookupFlags);
-                                break;
+                                yield return new AttributeBinding<Attribute, TMember>(attr, Unsafe.FastCast<TMember>(info));
                             }
-                            case MemberTypes.Method:
-                            {
-                                info = type.GetMethod(member.MemberName, LookupFlags);
-                                break;
-                            }
-                            default:
-                            {
-                                throw new NotSupportedException();
-                            }
-                        }
-                        foreach (Attribute attr in info.GetCustomAttributes(inAttributeType, LookupInherit))
-                        {
-                            yield return new AttributeBinding<Attribute, MemberInfo>(attr, info);
                         }
                     }
 
-                    while (typeBucket.OverloadCount-- > 0)
+                    if ((types & MemberTypes.Method) != 0)
                     {
-                        OverloadedMethod overloadedMethod = OverloadedMethods[overloadIndex++];
-                        MemberInfo method = type.GetMethod(overloadedMethod.MethodName, LookupFlags, Type.DefaultBinder, RetrieveTypeArray(overloadedMethod.ParameterTypeRefs), Array.Empty<ParameterModifier>());
-                        foreach (Attribute attr in method.GetCustomAttributes(inAttributeType, LookupInherit))
+                        while (typeBucket.OverloadCount-- > 0)
                         {
-                            yield return new AttributeBinding<Attribute, MemberInfo>(attr, method);
+                            OverloadedMethod overloadedMethod = OverloadedMethods[overloadIndex++];
+                            MemberInfo method = type.GetMethod(overloadedMethod.MethodName, LookupFlags, Type.DefaultBinder, RetrieveTypeArray(overloadedMethod.ParameterTypeRefs), Array.Empty<ParameterModifier>());
+                            foreach (Attribute attr in method.GetCustomAttributes(inAttributeType, LookupInherit))
+                            {
+                                yield return new AttributeBinding<Attribute, TMember>(attr, Unsafe.FastCast<TMember>(method));
+                            }
                         }
                     }
                 }
@@ -369,6 +418,36 @@ namespace BeauUtil
             return list.ToArray();
         }
 
+        static private MemberTypes GetMemberTypeFilterForType(Type inMemberType)
+        {
+            if (inMemberType == typeof(MemberInfo))
+            {
+                return MemberTypes.All;
+            }
+            if (typeof(Type).IsAssignableFrom(inMemberType))
+            {
+                return MemberTypes.TypeInfo;
+            }
+            if (typeof(FieldInfo).IsAssignableFrom(inMemberType))
+            {
+                return MemberTypes.Field;
+            }
+            if (typeof(PropertyInfo).IsAssignableFrom(inMemberType))
+            {
+                return MemberTypes.Property;
+            }
+            if (typeof(MethodInfo).IsAssignableFrom(inMemberType))
+            {
+                return MemberTypes.Method;
+            }
+            if (typeof(EventInfo).IsAssignableFrom(inMemberType))
+            {
+                return MemberTypes.Event;
+            }
+
+            throw new ArgumentException("Member type must be MemberInfo, Type, FieldInfo, PropertyInfo, MethodInfo, or EventInfo", "inMemberType");
+        }
+
         #endregion // Reading
 
         #region Writing
@@ -385,6 +464,14 @@ namespace BeauUtil
         /// Overwrites with data describing attributes present in the given assembly.
         /// </summary>
         public void Write(IEnumerable<Assembly> inAssemblies, Type inAttributeType, BindingFlags inSearchFlags = DefaultBindingFlags, bool inbInherit = false)
+        {
+            Write(inAssemblies, inAttributeType, MemberTypes.All, inSearchFlags, inbInherit);
+        }
+
+        /// <summary>
+        /// Overwrites with data describing attributes present in the given assembly.
+        /// </summary>
+        public void Write(IEnumerable<Assembly> inAssemblies, Type inAttributeType, MemberTypes inMemberTypes, BindingFlags inSearchFlags = DefaultBindingFlags, bool inbInherit = false)
         {
             if (inAttributeType == null)
             {
@@ -411,73 +498,85 @@ namespace BeauUtil
                 {
                     int memberCount = 0;
                     int overloadedCount = 0;
-                    bool self = type.IsDefined(inAttributeType, inbInherit);
+                    bool self = (inMemberTypes & MemberTypes.TypeInfo) != 0 && type.IsDefined(inAttributeType, inbInherit);
 
-                    foreach (var field in type.GetFields(inSearchFlags))
+                    if ((inMemberTypes & MemberTypes.Field) != 0)
                     {
-                        if (field.IsDefined(inAttributeType, inbInherit))
+                        foreach (var field in type.GetFields(inSearchFlags))
                         {
-                            members.Add(new Member()
-                            {
-                                MemberName = field.Name,
-                                Type = (byte) MemberTypes.Field
-                            });
-                            memberCount++;
-                        }
-                    }
-
-                    foreach (var prop in type.GetProperties(inSearchFlags))
-                    {
-                        if (prop.IsDefined(inAttributeType, inbInherit))
-                        {
-                            members.Add(new Member()
-                            {
-                                MemberName = prop.Name,
-                                Type = (byte) MemberTypes.Property
-                            });
-                            memberCount++;
-                        }
-                    }
-
-                    foreach (var evt in type.GetEvents(inSearchFlags))
-                    {
-                        if (evt.IsDefined(inAttributeType, inbInherit))
-                        {
-                            members.Add(new Member()
-                            {
-                                MemberName = evt.Name,
-                                Type = (byte) MemberTypes.Event
-                            });
-                            memberCount++;
-                        }
-                    }
-
-                    MethodInfo[] allMethods = type.GetMethods(inSearchFlags);
-                    foreach (var method in allMethods)
-                    {
-                        if (method.IsGenericMethod)
-                        {
-                            continue;
-                        }
-
-                        if (method.IsDefined(inAttributeType, inbInherit))
-                        {
-                            if (IsPotentialOverloadedMethod(allMethods, method))
-                            {
-                                OverloadedMethod overload;
-                                overload.MethodName = method.Name;
-                                overload.ParameterTypeRefs = RetrieveOverloadedParameterReferences(typeRefs, method);
-                                overloadedMethods.Add(overload);
-                                overloadedCount++;
-                            }
-                            else
+                            if (field.IsDefined(inAttributeType, inbInherit))
                             {
                                 members.Add(new Member()
                                 {
-                                    MemberName = method.Name,
-                                    Type = (byte) MemberTypes.Method
+                                    MemberName = field.Name,
+                                    Type = (byte) MemberTypes.Field
                                 });
                                 memberCount++;
+                            }
+                        }
+                    }
+
+                    if ((inMemberTypes & MemberTypes.Property) != 0)
+                    {
+                        foreach (var prop in type.GetProperties(inSearchFlags))
+                        {
+                            if (prop.IsDefined(inAttributeType, inbInherit))
+                            {
+                                members.Add(new Member()
+                                {
+                                    MemberName = prop.Name,
+                                    Type = (byte) MemberTypes.Property
+                                });
+                                memberCount++;
+                            }
+                        }
+                    }
+
+                    if ((inMemberTypes & MemberTypes.Event) != 0)
+                    {
+                        foreach (var evt in type.GetEvents(inSearchFlags))
+                        {
+                            if (evt.IsDefined(inAttributeType, inbInherit))
+                            {
+                                members.Add(new Member()
+                                {
+                                    MemberName = evt.Name,
+                                    Type = (byte) MemberTypes.Event
+                                });
+                                memberCount++;
+                            }
+                        }
+                    }
+
+                    if ((inMemberTypes & MemberTypes.Method) != 0)
+                    {
+                        MethodInfo[] allMethods = type.GetMethods(inSearchFlags);
+                        foreach (var method in allMethods)
+                        {
+                            if (method.IsGenericMethod)
+                            {
+                                continue;
+                            }
+
+                            if (method.IsDefined(inAttributeType, inbInherit))
+                            {
+                                if (IsPotentialOverloadedMethod(allMethods, method))
+                                {
+                                    OverloadedMethod overload;
+                                    overload.MethodName = method.Name;
+                                    overload.ParameterTypeRefs = RetrieveOverloadedParameterReferences(typeRefs, method);
+                                    overloadedMethods.Add(overload);
+                                    overloadedCount++;
+                                }
+                                else
+                                {
+                                    members.Add(new Member()
+                                    {
+                                        MemberName = method.Name,
+                                        Type = (byte) MemberTypes.Method
+                                    });
+                                    memberCount++;
+                                }
                             }
                         }
                     }

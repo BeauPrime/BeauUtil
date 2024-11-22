@@ -510,10 +510,9 @@ namespace BeauUtil
             where T : struct, IConvertible
         #endif // HAS_ENUM_CONSTRAINT
         {
-            if (inbState)
-                Add(ref ioBitArray, inMask);
-            else
-                Remove(ref ioBitArray, inMask);
+            ulong bits = Enums.ToULong(ioBitArray);
+            ulong mask = Enums.ToULong(inMask);
+            ioBitArray = Enums.ToEnum<T>((bits & ~mask) | (NegateBoolU64(inbState) & mask));
         }
 
         /// <summary>
@@ -529,10 +528,9 @@ namespace BeauUtil
             where T : struct, IConvertible
 #endif // HAS_ENUM_CONSTRAINT
         {
-            if (inbState)
-                return Add(inBitArray, inMask);
-            else
-                return Remove(inBitArray, inMask);
+            ulong bits = Enums.ToULong(inBitArray);
+            ulong mask = Enums.ToULong(inMask);
+            return Enums.ToEnum<T>((bits & ~mask) | (NegateBoolU64(inbState) & mask));
         }
 
         #endregion // Add/Remove
@@ -545,10 +543,16 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(int inBitArray)
         {
-            unsafe
-            {
-                return IndexOf(*(uint*)(&inBitArray));
-            }
+#if USING_MATHEMATICS
+            if (inBitArray == 0)
+                return -1;
+            if ((inBitArray & (inBitArray - 1)) != 0)
+                return -1;
+
+            return math.tzcnt(inBitArray);
+#else
+            return IndexOf((uint)inBitArray);
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
@@ -581,10 +585,16 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int IndexOf(long inBitArray)
         {
-            unsafe
-            {
-                return IndexOf(*(ulong*) (&inBitArray));
-            }
+#if USING_MATHEMATICS
+            if (inBitArray == 0)
+                return -1;
+            if ((inBitArray & (inBitArray - 1)) != 0)
+                return -1;
+
+            return math.tzcnt(inBitArray);
+#else
+            return IndexOf((ulong) inBitArray);
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
@@ -637,10 +647,11 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count(int inBitArray)
         {
-            unsafe
-            {
-                return Count(*(uint*)(&inBitArray));
-            }
+#if USING_MATHEMATICS
+            return math.countbits(inBitArray);
+#else
+            return Count((uint)inBitArray);
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
@@ -668,10 +679,11 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int Count(long inBitArray)
         {
-            unsafe
-            {
-                return Count(*(ulong*)(&inBitArray));
-            }
+#if USING_MATHEMATICS
+            return math.countbits(inBitArray);
+#else
+            return Count((ulong)inBitArray);
+#endif // USING_MATHEMATICS
         }
 
         /// <summary>
@@ -719,11 +731,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int RotateLeft(int inBitArray, int inAmount)
         {
-            unsafe
-            {
-                uint rot = RotateLeft(*(uint*) (&inBitArray), inAmount);
-                return *(int*) &rot;
-            }
+            return (int) RotateLeft((uint) inBitArray, inAmount);
         }
 
         /// <summary>
@@ -732,7 +740,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RotateLeft(ref int ioBitArray, int inAmount)
         {
-            ioBitArray = RotateLeft(ioBitArray, inAmount);
+            ioBitArray = (int) RotateLeft((uint) ioBitArray, inAmount);
         }
 
         /// <summary>
@@ -759,11 +767,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public long RotateLeft(long inBitArray, int inAmount)
         {
-            unsafe
-            {
-                ulong rot = RotateLeft(*(ulong*) (&inBitArray), inAmount);
-                return *(long*) &rot;
-            }
+            return (long) RotateLeft((ulong) inBitArray, inAmount);
         }
 
         /// <summary>
@@ -772,7 +776,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RotateLeft(ref long ioBitArray, int inAmount)
         {
-            ioBitArray = RotateLeft(ioBitArray, inAmount);
+            ioBitArray = (long) RotateLeft((ulong) ioBitArray, inAmount);
         }
 
         /// <summary>
@@ -799,11 +803,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int RotateRight(int inBitArray, int inAmount)
         {
-            unsafe
-            {
-                uint rot = RotateRight(*(uint*) (&inBitArray), inAmount);
-                return *(int*) &rot;
-            }
+            return (int) RotateRight((uint) inBitArray, inAmount);
         }
 
         /// <summary>
@@ -812,7 +812,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RotateRight(ref int ioBitArray, int inAmount)
         {
-            ioBitArray = RotateRight(ioBitArray, inAmount);
+            ioBitArray = (int) RotateRight((uint) ioBitArray, inAmount);
         }
 
         /// <summary>
@@ -839,11 +839,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public long RotateRight(long inBitArray, int inAmount)
         {
-            unsafe
-            {
-                ulong rot = RotateRight(*(ulong*) (&inBitArray), inAmount);
-                return *(long*) &rot;
-            }
+            return (long) RotateRight((ulong) inBitArray, inAmount);
         }
 
         /// <summary>
@@ -852,7 +848,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void RotateRight(ref long ioBitArray, int inAmount)
         {
-            ioBitArray = RotateRight(ioBitArray, inAmount);
+            ioBitArray = (long) RotateRight((ulong) ioBitArray, inAmount);
         }
 
         /// <summary>
@@ -1005,10 +1001,7 @@ namespace BeauUtil
 
         public BitEnumerator32(int inMask)
         {
-            unsafe
-            {
-                m_Mask = *(uint*) &inMask;
-            }
+            m_Mask = (uint) inMask;
             m_Last = -1;
             m_Offset = 0;
         }
@@ -1078,10 +1071,7 @@ namespace BeauUtil
 
         public BitEnumerator64(long inMask)
         {
-            unsafe
-            {
-                m_Mask = *(ulong*) &inMask;
-            }
+            m_Mask = (ulong) inMask;
             m_Last = -1;
             m_Offset = 0;
         }

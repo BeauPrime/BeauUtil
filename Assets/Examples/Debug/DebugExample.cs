@@ -20,7 +20,6 @@ public class DebugExample : MonoBehaviour
 
         DMInfo rootMenu = new DMInfo("Debug", 8);
         rootMenu
-            .AddSubmenu(subMenu)
             .AddButton("Log Debug Text", () => print("some debug text"))
             .AddButton("Log More Debug Text", () => print("some more debug text"))
             .AddToggle("Enable Advanced Logging", () => m_AdvancedLogging, (b) => m_AdvancedLogging = b)
@@ -29,11 +28,13 @@ public class DebugExample : MonoBehaviour
             .AddDivider()
             .AddSlider("Slide X", () => slide.position.x, (f) => slide.position = new Vector3(f, slide.position.y, slide.position.z), -10, 10, 0, "{0:0.0}", () => m_AdvancedLogging)
             .AddDivider()
+            .AddSubmenu(subMenu)
+            .AddDivider()
             .AddText("Frame Count", () => Time.frameCount.ToString())
             .AddText("Scene GUID", () => guid);
 
         DMInfo newMenu = new DMInfo("Gameplay");
-        newMenu.AddButton("Useless Button", () => { });
+        newMenu.AddButton("Useless Button", () => { Debug.Log("useless!"); });
 
         DMInfo.MergeSubmenu(rootMenu, newMenu);
 
@@ -43,5 +44,48 @@ public class DebugExample : MonoBehaviour
     private void LateUpdate()
     {
         menuUI.UpdateElements();
+
+        menuUI.SubmitCommand(GetCommand());
+    }
+
+    static private DMMenuUI.NavigationCommand GetCommand()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            return DMMenuUI.NavigationCommand.MoveArrowUp;
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            return DMMenuUI.NavigationCommand.MoveArrowDown;
+        }
+        if (Input.GetKeyDown(KeyCode.Backspace))
+        {
+            return DMMenuUI.NavigationCommand.Back;
+        }
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            return DMMenuUI.NavigationCommand.SelectArrow;
+        }
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                return DMMenuUI.NavigationCommand.DecreaseSlider;
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                return DMMenuUI.NavigationCommand.IncreaseSlider;
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            return DMMenuUI.NavigationCommand.PrevPage;
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            return DMMenuUI.NavigationCommand.NextPage;
+        }
+
+        return DMMenuUI.NavigationCommand.None;
     }
 }

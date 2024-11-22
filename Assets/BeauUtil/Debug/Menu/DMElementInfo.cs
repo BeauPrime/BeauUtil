@@ -211,6 +211,7 @@ namespace BeauUtil.Debugger
         public DMSetFloatDelegate Setter;
         public DMFloatTextDelegate Label;
         public DMSliderRange Range;
+        public string[] Labels;
     }
 
     /// <summary>

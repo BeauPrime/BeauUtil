@@ -17,6 +17,7 @@ using System;
 using System.Text;
 using System.Reflection;
 using UnityEngine.Scripting;
+using System.IO;
 
 namespace BeauUtil
 {
@@ -406,6 +407,74 @@ namespace BeauUtil
         /// Non-functional in non-development builds.
         /// </summary>
         static public void DumpReverseLookupStats()
+        {
+        }
+
+        #endif // PRESERVE_DEBUG_SYMBOLS
+
+        #if PRESERVE_DEBUG_SYMBOLS
+
+        /// <summary>
+        /// Dumps the reverse lookup tables to the given stream.
+        /// Non-functional in non-development builds.
+        /// </summary>
+        static public void DumpReverseLookupTables(TextWriter writer)
+        {
+            if (!s_ReverseLookupEnabled)
+            {
+                UnityEngine.Debug.LogFormat("[StringHashing] Reverse Hash disabled, no table");
+                return;
+            }
+
+            long hash32size = 0, hash32count = 0, hash32capacity = 0;
+            long hash64size = 0, hash64count = 0, hash64capacity = 0;
+            float hash32usage = 0;
+            float hash64usage = 0;
+
+            if (s_ReverseLookup32 != null)
+            {
+                hash32capacity = s_ReverseLookup32.GetCapacity();
+                hash32count = s_ReverseLookup32.Count;
+                hash32usage = hash32count * 100f / hash32capacity;
+
+                writer.WriteLine("32bit Table - {0} entries ({1}% of {2})", hash32count, hash32usage, hash32capacity);
+
+                hash32size += 24 * hash32capacity;
+                foreach (var kvp in s_ReverseLookup32)
+                {
+                    hash32size += 12 + kvp.Value.Length * 2;
+                    writer.WriteLine("{0} = '{1}'", kvp.Key.ToString("X8"), kvp.Value);
+                }
+
+                writer.WriteLine("Memory Usage (32): {0}", Unsafe.FormatBytes(hash32size));
+            }
+
+            if (s_ReverseLookup64 != null)
+            {
+                hash64capacity = s_ReverseLookup64.GetCapacity();
+                hash64count = s_ReverseLookup64.Count;
+                hash64usage = hash64count * 100f / hash64capacity;
+
+                writer.WriteLine("64bit Table - {0} entries ({1}% of {2})", hash64count, hash64usage, hash64capacity);
+
+                hash64size += 24 * hash64capacity;
+                foreach (var kvp in s_ReverseLookup64)
+                {
+                    hash64size += 12 + kvp.Value.Length * 2;
+                    writer.WriteLine("{0} = '{1}'", kvp.Key.ToString("X16"), kvp.Value);
+                }
+
+                writer.WriteLine("Memory Usage (64): {0}", Unsafe.FormatBytes(hash64size));
+            }
+        }
+
+        #else
+
+        /// <summary>
+        /// Dumps the reverse lookup tables to the given stream.
+        /// Non-functional in non-development builds.
+        /// </summary>
+        static public void DumpReverseLookupTables(TextWriter writer)
         {
         }
 

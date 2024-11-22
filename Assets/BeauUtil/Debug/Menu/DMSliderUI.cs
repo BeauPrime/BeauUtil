@@ -14,6 +14,7 @@ using UnityEngine.UI;
 
 namespace BeauUtil.Debugger
 {
+    [RequireComponent(typeof(DMInteractableUI))]
     public class DMSliderUI : MonoBehaviour
     {
         #region Inspector
@@ -30,6 +31,7 @@ namespace BeauUtil.Debugger
         [NonSerialized] public int ElementIndex;
         [NonSerialized] private float m_LastValue;
         [NonSerialized] private int m_OriginalIndent;
+        [NonSerialized] private float m_RemappedIncrement;
 
         private Action<DMSliderUI, float> m_OnValueChanged;
 
@@ -40,15 +42,20 @@ namespace BeauUtil.Debugger
             m_OriginalIndent = m_IndentGroup.padding.left;
         }
 
-        public void Initialize(int inElementIndex, DMElementInfo inInfo, Action<DMSliderUI, float> inOnUpdated, int inIndent)
+        public void Initialize(int inElementIndex, DMElementInfo inInfo, Action<DMSliderUI, float> inOnUpdated, int inIndent, int inInteractableIndex, DMMenuUI inMenuUI)
         {
+            if (!Interactable) {
+                Awake();
+            }
+
             ElementIndex = inElementIndex;
 
             RectOffset padding = m_IndentGroup.padding;
             padding.left = m_OriginalIndent + inIndent;
             m_IndentGroup.padding = padding;
 
-            Interactable.SetInteractive(DMInfo.EvaluateOptionalPredicate(inInfo.Predicate), true);
+            Interactable.Initialize(inInfo, inMenuUI);
+            Interactable.InteractableIndex = inInteractableIndex;
 
             m_Label.SetText(inInfo.Label);
 
@@ -66,11 +73,13 @@ namespace BeauUtil.Debugger
             {
                 m_Slider.wholeNumbers = false;
                 m_Slider.maxValue = 1;
+                m_RemappedIncrement = 0.1f;
             }
             else
             {
                 m_Slider.maxValue = incrementCount;
                 m_Slider.wholeNumbers = true;
+                m_RemappedIncrement = 1;
             }
         }
 
@@ -95,6 +104,17 @@ namespace BeauUtil.Debugger
             return UpdateValue(inRawValue, inInfo, false);
         }
 
+        /// <summary>
+        /// Updates the currently displayed value by the given number of ticks.
+        /// </summary>
+        public void AdjustValueInTicks(int inTickCount)
+        {
+            float currentValue = m_Slider.value;
+            float nextValue = currentValue + m_RemappedIncrement * inTickCount;
+            nextValue = Math.Clamp(nextValue, 0, m_Slider.maxValue);
+            m_Slider.value = nextValue;
+        }
+
         private bool UpdateValue(float inRawValue, DMSliderInfo inInfo, bool inbForce)
         {
             if (!inbForce && m_LastValue == inRawValue)
@@ -111,7 +131,8 @@ namespace BeauUtil.Debugger
             
             m_Slider.SetValueWithoutNotify(val);
 
-            string display = inInfo.Label?.Invoke(inRawValue) ?? inRawValue.ToString();
+            string display = inInfo.Label?.Invoke(inRawValue);
+            inRawValue.ToString();
             m_Value.SetText(display);
 
             return true;

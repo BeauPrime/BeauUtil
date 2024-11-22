@@ -24,11 +24,11 @@
 #endif // USING_TINYIL
 
 #if UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64 || ENABLE_WASM64
-    #define WORD_SIZE_64
+#define WORD_SIZE_64
 #elif !UNITY_EDITOR && UNITY_WEBGL
-    #define WORD_SIZE_32
+#define WORD_SIZE_32
 #else
-    #define WORD_SIZE_RUNTIME
+#define WORD_SIZE_RUNTIME
 #endif // UNITY_64 || UNITY_EDITOR_64 || PLATFORM_ARCH_64 || ENABLE_WASM64
 
 using System;
@@ -38,6 +38,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using BeauUtil.Debugger;
+
+#if USING_BURST
+using Unity.Burst;
+using Unity.Burst.CompilerServices;
+#endif // USING_BURST
 
 #if WORD_SIZE_64 || WORD_SIZE_RUNTIME
 using PointerIntegral = System.UInt64;

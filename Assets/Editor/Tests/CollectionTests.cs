@@ -604,6 +604,26 @@ namespace BeauUtil.UnitTests
             map.Remove(mapped);
 
             Assert.False(map.Contains(mapped));
+
+            UniqueIdAllocator16 secondary = new UniqueIdAllocator16(64);
+            RingBuffer<UniqueId16> handleStack = new RingBuffer<UniqueId16>();
+            int opCount = 1 << 20;
+            while(opCount-- > 0)
+            {
+                if (handleStack.Count < UniqueId16.MaxIndex && (handleStack.Count == 0 || RNG.Instance.Chance(0.5f)))
+                {
+                    //Debug.Log("alloc");
+                    handleStack.PushBack(secondary.Alloc());
+                }
+                else
+                {
+                    //Debug.Log("free");
+                    int idx = RNG.Instance.Next(handleStack.Count);
+                    UniqueId16 handle = handleStack[idx];
+                    handleStack.FastRemoveAt(idx);
+                    secondary.Free(handle);
+                }
+            }
         }
 
         [Test]
@@ -634,6 +654,26 @@ namespace BeauUtil.UnitTests
             var next = alloc.Alloc();
             Assert.AreEqual(0, next.Index);
             Assert.AreNotEqual(first, next);
+
+            UniqueIdAllocator32 secondary = new UniqueIdAllocator32(64);
+            RingBuffer<UniqueId32> handleStack = new RingBuffer<UniqueId32>();
+            int opCount = 1 << 20;
+            while (opCount-- > 0)
+            {
+                if (handleStack.Count < UniqueId32.MaxIndex && (handleStack.Count == 0 || RNG.Instance.Chance(0.5f)))
+                {
+                    //Debug.Log("alloc");
+                    handleStack.PushBack(secondary.Alloc());
+                }
+                else
+                {
+                    //Debug.Log("free");
+                    int idx = RNG.Instance.Next(handleStack.Count);
+                    UniqueId32 handle = handleStack[idx];
+                    handleStack.FastRemoveAt(idx);
+                    secondary.Free(handle);
+                }
+            }
         }
 
         [TypeIndexCapacity(1024)]
@@ -734,7 +774,7 @@ namespace BeauUtil.UnitTests
 
             using (BeauUtil.Debugger.Log.DisableMsgStackTrace())
             {
-                foreach (var binding in attrSet.Read<PreserveAttribute>(Reflect.FindAllUserAssemblies()))
+                foreach (var binding in attrSet.Read<PreserveAttribute, MethodInfo>(Reflect.FindAllUserAssemblies()))
                 {
                     Assert.NotNull(binding.Info);
                     Debug.LogFormat("Attribute {0} on {1}::{2}", binding.Attribute.GetType(), binding.Info.DeclaringType?.FullName, binding.Info.Name);

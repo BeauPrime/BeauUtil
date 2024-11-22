@@ -14,6 +14,7 @@ using UnityEngine.UI;
 
 namespace BeauUtil.Debugger
 {
+    [RequireComponent(typeof(DMInteractableUI))]
     public class DMButtonUI : MonoBehaviour
     {
         #region Inspector
@@ -64,8 +65,12 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Initializes the button with the given element info.
         /// </summary>
-        public void Initialize(int inElementIndex, DMElementInfo inInfo, Action<DMButtonUI> inOnClick, int inIndent)
+        public void Initialize(int inElementIndex, DMElementInfo inInfo, Action<DMButtonUI> inOnClick, int inIndent, int inInteractableIndex, DMMenuUI inMenuUI)
         {
+            if (!Interactable) {
+                Awake();
+            }
+
             ElementIndex = inElementIndex;
             m_OnClick = inOnClick;
             m_Label.SetText(inInfo.Label);
@@ -81,9 +86,10 @@ namespace BeauUtil.Debugger
                 element.offsetMin = offset;
             }
 
-            Interactable.SetInteractive(DMInfo.EvaluateOptionalPredicate(inInfo.Predicate), true);
+            Interactable.Initialize(inInfo, inMenuUI);
+            Interactable.InteractableIndex = inInteractableIndex;
 
-            switch(inInfo.Type)
+            switch (inInfo.Type)
             {
                 case DMElementType.Button:
                 case DMElementType.Submenu:

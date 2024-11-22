@@ -159,6 +159,12 @@ namespace BeauUtil.Variants
                             break;
                         }
 
+                    case VariantType.InstanceId:
+                        {
+                            EditorGUI.HelpBox(propRect, "Object reference not allowed", MessageType.Error);
+                            break;
+                        }
+
                 }
 
                 EditorGUI.EndProperty();

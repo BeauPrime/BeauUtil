@@ -136,6 +136,12 @@ namespace BeauUtil
             return inA.Id >= inB.Id;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public implicit operator bool(UniqueId16 inA)
+        {
+            return inA.Id != 0;
+        }
+
         #endregion // Operators
 
         #region Comparisons
@@ -287,6 +293,12 @@ namespace BeauUtil
             return inA.Id >= inB.Id;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public implicit operator bool(UniqueId32 inA)
+        {
+            return inA.Id != 0;
+        }
+
         #endregion // Operators
 
         #region Comparisons
@@ -436,6 +448,12 @@ namespace BeauUtil
         static public bool operator >=(UniqueId64 inA, UniqueId64 inB)
         {
             return inA.Id >= inB.Id;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public implicit operator bool(UniqueId64 inA)
+        {
+            return inA.Id != 0;
         }
 
         #endregion // Operators

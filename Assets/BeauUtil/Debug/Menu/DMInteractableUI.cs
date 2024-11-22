@@ -8,26 +8,40 @@
  */
 
 using System;
+using BeauUtil.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BeauUtil.Debugger
 {
-    public class DMInteractableUI : MonoBehaviour
+    public sealed class DMInteractableUI : MonoBehaviour
     {
         #region Inspector
 
         [SerializeField] private CanvasGroup m_FullGroup = null;
         [SerializeField] private float m_DisabledAlpha = 0.5f;
         [SerializeField] private Graphic m_MainRaycaster = null;
+        [SerializeField] private PointerListener m_PointerListener;
+
+        [SerializeField] public Selectable Selectable = null;
 
         #endregion // Inspector
 
-        [NonSerialized] public int ElementIndex;
+        [NonSerialized] private DMMenuUI m_MenuUI;
+        [NonSerialized] public int InteractableIndex;
         [NonSerialized] private bool m_LastEnabled;
 
         #region Internal
+
+        private void Awake()
+        {
+            if (m_PointerListener != null)
+            {
+                m_PointerListener.onPointerEnter.Register(OnPointerEnter);
+            }
+        }
 
         internal void SetInteractive(bool inbEnabled, bool inbForce)
         {
@@ -48,9 +62,10 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Initializes the button with the given element info.
         /// </summary>
-        public void Initialize(DMElementInfo inInfo)
+        public void Initialize(DMElementInfo inInfo, DMMenuUI inMenu)
         {
             SetInteractive(DMInfo.EvaluateOptionalPredicate(inInfo.Predicate), true);
+            m_MenuUI = inMenu;
         }
 
         /// <summary>
@@ -59,6 +74,11 @@ namespace BeauUtil.Debugger
         public void UpdateInteractive(bool inbEnabled)
         {
             SetInteractive(inbEnabled, false);
+        }
+
+        private void OnPointerEnter(PointerEventData eventData)
+        {
+            m_MenuUI.OnInteractableHover(this);
         }
     }
 }

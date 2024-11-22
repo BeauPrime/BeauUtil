@@ -29,6 +29,13 @@ namespace BeauUtil
 
         private bool m_Initialized = false;
 
+        /// <summary>
+        /// Persistence key. Any other Persist objects with this key will be destroyed.
+        /// </summary>
+        public string UniqueId {
+            get { return m_UniqueID; }
+        }
+
         private void Awake()
         {
             if (!string.IsNullOrEmpty(m_UniqueID))

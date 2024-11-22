@@ -108,8 +108,8 @@ namespace BeauUtil
             }
             #endif // UNITY_EDITOR
 
-            m_Camera.AddOnPreRender(this);
-            m_Camera.AddOnPostRender(this);
+            m_Camera.AddOnPreRender(this, ExecutionOrder.Max);
+            m_Camera.AddOnPostRender(this, ExecutionOrder.Min);
         }
 
         private void OnDisable()

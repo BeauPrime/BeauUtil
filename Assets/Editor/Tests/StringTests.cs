@@ -208,6 +208,13 @@ namespace BeauUtil.UnitTests
             }
 
             StringHashing.DumpReverseLookupStats();
+            using(var filestream = File.OpenWrite("Temp/TestStringHash32Dump.txt"))
+            {
+                using(var writer = new StreamWriter(filestream))
+                {
+                    StringHashing.DumpReverseLookupTables(writer);
+                }
+            }
             StringHashing.SetOnCollision(null);
         }
 
@@ -236,6 +243,13 @@ namespace BeauUtil.UnitTests
                 Debug.LogErrorFormat("[StringTests] {0} collisions with hash size 64", collisionCount);
 
             StringHashing.DumpReverseLookupStats();
+            using (var filestream = File.OpenWrite("Temp/TestStringHash64Dump.txt"))
+            {
+                using (var writer = new StreamWriter(filestream))
+                {
+                    StringHashing.DumpReverseLookupTables(writer);
+                }
+            }
             StringHashing.SetOnCollision(null);
         }
 

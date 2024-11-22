@@ -161,7 +161,7 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Returns the distance from the camera of a specific frustrum height.
+        /// Returns the distance from the camera of a given frustrum height and FOV.
         /// </summary>
         static public float DistanceForHeightAndFOV(float inHeight, float inFOV)
         {
@@ -169,11 +169,19 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Returns the distance from the camera of a specific frustrum height.
+        /// Returns the frustum height of a camera at the given distance and FOV.
         /// </summary>
         static public float HeightForDistanceAndFOV(float inDistance, float inFOV)
         {
-            return (float) (2f * Math.Tan(inFOV / 2 * Mathf.Deg2Rad) * inDistance);
+            return (float) (2f * Math.Tan(inFOV / 2 * Mathf.Deg2Rad)) * inDistance;
+        }
+
+        /// <summary>
+        /// Returns the unit frustum height of a camera with the given FOV.
+        /// </summary>
+        static public float UnitHeightForFOV(float inFOV)
+        {
+            return (float) (2f * Math.Tan(inFOV / 2 * Mathf.Deg2Rad));
         }
     
         #endregion // FOV calculation

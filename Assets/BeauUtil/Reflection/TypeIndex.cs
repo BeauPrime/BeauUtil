@@ -31,7 +31,12 @@ namespace BeauUtil
         /// <summary>
         /// Null index.
         /// </summary>
-        private const ushort NullIndex = ushort.MaxValue;
+        private const int NullIndex = -1;
+
+        /// <summary>
+        /// Maximum index.
+        /// </summary>
+        private const int MaxIndex = ushort.MaxValue;
 
         /// <summary>
         /// Maximum number of type indices.
@@ -45,10 +50,10 @@ namespace BeauUtil
 
         static private readonly bool s_RootIsInterface;
 
-        static private ushort s_Allocated = 0;
-        static private readonly Dictionary<Type, ushort> s_TypeMap;
+        static private int s_Allocated = 0;
+        static private readonly Dictionary<Type, int> s_TypeMap;
         static private readonly Type[] s_IndexMap;
-        static private readonly ushort[] s_ParentMap;
+        static private readonly int[] s_ParentMap;
 
         //static private ushort s_
 
@@ -65,16 +70,16 @@ namespace BeauUtil
                 Capacity = 128;
             }
 
-            if (Capacity >= NullIndex || Capacity < 8)
+            if (Capacity > MaxIndex || Capacity < 8)
             {
-                throw new ArgumentOutOfRangeException("Capacity", "Capacity must be between 8 and " + NullIndex);
+                throw new ArgumentOutOfRangeException("Capacity", "Capacity must be between 8 and " + MaxIndex);
             }
 
             s_RootIsInterface = rootType.IsInterface;
 
-            s_TypeMap = new Dictionary<Type, ushort>(Capacity);
+            s_TypeMap = new Dictionary<Type, int>(Capacity);
             s_IndexMap = new Type[Capacity];
-            s_ParentMap = new ushort[Capacity];
+            s_ParentMap = new int[Capacity];
 
             // ensure index 0 is always the root type
             s_TypeMap.Add(rootType, 0);
@@ -92,7 +97,7 @@ namespace BeauUtil
         /// <summary>
         /// Allocates or retrieves the existing index for the given type.
         /// </summary>
-        static private ushort AllocateIndex(Type inType)
+        static private int AllocateIndex(Type inType)
         {
             if (s_Allocated >= Capacity)
             {
@@ -115,11 +120,11 @@ namespace BeauUtil
                 return NullIndex;
             }
 
-            ushort parentIndex = AllocateClassHierarchy(inType);
+            int parentIndex = AllocateClassHierarchy(inType);
 
             lock (s_TypeMap)
             {
-                ushort index = s_Allocated++;
+                int index = s_Allocated++;
                 s_TypeMap.Add(inType, index);
                 s_IndexMap[index] = inType;
                 s_ParentMap[index] = parentIndex;
@@ -130,15 +135,15 @@ namespace BeauUtil
         /// <summary>
         /// Allocates the base type chain for the given type.
         /// </summary>
-        static private ushort AllocateClassHierarchy(Type inType)
+        static private int AllocateClassHierarchy(Type inType)
         {
-            ushort parentIndex = NullIndex;
+            int parentIndex = NullIndex;
             if (!inType.IsInterface && !inType.IsValueType)
             {
                 Type parentType = inType.BaseType;
                 if (parentType != typeof(TRootType) && typeof(TRootType).IsAssignableFrom(parentType) && !parentType.IsDefined(typeof(NonIndexedAttribute), false))
                 {
-                    parentIndex = (ushort) Get(parentType);
+                    parentIndex = Get(parentType);
                 }
             }
 
@@ -152,11 +157,11 @@ namespace BeauUtil
         [Il2CppSetOption(Option.NullChecks, false)]
         static public int Get(Type inType)
         {
-            if (!s_TypeMap.TryGetValue(inType, out ushort index))
+            if (!s_TypeMap.TryGetValue(inType, out int index))
             {
                 index = AllocateIndex(inType);
             }
-            return Index16To32(index);
+            return index;
         }
 
         /// <summary>
@@ -225,46 +230,22 @@ namespace BeauUtil
         }
 
         /// <summary>
-        /// Converts from a ushort index to an int index.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static private int Index16To32(ushort index)
-        {
-            return index == NullIndex ? -1 : index;
-        }
-
-        /// <summary>
-        /// Converts from a ushort index to an int index.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static private ushort Index32To16(int index)
-        {
-            return index < 0 ? NullIndex : (ushort) index;
-        }
-
-        /// <summary>
         /// Enumerator that iterates over all indices in the inheritance chain for a type.
         /// </summary>
         public struct BaseTypeEnumerator : IEnumerable<int>, IEnumerator<int>, IDisposable
         {
-            private ushort m_Current;
-            private ushort m_Next;
+            private int m_Current;
+            private int m_Next;
 
             internal BaseTypeEnumerator(int inIndex)
-            {
-                m_Current = NullIndex;
-                m_Next = Index32To16(inIndex);
-            }
-
-            internal BaseTypeEnumerator(ushort inIndex)
             {
                 m_Current = NullIndex;
                 m_Next = inIndex;
             }
 
-            public int Current { get { return Index16To32(m_Current); } }
+            public int Current { get { return m_Current; } }
 
-            object IEnumerator.Current { get { return Index16To32(m_Current); } }
+            object IEnumerator.Current { get { return m_Current; } }
 
             public void Dispose()
             {

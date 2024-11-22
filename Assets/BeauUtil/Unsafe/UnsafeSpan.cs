@@ -97,10 +97,10 @@ namespace BeauUtil
         /// </summary>
         public unsafe ref T SafeGet(int inIndex)
         {
-            if (inIndex < 0 || inIndex >= Length) {
-                throw new ArgumentOutOfRangeException("inIndex");
+            if (inIndex >= 0 && inIndex < Length) {
+                return ref Ptr[inIndex];
             }
-            return ref Ptr[inIndex];
+            throw new ArgumentOutOfRangeException("inIndex");
         }
 
         /// <summary>
