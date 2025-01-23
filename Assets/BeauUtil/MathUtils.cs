@@ -144,5 +144,41 @@ namespace BeauUtil
         {
             return inIncrement * (long) Math.Round((double) inValue / inIncrement);
         }
+
+        /// <summary>
+        /// Wraps the given value around from min to max.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int Wrap(int inValue, int inMin, int inMax)
+        {
+            return inMin + SafeMod(inValue - inMin, inMax - inMin);
+        }
+
+        /// <summary>
+        /// Wraps the given value around from min to max.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public long Wrap(long inValue, long inMin, long inMax)
+        {
+            return inMin + SafeMod(inValue - inMin, inMax - inMin);
+        }
+
+        /// <summary>
+        /// Wraps the given value around from min to max.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public float Wrap(float inValue, float inMin, float inMax)
+        {
+            return inMin + SafeMod(inValue - inMin, inMax - inMin);
+        }
+
+        /// <summary>
+        /// Wraps the given value around from min to max.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public double Wrap(double inValue, double inMin, double inMax)
+        {
+            return inMin + SafeMod(inValue - inMin, inMax - inMin);
+        }
     }
 }

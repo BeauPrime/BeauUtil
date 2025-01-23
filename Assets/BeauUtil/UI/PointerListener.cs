@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace BeauUtil.UI
 {
@@ -44,6 +45,11 @@ namespace BeauUtil.UI
         private PointerEvent m_OnClick = new PointerEvent();
 #endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
 
+        [Header("Configuration")]
+        [SerializeField] private bool m_AlwaysFireClickEvents;
+
+        [NonSerialized] private Selectable m_Selectable;
+        [NonSerialized] private bool? m_SelectableWasInteractive;
         [NonSerialized] private uint m_EnteredMask;
         [NonSerialized] private uint m_DownMask;
 
@@ -60,8 +66,19 @@ namespace BeauUtil.UI
         public bool IsPointerDown() { return m_DownMask != 0; }
         public bool IsPointerDown(int inPointerId) { return (m_DownMask & CalculateMask(inPointerId)) != 0;}
 
+        /// <summary>
+        /// Returns if this object is considered Interactive.
+        /// In the presence of a Selectable component, this corresponds to its selectable state.
+        /// If not, this will return true.
+        /// </summary>
+        public bool IsInteractable()
+        {
+            this.CacheComponent(ref m_Selectable);
+            return isActiveAndEnabled && (!m_Selectable || m_Selectable.IsInteractable());
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static private uint CalculateMask(int inPointerId) { return 1U << ((inPointerId + 32) % 32); }
+        static private uint CalculateMask(int inPointerId) { return 1U << ((inPointerId + 32) & 31); }
 
         #region Handlers
 
@@ -72,6 +89,9 @@ namespace BeauUtil.UI
                 return;
 
             m_EnteredMask |= mask;
+
+            this.CacheComponent(ref m_Selectable);
+
             m_OnPointerEnter.Invoke(eventData);
         }
 
@@ -92,6 +112,7 @@ namespace BeauUtil.UI
                 return;
 
             m_DownMask |= mask;
+            this.CacheComponent(ref m_Selectable);
             m_OnPointerDown.Invoke(eventData);
         }
 
@@ -102,15 +123,62 @@ namespace BeauUtil.UI
                 return;
 
             m_DownMask &= ~mask;
+            m_SelectableWasInteractive = !m_Selectable || m_Selectable.IsInteractable();
             m_OnPointerUp.Invoke(eventData);
         }
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
-            m_OnClick.Invoke(eventData);
+            bool execute = BypassClickFilter || m_AlwaysFireClickEvents;
+            if (!execute)
+            {
+                if (!m_SelectableWasInteractive.HasValue)
+                {
+                    this.CacheComponent(ref m_Selectable);
+                    execute = !m_Selectable || m_Selectable.IsInteractable();
+                }
+                else
+                {
+                    execute = m_SelectableWasInteractive.Value;
+                }
+            }
+
+            if (execute)
+            {
+                m_OnClick.Invoke(eventData);
+            }
+
+            m_SelectableWasInteractive = null;
         }
 
         #endregion // Handlers
+
+        #region Filtering
+
+        /// <summary>
+        /// If set, click events will always be dispatched,
+        /// event if an associated Selectable is not currently interactable.
+        /// Set this to true if you are manually calling ExecuteEvents.Execute.
+        /// </summary>
+        static public bool BypassClickFilter = false;
+
+        #endregion // Filtering
+
+        /// <summary>
+        /// Attempts to retrieve the PointerListener
+        /// attached to the given PointerEventData's game object.
+        /// </summary>
+        static public bool TryGetListener(PointerEventData inEventData, out PointerListener outListener)
+        {
+            GameObject go = inEventData.pointerCurrentRaycast.gameObject;
+            if (go)
+            {
+                return go.TryGetComponent(out outListener);
+            }
+
+            outListener = null;
+            return false;
+        }
 
         /// <summary>
         /// Attempts to retrieve the userdata from the PointerListener
@@ -119,13 +187,16 @@ namespace BeauUtil.UI
         static public bool TryGetUserData<T>(PointerEventData inEventData, out T outValue)
         {
             GameObject go = inEventData.pointerCurrentRaycast.gameObject;
-            PointerListener listener = go.GetComponent<PointerListener>();
-            if (listener != null)
+            if (go)
             {
-                if (listener.UserData is T)
+                PointerListener listener = go.GetComponent<PointerListener>();
+                if (listener != null)
                 {
-                    outValue = (T) listener.UserData;
-                    return true;
+                    if (listener.UserData is T)
+                    {
+                        outValue = (T) listener.UserData;
+                        return true;
+                    }
                 }
             }
 
@@ -141,20 +212,23 @@ namespace BeauUtil.UI
         static public bool TryGetComponentUserData<T>(PointerEventData inEventData, out T outValue) where T : UnityEngine.Component
         {
             GameObject go = inEventData.pointerCurrentRaycast.gameObject;
-            T component = go.GetComponent<T>();
-            if (component != null)
+            if (go)
             {
-                outValue = component;
-                return true;
-            }
-
-            PointerListener listener = go.GetComponent<PointerListener>();
-            if (listener != null)
-            {
-                if (listener.UserData is T)
+                T component = go.GetComponent<T>();
+                if (component != null)
                 {
-                    outValue = (T) listener.UserData;
+                    outValue = component;
                     return true;
+                }
+
+                PointerListener listener = go.GetComponent<PointerListener>();
+                if (listener != null)
+                {
+                    if (listener.UserData is T)
+                    {
+                        outValue = (T) listener.UserData;
+                        return true;
+                    }
                 }
             }
 

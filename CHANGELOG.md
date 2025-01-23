@@ -1,3 +1,12 @@
+## Version 0.10.13
+**23 Jan 2025**
+
+`PointerListener` is now aware of any `Selectable` components' interactable state
+
+### Improvements
+* `PointerListener` now checks if an attached `Selectable` is interactable before dispatching click event
+*  Added `MathUtils.Wrap` to handle wrapping values within a range
+
 ## Version 0.10.12
 **22 Nov 2024**
 
