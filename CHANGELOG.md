@@ -1,3 +1,16 @@
+## Version 0.10.14
+**26 Feb 2025**
+
+Hotfix for memory corruption in wasm builds related to `NonBoxedValue`
+
+### Fixes
+* `MethodCache.TryStaticInvoke` will no longer crash in wasm builds after garbage collection
+  * Removing explicit `StructLayout.Size` from `NonBoxedValue.PackedValues` fixed instances of memory corruption
+  * The underlying mechanism for this corruption still needs to be investigated - suspected compiler bug surrounding explicitly-sized structs
+
+### Improvements
+* Reduced `MethodCache` memory usage
+
 ## Version 0.10.13
 **23 Jan 2025**
 
