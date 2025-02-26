@@ -21,7 +21,7 @@ namespace BeauUtil
     /// Four-byte string hash.
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
-    [StructLayout(LayoutKind.Sequential, Size=4)]
+    [StructLayout(LayoutKind.Sequential)]
     [Serializable]
     [DefaultEqualityComparer(typeof(StringHash32.Comparer)), DefaultSorter(typeof(StringHash32.Comparer))]
     public struct StringHash32 : IEquatable<StringHash32>, IComparable<StringHash32>, IDebugString

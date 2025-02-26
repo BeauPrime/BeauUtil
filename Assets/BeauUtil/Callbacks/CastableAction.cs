@@ -150,15 +150,15 @@ namespace BeauUtil
             switch (m_Mode)
             {
                 case CallbackMode.NoArg:
-                    ((Action) m_CallbackObject)();
+                    Unsafe.FastCast<Action>(m_CallbackObject)();
                     break;
 
                 case CallbackMode.NativeArg:
-                    ((Action<TInput0>) m_CallbackObject)(inArg);
+                    Unsafe.FastCast<Action<TInput0>>(m_CallbackObject)(inArg);
                     break;
 
                 case CallbackMode.NativeArgRef:
-                    ((RefAction<TInput0>) m_CallbackObject)(ref inArg);
+                    Unsafe.FastCast<RefAction<TInput0>>(m_CallbackObject)(ref inArg);
                     break;
 
                 case CallbackMode.CastedArg:
@@ -202,15 +202,15 @@ namespace BeauUtil
             switch (m_Mode)
             {
                 case CallbackMode.NoArg:
-                    ((Action) m_CallbackObject)();
+                    Unsafe.FastCast<Action>(m_CallbackObject)();
                     break;
 
                 case CallbackMode.NativeArg:
-                    ((Action<TInput0>) m_CallbackObject)(inArg);
+                    Unsafe.FastCast<Action<TInput0>>(m_CallbackObject)(inArg);
                     break;
 
                 case CallbackMode.NativeArgRef:
-                    ((RefAction<TInput0>) m_CallbackObject)(ref inArg);
+                    Unsafe.FastCast<RefAction<TInput0>>(m_CallbackObject)(ref inArg);
                     break;
 
                 case CallbackMode.CastedArg:

@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Examples/MemCorruptionTest.unity
+    guid: 286f9a1bb847c604682eb73dd5fa7810
+  - enabled: 1
     path: Assets/Examples/Debug/DebugTest.unity
     guid: a98871f4e03c97d479a67a1812e415b0
   - enabled: 1

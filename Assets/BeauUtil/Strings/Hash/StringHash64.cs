@@ -20,7 +20,7 @@ namespace BeauUtil
     /// Eight-byte string hash.
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
-    [StructLayout(LayoutKind.Sequential, Size=8)]
+    [StructLayout(LayoutKind.Sequential)]
     [Serializable]
     [DefaultEqualityComparer(typeof(StringHash64.Comparer)), DefaultSorter(typeof(StringHash64.Comparer))]
     public struct StringHash64 : IEquatable<StringHash64>, IComparable<StringHash64>, IDebugString

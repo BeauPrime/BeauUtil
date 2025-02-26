@@ -40,7 +40,7 @@ namespace BeauUtil
             StringSlice
         }
 
-        [StructLayout(LayoutKind.Explicit, Size = 8)]
+        [StructLayout(LayoutKind.Explicit)]
         private unsafe struct PackedValues
         {
             [FieldOffset(0)] public sbyte Int8;

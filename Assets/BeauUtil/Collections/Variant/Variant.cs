@@ -18,10 +18,10 @@ namespace BeauUtil.Variants
 {
     /// <summary>
     /// Data variant.
-    /// Can be null, or can contain a bool, an int, a float, or a string hash.
+    /// Can be null, or can contain a bool, an int, a float, a string hash, or a Unity InstanceId.
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
-    [StructLayout(LayoutKind.Explicit, Size = 8)]
+    [StructLayout(LayoutKind.Explicit)]
     public struct Variant : IEquatable<Variant>, IComparable<Variant>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedObject

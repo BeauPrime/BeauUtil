@@ -46,6 +46,7 @@ namespace BeauUtil.UI
 #endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
 
         [Header("Configuration")]
+        [Tooltip("If set, OnPointerClick events will always fire on a click, even if an attached Selectable is not considered Interactable")]
         [SerializeField] private bool m_AlwaysFireClickEvents;
 
         [NonSerialized] private Selectable m_Selectable;

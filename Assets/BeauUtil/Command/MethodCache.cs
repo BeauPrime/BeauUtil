@@ -33,45 +33,46 @@ namespace BeauUtil
         /// <summary>
         /// Description for a type.
         /// </summary>
-        public sealed class TypeDescription
+        public struct TypeDescription
         {
-            public readonly Type Type;
-            
-            private bool m_Processed;
             private readonly Dictionary<StringHash32, MethodDescription> m_Methods;
 
             public TypeDescription(Type inType)
             {
-                Type = inType;
-
                 m_Methods = new Dictionary<StringHash32, MethodDescription>(4);
             }
 
             public bool TryGetMethod(StringHash32 inId, out MethodDescription outMethod)
             {
+                if (m_Methods == null)
+                {
+                    outMethod = default;
+                    return false;
+                }
+
                 return m_Methods.TryGetValue(inId, out outMethod);
             }
 
-            public bool TryProcess(MethodCache<TAttr> inParent)
+            public bool TryProcess(MethodCache<TAttr> inParent, Type inType)
             {
-                foreach(var attrPair in Reflect.FindMethods<TAttr>(Type, InstanceAttributeSearch))
+                foreach (var attrPair in Reflect.FindMethods<TAttr>(inType, InstanceAttributeSearch))
                 {
                     attrPair.Attribute.AssignId(attrPair.Info);
 
                     if (m_Methods.ContainsKey(attrPair.Attribute.Id))
                     {
-                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Multiple instances of method with id '{0}' found on type '{1}'", attrPair.Attribute.Id.ToDebugString(), Type.FullName);
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Multiple instances of method with id '{0}' found on type '{1}'", attrPair.Attribute.Id.ToDebugString(), inType.FullName);
                         continue;
                     }
 
                     MethodDescription desc = inParent.CreateDescription(attrPair.Attribute, attrPair.Info);
-                    if (!desc.TryProcess(inParent))
+                    if (!desc.TryProcess(inParent, attrPair.Info))
                     {
-                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Method '{0}' on type '{1}' is incompatible", desc.Id, Type.FullName);
+                        UnityEngine.Debug.LogErrorFormat("[MethodCache] Method '{0}' on type '{1}' is incompatible", attrPair.Attribute.Id, inType.FullName);
                         continue;
                     }
 
-                    m_Methods.Add(desc.Id, desc);
+                    m_Methods.Add(attrPair.Attribute.Id, desc);
                 }
 
                 return true;
@@ -81,35 +82,22 @@ namespace BeauUtil
         /// <summary>
         /// Description for a method.
         /// </summary>
-        public sealed class MethodDescription
+        public struct MethodDescription
         {
-            public readonly StringHash32 Id;
-            public readonly TAttr Attribute;
-            public readonly MethodInfo Method;
+            public StringHash32 Id;
             public MethodInvocationHelper Invoker;
+            public object UserData;
 
             public MethodDescription(TAttr inAttribute, MethodInfo inInfo)
             {
                 Id = inAttribute.Id;
-                Attribute = inAttribute;
-                Method = inInfo;
-
-                // Static methods with named parent classes get concatenated names
-                if (Method.IsStatic)
-                {
-                    ExposedAttribute containingType = Reflect.GetAttribute<ExposedAttribute>(Method.DeclaringType);
-                    if (containingType != null)
-                    {
-                        containingType.AssignId(Method.DeclaringType);
-                        string fullName = string.Join(".", containingType.Name, Attribute.Name);
-                        Id = fullName;
-                    }
-                }
+                Invoker = default;
+                UserData = null;
             }
 
-            public bool TryProcess(MethodCache<TAttr> inParent)
+            public bool TryProcess(MethodCache<TAttr> inParent, MethodInfo inMethod)
             {
-                return MethodInvocationHelper.TryCreate(Method, inParent.m_StringConverter, out Invoker);
+                return MethodInvocationHelper.TryCreate(inMethod, inParent.m_StringConverter, out Invoker);
             }
 
             public bool TryInvoke(object inTarget, StringSlice inArguments, IStringConverter inConverter, object inContext, out NonBoxedValue outReturnValue)
@@ -139,7 +127,7 @@ namespace BeauUtil
                 throw new ArgumentNullException("inConverter");
             if (inComponentType == null)
                 throw new ArgumentNullException("inComponentType");
-            
+
             m_Types = new Dictionary<Type, TypeDescription>();
             m_StringConverter = inConverter;
 
@@ -177,9 +165,9 @@ namespace BeauUtil
             if (!m_Types.TryGetValue(inType, out desc) && inbCreate)
             {
                 desc = CreateDescription(inType);
-                if (!desc.TryProcess(this))
-                    desc = null;
-                
+                if (!desc.TryProcess(this, inType))
+                    desc = default;
+
                 m_Types.Add(inType, desc);
             }
             return desc;
@@ -205,13 +193,13 @@ namespace BeauUtil
                 }
 
                 MethodDescription desc = CreateDescription(attrPair.Attribute, attrPair.Info);
-                if (!desc.TryProcess(this))
+                if (!desc.TryProcess(this, attrPair.Info))
                 {
-                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", attrPair.Attribute.Id.ToDebugString(), attrPair.Info.DeclaringType.FullName);
                     continue;
                 }
 
-                m_StaticMethods.Add(desc.Id, desc);
+                m_StaticMethods.Add(attrPair.Attribute.Id, desc);
             }
         }
 
@@ -220,7 +208,7 @@ namespace BeauUtil
             if (m_StaticMethods != null && !m_CachingStaticAsyncLock)
                 return;
 
-            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
+            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(inAttributeSet.MemberCount);
             m_CachingStaticAsyncLock = false;
 
             foreach (var attrPair in inAttributeSet.Read<TAttr>(Reflect.FindAllAssemblies()))
@@ -240,13 +228,13 @@ namespace BeauUtil
                 }
 
                 MethodDescription desc = CreateDescription(attrPair.Attribute, method);
-                if (!desc.TryProcess(this))
+                if (!desc.TryProcess(this, method))
                 {
-                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", attrPair.Attribute.Id.ToDebugString(), method.DeclaringType.FullName);
                     continue;
                 }
 
-                m_StaticMethods.Add(desc.Id, desc);
+                m_StaticMethods.Add(attrPair.Attribute.Id, desc);
             }
         }
 
@@ -257,7 +245,7 @@ namespace BeauUtil
 
             m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
             inAssemblies = inAssemblies ?? Reflect.FindAllUserAssemblies();
-            
+
             m_CachingStaticAsyncLock = true;
 
             foreach (var attrPair in Reflect.FindMethods<TAttr>(inAssemblies, StaticAttributeSearch, false))
@@ -283,9 +271,9 @@ namespace BeauUtil
                 }
 
                 MethodDescription desc = CreateDescription(attrPair.Attribute, attrPair.Info);
-                if (!desc.TryProcess(this))
+                if (!desc.TryProcess(this, attrPair.Info))
                 {
-                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", attrPair.Attribute.Id.ToDebugString(), attrPair.Info.DeclaringType.FullName);
                     yield return null;
 
                     if (!m_CachingStaticAsyncLock)
@@ -296,7 +284,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                m_StaticMethods.Add(desc.Id, desc);
+                m_StaticMethods.Add(attrPair.Attribute.Id, desc);
                 yield return null;
 
                 if (!m_CachingStaticAsyncLock)
@@ -313,7 +301,7 @@ namespace BeauUtil
             if (m_StaticMethods != null || m_CachingStaticAsyncLock)
                 yield break;
 
-            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(32);
+            m_StaticMethods = new Dictionary<StringHash32, MethodDescription>(inAttributeSet.MemberCount);
             m_CachingStaticAsyncLock = true;
 
             foreach (var attrPair in inAttributeSet.Read<TAttr>(Reflect.FindAllAssemblies()))
@@ -348,9 +336,9 @@ namespace BeauUtil
                 }
 
                 MethodDescription desc = CreateDescription(attrPair.Attribute, method);
-                if (!desc.TryProcess(this))
+                if (!desc.TryProcess(this, method))
                 {
-                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", desc.Id.ToDebugString(), desc.Method.DeclaringType.FullName);
+                    UnityEngine.Debug.LogErrorFormat("[MethodCache] Static method '{0}' on type '{1}' is incompatible", attrPair.Attribute.Id.ToDebugString(), method.DeclaringType.FullName);
                     yield return null;
                     if (!m_CachingStaticAsyncLock)
                     {
@@ -359,7 +347,7 @@ namespace BeauUtil
                     continue;
                 }
 
-                m_StaticMethods.Add(desc.Id, desc);
+                m_StaticMethods.Add(attrPair.Attribute.Id, desc);
                 yield return null;
                 if (!m_CachingStaticAsyncLock)
                 {
@@ -380,12 +368,12 @@ namespace BeauUtil
         public MethodDescription FindMethod(object inTarget, StringHash32 inMethodId)
         {
             if (inTarget == null)
-                return null;
+                return default;
 
             Type t = inTarget.GetType();
             TypeDescription typeDesc;
             MethodDescription methodDesc;
-            while(t != null && ShouldCheck(t))
+            while (t != null && ShouldCheck(t))
             {
                 typeDesc = Cache(t);
                 if (typeDesc.TryGetMethod(inMethodId, out methodDesc))
@@ -394,7 +382,7 @@ namespace BeauUtil
                 t = t.BaseType;
             }
 
-            return null;
+            return default;
         }
 
         /// <summary>
@@ -404,10 +392,10 @@ namespace BeauUtil
         public MethodDescription FindMethodWithRedirect(ref object ioTarget, StringHash32 inMethodId)
         {
             if (ioTarget == null)
-                return null;
+                return default;
 
             MethodDescription desc = FindMethod(ioTarget, inMethodId);
-            if (desc != null)
+            if (desc.Invoker.Method != null)
                 return desc;
 
             object toIgnore = ioTarget;
@@ -415,7 +403,7 @@ namespace BeauUtil
             if (!go.IsReferenceNull())
             {
                 GatherComponents(go, m_RelatedComponentCachedList ?? (m_RelatedComponentCachedList = new List<Component>(8)));
-                for(int i = 0, len = m_RelatedComponentCachedList.Count; i < len && desc == null; ++i)
+                for (int i = 0, len = m_RelatedComponentCachedList.Count; i < len && desc.Invoker.Method == null; ++i)
                 {
                     ioTarget = m_RelatedComponentCachedList[i];
                     if (ioTarget != toIgnore)
@@ -426,7 +414,7 @@ namespace BeauUtil
             else
             {
                 GatherRelatedObjects(ioTarget, m_RelatedObjectCachedList ?? (m_RelatedObjectCachedList = new List<object>(8)));
-                for(int i = 0, len = m_RelatedObjectCachedList.Count; i < len && desc == null; ++i)
+                for (int i = 0, len = m_RelatedObjectCachedList.Count; i < len && desc.Invoker.Method == null; ++i)
                 {
                     ioTarget = m_RelatedObjectCachedList[i];
                     if (ioTarget != toIgnore)
@@ -492,7 +480,7 @@ namespace BeauUtil
         public bool TryStaticInvoke(StringHash32 inId, StringSlice inArguments, object inContext, out NonBoxedValue outResult)
         {
             var method = FindStaticMethod(inId);
-            if (method == null)
+            if (method.Invoker.Method == null)
             {
                 outResult = default(NonBoxedValue);
                 return false;
@@ -507,7 +495,7 @@ namespace BeauUtil
         public bool TryInvoke(object inTarget, StringHash32 inId, StringSlice inArguments, object inContext, out NonBoxedValue outResult)
         {
             var method = FindMethodWithRedirect(ref inTarget, inId);
-            if (method == null)
+            if (method.Invoker.Method == null)
             {
                 outResult = default(NonBoxedValue);
                 return false;
@@ -614,7 +602,7 @@ namespace BeauUtil
         /// </summary>
         public bool HasInstance(StringHash32 inId)
         {
-            foreach(var info in m_Types.Values)
+            foreach (var info in m_Types.Values)
             {
                 if (info.TryGetMethod(inId, out MethodDescription _))
                 {

@@ -106,6 +106,22 @@ namespace BeauUtil
         #region Reading
 
         /// <summary>
+        /// Returns the total number of types present.
+        /// </summary>
+        public int TypeCount
+        {
+            get { return Types.Length; }
+        }
+
+        /// <summary>
+        /// Returns the total number of type members present.
+        /// </summary>
+        public int MemberCount
+        {
+            get { return Members.Length + OverloadedMethods.Length; }
+        }
+
+        /// <summary>
         /// Reads all attribute pairs from this info set.
         /// </summary>
         public IEnumerable<AttributeBinding<TAttr, MemberInfo>> Read<TAttr>(IEnumerable<Assembly> inAssemblies) where TAttr : Attribute

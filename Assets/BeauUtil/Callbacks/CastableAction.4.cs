@@ -121,15 +121,15 @@ namespace BeauUtil
             switch (m_Mode)
             {
                 case CallbackMode.NoArg:
-                    ((Action) m_CallbackObject)();
+                    Unsafe.FastCast<Action>(m_CallbackObject)();
                     break;
 
                 case CallbackMode.NativeArg:
-                    ((Action<TInput0, TInput1, TInput2, TInput3>) m_CallbackObject)(inArg0, inArg1, inArg2, inArg3);
+                    Unsafe.FastCast<Action<TInput0, TInput1, TInput2, TInput3>>(m_CallbackObject)(inArg0, inArg1, inArg2, inArg3);
                     break;
 
                 case CallbackMode.NativeArgRef:
-                    ((RefAction<TInput0, TInput1, TInput2, TInput3>) m_CallbackObject)(ref inArg0, ref inArg1, ref inArg2, ref inArg3);
+                    Unsafe.FastCast<RefAction<TInput0, TInput1, TInput2, TInput3>>(m_CallbackObject)(ref inArg0, ref inArg1, ref inArg2, ref inArg3);
                     break;
 
 #if SUPPORTS_FUNCTION_POINTERS
@@ -166,15 +166,15 @@ namespace BeauUtil
             switch (m_Mode)
             {
                 case CallbackMode.NoArg:
-                    ((Action) m_CallbackObject)();
+                    Unsafe.FastCast<Action>(m_CallbackObject)();
                     break;
 
                 case CallbackMode.NativeArg:
-                    ((Action<TInput0, TInput1, TInput2, TInput3>) m_CallbackObject)(inArg0, inArg1, inArg2, inArg3);
+                    Unsafe.FastCast<Action<TInput0, TInput1, TInput2, TInput3>>(m_CallbackObject)(inArg0, inArg1, inArg2, inArg3);
                     break;
 
                 case CallbackMode.NativeArgRef:
-                    ((RefAction<TInput0, TInput1, TInput2, TInput3>) m_CallbackObject)(ref inArg0, ref inArg1, ref inArg2, ref inArg3);
+                    Unsafe.FastCast<RefAction<TInput0, TInput1, TInput2, TInput3>>(m_CallbackObject)(ref inArg0, ref inArg1, ref inArg2, ref inArg3);
                     break;
 
 #if SUPPORTS_FUNCTION_POINTERS

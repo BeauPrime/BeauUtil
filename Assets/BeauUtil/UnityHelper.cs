@@ -655,7 +655,7 @@ namespace BeauUtil
         {
 #if HAS_RESOURCES_INSTANCE_METHODS
             return Resources.InstanceIDToObject(inInstanceId);
-#elif !USING_TINYIL
+#elif RESTRICT_INTERNAL_CALLS
             if (inInstanceId == 0 || s_FindDelegate == null)
             {
                 return null;
@@ -663,7 +663,7 @@ namespace BeauUtil
             return s_FindDelegate(inInstanceId);
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
@@ -679,14 +679,14 @@ namespace BeauUtil
         {
 #if HAS_RESOURCES_INSTANCE_METHODS
             return (T) Resources.InstanceIDToObject(inInstanceId);
-#elif !USING_TINYIL
+#elif RESTRICT_INTERNAL_CALLS
             if (inInstanceId == 0 || s_FindDelegate == null) {
                 return null;
             }
             return (T) s_FindDelegate(inInstanceId);
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
@@ -701,7 +701,7 @@ namespace BeauUtil
         {
 #if HAS_RESOURCES_INSTANCE_METHODS
             return Resources.InstanceIDToObject(inInstanceId) as T;
-#elif !USING_TINYIL
+#elif RESTRICT_INTERNAL_CALLS
             if (inInstanceId == 0 || s_FindDelegate == null)
             {
                 return null;
@@ -709,7 +709,7 @@ namespace BeauUtil
             return s_FindDelegate(inInstanceId) as T;
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
@@ -724,7 +724,7 @@ namespace BeauUtil
         {
 #if HAS_RESOURCES_INSTANCE_METHODS && UNITY_2022_3_OR_NEWER
             return Resources.InstanceIDIsValid(inInstanceId);
-#elif !USING_TINYIL
+#elif RESTRICT_INTERNAL_CALLS
             if (inInstanceId == 0 || s_AliveDelegate == null)
             {
                 return false;
@@ -732,7 +732,7 @@ namespace BeauUtil
             return s_AliveDelegate(inInstanceId);
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
@@ -756,7 +756,7 @@ namespace BeauUtil
 #endif // !RESTRICT_INTERNAL_CALLS
         static public bool IsPersistent(this UnityEngine.Object inObject)
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             if (ReferenceEquals(inObject, null) || s_IsPersistentDelegate == null)
             {
                 return false;
@@ -764,7 +764,7 @@ namespace BeauUtil
             return s_IsPersistentDelegate(inObject);
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         /// <summary>
@@ -776,7 +776,7 @@ namespace BeauUtil
 #endif // !RESTRICT_INTERNAL_CALLS
         static public bool IsMainThread()
         {
-#if !USING_TINYIL
+#if RESTRICT_INTERNAL_CALLS
             if (s_IsMainThreadDelegate == null)
             {
                 return false;
@@ -784,7 +784,7 @@ namespace BeauUtil
             return s_IsMainThreadDelegate();
 #else
             throw new NotImplementedException();
-#endif // !USING_TINYIL
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         #endregion // Internal Calls
