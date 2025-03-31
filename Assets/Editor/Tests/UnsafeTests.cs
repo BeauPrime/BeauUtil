@@ -483,5 +483,27 @@ namespace BeauUtil.UnitTests
             Debug.LogFormat("Hash64 of AnotherHashable of length {0} is {1}", AnotherHashableByteSequence.Length, anotherHash);
             Assert.AreEqual(12925064926933939798, anotherHash); 
         }
+
+        [Test]
+        static public void CanConvertBetweenPointersAndRefs()
+        {
+            int x = 0;
+            int* xPtr = &x;
+            *xPtr = 8;
+
+            ref int xRef = ref Unsafe.AsRef(xPtr);
+
+            Assert.AreEqual(8, *xPtr);
+            Assert.AreEqual(8, xRef);
+
+            *xPtr = 16;
+
+            Assert.AreEqual(16, xRef);
+
+            xRef = 12;
+
+            Assert.AreEqual(12, *xPtr);
+            Assert.AreEqual(12, x);
+        }
     }
 }
