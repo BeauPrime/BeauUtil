@@ -350,7 +350,7 @@ namespace BeauUtil
         {
 #if UNITY_EDITOR
             var editorBuildScenes = EditorBuildSettings.scenes;
-            int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+            int buildSceneCount = editorBuildScenes.Length;
 #else
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
 #endif // UNITY_EDITOR
@@ -379,7 +379,7 @@ namespace BeauUtil
         {
 #if UNITY_EDITOR
             var editorBuildScenes = EditorBuildSettings.scenes;
-            int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+            int buildSceneCount = editorBuildScenes.Length;
 #else
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
 #endif // UNITY_EDITOR
