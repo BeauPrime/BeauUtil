@@ -1,3 +1,19 @@
+## Version 0.10.15
+**31 March 2025**
+
+Improvements to `Assert` functionality
+Fixed `DynamicMeshFilter` mesh destruction exception
+
+### Improvements
+* `Assert` fills in stack trace information more reliably
+* `Assert` now displays an alert box in WebGL builds
+* Added `Unsafe.AsRef` to convert from pointer to reference
+* Added `UnsafeSpan<>.ToArray`
+
+### Fixes
+* Removed problematic finalizer from `DynamicMeshFilter`
+* `SceneHelper.AllBuildScenes` correctly filters out disabled scenes in editor
+
 ## Version 0.10.14
 **26 Feb 2025**
 
