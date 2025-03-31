@@ -1,4 +1,4 @@
-## Version 0.10.15
+## Version 0.10.16
 **31 March 2025**
 
 Improvements to `Assert` functionality
