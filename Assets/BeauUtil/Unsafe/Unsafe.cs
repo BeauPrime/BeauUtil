@@ -2214,6 +2214,27 @@ namespace BeauUtil
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Converts a typed pointer into a reference.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u; ret")]
+        static public ref T AsRef<T>(T* val)
+            where T : unmanaged
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Converts a typed pointer into a reference.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; conv.u; ret")]
+        static public ref T AsRef<T>(void* val)
+        {
+            throw new NotImplementedException();
+        }
 #else
         /// <summary>
         /// Converts a reference into a typed pointer.
@@ -2225,6 +2246,26 @@ namespace BeauUtil
             fixed (T* ptr = &val) {
                 return ptr;
             }
+        }
+
+        /// <summary>
+        /// Converts a pointer into a reference.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ref T AsRef<T>(void* val)
+            where T : unmanaged
+        {
+            return ref *(T*) val;
+        }
+
+        /// <summary>
+        /// Converts a typed pointer into a reference.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public ref T AsRef<T>(T* val)
+            where T : unmanaged
+        {
+            return ref *val;
         }
 #endif // USING_TINYIL
 

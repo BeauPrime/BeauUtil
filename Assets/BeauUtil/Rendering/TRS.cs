@@ -11,6 +11,10 @@
 #define DEVELOPMENT
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
+#if UNITY_2021_3_OR_NEWER
+#define FAST_TRANSFORM_LOCAL_SET
+#endif // UNITY_2021_3_OR_NEWER
+
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -34,9 +38,13 @@ namespace BeauUtil
             if (inTransform == null)
                 throw new ArgumentNullException("inTransform");
 
+#if FAST_TRANSFORM_LOCAL_SET
+            inTransform.GetLocalPositionAndRotation(out Position, out Rotation);
+#else
             Position = inTransform.localPosition;
-            Scale = inTransform.localScale;
             Rotation = inTransform.localRotation;
+#endif // FAST_TRANSFORM_LOCAL_SET
+            Scale = inTransform.localScale;
         }
 
         public TRS(Transform inTransform, Space inSpace)
@@ -46,15 +54,18 @@ namespace BeauUtil
 
             if (inSpace == Space.Self)
             {
+#if FAST_TRANSFORM_LOCAL_SET
+                inTransform.GetLocalPositionAndRotation(out Position, out Rotation);
+#else
                 Position = inTransform.localPosition;
-                Scale = inTransform.localScale;
                 Rotation = inTransform.localRotation;
+#endif // FAST_TRANSFORM_LOCAL_SET
+                Scale = inTransform.localScale;
             }
             else
             {
-                Position = inTransform.position;
+                inTransform.GetPositionAndRotation(out Position, out Rotation);
                 Scale = inTransform.lossyScale;
-                Rotation = inTransform.rotation;
             }
         }
 
@@ -114,8 +125,12 @@ namespace BeauUtil
                 throw new ArgumentNullException("inTransform");
 #endif // DEVELOPMENT
 
+#if FAST_TRANSFORM_LOCAL_SET
+            inTransform.SetLocalPositionAndRotation(Position, Rotation);
+#else
             inTransform.localPosition = Position;
             inTransform.localRotation = Rotation;
+#endif // FAST_TRANSFORM_LOCAL_SET
             inTransform.localScale = Scale;
         }
 
@@ -131,8 +146,12 @@ namespace BeauUtil
 
             if (inSpace == Space.Self)
             {
+#if FAST_TRANSFORM_LOCAL_SET
+                inTransform.SetLocalPositionAndRotation(Position, Rotation);
+#else
                 inTransform.localPosition = Position;
                 inTransform.localRotation = Rotation;
+#endif // FAST_TRANSFORM_LOCAL_SET
                 inTransform.localScale = Scale;
             }
             else

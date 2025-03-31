@@ -19,27 +19,35 @@ namespace BeauUtil
         [NonSerialized] private MeshFilter m_MeshFilter;
         [NonSerialized] private Mesh m_DynamicMesh;
         [NonSerialized] private MeshDataTarget m_MeshUploadTarget;
-
-        ~DynamicMeshFilter()
-        {
-            UnityHelper.SafeDestroy(ref m_DynamicMesh);
-        }
+        [NonSerialized] private bool m_Destroyed;
 
         private void Awake()
         {
+#if UNITY_EDITOR
+            if (!Application.IsPlaying(this))
+            {
+                if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEditor.BuildPipeline.isBuildingPlayer)
+                {
+                    return;
+                }
+            }
+#endif // UNITY_EDITOR
+
             m_MeshFilter = GetComponent<MeshFilter>();
             m_MeshFilter.sharedMesh = GetMeshTarget().Mesh;
         }
 
         private void OnDestroy()
         {
+            m_Destroyed = true;
             m_MeshFilter = null;
+            m_MeshUploadTarget = default;
             UnityHelper.SafeDestroy(ref m_DynamicMesh);
         }
 
         private ref MeshDataTarget GetMeshTarget()
         {
-            if (m_DynamicMesh == null)
+            if (!m_Destroyed && m_DynamicMesh == null)
             {
                 m_DynamicMesh = new Mesh();
                 m_DynamicMesh.name = name;

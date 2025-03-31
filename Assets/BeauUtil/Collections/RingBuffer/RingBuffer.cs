@@ -515,6 +515,8 @@ namespace BeauUtil
         /// Removes the entry at the given index by swapping.
         /// Does not preserve element order.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void FastRemoveAt(int inIndex)
         {
             if (inIndex < 0 || inIndex >= m_Count)

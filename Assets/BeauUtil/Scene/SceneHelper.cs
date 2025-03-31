@@ -18,6 +18,10 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
+
 namespace BeauUtil
 {
     /// <summary>
@@ -344,10 +348,24 @@ namespace BeauUtil
         /// </summary>
         static public IEnumerable<SceneBinding> AllBuildScenes(bool inbIncludeIgnored = false)
         {
+#if UNITY_EDITOR
+            var editorBuildScenes = EditorBuildSettings.scenes;
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+#else
+            int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+#endif // UNITY_EDITOR
             for (int i = 0; i < buildSceneCount; ++i)
             {
+#if UNITY_EDITOR
+                var buildScene = editorBuildScenes[i];
+                if (buildScene == null || !buildScene.enabled)
+                {
+                    continue;
+                }
+                string path = buildScene.path;
+#else
                 string path = SceneUtility.GetScenePathByBuildIndex(i);
+#endif // UNITY_EDITOR
                 SceneBinding binding = new SceneBinding(i, path);
                 if (inbIncludeIgnored || !IsIgnored(binding))
                     yield return binding;
@@ -359,17 +377,31 @@ namespace BeauUtil
         /// </summary>
         static public int AllBuildScenes(ICollection<SceneBinding> outScenes, bool inbIncludeIgnored = false)
         {
+#if UNITY_EDITOR
+            var editorBuildScenes = EditorBuildSettings.scenes;
             int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+#else
+            int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+#endif // UNITY_EDITOR
 
             int returnedCount = 0;
             for (int i = 0; i < buildSceneCount; ++i)
             {
+#if UNITY_EDITOR
+                var buildScene = editorBuildScenes[i];
+                if (buildScene == null || !buildScene.enabled)
+                {
+                    continue;
+                }
+                string path = buildScene.path;
+#else
                 string path = SceneUtility.GetScenePathByBuildIndex(i);
+#endif // UNITY_EDITOR
                 SceneBinding binding = new SceneBinding(i, path);
                 if (inbIncludeIgnored || !IsIgnored(binding))
                 {
                     outScenes.Add(binding);
-                    ++returnedCount;
+                    returnedCount++;
                 }
             }
             return returnedCount;
@@ -403,7 +435,7 @@ namespace BeauUtil
                 if (inbIncludeIgnored || !IsIgnored(sceneBinding))
                 {
                     outScenes.Add(sceneBinding);
-                    ++returnedCount;
+                    returnedCount++;
                 }
             }
 
@@ -418,7 +450,7 @@ namespace BeauUtil
             return SceneManager.GetActiveScene();
         }
 
-        #endregion // Scene List
+#		endregion // Scene List
 
         #region GetAllComponents
 

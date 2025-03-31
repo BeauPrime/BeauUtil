@@ -237,6 +237,32 @@ namespace BeauUtil
 
         #endregion // Operators
 
+        #region Copy
+
+        /// <summary>
+        /// Copies this span into a new array.
+        /// </summary>
+        public T[] ToArray()
+        {
+            unsafe
+            {
+                if (Length == 0)
+                {
+                    return Array.Empty<T>();
+                }
+
+                T[] newArr = new T[Length];
+                fixed(T* arrPtr = newArr)
+                {
+                    Unsafe.FastCopyArray(Ptr, Length, arrPtr);
+                }
+
+                return newArr;
+            }
+        }
+
+        #endregion // Copy
+
 #if HAS_DEBUGGER
 
         private class DebugView

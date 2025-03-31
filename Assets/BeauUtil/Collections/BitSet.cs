@@ -137,6 +137,7 @@ namespace BeauUtil
         /// <summary>
         /// Unpacks the bit data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unpack(out uint outBits)
         {
             outBits = m_Bits;
@@ -145,6 +146,7 @@ namespace BeauUtil
         /// <summary>
         /// Overwrites bit data with the given data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Overwrite(uint inBits)
         {
             m_Bits = inBits;
@@ -362,6 +364,7 @@ namespace BeauUtil
         /// <summary>
         /// Unpacks the bit data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unpack(out ulong outBits)
         {
             outBits = m_Bits;
@@ -370,6 +373,7 @@ namespace BeauUtil
         /// <summary>
         /// Overwrites bit data with the given data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Overwrite(ulong inBits)
         {
             m_Bits = inBits;
@@ -610,6 +614,7 @@ namespace BeauUtil
         /// <summary>
         /// Unpacks the bit data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unpack(out ulong outBits0, out ulong outBits1)
         {
             outBits0 = m_Bits0;
@@ -619,6 +624,7 @@ namespace BeauUtil
         /// <summary>
         /// Overwrites bit data with the given data.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Overwrite(ulong inBits0, ulong inBits1)
         {
             m_Bits0 = inBits0;
@@ -1437,5 +1443,13 @@ namespace BeauUtil
         }
 
         #endregion // Operators
+
+        /// <summary>
+        /// Returns the minimum number of 32-bit integers to store a bitset of the given capacity.
+        /// </summary>
+        static public int Size(int inCapacity)
+        {
+            return ((inCapacity + 31) & 31) >> 5;
+        }
     }
 }

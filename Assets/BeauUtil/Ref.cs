@@ -183,6 +183,7 @@ namespace BeauUtil
         /// <summary>
         /// Replaces one integral with another.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool Replace(ref ushort ioObject, ushort inReplace)
         {
             if (ioObject == inReplace)

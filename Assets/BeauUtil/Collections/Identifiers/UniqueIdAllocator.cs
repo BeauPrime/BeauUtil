@@ -9,6 +9,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
@@ -45,6 +46,8 @@ namespace BeauUtil
         /// <summary>
         /// Allocates a new unique identifier.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public UniqueId16 Alloc()
         {
             Reserve(1);
@@ -56,6 +59,8 @@ namespace BeauUtil
         /// <summary>
         /// Frees the given identifier.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public bool Free(UniqueId16 inId)
         {
             int index = inId.Index;
@@ -74,6 +79,8 @@ namespace BeauUtil
         /// <summary>
         /// Reserves the given number of unique identifiers.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Reserve(int inCount)
         {
             if (m_FreeList.Count >= inCount)
@@ -114,6 +121,8 @@ namespace BeauUtil
         /// <summary>
         /// Resets all allocated handles.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Reset()
         {
             for (int i = 0; i < m_Capacity; i++)
@@ -147,6 +156,8 @@ namespace BeauUtil
         /// Returns if the given id is valid.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public bool IsValid(UniqueId16 inId)
         {
             int index = inId.Index;
@@ -189,6 +200,8 @@ namespace BeauUtil
         /// <summary>
         /// Allocates a new unique identifier.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public UniqueId32 Alloc()
         {
             Reserve(1);
@@ -200,6 +213,8 @@ namespace BeauUtil
         /// <summary>
         /// Frees the given identifier.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public bool Free(UniqueId32 inId)
         {
             int index = inId.Index;
@@ -218,6 +233,8 @@ namespace BeauUtil
         /// <summary>
         /// Reserves the given number of unique identifiers.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Reserve(int inCount)
         {
             if (m_FreeList.Count >= inCount)
@@ -258,6 +275,8 @@ namespace BeauUtil
         /// <summary>
         /// Resets all allocated handles.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Reset()
         {
             for (int i = 0; i < m_Capacity; i++)
@@ -291,6 +310,8 @@ namespace BeauUtil
         /// Returns if the given id is valid.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public bool IsValid(UniqueId32 inId)
         {
             int index = inId.Index;

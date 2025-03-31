@@ -1763,6 +1763,11 @@ namespace BeauUtil
         static public readonly char[] DefaultQuoteChar = new char[] { '"' };
 
         /// <summary>
+        /// Default comma character
+        /// </summary>
+        static public readonly char[] DefaultCommaChar = new char[] { ',' };
+
+        /// <summary>
         /// Hexadecimal character set.
         /// </summary>
         public const string HexCharsUpper = "0123456789ABCDEF";
