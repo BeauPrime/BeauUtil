@@ -131,7 +131,7 @@ namespace BeauUtil.Debugger
                     {
                         if (!condition.StartsWith(AssertConditionPrefix))
                         {
-                            OnFail(GetLocationFromTrace(stackTrace, 0), condition, null);
+                            OnFail(GetLocationFromTrace(stackTrace, 0), condition, null, true);
                         }
                         break;
                     }
@@ -396,7 +396,7 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue) where T : class
         {
-            if (IsNull<T>(inValue))
+            if (ReferenceEquals(inValue, null))
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), null);
             }
@@ -408,7 +408,7 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inMessage) where T : class
         {
-            if (IsNull<T>(inValue))
+            if (ReferenceEquals(inValue, null))
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), inMessage);
             }
@@ -420,7 +420,7 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T, P0>(T inValue, string inFormat, P0 inParam0) where T : class
         {
-            if (IsNull<T>(inValue))
+            if (ReferenceEquals(inValue, null))
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0));
             }
@@ -432,7 +432,7 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T, P0, P1>(T inValue, string inFormat, P0 inParam0, P1 inParam1) where T : class
         {
-            if (IsNull<T>(inValue))
+            if (ReferenceEquals(inValue, null))
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1));
             }
@@ -444,7 +444,7 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T, P0, P1, P2>(T inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2) where T : class
         {
-            if (IsNull<T>(inValue))
+            if (ReferenceEquals(inValue, null))
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1, inParam2));
             }
@@ -456,19 +456,120 @@ namespace BeauUtil.Debugger
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         static public void NotNull<T>(T inValue, string inFormat, params object[] inParams) where T : class
         {
-            if (IsNull<T>(inValue))
+            if (ReferenceEquals(inValue, null))
             {
                 OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParams));
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static private bool IsNull<T>(T inValue) where T : class
+        #endregion // NotNull
+
+        #region NotNullOrDestroyed
+
+        /// <summary>
+        /// Asserts that a value is not null or destroyed.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void NotNullOrDestroyed<T>(T inValue) where T : class
         {
-            return ReferenceEquals(inValue, null) && (inValue as UnityEngine.Object) == null;
+            if (ReferenceEquals(inValue, null))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), null);
+            }
+            if (IsDestroyed(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not destroyed", typeof(T).Name), null);
+            }
         }
 
-        #endregion // NotNull
+        /// <summary>
+        /// Asserts that a value is not null or destroyed.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void NotNullOrDestroyed<T>(T inValue, string inMessage) where T : class
+        {
+            if (ReferenceEquals(inValue, null))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), inMessage);
+            }
+            if (IsDestroyed(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not destroyed", typeof(T).Name), inMessage);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null or destroyed.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void NotNullOrDestroyed<T, P0>(T inValue, string inFormat, P0 inParam0) where T : class
+        {
+            if (ReferenceEquals(inValue, null))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0));
+            }
+            if (IsDestroyed(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not destroyed", typeof(T).Name), Log.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null or destroyed.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void NotNullOrDestroyed<T, P0, P1>(T inValue, string inFormat, P0 inParam0, P1 inParam1) where T : class
+        {
+            if (ReferenceEquals(inValue, null))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1));
+            }
+            if (IsDestroyed(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not destroyed", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null or destroyed.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void NotNullOrDestroyed<T, P0, P1, P2>(T inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2) where T : class
+        {
+            if (ReferenceEquals(inValue, null))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+            if (IsDestroyed(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not destroyed", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a value is not null or destroyed.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void NotNullOrDestroyed<T>(T inValue, string inFormat, params object[] inParams) where T : class
+        {
+            if (ReferenceEquals(inValue, null))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not null", typeof(T).Name), Log.Format(inFormat, inParams));
+            }
+            if (IsDestroyed(inValue))
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Object {0} is not destroyed", typeof(T).Name), Log.Format(inFormat, inParams));
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static private bool IsDestroyed<T>(T inValue) where T : class
+        {
+            UnityEngine.Object castedObj;
+            return !ReferenceEquals(castedObj = inValue as UnityEngine.Object, null) && !castedObj;
+        }
+
+        #endregion // NotNullOrDestroyed
 
         #region Finite
 
@@ -682,7 +783,7 @@ namespace BeauUtil.Debugger
 
         #region Internal
 
-        static private void OnFail(string inLocation, string inCondition, string inMessage)
+        static private void OnFail(string inLocation, string inCondition, string inMessage, bool fromException = false)
         {
             if (s_Broken)
                 return;
@@ -719,10 +820,11 @@ namespace BeauUtil.Debugger
 #if UNITY_EDITOR
                 if (EditorApplication.isPlaying)
                     UnityEngine.Debug.Break();
-                else
+                else if (!fromException)
                     throw new AssertException(fullMessage);
 #else
-                throw new AssertException(fullMessage);
+                if (!fromException)
+                    throw new AssertException(fullMessage);
 #endif // UNITY_EDITOR
             }
         }

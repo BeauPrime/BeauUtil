@@ -333,22 +333,36 @@ namespace BeauUtil
             return GetComponent<T>(inComponent.gameObject, inDirection, inbIncludeInactive);
         }
 
+#if UNITY_2022_3_OR_NEWER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif // UNITY_2022_3_OR_NEWER
         static public int ComponentCount(this GameObject inGameObject)
         {
+#if UNITY_2022_3_OR_NEWER
+            return inGameObject.GetComponentCount();
+#else
             List<Component> components = s_CachedComponentList ?? (s_CachedComponentList = new List<Component>());
             inGameObject.GetComponents(typeof(Component), components);
             int count = components.Count;
             components.Clear();
             return count;
+#endif // UNITY_2022_3_OR_NEWER
         }
 
+#if UNITY_2022_3_OR_NEWER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif // UNITY_2022_3_OR_NEWER
         static public int ComponentCount(this Component inComponent)
         {
+#if UNITY_2022_3_OR_NEWER
+            return inComponent.gameObject.GetComponentCount();
+#else
             List<Component> components = s_CachedComponentList ?? (s_CachedComponentList = new List<Component>());
             inComponent.GetComponents(typeof(Component), components);
             int count = components.Count;
             components.Clear();
             return count;
+#endif // UNITY_2022_3_OR_NEWER
         }
 
         static public T GetComponentInParent<T>(this GameObject inGameObject, bool inbIncludeInactive)
