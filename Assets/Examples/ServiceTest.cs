@@ -3,6 +3,7 @@ using BeauUtil.Services;
 using BeauUtil.Debugger;
 using System.Collections;
 using System;
+using BeauUtil;
 
 public class ServiceTest : MonoBehaviour
 {
@@ -13,7 +14,8 @@ public class ServiceTest : MonoBehaviour
         yield return null;
         yield return null;
 
-        //throw new NullReferenceException();
+        Log.Msg("" + UnityHelper.Id(this));
+        throw new NullReferenceException();
         Assert.Fail("blah");
 
         ServiceCache services = new ServiceCache();
