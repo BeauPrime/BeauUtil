@@ -1,4 +1,4 @@
-## Version 0.10.16
+## Version 0.10.17
 **15 April 2025**
 
 Improvements to `Assert` functionality
@@ -8,7 +8,7 @@ Improvements to `Assert` functionality
 * `Assert` failure no longer throws an exception if already asserting from an uncaught exception
 * `UnityHelper.ComponentCount` now uses `GameObject.GetComponentCount` if available
 
-## Version 0.10.15
+## Version 0.10.16
 **31 March 2025**
 
 Improvements to `Assert` functionality
