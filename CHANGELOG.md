@@ -1,3 +1,36 @@
+## Version 0.11.0
+**18 June 2025**
+
+Unsafe string handling
+Garbage generation improvements
+Assertion fixes
+
+### Breaking Changes
+* `TagString.RichText` and `TagString.VisibleText` are now `StringBuilder`s
+  * String properties have been renamed to `.RichTextString` and `.VisibleTextString`
+* `IDelimiterRules` renamed to sealed class `DelimiterRules`
+
+### Features
+* Added `UnsafeString` to handle unsafe character buffers
+* `StringSlice` and `StringBuilderSlice` can now copy to an unsafe character buffer
+* Added `string.CopyTo` extension method to copy to an unsafe character buffer
+
+### Improvements
+* `TagStringParser` is now stateless
+  * Can now call `.Parse` recursively without breaking
+* `TagStringParser.Parse` no longer generates garbage unnecessarily
+* Added polyfill extension methods for `Transform.GetPositionAndRotation`, `Transform.SetPositionAndRotation`, `Transform.GetLocalPositionAndRotation`, and `Transform.SetLocalPositionAndRotation` for unity versions below 2021.3
+* Added `Transform.SetPositionPreserveWorld` extension method to correctly handle scaled and rotated parents
+* Added `StringHash32.First` and `StringHash64.First` for selecting the first non-empty argument
+* Added `ToggleGroup.AllToggles` extension method for retrieving internal toggles list
+* Added `TMP_Text.CharacterCount` extension method for retrieving internal character count
+* `NonBoxedValue` struct now supports `StringHash64` values
+
+### Fixes
+* Assertion messages no longer appear in builds if the assertion failure mode is set to Automatic
+* `StringHash64.Concat` will no longer return incorrect value for input of length 0
+* `TransformHelper.FlattenHierarchy` correctly handles scaled and rotated parents
+
 ## Version 0.10.17
 **15 April 2025**
 

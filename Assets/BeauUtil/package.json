@@ -1,9 +1,9 @@
 {
   "name": "com.beauprime.beauutil",
-  "version": "0.10.17",
+  "version": "0.11.0",
   "displayName": "BeauUtil",
   "description": "Utility library for Unity3d.",
-  "unity": "2019.3",
+  "unity": "2019.4",
   "author": {
     "name": "Autumn Beauchesne",
     "email": "beauchesne@beauprime.com",
