@@ -59,6 +59,30 @@ namespace BeauUtil
         /// <summary>
         /// Returns if a pattern matches.
         /// </summary>
+        public bool Match(string inMatch)
+        {
+            if (string.IsNullOrEmpty(Pattern))
+                return true;
+
+            StringComparison compareType = (Type & PatternType.CaseInsensitive) != 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            switch (Type & PatternType.Contains)
+            {
+                case PatternType.Full:
+                    return inMatch.Equals(Pattern, compareType);
+                case PatternType.StartsWith:
+                    return inMatch.StartsWith(Pattern, compareType);
+                case PatternType.EndsWith:
+                    return inMatch.EndsWith(Pattern, compareType);
+                case PatternType.Contains:
+                    return inMatch.IndexOf(Pattern, compareType) >= 0;
+                default:
+                    throw new InvalidOperationException("Unrecognized wildcard pattern type");
+            }
+        }
+
+        /// <summary>
+        /// Returns if a pattern matches.
+        /// </summary>
         public bool Match(StringSlice inMatch)
         {
             if (string.IsNullOrEmpty(Pattern))

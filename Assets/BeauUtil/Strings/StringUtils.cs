@@ -11,10 +11,15 @@
 #define DEVELOPMENT
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
+#if NETSTANDARD || NET_STANDARD
+#define SUPPORTS_SPAN
+#endif // NETSTANDARD || NET_STANDARD
+
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using BeauUtil.Debugger;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
@@ -631,13 +636,192 @@ namespace BeauUtil
             return inStringA.Equals(inStringB, inComparison);
         }
 
+        static public bool Equals(string inA, int inStartA, int inLengthA, string inB, int inStartB, int inLengthB, bool inbIgnoreCase)
+        {
+            if (inLengthA != inLengthB)
+                return false;
+
+            for (int i = 0; i < inLengthA; ++i)
+            {
+                char a = inA[inStartA + i];
+                char b = inB[inStartB + i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if two 
+        /// </summary>
+        static unsafe public bool Equals(char* inA, int inLengthA, char* inB, int inLengthB, bool inbIgnoreCase)
+        {
+            Assert.True(inA != null && inB != null && inLengthA >= 0 && inLengthB >= 0);
+
+            if (inLengthB != inLengthA)
+                return false;
+            if (inA == inB)
+                return true;
+
+            char* a = inA;
+            char* b = inB;
+            char* end = b + inLengthB;
+
+            if (inbIgnoreCase)
+            {
+                while (b != end)
+                {
+                    if (StringUtils.ToUpperInvariant(*a++) != StringUtils.ToUpperInvariant(*b++))
+                        return false;
+                }
+            }
+            else
+            {
+                while (b != end)
+                {
+                    if (*a++ != *b++)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if two 
+        /// </summary>
+        static unsafe public bool Equals(char* inA, char* inB, int inLength, bool inbIgnoreCase)
+        {
+            Assert.True(inA != null && inB != null && inLength >= 0);
+
+            if (inA == inB)
+                return true;
+
+            char* a = inA;
+            char* b = inB;
+            char* end = b + inLength;
+
+            if (inbIgnoreCase)
+            {
+                while (b != end)
+                {
+                    if (StringUtils.ToUpperInvariant(*a++) != StringUtils.ToUpperInvariant(*b++))
+                        return false;
+                }
+            }
+            else
+            {
+                while (b != end)
+                {
+                    if (*a++ != *b++)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
         #endregion // Equals
+
+        #region IndexOf
+
+        /// <summary>
+        /// Returns the first index of the given character in the given unsafe string.
+        /// </summary>
+        static public unsafe int IndexOf(char* inString, int inLength, char inItem)
+        {
+            Assert.NotNull(inString);
+            Assert.True(inLength >= 0);
+
+            char* a = inString;
+            char* end = a + inLength;
+            int idx = 0;
+            while(a != end)
+            {
+                if (*a++ == inItem)
+                    return idx;
+                idx++;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the first index of any of the given characters in the given unsafe string.
+        /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        static public unsafe int IndexOfAny(char* inString, int inLength, char[] inItems)
+        {
+            Assert.NotNull(inString);
+            Assert.True(inLength >= 0);
+
+            char* a = inString;
+            char* end = a + inLength;
+            int idx = 0;
+            char read;
+            while (a != end)
+            {
+                read = *a++;
+                for(int i = 0; i < inItems.Length; i++)
+                {
+                    if (read == inItems[i])
+                        return idx;
+                }
+                idx++;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Returns the first index of the given string in the given unsafe string.
+        /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        static public unsafe int IndexOf(char* inString, int inLength, string inItem, bool inbIgnoreCase)
+        {
+            Assert.NotNull(inString);
+            Assert.True(inLength >= 0);
+
+            if (string.IsNullOrEmpty(inItem))
+            {
+                return -1;
+            }
+
+            int maxStart = inLength - inItem.Length;
+            char* a = inString;
+            char* end = a + maxStart;
+            int idx = 0;
+            fixed (char* itemPtr = inItem)
+            {
+                while (a < end)
+                {
+                    if (Equals(a++, itemPtr, inItem.Length, inbIgnoreCase))
+                        return idx;
+                    idx++;
+                }
+            }
+
+            return -1;
+        }
+
+        #endregion // IndexOf
 
         #region Pattern Matching
 
         /// <summary>
         /// Returns if the given string contains the given string at the given index.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public bool AttemptMatch(this string inString, int inIndex, string inMatch, bool inbIgnoreCase = false)
         {
             if (string.IsNullOrEmpty(inString))
@@ -671,6 +855,8 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given StringSlice contains the given string at the given index.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public bool AttemptMatch(this StringSlice inString, int inIndex, string inMatch, bool inbIgnoreCase = false)
         {
             if (inString.IsEmpty)
@@ -704,6 +890,8 @@ namespace BeauUtil
         /// <summary>
         /// Returns if the given StringSlice contains the given string at the given index.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public bool AttemptMatch(this StringSlice inString, int inIndex, StringSlice inMatch, bool inbIgnoreCase = false)
         {
             if (inString.IsEmpty)
@@ -734,7 +922,122 @@ namespace BeauUtil
             return true;
         }
 
+        /// <summary>
+        /// Returns if the given UnsafeString contains the given string at the given index.
+        /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        static public unsafe bool AttemptMatch(this UnsafeString inString, int inIndex, string inMatch, bool inbIgnoreCase = false)
+        {
+            if (inString.IsEmpty)
+                return false;
+
+            if (string.IsNullOrEmpty(inMatch))
+                return false;
+
+            if (inIndex < 0 || inIndex + inMatch.Length > inString.Length)
+                return false;
+
+            inString.Unpack(out var ptr, out var len);
+            fixed(char* matchPtr = inMatch)
+            {
+                return StartsWith(ptr + inIndex, len - inIndex, matchPtr, inMatch.Length, inbIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// Returns if a string starts with the given matching string.
+        /// </summary>
+        static unsafe public bool StartsWith(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
+        {
+            if (inLengthMatch > inLength || inStart + inLength > inString.Length || inStartMatch + inLengthMatch > inMatch.Length)
+                return false;
+
+            fixed (char* str = inString)
+            fixed (char* match = inMatch)
+            {
+                return StartsWith(str + inStart, inLength, match + inStartMatch, inLengthMatch, inbIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// Returns if a string ends with a given matching string.
+        /// </summary>
+        static public unsafe bool EndsWith(string inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
+        {
+            if (inLengthMatch > inLength || inStart + inLength > inString.Length || inStartMatch + inLengthMatch > inMatch.Length)
+                return false;
+
+            fixed (char* str = inString)
+            fixed (char* match = inMatch)
+            {
+                return EndsWith(str + inStart, inLength, match + inStartMatch, inLengthMatch, inbIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// Returns if a given unsafe string starts with a given sequence.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static unsafe public bool StartsWith(char* inString, int inLength, char* inMatch, int inLengthMatch, bool inbIgnoreCase)
+        {
+            return inLengthMatch <= inLength && Equals(inString, inMatch, inLengthMatch, inbIgnoreCase);
+        }
+
+        /// <summary>
+        /// Returns if a given unsafe string ends with a given sequence.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static unsafe public bool EndsWith(char* inString, int inLength, char* inMatch, int inLengthMatch, bool inbIgnoreCase)
+        {
+            return inLengthMatch <= inLength && Equals(inString + inLength - inLengthMatch, inMatch, inLengthMatch, inbIgnoreCase);
+        }
+
         #endregion // Pattern Matching
+
+        #region Copy
+
+        /// <summary>
+        /// Copies a string into the given buffer.
+        /// </summary>
+        static public unsafe void CopyTo(this string inString, char* inBuffer, int inLength)
+        {
+            Assert.NotNull(inBuffer);
+
+            if (!string.IsNullOrEmpty(inString))
+            {
+                if (inString.Length > inLength)
+                    throw new ArgumentOutOfRangeException("inLength");
+
+                fixed(char* ptr = inString)
+                {
+                    Unsafe.FastCopyArray(ptr, inString.Length, inBuffer);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Copies a StringBuilder into the given buffer.
+        /// </summary>
+        static public unsafe void CopyTo(this StringBuilder inBuilder, char* inBuffer, int inLength)
+        {
+            Assert.NotNull(inBuffer);
+
+            if (inBuilder != null && inBuilder.Length > 0)
+            {
+#if SUPPORTS_SPAN
+                Span<char> data = new Span<char>(inBuffer, inLength);
+                inBuilder.CopyTo(0, data, inBuilder.Length);
+#else
+                for (int i = 0; i < inBuilder.Length; i++)
+                {
+                    inBuffer[i] = inBuilder[i];
+                }
+#endif // SUPPORTS_SPAN
+            }
+        }
+
+        #endregion // Copy
 
         #region StringBuilder
 
@@ -1245,6 +1548,121 @@ namespace BeauUtil
         }
 
         /// <summary>
+        /// Returns if the given segment of a StringBuilder starts with the given segment of a string.
+        /// </summary>
+        static public bool StartsWith(StringBuilder inBuilder, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
+        {
+#if DEVELOPMENT
+            if (inBuilder == null)
+                throw new ArgumentNullException("inBuilder");
+#endif // DEVELOPMENT
+
+            if (inLengthMatch > inLength)
+                return false;
+
+            for (int i = 0; i < inLengthMatch; ++i)
+            {
+                char a = inBuilder[inStart + i];
+                char b = inMatch[inStartMatch + i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if the given segment of a StringBuilder ends with the given segment of a string.
+        /// </summary>
+        static public bool EndsWith(StringBuilder inBuilder, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
+        {
+            if (inLengthMatch > inLength)
+                return false;
+
+            int endA = inStart + inLength - 1;
+            int endB = inStartMatch + inLengthMatch - 1;
+            for (int i = 0; i < inLengthMatch; ++i)
+            {
+                char a = inBuilder[endA - i];
+                char b = inMatch[endB - i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if the two string segments are equal.
+        /// </summary>
+        static public bool Equals(StringBuilder inA, int inStartA, int inLengthA, StringBuilder inB, int inStartB, int inLengthB, bool inbIgnoreCase)
+        {
+            if (inLengthA != inLengthB)
+                return false;
+
+            for (int i = 0; i < inLengthA; ++i)
+            {
+                char a = inA[inStartA + i];
+                char b = inB[inStartB + i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns if the two string segments are equal.
+        /// </summary>
+        static public bool Equals(StringBuilder inA, int inStartA, int inLengthA, string inB, int inStartB, int inLengthB, bool inbIgnoreCase)
+        {
+            if (inLengthA != inLengthB)
+                return false;
+
+            for (int i = 0; i < inLengthA; ++i)
+            {
+                char a = inA[inStartA + i];
+                char b = inB[inStartB + i];
+                if (!inbIgnoreCase)
+                {
+                    if (a != b)
+                        return false;
+                }
+                else
+                {
+                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Trims characters from the end of a StringBuilder.
         /// </summary>
         static public StringBuilder TrimEnd(this StringBuilder ioBuilder, char[] inTrimChars)
@@ -1735,7 +2153,27 @@ namespace BeauUtil
             /// </summary>
             static public bool GeneratesVisibleCharacter(string inRichTag)
             {
-                return Array.IndexOf(s_VisibleRichTags, inRichTag) >= 0;
+                foreach (var tag in s_VisibleRichTags)
+                {
+                    if (inRichTag == tag)
+                        return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// Returns if this tag generates something visible.
+            /// </summary>
+            static public bool GeneratesVisibleCharacter(UnsafeString inRichTag)
+            {
+                foreach(var tag in s_VisibleRichTags)
+                {
+                    if (inRichTag == tag)
+                        return true;
+                }
+
+                return false;
             }
 
             /// <summary>

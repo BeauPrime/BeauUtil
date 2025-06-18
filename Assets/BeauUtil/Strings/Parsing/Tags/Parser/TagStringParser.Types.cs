@@ -7,69 +7,61 @@
  * Purpose: Additional types for TagStringParser.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define EXPANDED_REFS
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace BeauUtil.Tags
 {
-    public partial class TagStringParser
+    public partial struct TagStringParser
     {
         #region Delimiters
 
         /// <summary>
         /// Delimiter rules for tags with the format "<tag>"
         /// </summary>
-        static public readonly IDelimiterRules RichTextDelimiters = new RichTextRules();
+        static public readonly DelimiterRules RichTextDelimiters = new DelimiterRules()
+        {
+            TagStartDelimiter = "<",
+            TagEndDelimiter = ">",
+            TagDataDelimiters = TagData.DefaultDataDelimiters,
+            RegionCloseDelimiter = '/',
+            RichText = true,
+            AdditionalRichTextTags = null,
+        };
 
         /// <summary>
         /// Delimiter rules for tags with the format "{tag}"
         /// </summary>
-        static public readonly IDelimiterRules CurlyBraceDelimiters = new CurlyBraceTextRules();
+        static public readonly DelimiterRules CurlyBraceDelimiters = new DelimiterRules()
+        {
+            TagStartDelimiter = "{",
+            TagEndDelimiter = "}",
+            TagDataDelimiters = TagData.DefaultDataDelimiters,
+            RegionCloseDelimiter = '/',
+            RichText = true,
+            AdditionalRichTextTags = null,
+        };
 
         /// <summary>
         /// Delimiter rules for tags with the format "@{tag}"
         /// </summary>
-        static public readonly IDelimiterRules AtCurlyBraceDelimiters = new CurlyBraceTextRules();
-
-        private class RichTextRules : IDelimiterRules
+        static public readonly DelimiterRules AtCurlyBraceDelimiters = new DelimiterRules()
         {
-            public string TagStartDelimiter { get { return "<"; } }
-            public string TagEndDelimiter { get { return ">"; } }
-            public char[] TagDataDelimiters { get { return TagData.DefaultDataDelimiters; } }
-            public char RegionCloseDelimiter { get { return '/'; } }
+            TagStartDelimiter = "{@",
+            TagEndDelimiter = "}",
+            TagDataDelimiters = TagData.DefaultDataDelimiters,
+            RegionCloseDelimiter = '/',
+            RichText = true,
+            AdditionalRichTextTags = null,
+        };
 
-            public bool RichText { get { return true; } }
-            public IEnumerable<string> AdditionalRichTextTags { get { return null; } }
-        }
-
-        private class CurlyBraceTextRules : IDelimiterRules
+        static internal bool HasSameDelims(DelimiterRules inA, DelimiterRules inB)
         {
-            public string TagStartDelimiter { get { return "{"; } }
-            public string TagEndDelimiter { get { return "}"; } }
-            public char[] TagDataDelimiters { get { return TagData.DefaultDataDelimiters; } }
-            public char RegionCloseDelimiter { get { return '/'; } }
-
-            public bool RichText { get { return true; } }
-            public IEnumerable<string> AdditionalRichTextTags { get { return null; } }
-        }
-
-        private class AtCurlyBraceTextRules : IDelimiterRules
-        {
-            public string TagStartDelimiter { get { return "@{"; } }
-            public string TagEndDelimiter { get { return "}"; } }
-            public char[] TagDataDelimiters { get { return TagData.DefaultDataDelimiters; } }
-            public char RegionCloseDelimiter { get { return '/'; } }
-
-            public bool RichText { get { return true; } }
-            public IEnumerable<string> AdditionalRichTextTags { get { return null; } }
-        }
-
-        static internal bool HasSameDelims(IDelimiterRules inA, IDelimiterRules inB)
-        {
-            if (inA == inB)
-                return true;
-
             return (inA.TagStartDelimiter == inB.TagStartDelimiter
                 && inA.TagEndDelimiter == inB.TagEndDelimiter
                 && inA.RegionCloseDelimiter == inB.RegionCloseDelimiter
@@ -84,7 +76,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Returns if the given string contains any text or rich text tags.
         /// </summary>
-        static public bool ContainsText(StringSlice inString, IDelimiterRules inDelimiters, ICollection<string> inTextTags = null)
+        static public bool ContainsText(StringSlice inString, DelimiterRules inDelimiters, ICollection<string> inTextTags = null)
         {
             bool bTrackRichText = inDelimiters.RichText;
             bool bTrackTags = !bTrackRichText || !TagStringParser.HasSameDelims(inDelimiters, TagStringParser.RichTextDelimiters);

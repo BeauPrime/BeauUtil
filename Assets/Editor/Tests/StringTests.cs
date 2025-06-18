@@ -375,5 +375,23 @@ namespace BeauUtil.UnitTests
 
         private delegate bool StringParseDelegate<T>(string arg0, out T out0);
         private delegate bool StringSliceParseDelegate<T>(StringSlice arg0, out T out0);
+
+        [Test]
+        static public void CanAddCharsToStringArena()
+        {
+            StringArena arena = new StringArena(1024);
+            StringSlice firstSlice = arena.Alloc("Blah");
+
+            Assert.IsTrue(firstSlice == "Blah");
+
+            firstSlice.Unpack(out string str, out int off, out int len);
+            Assert.AreEqual(4, len);
+            Assert.AreEqual(2, off);
+
+            var enumerator = arena.GetEnumerator();
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(firstSlice, enumerator.Current);
+            Assert.IsFalse(enumerator.MoveNext());
+        }
     }
 }

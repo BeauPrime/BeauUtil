@@ -11,6 +11,10 @@
 #define DEVELOPMENT
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD
 
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 #if NETSTANDARD || NET_STANDARD
 #define CODEANALYSIS
 #define ISFINITE
@@ -89,9 +93,9 @@ namespace BeauUtil.Debugger
 
 #if DEVELOPMENT
         static private bool s_RegisteredLogHook;
-        static private FailureMode s_FailureMode;
 #endif // DEVELOPMENT
 
+        static private FailureMode s_FailureMode;
         static private bool s_Broken;
         static private readonly HashSet<StringHash64> s_IgnoredLocations = new HashSet<StringHash64>();
 
@@ -102,6 +106,8 @@ namespace BeauUtil.Debugger
             Application.SetStackTraceLogType(LogType.Exception, StackTraceLogType.ScriptOnly);
             UnityEngine.Application.logMessageReceived += Application_logMessageReceived;
             s_RegisteredLogHook = true;
+#else
+            s_FailureMode = FailureMode.Automatic;
 #endif // DEVELOPMENT
 
 #if UNITY_EDITOR
@@ -177,7 +183,6 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Immediately fails.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         [DoesNotReturn]
         static public void Fail()
         {
@@ -187,7 +192,6 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Immediately fails.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         [DoesNotReturn]
         static public void Fail(string inMessage)
         {
@@ -197,7 +201,6 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Immediately fails.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         [DoesNotReturn]
         static public void Fail<P0>(string inFormat, P0 inParam0)
         {
@@ -207,7 +210,6 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Immediately fails.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         [DoesNotReturn]
         static public void Fail<P0, P1>(string inFormat, P0 inParam0, P1 inParam1)
         {
@@ -217,7 +219,6 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Immediately fails.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         [DoesNotReturn]
         static public void Fail<P0, P1, P2>(string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
@@ -227,7 +228,6 @@ namespace BeauUtil.Debugger
         /// <summary>
         /// Immediately fails.
         /// </summary>
-        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         [DoesNotReturn]
         static public void Fail(string inFormat, params object[] inParams)
         {
@@ -463,6 +463,162 @@ namespace BeauUtil.Debugger
         }
 
         #endregion // NotNull
+
+        #region NotNull (Pointer)
+
+#if UNMANAGED_CONSTRAINT
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<T>(T* inPointer) where T : unmanaged
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Pointer {0} is not null", typeof(T).Name), null);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<T>(T* inPointer, string inMessage) where T : unmanaged
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Pointer {0} is not null", typeof(T).Name), inMessage);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<T, P0>(T* inPointer, string inFormat, P0 inParam0) where T : unmanaged
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Pointer {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<T, P0, P1>(T* inPointer, string inFormat, P0 inParam0, P1 inParam1) where T : unmanaged
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Pointer {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<T, P0, P1, P2>(T* inPointer, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2) where T : unmanaged
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Pointer {0} is not null", typeof(T).Name), Log.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<T>(T* inPointer, string inFormat, params object[] inParams) where T : unmanaged
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), string.Format("Pointer {0} is not null", typeof(T).Name), Log.Format(inFormat, inParams));
+            }
+        }
+
+#endif // UNMANAGED_CONSTRAINT
+
+        #region Void Pointer
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull(void* inPointer)
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), "Pointer is not null", null);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull(void* inPointer, string inMessage)
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), "Pointer is not null", inMessage);
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<P0>(void* inPointer, string inFormat, P0 inParam0)
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), "Pointer is not null", Log.Format(inFormat, inParam0));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<P0, P1>(void* inPointer, string inFormat, P0 inParam0, P1 inParam1)
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), "Pointer is not null", Log.Format(inFormat, inParam0, inParam1));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull<P0, P1, P2>(void* inPointer, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), "Pointer is not null", Log.Format(inFormat, inParam0, inParam1, inParam2));
+            }
+        }
+
+        /// <summary>
+        /// Asserts that a pointer is not null.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public unsafe void NotNull(void* inPointer, string inFormat, params object[] inParams)
+        {
+            if (inPointer == null)
+            {
+                OnFail(GetLocationFromStack(1), "Pointer is not null", Log.Format(inFormat, inParams));
+            }
+        }
+
+        #endregion // Void Pointer
+
+        #endregion // NotNullPtr
 
         #region NotNullOrDestroyed
 
@@ -831,18 +987,21 @@ namespace BeauUtil.Debugger
 
         static private ErrorResult ShowErrorMessage(string inMessage)
         {
-#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
-            if (EditorApplication.isPlaying && !s_Broken && s_FailureMode == FailureMode.User)
+            if (!s_Broken && s_FailureMode == FailureMode.User)
             {
-                int result = EditorUtility.DisplayDialogComplex("Assert Failed", inMessage, "Ignore", "Ignore All", "Break");
-                if (result == 0)
-                    return ErrorResult.Ignore;
-                if (result == 1)
-                    return ErrorResult.IgnoreAll;
-            }
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
+                if (EditorApplication.isPlaying)
+                {
+                    int result = EditorUtility.DisplayDialogComplex("Assert Failed", inMessage, "Ignore", "Ignore All", "Break");
+                    if (result == 0)
+                        return ErrorResult.Ignore;
+                    if (result == 1)
+                        return ErrorResult.IgnoreAll;
+                }
 #elif (UNITY_WEBGL && !UNITY_EDITOR)
-            BeauUtil_DisplayAssertionAlert(inMessage);
+                BeauUtil_DisplayAssertionAlert(inMessage);
 #endif // (UNITY_EDITOR && !IGNORE_UNITY_EDITOR)
+            }
 
             return ErrorResult.Break;
         }
@@ -915,6 +1074,6 @@ namespace BeauUtil.Debugger
         static private extern void BeauUtil_DisplayAssertionAlert(string message);
 #endif // UNITY_WEBGL && !UNITY_EDITOR
 
-#endregion // Internal
-            }
+        #endregion // Internal
+    }
 }

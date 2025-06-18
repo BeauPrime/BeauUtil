@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using UnityEngine;
 
 namespace BeauUtil
@@ -40,6 +41,12 @@ namespace BeauUtil
         public StringHash64(StringSlice inSlice)
         {
             m_HashValue = inSlice.CalculateHash64();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public StringHash64(UnsafeString inString)
+        {
+            m_HashValue = inString.CalculateHash64();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -99,9 +106,27 @@ namespace BeauUtil
         /// Calculates the string hash without caching a reverse lookup.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 Fast(UnsafeString inString)
+        {
+            return new StringHash64(inString.CalculateHash64NoCache());
+        }
+
+        /// <summary>
+        /// Calculates the string hash without caching a reverse lookup.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 Fast(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64NoCache());
+        }
+
+        /// <summary>
+        /// Calculates the string hash without caching a reverse lookup.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 Fast(StringBuilder inBuilder, int inStartIdx, int inLength)
+        {
+            return new StringHash64(StringHashing.Hash64(inBuilder, inStartIdx, inLength));
         }
 
         /// <summary>
@@ -144,9 +169,36 @@ namespace BeauUtil
         /// Constructs a case-insensitive hash.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 CaseInsensitive(UnsafeString inString)
+        {
+            return new StringHash64(inString.CalculateHash64CaseInsensitive());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 FastCaseInsensitive(UnsafeString inString)
+        {
+            return new StringHash64(inString.CalculateHash64CaseInsensitiveNoCache());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public StringHash64 CaseInsensitive(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitive());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 CaseInsensitive(StringBuilder inBuilder, int inStartIdx, int inLength)
+        {
+            return new StringHash64(StringHashing.StoreHash64CaseInsensitive(inBuilder, inStartIdx, inLength));
         }
 
         /// <summary>
@@ -156,6 +208,15 @@ namespace BeauUtil
         static public StringHash64 FastCaseInsensitive(StringBuilderSlice inSlice)
         {
             return new StringHash64(inSlice.CalculateHash64CaseInsensitiveNoCache());
+        }
+
+        /// <summary>
+        /// Constructs a case-insensitive hash without caching a reverse lookup.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 FastCaseInsensitive(StringBuilder inBuilder, int inStartIdx, int inLength)
+        {
+            return new StringHash64(StringHashing.Hash64CaseInsensitive(inBuilder, inStartIdx, inLength));
         }
 
         static public readonly StringHash64 Null = new StringHash64();
@@ -298,6 +359,56 @@ namespace BeauUtil
             return val;
         }
 
+        static public bool TryParse(UnsafeString inString, out StringHash64 outHash)
+        {
+            if (inString.StartsWith(StringHashing.CustomHashPrefix))
+            {
+                ulong hexVal;
+                if (StringParser.TryParseHex(inString.Substring(1), 16, out hexVal))
+                {
+                    outHash = new StringHash64(hexVal);
+                    return true;
+                }
+            }
+            else if (inString.StartsWith("0x"))
+            {
+                ulong hexVal;
+                if (StringParser.TryParseHex(inString.Substring(2), 16, out hexVal))
+                {
+                    outHash = new StringHash64(hexVal);
+                    return true;
+                }
+
+                outHash = default(StringHash64);
+                return false;
+            }
+            else if (inString.StartsWith(StringHashing.StringPrefix))
+            {
+                outHash = inString.Substring(1).Hash64();
+                return true;
+            }
+            else if (inString.StartsWith('"') && inString.EndsWith('"'))
+            {
+                outHash = inString.Substring(1, inString.Length - 2).Hash64();
+                return true;
+            }
+
+            outHash = inString.Hash64();
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the unsafe string into a hash.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public StringHash64 Parse(UnsafeString inString, StringHash64 inDefault = default(StringHash64))
+        {
+            StringHash64 val;
+            if (!TryParse(inString, out val))
+                val = inDefault;
+            return val;
+        }
+
         #endregion // Parse
 
         #region ISerializedProxy
@@ -342,5 +453,42 @@ namespace BeauUtil
         }
 
         #endregion // Comparisons
+
+        #region Select
+
+        /// <summary>
+        /// Returns the first hash that is not empty.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 First(StringHash64 inHash0, StringHash64 inHash1)
+        {
+            return (!inHash0.IsEmpty ? inHash0
+                : (inHash1));
+        }
+
+        /// <summary>
+        /// Returns the first hash that is not empty.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 First(StringHash64 inHash0, StringHash64 inHash1, StringHash64 inHash2)
+        {
+            return (!inHash0.IsEmpty ? inHash0
+                : (!inHash1.IsEmpty ? inHash1
+                : (inHash2)));
+        }
+
+        /// <summary>
+        /// Returns the first hash that is not empty.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringHash64 First(StringHash64 inHash0, StringHash64 inHash1, StringHash64 inHash2, StringHash64 inHash3)
+        {
+            return (!inHash0.IsEmpty ? inHash0
+                : (!inHash1.IsEmpty ? inHash1
+                : (!inHash2.IsEmpty ? inHash2
+                : (inHash3))));
+        }
+
+        #endregion // Select
     }
 }

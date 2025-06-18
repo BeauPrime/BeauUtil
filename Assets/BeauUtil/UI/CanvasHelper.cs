@@ -18,6 +18,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 #if ENABLE_TEXTMESHPRO
 using TMPro;
@@ -74,11 +75,29 @@ namespace BeauUtil
         /// </summary>
         static public Toggle ActiveToggle(this ToggleGroup inGroup)
         {
-            IEnumerable<Toggle> all = inGroup.ActiveToggles();
-            var iter = all.GetEnumerator();
-            if (iter.MoveNext())
-                return iter.Current;
+            foreach (var toggle in inGroup.AllToggles())
+            {
+                if (toggle.isOn)
+                    return toggle;
+            }
+
             return null;
+        }
+
+        /// <summary>
+        /// Returns the list of all registered toggles.
+        /// </summary>
+#if !RESTRICT_INTERNAL_CALLS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ldfld [arg inGroup]::m_Toggles; ret;")]
+#endif // !RESTRICT_INTERNAL_CALLS
+        static public List<Toggle> AllToggles(this ToggleGroup inGroup)
+        {
+#if RESTRICT_INTERNAL_CALLS
+            return (List<Toggle>) s_ToggleGroup_m_Toggles?.GetValue(inGroup);
+#else
+            throw new NotImplementedException();
+#endif // RESTRICT_INTERNAL_CALLS
         }
 
         #region Layout
@@ -255,7 +274,7 @@ namespace BeauUtil
 
         #region Text
 
-        private const int DefaultTextBufferSize = 256;
+        private const int DefaultTextBufferSize = 512;
 
         static private int s_CurrentCharBufferSize = DefaultTextBufferSize;
         static private char[] s_CurrentCharBuffer = null;
@@ -318,6 +337,21 @@ namespace BeauUtil
 
             Unsafe.CopyArray(inCharBuffer, inCharBufferLength, s_CurrentCharBuffer);
             inTextMeshPro.SetText(s_CurrentCharBuffer, 0, inCharBufferLength);
+        }
+
+        /// <summary>
+        /// Sets text on the given TextMeshPro element from an unsafe string.
+        /// If the text length exceeds the current <c>CanvasHelper.BufferSize</c>, then a string will be allocated.
+        /// Otherwise this will not allocate any extra string memory.
+        /// </summary>
+        /// <remarks>
+        /// Note:   In the editor, TextMeshPro will automatically allocate a string internally,
+        ///         so it can be displayed in the inspector. This does not occur in builds.
+        /// </remarks>
+        static public unsafe void SetText(this TMP_Text inTextMeshPro, UnsafeString inString)
+        {
+            inString.Unpack(out char* ptr, out int length);
+            SetText(inTextMeshPro, ptr, length);
         }
 
         /// <summary>
@@ -407,6 +441,23 @@ namespace BeauUtil
             }
         }
 
+        /// <summary>
+        /// Returns the number of visible characters in the TextMeshPro element's parsed text.
+        /// </summary>
+#if !RESTRICT_INTERNAL_CALLS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ldfld [arg inTextMeshPro]::m_characterCount; ret;")]
+#endif // !RESTRICT_INTERNAL_CALLS
+        static public int CharacterCount(this TMP_Text inTextMeshPro)
+        {
+#if !RESTRICT_INTERNAL_CALLS
+            throw new NotImplementedException();
+#else
+            inTextMeshPro.UpdateVertexData();
+            return inTextMeshPro.textInfo.characterCount;
+#endif // !RESTRICT_INTERNAL_CALLS
+        }
+
 #endif // ENABLE_TEXTMESHPRO
 
         #endregion // TextMeshPro
@@ -417,12 +468,14 @@ namespace BeauUtil
 
 #if RESTRICT_INTERNAL_CALLS
         static private MethodInfo s_Selectable_get_currentSelectionState;
-# endif // RESTRICT_INTERNAL_CALLS
+        static private FieldInfo s_ToggleGroup_m_Toggles;
+#endif // RESTRICT_INTERNAL_CALLS
 
         static CanvasHelper()
         {
 #if RESTRICT_INTERNAL_CALLS
             s_Selectable_get_currentSelectionState = typeof(Selectable).GetProperty("currentSelectionState", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)?.GetMethod;
+            s_ToggleGroup_m_Toggles = typeof(ToggleGroup).GetField("m_Toggles", BindingFlags.Instance | BindingFlags.NonPublic);
 #endif // RESTRICT_INTERNAL_CALLS
         }
 
@@ -430,6 +483,7 @@ namespace BeauUtil
         /// Returns the current selection state of the given selectable.
         /// </summary>
 #if !RESTRICT_INTERNAL_CALLS
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [IntrinsicIL("ldarg.0; call [arg inSelectable]::get_currentSelectionState(); ret;")]
 #endif // !RESTRICT_INTERNAL_CALLS
         static public SelectionState GetSelectionState(this Selectable inSelectable)

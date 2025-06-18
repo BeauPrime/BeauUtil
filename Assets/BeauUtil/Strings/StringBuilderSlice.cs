@@ -7,12 +7,17 @@
  * Purpose: Read-only slice of a StringBuilder.
  */
 
+#if NETSTANDARD || NET_STANDARD
+#define SUPPORTS_SPAN
+#endif // NETSTANDARD || NET_STANDARD
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Unity.IL2CPP.CompilerServices;
+
 using static BeauUtil.StringSlice;
 
 namespace BeauUtil
@@ -182,10 +187,7 @@ namespace BeauUtil
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool StartsWith(string inItem)
         {
-            if (m_Source == null || inItem == null)
-                return false;
-
-            return MatchStart(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, false);
+            return StartsWith(inItem, false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -194,16 +196,13 @@ namespace BeauUtil
             if (m_Source == null || inItem == null)
                 return false;
 
-            return MatchStart(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
+            return StringUtils.StartsWith(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool EndsWith(string inItem)
         {
-            if (m_Source == null || inItem == null)
-                return false;
-
-            return MatchEnd(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, false);
+            return EndsWith(inItem, false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,13 +211,13 @@ namespace BeauUtil
             if (m_Source == null || inItem == null)
                 return false;
 
-            return MatchEnd(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
+            return StringUtils.EndsWith(m_Source, m_StartIndex, Length, inItem, 0, inItem.Length, inbIgnoreCase);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(string inItem)
         {
-            return Length >= inItem.Length && StringUtils.IndexOf(m_Source, inItem, m_StartIndex, Length, false) >= 0;
+            return Contains(inItem, false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -302,6 +301,74 @@ namespace BeauUtil
 
         #endregion // Substring
 
+        #region Export
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyTo(char[] inArray, int inArrayIdx)
+        {
+            CopyTo(0, inArray, inArrayIdx, Length);
+        }
+
+        public void CopyTo(int inStartIndex, char[] inArray, int inArrayIdx, int inCount)
+        {
+            if (m_Source == null || inCount <= 0)
+                return;
+            if (inArray.Length < inCount)
+                throw new ArgumentException("Not enough room to copy " + inCount + " items to destination");
+            if (inStartIndex + inCount > Length)
+                throw new ArgumentException("Attempting to copy data outside StringSlice range");
+
+            m_Source.CopyTo(m_StartIndex + inStartIndex, inArray, inArrayIdx, inCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyTo(char[] inArray)
+        {
+            CopyTo(0, inArray, 0, Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void CopyTo(char* inBuffer, int inBufferLength)
+        {
+            CopyTo(0, inBuffer, inBufferLength, Length);
+        }
+
+        public unsafe void CopyTo(int inStartIndex, char* inBuffer, int inArrayLength, int inCount)
+        {
+            if (m_Source == null || inCount <= 0)
+                return;
+            if (inArrayLength < inCount)
+                throw new ArgumentException("Not enough room to copy " + inCount + " items to destination");
+            if (inStartIndex + inCount > Length)
+                throw new ArgumentException("Attempting to copy data outside StringSlice range");
+
+            unsafe
+            {
+#if SUPPORTS_SPAN
+                Span<char> data = new Span<char>(inBuffer, inArrayLength);
+                m_Source.CopyTo(m_StartIndex + inStartIndex, data, inCount);
+#else
+                for(int i = 0; i < inCount; i++)
+                {
+                    inBuffer[i] = m_Source[m_StartIndex + inStartIndex + i];
+                }
+#endif // SUPPORTS_SPAN
+            }
+        }
+
+        public char[] ToCharArray()
+        {
+            if (Length > 0)
+            {
+                char[] data = new char[Length];
+                m_Source.CopyTo(m_StartIndex, data, 0, Length);
+                return data;
+            }
+            return Array.Empty<char>();
+        }
+
+#endregion // Export
+
         #region IReadOnlyList
 
         public char this[int index]
@@ -339,12 +406,12 @@ namespace BeauUtil
 
         public bool Equals(StringBuilderSlice other)
         {
-            return Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, false);
+            return StringUtils.Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, false);
         }
 
         public bool Equals(StringBuilderSlice other, bool inbIgnoreCase)
         {
-            return Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, inbIgnoreCase);
+            return StringUtils.Equals(m_Source, m_StartIndex, Length, other.m_Source, other.m_StartIndex, other.Length, inbIgnoreCase);
         }
 
         public bool Equals(string other)
@@ -352,7 +419,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(other))
                 return Length == 0;
 
-            return Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, false);
+            return StringUtils.Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, false);
         }
 
         public bool Equals(string other, bool inbIgnoreCase)
@@ -360,7 +427,7 @@ namespace BeauUtil
             if (string.IsNullOrEmpty(other))
                 return Length == 0;
 
-            return Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, inbIgnoreCase);
+            return StringUtils.Equals(m_Source, m_StartIndex, Length, other, 0, other.Length, inbIgnoreCase);
         }
 
         #endregion // IEquatable
@@ -495,104 +562,6 @@ namespace BeauUtil
         internal ulong CalculateHash64CaseInsensitiveNoCache()
         {
             return StringHashing.Hash64CaseInsensitive(m_Source, m_StartIndex, Length);
-        }
-
-        static private bool MatchStart(StringBuilder inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
-        {
-            if (inLengthMatch > inLength)
-                return false;
-
-            for (int i = 0; i < inLengthMatch; ++i)
-            {
-                char a = inString[inStart + i];
-                char b = inMatch[inStartMatch + i];
-                if (!inbIgnoreCase)
-                {
-                    if (a != b)
-                        return false;
-                }
-                else
-                {
-                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
-        static private bool MatchEnd(StringBuilder inString, int inStart, int inLength, string inMatch, int inStartMatch, int inLengthMatch, bool inbIgnoreCase)
-        {
-            if (inLengthMatch > inLength)
-                return false;
-
-            int endA = inStart + inLength - 1;
-            int endB = inStartMatch + inLengthMatch - 1;
-            for (int i = 0; i < inLengthMatch; ++i)
-            {
-                char a = inString[endA - i];
-                char b = inMatch[endB - i];
-                if (!inbIgnoreCase)
-                {
-                    if (a != b)
-                        return false;
-                }
-                else
-                {
-                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
-        static private bool Equals(StringBuilder inA, int inStartA, int inLengthA, StringBuilder inB, int inStartB, int inLengthB, bool inbIgnoreCase)
-        {
-            if (inLengthA != inLengthB)
-                return false;
-
-            for (int i = 0; i < inLengthA; ++i)
-            {
-                char a = inA[inStartA + i];
-                char b = inB[inStartB + i];
-                if (!inbIgnoreCase)
-                {
-                    if (a != b)
-                        return false;
-                }
-                else
-                {
-                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
-        static private bool Equals(StringBuilder inA, int inStartA, int inLengthA, string inB, int inStartB, int inLengthB, bool inbIgnoreCase)
-        {
-            if (inLengthA != inLengthB)
-                return false;
-
-            for (int i = 0; i < inLengthA; ++i)
-            {
-                char a = inA[inStartA + i];
-                char b = inB[inStartB + i];
-                if (!inbIgnoreCase)
-                {
-                    if (a != b)
-                        return false;
-                }
-                else
-                {
-                    if (StringUtils.ToUpperInvariant(a) != StringUtils.ToUpperInvariant(b))
-                        return false;
-                }
-            }
-
-            return true;
         }
 
         static private StringBuilderSlice Trim(StringBuilder inString, int inStartIdx, int inLength, char[] inTrimChars, TrimType inTrimType)

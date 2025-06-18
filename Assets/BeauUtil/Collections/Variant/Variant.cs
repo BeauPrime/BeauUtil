@@ -664,6 +664,14 @@ namespace BeauUtil.Variants
         }
 
         /// <summary>
+        /// Attempts to parse an unsafe string into a variant.
+        /// </summary>
+        static public bool TryParse(UnsafeString inString, out Variant outValue)
+        {
+            return TryParse(inString, false, out outValue);
+        }
+
+        /// <summary>
         /// Attempts to parse a string slice into a variant.
         /// </summary>
         static public bool TryParse(StringSlice inSlice, bool inbAllowImplicitHash, out Variant outValue)
@@ -730,6 +738,72 @@ namespace BeauUtil.Variants
         }
 
         /// <summary>
+        /// Attempts to parse an unsafe string into a variant.
+        /// </summary>
+        static public bool TryParse(UnsafeString inString, bool inbAllowImplicitHash, out Variant outValue)
+        {
+            inString = inString.Trim();
+
+            if (inString.Length <= 0 || inString.Equals("null", true))
+            {
+                outValue = Variant.Null;
+                return true;
+            }
+
+            if (inString.StartsWith(StringHashing.CustomHashPrefix) || inString.StartsWith(StringHashing.StringPrefix)
+                || (inString.Length >= 2 && inString.StartsWith('"') && inString.EndsWith('"')))
+            {
+                StringHash32 hash;
+                if (StringHash32.TryParse(inString, out hash))
+                {
+                    outValue = hash;
+                    return true;
+                }
+            }
+
+            bool bBoolVal;
+            if (StringParser.TryParseBool(inString, out bBoolVal))
+            {
+                outValue = new Variant(bBoolVal);
+                return true;
+            }
+
+            int intVal;
+            if (StringParser.TryParseInt(inString, out intVal))
+            {
+                outValue = new Variant(intVal);
+                return true;
+            }
+
+            uint uintVal;
+            if (StringParser.TryParseUInt(inString, out uintVal))
+            {
+                outValue = new Variant(uintVal);
+                return true;
+            }
+
+            float floatVal;
+            if (StringParser.TryParseFloat(inString, out floatVal))
+            {
+                outValue = new Variant(floatVal);
+                return true;
+            }
+
+            if (inbAllowImplicitHash)
+            {
+                StringHash32 hash;
+                if (StringHash32.TryParse(inString, out hash))
+                {
+                    outValue = hash;
+                    return true;
+                }
+            }
+
+            outValue = default(Variant);
+            return false;
+        }
+
+        /// <summary>
         /// Parses the string slice into a variant.
         /// If unable to parse, the given default will be used instead.
         /// </summary>
@@ -748,6 +822,27 @@ namespace BeauUtil.Variants
         static public Variant Parse(StringSlice inSlice, Variant inDefault = default(Variant))
         {
             return Parse(inSlice, false, inDefault);
+        }
+
+        /// <summary>
+        /// Parses the unsafe string into a variant.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public Variant Parse(UnsafeString inString, bool inbAllowImplicitHash, Variant inDefault = default(Variant))
+        {
+            Variant val;
+            if (!TryParse(inString, inbAllowImplicitHash, out val))
+                val = inDefault;
+            return val;
+        }
+
+        /// <summary>
+        /// Parses the unsafe string into a variant.
+        /// If unable to parse, the given default will be used instead.
+        /// </summary>
+        static public Variant Parse(UnsafeString inString, Variant inDefault = default(Variant))
+        {
+            return Parse(inString, false, inDefault);
         }
 
         #endregion // Parse

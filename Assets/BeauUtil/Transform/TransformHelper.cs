@@ -219,6 +219,49 @@ namespace BeauUtil
 
         #endregion // Camera
 
+        #region Polyfills
+
+        /// <summary>
+        /// Sets a parent and preserves world position, rotation, and scale.
+        /// </summary>
+        static public void SetParentPreserveWorld(this Transform inTransform, Transform parent)
+        {
+            inTransform.GetPositionAndRotation(out Vector3 p, out Quaternion q);
+            inTransform.SetParent(parent, true);
+            inTransform.SetPositionAndRotation(p, q);
+        }
+
+#if !UNITY_2021_3_OR_NEWER
+        /// <summary>
+        /// Polyfill for Transform.GetPositionAndRotation.
+        /// </summary>
+        static public void GetPositionAndRotation(this Transform inTransform, out Vector3 position, out Quaternion rotation)
+        {
+            position = inTransform.position;
+            rotation = inTransform.rotation;
+        }
+
+        /// <summary>
+        /// Polyfill for Transform.GetLocalPositionAndRotation.
+        /// </summary>
+        static public void GetLocalPositionAndRotation(this Transform inTransform, out Vector3 position, out Quaternion rotation)
+        {
+            position = inTransform.localPosition;
+            rotation = inTransform.localRotation;
+        }
+
+        /// <summary>
+        /// Polyfill for Transform.SetLocalPositionAndRotation.
+        /// </summary>
+        static public void SetLocalPositionAndRotation(this Transform inTransform, Vector3 position, Quaternion rotation)
+        {
+            inTransform.localPosition = position;
+            inTransform.localRotation = rotation;
+        }
+#endif // UNITY_2021_3_OR_NEWER
+
+        #endregion // Polyfills
+
         #region Flattening Helpers
 
         /// <summary>
@@ -250,7 +293,7 @@ namespace BeauUtil
             while (childCount-- > 0)
             {
                 child = transform.GetChild(0);
-                child.SetParent(parent, true);
+                child.SetParentPreserveWorld(parent);
                 child.SetSiblingIndex(siblingIdx++);
             }
         }
@@ -272,7 +315,7 @@ namespace BeauUtil
             while (childCount-- > 0)
             {
                 child = transform.GetChild(0);
-                child.SetParent(inParent, true);
+                child.SetParentPreserveWorld(inParent);
                 child.SetSiblingIndex(ioSiblingIndex++);
                 FlattenHierarchyRecursive(child, inParent, ref ioSiblingIndex);
             }

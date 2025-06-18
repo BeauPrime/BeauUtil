@@ -33,6 +33,7 @@ namespace BeauUtil
 
             IntPtr,
             StringHash32,
+            StringHash64,
 
             String,
             Object,
@@ -61,6 +62,7 @@ namespace BeauUtil
 
             [FieldOffset(0)] public IntPtr IntPtr;
             [FieldOffset(0)] public StringHash32 StringHash32;
+            [FieldOffset(0)] public StringHash64 StringHash64;
 
             // if storing a 4-byte value, we can store an additional one (for struct packing)
 
@@ -159,6 +161,12 @@ namespace BeauUtil
         {
             m_Type = ValueType.StringHash32;
             m_Packed.StringHash32 = inValue;
+        }
+
+        public NonBoxedValue(StringHash64 inValue) : this()
+        {
+            m_Type = ValueType.StringHash64;
+            m_Packed.StringHash64 = inValue;
         }
 
         public NonBoxedValue(string inValue) : this()
@@ -595,6 +603,20 @@ namespace BeauUtil
             }
         }
 
+        public StringHash64 AsStringHash64()
+        {
+            switch (m_Type)
+            {
+                case ValueType.StringHash64:
+                    return m_Packed.StringHash64;
+                case ValueType.Null:
+                    return StringHash64.Null;
+
+                default:
+                    throw new InvalidOperationException(string.Format("Value type {0} cannot be casted to a StringHash64", m_Type));
+            }
+        }
+
         public string AsString()
         {
             switch(m_Type)
@@ -745,6 +767,7 @@ namespace BeauUtil
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator IntPtr(NonBoxedValue inValue) { return inValue.AsPtr(); }
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator StringHash32(NonBoxedValue inValue) { return inValue.AsStringHash(); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator StringHash64(NonBoxedValue inValue) { return inValue.AsStringHash64(); }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator string(NonBoxedValue inValue) { return inValue.AsString(); }
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public explicit operator StringSlice(NonBoxedValue inValue) { return inValue.AsStringSlice(); }
@@ -767,6 +790,7 @@ namespace BeauUtil
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(IntPtr inValue) { return new NonBoxedValue(inValue); }
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(StringHash32 inValue) { return new NonBoxedValue(inValue); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(StringHash64 inValue) { return new NonBoxedValue(inValue); }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(string inValue) { return new NonBoxedValue(inValue); }
         [MethodImpl(MethodImplOptions.AggressiveInlining)] static public implicit operator NonBoxedValue(StringSlice inValue) { return new NonBoxedValue(inValue); }
@@ -868,6 +892,11 @@ namespace BeauUtil
                         {
                             outType = ValueType.StringHash32;
                             outPacked.StringHash32 = (StringHash32) inValue;
+                        }
+                        else if (objType == typeof(StringHash64))
+                        {
+                            outType = ValueType.StringHash64;
+                            outPacked.StringHash64 = (StringHash64) inValue;
                         }
                         else if (objType == typeof(IntPtr))
                         {

@@ -7,9 +7,14 @@
  * Purpose: String tag processor.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define EXPANDED_REFS
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Text;
+using BeauUtil.Debugger;
 using UnityEngine;
 
 namespace BeauUtil.Tags
@@ -17,40 +22,61 @@ namespace BeauUtil.Tags
     /// <summary>
     /// Parser to turn a string into a TagString.
     /// </summary>
-    public partial class TagStringParser : IDisposable
+    public partial struct TagStringParser
     {
         static public readonly string VisibleRichTagChar = char.ToString((char) 1);
+        public const int DefaultCapacity = 1024;
+        public const int MinCapacity = 32;
+        public const int MaxCapacity = ushort.MaxValue;
 
         #region Local Vars
 
         // processors
 
-        protected IDelimiterRules m_Delimiters = TagStringParser.RichTextDelimiters;
-        protected IEventProcessor m_EventProcessor;
-        protected IReplaceProcessor m_ReplaceProcessor;
-
-        // string state
-
-        protected StringBuilder m_RichBuilder = new StringBuilder(512);
-        protected StringBuilder m_StrippedBuilder = new StringBuilder(512);
-        protected StringBuilder m_SpliceBuilder = new StringBuilder(512);
+        private DelimiterRules m_Delimiters;
+        private IEventProcessor m_EventProcessor;
+        private IReplaceProcessor m_ReplaceProcessor;
+        private int m_BufferSize;
+        private Unsafe.ArenaHandle m_BufferArena;
 
         #endregion // Local Vars
-        
+
+        public TagStringParser(DelimiterRules inDelimiterRules, int inBufferSize = DefaultCapacity, Unsafe.ArenaHandle inArena = default)
+        {
+            m_Delimiters = inDelimiterRules;
+            m_EventProcessor = null;
+            m_ReplaceProcessor = null;
+
+            if (inBufferSize < MinCapacity || inBufferSize > MaxCapacity)
+                throw new ArgumentOutOfRangeException("Buffer size must be between " + MinCapacity + " and " + MaxCapacity);
+
+            m_BufferSize = inBufferSize;
+            m_BufferArena = inArena;
+        }
+
+        #region Defaults
+
+        static private readonly TagStringParser s_DefaultParser = new TagStringParser(RichTextDelimiters);
+
+        /// <summary>
+        /// Default parser. Parses rich text tags.
+        /// </summary>
+        static public TagStringParser Default
+        {
+            get { return s_DefaultParser; }
+        }
+
+        #endregion // Defaults
+
         #region Processors
 
         /// <summary>
         /// Delimiter rules for parsing tags.
         /// </summary>
-        public IDelimiterRules Delimiters
+        public DelimiterRules Delimiters
         {
             get { return m_Delimiters; }
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException("value", "Cannot set null delimiter rules");
-                m_Delimiters = value;
-            }
+            set { m_Delimiters = value; }
         }
 
         /// <summary>
@@ -71,6 +97,20 @@ namespace BeauUtil.Tags
             set { m_ReplaceProcessor = value; }
         }
 
+        /// <summary>
+        /// Size of the internal character buffer.
+        /// </summary>
+        public int BufferSize
+        {
+            get { return m_BufferSize; }
+            set
+            {
+                if (value < MinCapacity || value > MaxCapacity)
+                    throw new ArgumentOutOfRangeException("Buffer size must be between " + MinCapacity + " and " + MaxCapacity);
+                m_BufferSize = value;
+            }
+        }
+
         #endregion // Processors
 
         #region Public API
@@ -88,7 +128,17 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses the given string into a TagString.
         /// </summary>
-        public void Parse(ref TagString outTarget, StringSlice inInput, object inContext = default(object))
+        public TagString Parse(UnsafeString inInput, object inContext = default(object))
+        {
+            TagString str = new TagString();
+            Parse(ref str, inInput, inContext);
+            return str;
+        }
+
+        /// <summary>
+        /// Parses the given string into a TagString.
+        /// </summary>
+        public unsafe bool Parse(ref TagString outTarget, StringSlice inInput, object inContext = default(object))
         {
             if (outTarget == null)
             {
@@ -100,49 +150,189 @@ namespace BeauUtil.Tags
             }
 
             if (inInput.IsEmpty)
-                return;
+                return false;
 
-            m_RichBuilder.Length = 0;
-            bool bModified;
-            ProcessInput(inInput, outTarget, inContext, out bModified);
-            if (bModified)
+            if (inInput.Length > m_BufferSize)
             {
-                outTarget.RichText = m_RichBuilder.Flush();
-                outTarget.VisibleText = m_StrippedBuilder.Flush();
+                Log.Error("Input string is too long ({0}) - max buffer size is {1}", inInput.Length, m_BufferSize);
+                BypassProcessing(outTarget, inInput);
+                return false;
+            }
+
+            if (!ShouldParse(this))
+            {
+                BypassProcessing(outTarget, inInput);
+                return false;
+            }
+
+            char* buffer;
+            bool pushedArena;
+            if (m_BufferArena.FreeBytes() >= m_BufferSize)
+            {
+                buffer = m_BufferArena.AllocArray<char>(m_BufferSize);
+                m_BufferArena.Push();
+                pushedArena = true;
             }
             else
             {
-                string originalString = inInput.ToString();
-                outTarget.RichText = outTarget.VisibleText = originalString;
-                m_RichBuilder.Length = 0;
-                m_StrippedBuilder.Length = 0;
+                char* stackBuff = stackalloc char[m_BufferSize];
+                buffer = stackBuff;
+                pushedArena = false;
             }
+
+            Assert.NotNull(buffer);
+            inInput.CopyTo(buffer, m_BufferSize);
+
+            ParseState parseState = default;
+            InitParseState(this, ref parseState, buffer);
+            PrepareParseState(ref parseState, outTarget, inInput.Length, inContext);
+
+            bool bModified = ProcessInput(ref parseState);
+            if (pushedArena)
+            {
+                m_BufferArena.Pop();
+            }
+            return bModified;
+        }
+
+        /// <summary>
+        /// Parses the given string into a TagString.
+        /// </summary>
+        public unsafe bool Parse(ref TagString outTarget, UnsafeString inInput, object inContext = default(object))
+        {
+            if (outTarget == null)
+            {
+                outTarget = new TagString();
+            }
+            else
+            {
+                outTarget.Clear();
+            }
+
+            if (inInput.IsEmpty)
+                return false;
+
+            if (inInput.Length > m_BufferSize)
+            {
+                Log.Error("Input string is too long ({0}) - max buffer size is {1}", inInput.Length, m_BufferSize);
+                BypassProcessing(outTarget, inInput);
+                return false;
+            }
+
+            if (!ShouldParse(this))
+            {
+                BypassProcessing(outTarget, inInput);
+                return false;
+            }
+
+            char* buffer;
+            bool pushedArena;
+            if (m_BufferArena.FreeBytes() >= m_BufferSize)
+            {
+                buffer = m_BufferArena.AllocArray<char>(m_BufferSize);
+                m_BufferArena.Push();
+                pushedArena = true;
+            }
+            else
+            {
+                char* stackBuff = stackalloc char[m_BufferSize];
+                buffer = stackBuff;
+                pushedArena = false;
+            }
+
+            Assert.NotNull(buffer);
+            inInput.CopyTo(buffer, m_BufferSize);
+
+            ParseState parseState = default;
+            InitParseState(this, ref parseState, buffer);
+            PrepareParseState(ref parseState, outTarget, inInput.Length, inContext);
+
+            bool bModified = ProcessInput(ref parseState);
+            if (pushedArena)
+            {
+                m_BufferArena.Pop();
+            }
+            return bModified;
         }
 
         #endregion // Public API
 
+        #region Setup
+
+#if EXPANDED_REFS
+        static private bool ShouldParse(in TagStringParser inParser)
+#else
+        static private bool ShouldParse(TagStringParser inParser)
+#endif // EXPANDED_REFS
+        {
+            return inParser.m_BufferSize >= MinCapacity && (inParser.m_Delimiters.RichText || inParser.m_EventProcessor != null || inParser.m_ReplaceProcessor != null);
+        }
+
+        static private void BypassProcessing(TagString outTarget, StringSlice inInput)
+        {
+            inInput.AppendTo(outTarget.RichText);
+            inInput.AppendTo(outTarget.VisibleText);
+            outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
+        }
+
+        static private void BypassProcessing(TagString outTarget, StringBuilder inInput)
+        {
+            outTarget.RichText.Append(inInput);
+            outTarget.VisibleText.Append(inInput);
+            outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
+        }
+
+        static private void BypassProcessing(TagString outTarget, UnsafeString inInput)
+        {
+            inInput.AppendTo(outTarget.RichText);
+            inInput.AppendTo(outTarget.VisibleText);
+            outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
+        }
+
+#if EXPANDED_REFS
+        static private unsafe void InitParseState(in TagStringParser inParser, ref ParseState outState, char* inBuffer)
+#else
+        static private unsafe void InitParseState(TagStringParser inParser, ref ParseState outState, char* inBuffer)
+#endif // EXPANDED_REFS
+        {
+            outState.InputBuffer = inBuffer;
+            outState.InputBufferSize = inParser.m_BufferSize;
+
+            outState.Delimiters = inParser.Delimiters;
+            outState.ReplaceProcessor = inParser.m_ReplaceProcessor;
+            outState.EventProcessor = inParser.m_EventProcessor;
+        }
+
+        static private unsafe void PrepareParseState(ref ParseState outState, TagString inTarget, int inInputLength, object inContext)
+        {
+            outState.Input = new UnsafeString(outState.InputBuffer, inInputLength);
+
+            outState.Target = inTarget;
+            outState.Context = inContext;
+
+            outState.RichOutput = inTarget.RichText;
+            outState.VisibleOutput = inTarget.VisibleText;
+            outState.TagAllocator = inTarget.TagAllocator;
+
+            outState.CopyStart = 0;
+            outState.RichStart = -1;
+            outState.TagStart = -1;
+        }
+
+        #endregion // Setup
+
         #region Processing
 
-        protected void ProcessInput(StringSlice inInput, TagString outTarget, object inContext, out bool outbModified)
+        static private unsafe bool ProcessInput(ref ParseState ioState)
         {
             bool bModified = false;
-            bool bTrackRichText = m_Delimiters.RichText;
-            bool bHasRichDelims = TagStringParser.HasSameDelims(m_Delimiters, TagStringParser.RichTextDelimiters);
+            bool bTrackRichText = ioState.Delimiters.RichText;
+            bool bHasRichDelims = TagStringParser.HasSameDelims(ioState.Delimiters, TagStringParser.RichTextDelimiters);
             bool bTrackTags = !bTrackRichText || !bHasRichDelims;
-            bool bIsCurlyBrace = TagStringParser.HasSameDelims(m_Delimiters, TagStringParser.CurlyBraceDelimiters);
+            bool bIsCurlyBrace = TagStringParser.HasSameDelims(ioState.Delimiters, TagStringParser.CurlyBraceDelimiters);
+            bool bHasHandlers = ioState.EventProcessor != null || ioState.ReplaceProcessor != null;
 
-            if (!bTrackRichText && m_EventProcessor == null && m_ReplaceProcessor == null)
-            {
-                // if we're not considering rich text, and we have no processors, there's nothing to do here
-                outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
-                outbModified = false;
-                return;
-            }
-
-            ParseState state = new ParseState();
-            state.Initialize(inInput, outTarget, inContext, m_RichBuilder, m_StrippedBuilder, m_SpliceBuilder);
-
-            int length = state.Input.Length;
+            int length = ioState.Input.Length;
             int charIdx = 0;
 
             while(charIdx < length)
@@ -151,57 +341,60 @@ namespace BeauUtil.Tags
 
                 if (bTrackRichText)
                 {
-                    if (state.Input.AttemptMatch(charIdx, "<"))
+                    if (ioState.Input[charIdx] == '<')
                     {
-                        state.RichStart = charIdx;
+                        ioState.RichStart = charIdx;
                     }
-                    else if (state.RichStart >= 0 && state.Input.AttemptMatch(charIdx, ">"))
+                    else if (ioState.RichStart >= 0 && ioState.Input[charIdx] == '>')
                     {
-                        StringSlice richSlice = state.Input.Substring(state.RichStart + 1, charIdx - state.RichStart - 1);
-                        TagData richTag = TagData.Parse(richSlice, TagStringParser.RichTextDelimiters);
+                        UnsafeString richSlice = ioState.Input.Substring(ioState.RichStart + 1, charIdx - ioState.RichStart - 1);
+                        UnsafeString richId = TagData.ExtractId(richSlice, ioState.Delimiters);
 
-                        CopyNonRichText(ref state, state.RichStart);
+                        CopyNonRichText(ref ioState, ioState.RichStart);
 
                         bool bRichHandled = false;
 
-                        if (RecognizeRichText(richTag, m_Delimiters))
+                        if (RecognizeRichText(richId, ioState.Delimiters))
                         {
-                            CopyRichTag(ref state, charIdx + 1);
-                            if (StringUtils.RichText.GeneratesVisibleCharacter(richTag.Id.ToString()))
+                            CopyRichTag(ref ioState, charIdx + 1);
+                            if (StringUtils.RichText.GeneratesVisibleCharacter(richId))
                             {
-                                CopyOnlyNonRichText(ref state, VisibleRichTagChar);
+                                CopyOnlyNonRichText(ref ioState, VisibleRichTagChar);
                             }
                             bRichHandled = true;
                         }
-                        else if (!bTrackTags)
+                        else if (!bTrackTags && bHasHandlers)
                         {
-                            if (m_ReplaceProcessor != null)
+                            StringSlice allocatedSlice = ioState.TagAllocator.Alloc(richSlice);
+                            TagData richTag = TagData.Parse(allocatedSlice, TagStringParser.RichTextDelimiters);
+
+                            if (ioState.ReplaceProcessor != null)
                             {
                                 string replace;
-                                if (m_ReplaceProcessor.TryReplace(richTag, richSlice, state.Context, out replace))
+                                if (ioState.ReplaceProcessor.TryReplace(richTag, allocatedSlice, ioState.Context, out replace))
                                 {
-                                    if (ContainsPotentialTags(replace, m_Delimiters, bHasRichDelims))
+                                    if (ContainsPotentialTags(replace, ioState.Delimiters, bHasRichDelims))
                                     {
-                                        RestartString(ref state, replace, charIdx + 1);
+                                        RestartString(ref ioState, replace, charIdx + 1);
                                         charIdx = -1;
-                                        length = state.Input.Length;
+                                        length = ioState.Input.Length;
                                     }
                                     else
                                     {
-                                        SkipText(ref state, charIdx + 1);
-                                        AddNonRichText(ref state, replace);
+                                        SkipText(ref ioState, charIdx + 1);
+                                        AddNonRichText(ref ioState, replace);
                                     }
                                     bRichHandled = true;
                                 }
                             }
 
-                            if (!bRichHandled && m_EventProcessor != null)
+                            if (!bRichHandled && ioState.EventProcessor != null)
                             {
                                 TagEventData eventData;
-                                if (m_EventProcessor.TryProcess(richTag, state.Context, out eventData))
+                                if (ioState.EventProcessor.TryProcess(richTag, ioState.Context, out eventData))
                                 {
-                                    outTarget.AddEvent(eventData);
-                                    SkipText(ref state, charIdx + 1);
+                                    ioState.Target.AddEvent(eventData);
+                                    SkipText(ref ioState, charIdx + 1);
                                     bRichHandled = true;
                                 }
                             }
@@ -209,32 +402,33 @@ namespace BeauUtil.Tags
 
                         if (!bRichHandled)
                         {
-                            Debug.LogWarningFormat("[TagStringParser] Unrecognized text tag '{0}' in source '{1}'", richSlice, inInput);
-                            CopyNonRichText(ref state, charIdx + 1);
+                            Debug.LogWarningFormat("[TagStringParser] Unrecognized text tag '{0}' in source '{1}'", richSlice, ioState.Input.ToString());
+                            CopyNonRichText(ref ioState, charIdx + 1);
                         }
                         else
                         {
                             bModified = true;
                         }
 
-                        state.RichStart = -1;
-                        state.TagStart = -1;
+                        ioState.RichStart = -1;
+                        ioState.TagStart = -1;
                         bHandled = true;
                     }
                 }
 
                 if (!bHandled && bTrackTags)
                 {
-                    if (state.Input.AttemptMatch(charIdx, m_Delimiters.TagStartDelimiter))
+                    if (ioState.Input.AttemptMatch(charIdx, ioState.Delimiters.TagStartDelimiter))
                     {
-                        state.TagStart = charIdx;
+                        ioState.TagStart = charIdx;
                     }
-                    else if (state.TagStart >= 0 && state.Input.AttemptMatch(charIdx, m_Delimiters.TagEndDelimiter))
+                    else if (ioState.TagStart >= 0 && ioState.Input.AttemptMatch(charIdx, ioState.Delimiters.TagEndDelimiter))
                     {
-                        StringSlice tagSlice = state.Input.Substring(state.TagStart + m_Delimiters.TagStartDelimiter.Length, charIdx - state.TagStart + 1 - m_Delimiters.TagEndDelimiter.Length - m_Delimiters.TagStartDelimiter.Length);
-                        TagData tag = TagData.Parse(tagSlice, m_Delimiters);
+                        UnsafeString tagSlice = ioState.Input.Substring(ioState.TagStart + ioState.Delimiters.TagStartDelimiter.Length, charIdx - ioState.TagStart + 1 - ioState.Delimiters.TagEndDelimiter.Length - ioState.Delimiters.TagStartDelimiter.Length);
+                        StringSlice allocatedSlice = ioState.TagAllocator.Alloc(tagSlice);
+                        TagData tag = TagData.Parse(allocatedSlice, ioState.Delimiters);
 
-                        CopyNonRichText(ref state, state.TagStart);
+                        CopyNonRichText(ref ioState, ioState.TagStart);
 
                         bool bTagHandled = false;
 
@@ -243,74 +437,74 @@ namespace BeauUtil.Tags
                             int argIndex;
                             if (StringParser.TryParseInt(tag.Id, out argIndex))
                             {
-                                CopyNonRichText(ref state, charIdx + 1);
+                                CopyNonRichText(ref ioState, charIdx + 1);
                                 bTagHandled = true;
                             }
                         }
 
-                        if (!bTagHandled && m_ReplaceProcessor != null)
+                        if (!bTagHandled && ioState.ReplaceProcessor != null)
                         {
                             string replace;
-                            if (m_ReplaceProcessor.TryReplace(tag, tagSlice, state.Context, out replace))
+                            if (ioState.ReplaceProcessor.TryReplace(tag, allocatedSlice, ioState.Context, out replace))
                             {
-                                if (ContainsPotentialTags(replace, m_Delimiters, bHasRichDelims))
+                                if (ContainsPotentialTags(replace, ioState.Delimiters, bHasRichDelims))
                                 {
-                                    RestartString(ref state, replace, charIdx + 1);
+                                    RestartString(ref ioState, replace, charIdx + 1);
                                     charIdx = -1;
-                                    length = state.Input.Length;
+                                    length = ioState.Input.Length;
                                 }
                                 else
                                 {
-                                    SkipText(ref state, charIdx + 1);
-                                    AddNonRichText(ref state, replace);
+                                    SkipText(ref ioState, charIdx + 1);
+                                    AddNonRichText(ref ioState, replace);
                                 }
                                 bTagHandled = true;
                             }
                         }
 
-                        if (!bTagHandled && m_EventProcessor != null)
+                        if (!bTagHandled && ioState.EventProcessor != null)
                         {
                             TagEventData eventData;
-                            if (m_EventProcessor.TryProcess(tag, state.Context, out eventData))
+                            if (ioState.EventProcessor.TryProcess(tag, ioState.Context, out eventData))
                             {
-                                outTarget.AddEvent(eventData);
-                                SkipText(ref state, charIdx + 1);
+                                ioState.Target.AddEvent(eventData);
+                                SkipText(ref ioState, charIdx + 1);
                                 bTagHandled = true;
                             }
                         }
 
                         if (!bTagHandled)
                         {
-                            Debug.LogWarningFormat("[TagStringParser] Unrecognized text tag '{0}' in source '{1}'", tagSlice, inInput);
-                            CopyNonRichText(ref state, charIdx + 1);
+                            Debug.LogWarningFormat("[TagStringParser] Unrecognized text tag '{0}' in source '{1}'", tagSlice, ioState.Input.ToString());
+                            CopyNonRichText(ref ioState, charIdx + 1);
                         }
                         else
                         {
                             bModified = true;
                         }
 
-                        state.TagStart = -1;
-                        state.RichStart = -1;
+                        ioState.TagStart = -1;
+                        ioState.RichStart = -1;
                         bHandled = true;
                     }
                 }
 
-                if (!bHandled && state.TagStart == -1 && state.RichStart == -1 && m_ReplaceProcessor != null)
+                if (!bHandled && ioState.TagStart == -1 && ioState.RichStart == -1 && ioState.ReplaceProcessor != null)
                 {
                     string charCodeReplace;
-                    if (m_ReplaceProcessor.TryReplace(state.Input[charIdx], inContext, out charCodeReplace))
+                    if (ioState.ReplaceProcessor.TryReplace(ioState.Input[charIdx], ioState.Context, out charCodeReplace))
                     {
-                        CopyNonRichText(ref state, charIdx);
-                        if (ContainsPotentialTags(charCodeReplace, m_Delimiters, bHasRichDelims))
+                        CopyNonRichText(ref ioState, charIdx);
+                        if (ContainsPotentialTags(charCodeReplace, ioState.Delimiters, bHasRichDelims))
                         {
-                            RestartString(ref state, charCodeReplace, charIdx + 1);
+                            RestartString(ref ioState, charCodeReplace, charIdx + 1);
                             charIdx = -1;
-                            length = state.Input.Length;
+                            length = ioState.Input.Length;
                         }
                         else
                         {
-                            SkipText(ref state, charIdx + 1);
-                            AddNonRichText(ref state, charCodeReplace);
+                            SkipText(ref ioState, charIdx + 1);
+                            AddNonRichText(ref ioState, charCodeReplace);
                         }
                     }
                 }
@@ -318,11 +512,11 @@ namespace BeauUtil.Tags
                 ++charIdx;
             }
 
-            CopyNonRichText(ref state, length);
-            outbModified = bModified;
+            CopyNonRichText(ref ioState, length);
+            return bModified;
         }
 
-        static protected void SkipText(ref ParseState ioState, int inIdx)
+        static private void SkipText(ref ParseState ioState, int inIdx)
         {
             int length = ioState.CopyLengthExclusive(inIdx);
             if (length <= 0)
@@ -332,13 +526,13 @@ namespace BeauUtil.Tags
             // Debug.LogFormat("[TagStringParser] Skipped {0} characters", length);
         }
 
-        static protected void CopyNonRichText(ref ParseState ioState, int inIdx)
+        static private void CopyNonRichText(ref ParseState ioState, int inIdx)
         {
             int copyLength = ioState.CopyLengthExclusive(inIdx);
             if (copyLength <= 0)
                 return;
-            
-            StringSlice copySlice = ioState.Input.Substring(ioState.CopyStart, copyLength);
+
+            UnsafeString copySlice = ioState.Input.Substring(ioState.CopyStart, copyLength);
 
             if (ioState.RichOutput.Length <= 0)
             {
@@ -347,9 +541,9 @@ namespace BeauUtil.Tags
 
             if (copySlice.Length > 0)
             {
-                ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, (ushort) copySlice.Length, (ushort) ioState.RichOutput.Length, (ushort) copySlice.Length);
+                ioState.Target.AddText((ushort) ioState.VisibleOutput.Length, (ushort) copySlice.Length, (ushort) ioState.RichOutput.Length, (ushort) copySlice.Length);
                 copySlice.AppendTo(ioState.RichOutput);
-                copySlice.AppendTo(ioState.StrippedOutput);
+                copySlice.AppendTo(ioState.VisibleOutput);
             }
 
             ioState.CopyStart += copyLength;
@@ -357,41 +551,41 @@ namespace BeauUtil.Tags
             // Debug.LogFormat("[TagStringParser] Copied non-rich text '{0}'", copySlice);
         }
 
-        static protected void CopyOnlyNonRichText(ref ParseState ioState, StringSlice inString)
+        static private void CopyOnlyNonRichText(ref ParseState ioState, string inString)
         {
             int copyLength = inString.Length;
             if (copyLength <= 0)
                 return;
             
-            if (ioState.StrippedOutput.Length <= 0)
+            if (ioState.VisibleOutput.Length <= 0)
             {
                 inString = inString.TrimStart();
             }
 
             if (inString.Length > 0)
             {
-                ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, (ushort) inString.Length, (ushort) ioState.RichOutput.Length, (ushort) inString.Length);
-                inString.AppendTo(ioState.StrippedOutput);
+                ioState.Target.AddText((ushort) ioState.VisibleOutput.Length, (ushort) inString.Length, (ushort) ioState.RichOutput.Length, (ushort) inString.Length);
+                ioState.VisibleOutput.Append(inString);
             }
         }
 
-        static protected void CopyRichTag(ref ParseState ioState, int inIdx)
+        static private void CopyRichTag(ref ParseState ioState, int inIdx)
         {
             int copyLength = ioState.CopyLengthExclusive(inIdx);
             if (copyLength <= 0)
                 return;
-            
-            StringSlice copySlice = ioState.Input.Substring(ioState.CopyStart, copyLength);
-            ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, 0, (ushort) ioState.RichOutput.Length, (ushort) copyLength);
+
+            UnsafeString copySlice = ioState.Input.Substring(ioState.CopyStart, copyLength);
+            ioState.Target.AddText((ushort) ioState.VisibleOutput.Length, 0, (ushort) ioState.RichOutput.Length, (ushort) copyLength);
             copySlice.AppendTo(ioState.RichOutput);
             ioState.CopyStart += copyLength;
 
             // Debug.LogFormat("[TagStringParser] Copied rich tag '{0}'", copySlice);
         }
 
-        static protected void AddNonRichText(ref ParseState ioState, StringSlice inString)
+        static private void AddNonRichText(ref ParseState ioState, string inString)
         {
-            if (inString.IsEmpty)
+            if (string.IsNullOrEmpty(inString))
                 return;
 
             if (ioState.RichOutput.Length <= 0)
@@ -401,20 +595,20 @@ namespace BeauUtil.Tags
 
             if (inString.Length > 0)
             {
-                ioState.Target.AddText((ushort) ioState.StrippedOutput.Length, (ushort) inString.Length, (ushort) ioState.RichOutput.Length, (ushort) inString.Length);
-                inString.AppendTo(ioState.RichOutput);
-                inString.AppendTo(ioState.StrippedOutput);
+                ioState.Target.AddText((ushort) ioState.VisibleOutput.Length, (ushort) inString.Length, (ushort) ioState.RichOutput.Length, (ushort) inString.Length);
+                ioState.RichOutput.Append(inString);
+                ioState.VisibleOutput.Append(inString);
             }
 
             // Debug.LogFormat("[TagStringParser] Added non-rich text '{0}'", inString);
         }
 
-        static protected bool RecognizeRichText(TagData inData, IDelimiterRules inDelimiters)
+        static private bool RecognizeRichText(UnsafeString inTag, DelimiterRules inDelimiters)
         {
             // recognize hex colors
-            if (inData.Id.StartsWith('#'))
+            if (inTag.StartsWith('#'))
             {
-                StringSlice colorCheck = inData.Id.Substring(1);
+                UnsafeString colorCheck = inTag.Substring(1);
                 if (colorCheck.Length == 6 || colorCheck.Length == 8)
                 {
                     bool bIsColor = true;
@@ -437,7 +631,7 @@ namespace BeauUtil.Tags
             string[] recognized = StringUtils.RichText.RecognizedRichTags;
             for(int i = 0; i < recognized.Length; i++)
             {
-                if (inData.Id.Equals(recognized[i], true))
+                if (inTag.Equals(recognized[i], true))
                     return true;
             }
 
@@ -445,7 +639,7 @@ namespace BeauUtil.Tags
             {
                 foreach(var tag in inDelimiters.AdditionalRichTextTags)
                 {
-                    if (inData.Id.Equals(tag, true))
+                    if (inTag.Equals(tag, true))
                         return true;
                 }
             }
@@ -453,71 +647,69 @@ namespace BeauUtil.Tags
             return false;
         }
 
-        static protected void RestartString(ref ParseState ioState, StringSlice inInitial, int inIndex)
+        static private unsafe void RestartString(ref ParseState ioState, string inInitial, int inIndex)
         {
-            StringSlice originalRemaining = ioState.Input.Substring(inIndex);
-            if (originalRemaining.Length <= 0)
+            inInitial = inInitial ?? string.Empty;
+
+            UnsafeString originalRemaining = ioState.Input.Substring(inIndex);
+            int newLength = inInitial.Length + originalRemaining.Length;
+            if (newLength > ioState.InputBufferSize)
+                throw new ArgumentOutOfRangeException("inInitial", "No more room in text buffer");
+
+            if (originalRemaining.Length > 0)
             {
-                ioState.Input = inInitial;
-            }
-            else
-            {
-                inInitial.AppendTo(ioState.RegenBuilder);
-                originalRemaining.AppendTo(ioState.RegenBuilder);
-                ioState.Input = ioState.RegenBuilder.Flush();
+                char* originalCopy = stackalloc char[originalRemaining.Length];
+                originalRemaining.CopyTo(originalCopy, originalRemaining.Length);
+                originalRemaining = new UnsafeString(originalCopy, originalRemaining.Length);
             }
 
+            inInitial.CopyTo(ioState.InputBuffer, ioState.InputBufferSize);
+            originalRemaining.CopyTo(ioState.InputBuffer + inInitial.Length, ioState.InputBufferSize - inInitial.Length);
+
+            ioState.Input = new UnsafeString(ioState.InputBuffer, newLength);
             ioState.CopyStart = 0;
         }
 
-        static protected bool ContainsPotentialTags(StringSlice inSlice, IDelimiterRules inDelimiters, bool inbIdenticalDelims)
+        static private bool ContainsPotentialTags(string inString, DelimiterRules inDelimiters, bool inbIdenticalDelims)
         {
             if (inDelimiters.RichText)
             {
-                if (inSlice.Contains("<") || inSlice.Contains(">"))
+                if (inString.Contains("<") || inString.Contains(">"))
                     return true;
 
                 if (inbIdenticalDelims)
                     return false;
             }
 
-            return inSlice.Contains(inDelimiters.TagStartDelimiter) && inSlice.Contains(inDelimiters.TagEndDelimiter);
+            return inString.Contains(inDelimiters.TagStartDelimiter) && inString.Contains(inDelimiters.TagEndDelimiter);
         }
 
         #endregion // Processing
 
         #region Parsing State
 
-        protected struct ParseState
+        private unsafe struct ParseState
         {
-            public StringSlice Input;
+            public DelimiterRules Delimiters;
+            public IEventProcessor EventProcessor;
+            public IReplaceProcessor ReplaceProcessor;
+
+            public char* InputBuffer;
+            public int InputBufferSize;
+
+            public UnsafeString Input;
+
             public TagString Target;
 
             public object Context;
 
             public StringBuilder RichOutput;
-            public StringBuilder StrippedOutput;
-            public StringBuilder RegenBuilder;
+            public StringBuilder VisibleOutput;
+            public StringArena TagAllocator;
 
             public int CopyStart;
             public int RichStart;
             public int TagStart;
-
-            public void Initialize(StringSlice inInput, TagString inTarget, object inContext, StringBuilder inRichOutput, StringBuilder inStrippedOutput, StringBuilder inRegenBuilder)
-            {
-                Input = inInput;
-                Target = inTarget;
-
-                Context = inContext;
-
-                RichOutput = inRichOutput;
-                StrippedOutput = inStrippedOutput;
-                RegenBuilder = inRegenBuilder;
-
-                CopyStart = 0;
-                RichStart = -1;
-                TagStart = -1;
-            }
 
             public int CopyLengthExclusive(int inEnd)
             {
@@ -526,20 +718,5 @@ namespace BeauUtil.Tags
         }
 
         #endregion // Parsing State
-
-        #region IDisposable
-
-        public virtual void Dispose()
-        {
-            if (m_RichBuilder != null)
-            {
-                m_RichBuilder.Length = 0;
-                m_RichBuilder = null;
-            }
-
-            m_Delimiters = null;
-        }
-    
-        #endregion // IDisposable
     }
 }

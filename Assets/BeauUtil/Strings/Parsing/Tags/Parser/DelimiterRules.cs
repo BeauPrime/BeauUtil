@@ -3,7 +3,7 @@
  * Author:  Autumn Beauchesne
  * Date:    23 August 2020
  * 
- * File:    IDelimiterRules.cs
+ * File:    DelimiterRules.cs
  * Purpose: Delimiter rules.
  */
 
@@ -15,15 +15,15 @@ namespace BeauUtil.Tags
     /// <summary>
     /// Parsing character rules.
     /// </summary>
-    public interface IDelimiterRules
+    public sealed class DelimiterRules
     {
-        string TagStartDelimiter { get; }
-        string TagEndDelimiter { get; }
+        public string TagStartDelimiter;
+        public string TagEndDelimiter;
 
-        char[] TagDataDelimiters { get; }
-        char RegionCloseDelimiter { get; }
+        public char[] TagDataDelimiters;
+        public char RegionCloseDelimiter;
 
-        bool RichText { get; }
-        IEnumerable<string> AdditionalRichTextTags { get; }
+        public bool RichText;
+        public string[] AdditionalRichTextTags;
     }
 }

@@ -12,19 +12,33 @@
 #endif // CSHARP_7_3_OR_NEWER
 
 using System;
+using System.Text;
 
 namespace BeauUtil.Tags
 {
     public sealed partial class TagString : IDisposable, ICopyCloneable<TagString>
     {
         private const int InitialNodeCount = 4;
+        private const int DefaultCapacity = 1024;
 
-        private string m_RichText = string.Empty;
-        private string m_StrippedText = string.Empty;
+        private StringBuilder m_RichText;
+        private StringBuilder m_StrippedText;
         private TagNodeData[] m_Nodes = null;
         private int m_NodeCount = 0;
         private int m_EventCount = 0;
         private ListSlice<TagNodeData> m_NodeList;
+        private StringArena m_TagArena;
+
+        public TagString() : this(DefaultCapacity)
+        {
+        }
+
+        public TagString(int inTextCapacity)
+        {
+            m_RichText = new StringBuilder(inTextCapacity);
+            m_StrippedText = new StringBuilder(inTextCapacity);
+            m_TagArena = new StringArena(inTextCapacity);
+        }
 
         #region Output Data
 
@@ -32,20 +46,38 @@ namespace BeauUtil.Tags
         /// Text string to be rendered.
         /// Includes rich text.
         /// </summary>
-        public string RichText
+        public string RichTextString
+        {
+            get { return m_RichText.ToString(); }
+            set { m_RichText.Length = 0; m_RichText.Append(value); }
+        }
+
+        /// <summary>
+        /// Text string to be rendered.
+        /// Includes rich text.
+        /// </summary>
+        public StringBuilder RichText
         {
             get { return m_RichText; }
-            set { m_RichText = value ?? string.Empty; }
         }
 
         /// <summary>
         /// Visible text string to be rendered.
         /// Contains no rich text.
         /// </summary>
-        public string VisibleText
+        public string VisibleTextString
+        {
+            get { return m_StrippedText.ToString(); }
+            set { m_StrippedText.Length = 0; m_StrippedText.Append(value); }
+        }
+
+        /// <summary>
+        /// Visible text string to be rendered.
+        /// Contains no rich text.
+        /// </summary>
+        public StringBuilder VisibleText
         {
             get { return m_StrippedText; }
-            set { m_StrippedText = value ?? string.Empty; }
         }
 
         /// <summary>
@@ -57,6 +89,11 @@ namespace BeauUtil.Tags
         /// Number of generated event nodes.
         /// </summary>
         public int EventCount { get { return m_EventCount; } }
+
+        /// <summary>
+        /// Arena containing tag data.
+        /// </summary>
+        public StringArena TagAllocator { get { return m_TagArena; } }
 
         #endregion // Output Data
 
@@ -130,8 +167,9 @@ namespace BeauUtil.Tags
         /// </summary>
         public void Clear()
         {
-            m_RichText = string.Empty;
-            m_StrippedText = string.Empty;
+            m_RichText.Length = 0;
+            m_StrippedText.Length = 0;
+            m_TagArena.Reset();
 
             if (m_Nodes != null)
             {
@@ -184,8 +222,9 @@ namespace BeauUtil.Tags
         /// </summary>
         public void Dispose()
         {
-            m_RichText = string.Empty;
-            m_StrippedText = string.Empty;
+            m_RichText = null;
+            m_StrippedText = null;
+            m_TagArena = null;
 
             if (m_Nodes != null)
             {
@@ -215,8 +254,11 @@ namespace BeauUtil.Tags
         /// </summary>
         public void CopyFrom(TagString inClone)
         {
-            m_RichText = inClone.m_RichText;
-            m_StrippedText = inClone.m_StrippedText;
+            m_RichText.Length = 0;
+            m_RichText.Append(inClone.m_RichText);
+
+            m_StrippedText.Length = 0;
+            m_StrippedText.Append(inClone.m_StrippedText);
 
             if (inClone.m_Nodes == null)
             {

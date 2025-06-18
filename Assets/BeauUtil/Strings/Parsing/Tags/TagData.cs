@@ -7,7 +7,12 @@
  * Purpose: Information about a tag.
  */
 
+#if CSHARP_7_3_OR_NEWER
+#define EXPANDED_REFS
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace BeauUtil.Tags
@@ -95,7 +100,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses a tag's contents into data.
         /// </summary>
-        static public TagData Parse(StringSlice inSlice, IDelimiterRules inDelimiters)
+        static public TagData Parse(StringSlice inSlice, DelimiterRules inDelimiters)
         {
             TagData data;
             Parse(inSlice, inDelimiters, out data);
@@ -105,7 +110,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses a tag's contents into data.
         /// </summary>
-        static public void Parse(StringSlice inSlice, IDelimiterRules inDelimiters, out TagData outTagData)
+        static public void Parse(StringSlice inSlice, DelimiterRules inDelimiters, out TagData outTagData)
         {
             if (inDelimiters == null)
                 throw new ArgumentNullException("inDelimiters");
@@ -176,7 +181,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses a tag's contents into data.
         /// </summary>
-        static public TagData Parse(StringBuilder inBuilder, IDelimiterRules inDelimiters)
+        static public TagData Parse(StringBuilder inBuilder, DelimiterRules inDelimiters)
         {
             TagData data;
             Parse(inBuilder, inDelimiters, out data);
@@ -186,88 +191,16 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses a tag's contents into data.
         /// </summary>
-        static public void Parse(StringBuilder inData, IDelimiterRules inDelimiters, out TagData outTagData)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void Parse(StringBuilder inData, DelimiterRules inDelimiters, out TagData outTagData)
         {
-            if (inDelimiters == null)
-                throw new ArgumentNullException("inDelimiters");
-
-            StringBuilderSlice tag = new StringBuilderSlice(inData);
-            tag = tag.Trim(MinimalWhitespaceChars);
-
-            bool bRemovedTagBoundaries = false;
-            if (tag.StartsWith(inDelimiters.TagStartDelimiter))
-            {
-                tag = tag.Substring(inDelimiters.TagStartDelimiter.Length);
-                bRemovedTagBoundaries = true;
-            }
-            if (tag.EndsWith(inDelimiters.TagEndDelimiter))
-            {
-                tag = tag.Substring(0, tag.Length - inDelimiters.TagEndDelimiter.Length);
-                bRemovedTagBoundaries = true;
-            }
-
-            if (bRemovedTagBoundaries)
-                tag = tag.Trim(MinimalWhitespaceChars);
-
-            if (tag.Length == 0)
-            {
-                outTagData = default(TagData);
-                return;
-            }
-
-            ClosingTagState closeState = 0;
-
-            char endDelim = inDelimiters.RegionCloseDelimiter;
-            if (endDelim != 0)
-            {
-                if (tag.StartsWith(endDelim))
-                {
-                    closeState |= ClosingTagState.Start;
-                    tag = tag.Substring(1);
-                }
-                if (tag.EndsWith(endDelim))
-                {
-                    closeState |= ClosingTagState.End;
-                    tag = tag.Substring(0, tag.Length - 1);
-                }
-            }
-
-            if (closeState != 0)
-            {
-                tag = tag.Trim(MinimalWhitespaceChars);
-            }
-
-            char[] dataDelims = inDelimiters.TagDataDelimiters;
-            int dataDelimIdx = tag.Length;
-            foreach (var delim in dataDelims)
-            {
-                int idx = tag.IndexOf(delim);
-                if (idx >= 0 && idx < dataDelimIdx)
-                {
-                    dataDelimIdx = idx;
-                    if (idx <= 0)
-                        break;
-                }
-            }
-
-            if (dataDelimIdx >= tag.Length)
-            {
-                outTagData.Id = tag.ToString();
-                outTagData.Data = StringSlice.Empty;
-            }
-            else
-            {
-                outTagData.Id = tag.Substring(0, dataDelimIdx).TrimEnd(MinimalWhitespaceChars).ToString();
-                outTagData.Data = tag.Substring(dataDelimIdx).TrimStart(dataDelims).TrimStart(MinimalWhitespaceChars).ToString();
-            }
-
-            outTagData.m_CloseState = closeState;
+            Parse(new StringBuilderSlice(inData), inDelimiters, out outTagData);
         }
 
         /// <summary>
         /// Parses a tag's contents into data.
         /// </summary>
-        internal static TagData Parse(StringBuilderSlice inBuilder, IDelimiterRules inDelimiters)
+        internal static TagData Parse(StringBuilderSlice inBuilder, DelimiterRules inDelimiters)
         {
             TagData data;
             Parse(inBuilder, inDelimiters, out data);
@@ -277,7 +210,7 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Parses a tag's contents into data.
         /// </summary>
-        internal static void Parse(StringBuilderSlice inData, IDelimiterRules inDelimiters, out TagData outTagData)
+        internal static void Parse(StringBuilderSlice inData, DelimiterRules inDelimiters, out TagData outTagData)
         {
             if (inDelimiters == null)
                 throw new ArgumentNullException("inDelimiters");
@@ -353,6 +286,153 @@ namespace BeauUtil.Tags
             }
 
             outTagData.m_CloseState = closeState;
+        }
+
+        /// <summary>
+        /// Parses a tag's contents into data.
+        /// </summary>
+        static public TagData Parse(UnsafeString inString, DelimiterRules inDelimiters, StringArena inArena)
+        {
+            TagData data;
+            Parse(inString, inDelimiters, inArena, out data);
+            return data;
+        }
+
+        /// <summary>
+        /// Parses a tag's contents into data.
+        /// </summary>
+        static public void Parse(UnsafeString inString, DelimiterRules inDelimiters, StringArena inArena, out TagData outTagData)
+        {
+            if (inDelimiters == null)
+                throw new ArgumentNullException("inDelimiters");
+
+            UnsafeString tag = inString;
+            tag = tag.Trim(MinimalWhitespaceChars);
+
+            bool bRemovedTagBoundaries = false;
+            if (tag.StartsWith(inDelimiters.TagStartDelimiter))
+            {
+                tag = tag.Substring(inDelimiters.TagStartDelimiter.Length);
+                bRemovedTagBoundaries = true;
+            }
+            if (tag.EndsWith(inDelimiters.TagEndDelimiter))
+            {
+                tag = tag.Substring(0, tag.Length - inDelimiters.TagEndDelimiter.Length);
+                bRemovedTagBoundaries = true;
+            }
+
+            if (bRemovedTagBoundaries)
+                tag = tag.Trim(MinimalWhitespaceChars);
+
+            if (tag.Length == 0)
+            {
+                outTagData = default(TagData);
+                return;
+            }
+
+            ClosingTagState closeState = 0;
+
+            char endDelim = inDelimiters.RegionCloseDelimiter;
+            if (endDelim != 0)
+            {
+                if (tag.StartsWith(endDelim))
+                {
+                    closeState |= ClosingTagState.Start;
+                    tag = tag.Substring(1);
+                }
+                if (tag.EndsWith(endDelim))
+                {
+                    closeState |= ClosingTagState.End;
+                    tag = tag.Substring(0, tag.Length - 1);
+                }
+            }
+
+            if (closeState != 0)
+            {
+                tag = tag.Trim(MinimalWhitespaceChars);
+            }
+
+            char[] dataDelims = inDelimiters.TagDataDelimiters;
+            int dataDelimIdx = tag.IndexOfAny(dataDelims);
+
+            if (dataDelimIdx < 0)
+            {
+                outTagData.Id = inArena.Alloc(tag);
+                outTagData.Data = StringSlice.Empty;
+            }
+            else
+            {
+                outTagData.Id = inArena.Alloc(tag.Substring(0, dataDelimIdx).TrimEnd(MinimalWhitespaceChars));
+                outTagData.Data = inArena.Alloc(tag.Substring(dataDelimIdx).TrimStart(dataDelims).TrimStart(MinimalWhitespaceChars));
+            }
+
+            outTagData.m_CloseState = closeState;
+        }
+
+        /// <summary>
+        /// Parses a tag's contents into an id.
+        /// </summary>
+        static internal UnsafeString ExtractId(UnsafeString inString, DelimiterRules inDelimiters)
+        {
+            if (inDelimiters == null)
+                throw new ArgumentNullException("inDelimiters");
+
+            UnsafeString tag = inString;
+            tag = tag.Trim(MinimalWhitespaceChars);
+
+            bool bRemovedTagBoundaries = false;
+            if (tag.StartsWith(inDelimiters.TagStartDelimiter))
+            {
+                tag = tag.Substring(inDelimiters.TagStartDelimiter.Length);
+                bRemovedTagBoundaries = true;
+            }
+            if (tag.EndsWith(inDelimiters.TagEndDelimiter))
+            {
+                tag = tag.Substring(0, tag.Length - inDelimiters.TagEndDelimiter.Length);
+                bRemovedTagBoundaries = true;
+            }
+
+            if (bRemovedTagBoundaries)
+                tag = tag.Trim(MinimalWhitespaceChars);
+
+            if (tag.Length == 0)
+            {
+                return default;
+            }
+
+            ClosingTagState closeState = 0;
+
+            char endDelim = inDelimiters.RegionCloseDelimiter;
+            if (endDelim != 0)
+            {
+                if (tag.StartsWith(endDelim))
+                {
+                    closeState |= ClosingTagState.Start;
+                    tag = tag.Substring(1);
+                }
+                if (tag.EndsWith(endDelim))
+                {
+                    closeState |= ClosingTagState.End;
+                    tag = tag.Substring(0, tag.Length - 1);
+                }
+            }
+
+            if (closeState != 0)
+            {
+                tag = tag.Trim(MinimalWhitespaceChars);
+            }
+
+            char[] dataDelims = inDelimiters.TagDataDelimiters;
+            int dataDelimIdx = tag.IndexOfAny(dataDelims);
+
+            if (dataDelimIdx < 0)
+            {
+                return tag;
+            }
+            else
+            {
+                return tag.Substring(0, dataDelimIdx).TrimEnd(MinimalWhitespaceChars);
+            }
         }
 
         /// <summary>

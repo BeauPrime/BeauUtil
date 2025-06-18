@@ -440,27 +440,6 @@ namespace BeauUtil.Blocks
             }
         }
 
-        protected class BlockTagDelimiters : IDelimiterRules
-        {
-            public IBlockParsingRules BlockParser;
-
-            #region IDelimiterRules
-
-            public string TagStartDelimiter { get { return null; } }
-
-            public string TagEndDelimiter { get { return null; } }
-
-            public char[] TagDataDelimiters { get { return BlockParser.TagDataDelimiters; } }
-
-            public char RegionCloseDelimiter { get { return '\0'; } }
-
-            public bool RichText { get { return false; } }
-
-            public IEnumerable<string> AdditionalRichTextTags { get { return null; } }
-
-            #endregion // IDelimiterRules
-        }
-
         static protected readonly char[] TrimCharsWithSpace = new char[]
         {
             ' ', '\n', '\r', '\t', '\f', '\0'
@@ -563,7 +542,7 @@ namespace BeauUtil.Blocks
 
         protected sealed class ParseBuffer : IDisposable
         {
-            public readonly BlockTagDelimiters TagDelimiters = new BlockTagDelimiters();
+            public readonly DelimiterRules TagDelimiters = new DelimiterRules();
             
             public readonly PositionFrame[] PositionStack = new PositionFrame[MaxNestingDepth];
             public readonly CharStream[] StreamStack = new CharStream[MaxNestingDepth];
@@ -632,8 +611,6 @@ namespace BeauUtil.Blocks
                 ReturnStringBuilder(ref ContentBuilder);
                 LeftoverStream.Dispose();
 
-                TagDelimiters.BlockParser = null;
-
                 Cache = null;
                 PrefixPriorities = default;
                 Rules = null;
@@ -683,7 +660,7 @@ namespace BeauUtil.Blocks
             ioBuffer.Builder = RentStringBuilder();
             ioBuffer.LineBuilder = RentStringBuilder();
             ioBuffer.ContentBuilder = RentStringBuilder();
-            ioBuffer.TagDelimiters.BlockParser = inRules;
+            ioBuffer.TagDelimiters.TagDataDelimiters = inRules.TagDataDelimiters;
             ioBuffer.Rules = inRules;
             ioBuffer.PrefixPriorities = CachePrefixPriorities(inRules);
             ioBuffer.Cache = inCache ?? BlockMetaCache.Default;

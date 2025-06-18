@@ -121,6 +121,24 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
+        /// Adds a slider element to the menu.
+        /// </summary>
+        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, int inMinValue, int inMaxValue, int inIncrement = 1, DMFloatTextDelegate inValueString = null, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueString, inPredicate, inIndent));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a slider element to the menu.
+        /// </summary>
+        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, int inMinValue, int inMaxValue, int inIncrement, string inValueFormat, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueFormat, inPredicate, inIndent));
+            return this;
+        }
+
+        /// <summary>
         /// Clears all elements.
         /// </summary>
         public DMInfo Clear()
