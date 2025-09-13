@@ -76,7 +76,7 @@ namespace BeauUtil.Debugger
             SetInteractive(inbEnabled, false);
         }
 
-        private void OnPointerEnter(PointerEventData eventData)
+        private void OnPointerEnter(PointerListener.EventData eventData)
         {
             m_MenuUI.OnInteractableHover(this);
         }

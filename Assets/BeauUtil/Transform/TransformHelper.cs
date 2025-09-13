@@ -258,7 +258,7 @@ namespace BeauUtil
             inTransform.localPosition = position;
             inTransform.localRotation = rotation;
         }
-#endif // UNITY_2021_3_OR_NEWER
+#endif // !UNITY_2021_3_OR_NEWER
 
         #endregion // Polyfills
 

@@ -7,6 +7,10 @@
  * Purpose: Pointer event proxy.
 */
 
+#if UNITY_2021_2_OR_NEWER && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -24,12 +28,44 @@ namespace BeauUtil.UI
     {
         #region Types
 
-#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
-        public sealed class PointerEvent : UnityEvent<PointerEventData> { }
+        /// <summary>
+        /// Event arguments.
+        /// </summary>
+        public struct EventData
+        {
+            public readonly PointerListener Source;
+            public readonly PointerEventData EventSystemData;
+            public readonly uint PointerMask;
+
+            public EventData(PointerListener inSource, PointerEventData inEventData, uint inPointerMask)
+            {
+                Source = inSource;
+                EventSystemData = inEventData;
+                PointerMask = inPointerMask;
+            }
+
+            static unsafe EventData()
+            {
+#if SUPPORTS_FUNCTION_POINTERS
+                CastableArgument.RegisterConverter<EventData, PointerEventData>(&CastToPointerEventData);
 #else
-        public sealed class PointerEvent : TinyUnityEvent<PointerEventData> { }
+                CastableArgument.RegisterConverter<EventData, PointerEventData>(CastToPointerEventData);
+#endif // SUPPORTS_FUNCTION_POINTERS
+            }
+
+            static private PointerEventData CastToPointerEventData(EventData inEventData)
+            {
+                return inEventData.EventSystemData;
+            }
+        }
+
+#if BEAUUTIL_USE_LEGACY_UNITYEVENTS
+        public sealed class PointerEvent : UnityEvent<EventData> { }
+#else
+        public sealed class PointerEvent : TinyUnityEvent<EventData> { }
 #endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
-        #endregion // Types
+
+#endregion // Types
 
 #if BEAUUTIL_USE_LEGACY_UNITYEVENTS
         [SerializeField] private PointerEvent m_OnPointerEnter = new PointerEvent();
@@ -83,6 +119,32 @@ namespace BeauUtil.UI
 
         #region Handlers
 
+        protected virtual void OnDisable()
+        {
+            if (m_DownMask != 0)
+            {
+                uint prevMask = m_DownMask;
+                m_DownMask = 0;
+                m_OnPointerUp.Invoke(new EventData(this, null, prevMask));
+            }
+
+            if (m_EnteredMask != 0)
+            {
+                uint prevMask = m_EnteredMask;
+                m_EnteredMask = 0;
+                m_OnPointerExit.Invoke(new EventData(this, null, prevMask));
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            m_OnPointerDown.RemoveAllListeners();
+            m_OnPointerUp.RemoveAllListeners();
+            m_OnPointerEnter.RemoveAllListeners();
+            m_OnPointerExit.RemoveAllListeners();
+            m_OnClick.RemoveAllListeners();
+        }
+
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
             uint mask = CalculateMask(eventData.pointerId);
@@ -93,7 +155,7 @@ namespace BeauUtil.UI
 
             this.CacheComponent(ref m_Selectable);
 
-            m_OnPointerEnter.Invoke(eventData);
+            m_OnPointerEnter.Invoke(new EventData(this, eventData, mask));
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
@@ -103,7 +165,7 @@ namespace BeauUtil.UI
                 return;
 
             m_EnteredMask &= ~mask;
-            m_OnPointerExit.Invoke(eventData);
+            m_OnPointerExit.Invoke(new EventData(this, eventData, mask));
         }
 
         void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
@@ -114,7 +176,7 @@ namespace BeauUtil.UI
 
             m_DownMask |= mask;
             this.CacheComponent(ref m_Selectable);
-            m_OnPointerDown.Invoke(eventData);
+            m_OnPointerDown.Invoke(new EventData(this, eventData, mask));
         }
 
         void IPointerUpHandler.OnPointerUp(PointerEventData eventData)
@@ -125,7 +187,7 @@ namespace BeauUtil.UI
 
             m_DownMask &= ~mask;
             m_SelectableWasInteractive = !m_Selectable || m_Selectable.IsInteractable();
-            m_OnPointerUp.Invoke(eventData);
+            m_OnPointerUp.Invoke(new EventData(this, eventData, mask));
         }
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
@@ -146,7 +208,7 @@ namespace BeauUtil.UI
 
             if (execute)
             {
-                m_OnClick.Invoke(eventData);
+                m_OnClick.Invoke(new EventData(this, eventData, CalculateMask(eventData.pointerId)));
             }
 
             m_SelectableWasInteractive = null;
@@ -164,77 +226,5 @@ namespace BeauUtil.UI
         static public bool BypassClickFilter = false;
 
         #endregion // Filtering
-
-        /// <summary>
-        /// Attempts to retrieve the PointerListener
-        /// attached to the given PointerEventData's game object.
-        /// </summary>
-        static public bool TryGetListener(PointerEventData inEventData, out PointerListener outListener)
-        {
-            GameObject go = inEventData.pointerCurrentRaycast.gameObject;
-            if (go)
-            {
-                return go.TryGetComponent(out outListener);
-            }
-
-            outListener = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to retrieve the userdata from the PointerListener
-        /// attached to the given PointerEventData's game object.
-        /// </summary>
-        static public bool TryGetUserData<T>(PointerEventData inEventData, out T outValue)
-        {
-            GameObject go = inEventData.pointerCurrentRaycast.gameObject;
-            if (go)
-            {
-                PointerListener listener = go.GetComponent<PointerListener>();
-                if (listener != null)
-                {
-                    if (listener.UserData is T)
-                    {
-                        outValue = (T) listener.UserData;
-                        return true;
-                    }
-                }
-            }
-
-            outValue = default(T);
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to retrieve the component userdata from the PointerListener
-        /// attached to the given PointerEventData's game object.
-        /// Will also search the game object for the given component.
-        /// </summary>
-        static public bool TryGetComponentUserData<T>(PointerEventData inEventData, out T outValue) where T : UnityEngine.Component
-        {
-            GameObject go = inEventData.pointerCurrentRaycast.gameObject;
-            if (go)
-            {
-                T component = go.GetComponent<T>();
-                if (component != null)
-                {
-                    outValue = component;
-                    return true;
-                }
-
-                PointerListener listener = go.GetComponent<PointerListener>();
-                if (listener != null)
-                {
-                    if (listener.UserData is T)
-                    {
-                        outValue = (T) listener.UserData;
-                        return true;
-                    }
-                }
-            }
-
-            outValue = default(T);
-            return false;
-        }
     }
 }

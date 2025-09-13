@@ -13,6 +13,7 @@
 
 #if UNITY_2021_3_OR_NEWER
 #define FAST_TRANSFORM_LOCAL_SET
+#define FAST_TRANSFORM_GET
 #endif // UNITY_2021_3_OR_NEWER
 
 using System;
@@ -64,7 +65,12 @@ namespace BeauUtil
             }
             else
             {
+#if FAST_TRANSFORM_GET
                 inTransform.GetPositionAndRotation(out Position, out Rotation);
+#else
+                Position = inTransform.position;
+                Rotation = inTransform.rotation;
+#endif // FAST_TRANSFORM_GET
                 Scale = inTransform.lossyScale;
             }
         }
