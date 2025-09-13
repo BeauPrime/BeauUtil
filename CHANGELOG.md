@@ -1,3 +1,16 @@
+## Version 0.11.1
+**13 Sept 2025**
+
+Fix for `PointerListener` ignoring certain events after being disabled and re-enabled
+
+### Breaking Changes
+* `PointerListener` events now pass `PointerListener.EventData` as an argument instead of `PointerEventData`
+
+### Fixes
+* Fixed case where `PointerListener` would not ignore certain events upon being disabled and re-enabled
+* `PointerListener` now properly dispatches `OnPointerUp` and `OnPointerExit` events when disabled with active pointers
+* Fixed `TRS` incompatibility with Unity 2019
+
 ## Version 0.11.0
 **18 June 2025**
 

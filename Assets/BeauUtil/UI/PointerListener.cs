@@ -121,6 +121,8 @@ namespace BeauUtil.UI
 
         protected virtual void OnDisable()
         {
+            m_SelectableWasInteractive = null;
+
             if (m_DownMask != 0)
             {
                 uint prevMask = m_DownMask;
