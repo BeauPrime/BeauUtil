@@ -1,4 +1,4 @@
-## Version 0.11.2
+## Version 0.11.3
 **29 Oct 2025**
 
 Fixes for `Assert` functionality in editor outside of play mode

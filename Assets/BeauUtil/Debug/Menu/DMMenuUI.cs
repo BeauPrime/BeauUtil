@@ -255,7 +255,7 @@ namespace BeauUtil.Debugger
                     case DMElementType.Selector:
                     {
                         DMSelectorUI selector;
-                        if (usedSliders >= m_ActiveSelectors.Count)
+                        if (usedSelectors >= m_ActiveSelectors.Count)
                         {
                             selector = AllocSelector();
                         }
