@@ -1000,38 +1000,81 @@ namespace BeauUtil
         /// <summary>
         /// Copies a string into the given buffer.
         /// </summary>
-        static public unsafe void CopyTo(this string inString, char* inBuffer, int inLength)
+        static public unsafe void Copy(string inSource, char* ioBuffer, int inLength)
         {
-            Assert.NotNull(inBuffer);
+            Assert.NotNull(ioBuffer);
 
-            if (!string.IsNullOrEmpty(inString))
+            if (!string.IsNullOrEmpty(inSource))
             {
-                if (inString.Length > inLength)
+                if (inSource.Length > inLength)
                     throw new ArgumentOutOfRangeException("inLength");
 
-                fixed(char* ptr = inString)
+                fixed(char* ptr = inSource)
                 {
-                    Unsafe.FastCopyArray(ptr, inString.Length, inBuffer);
+                    Unsafe.FastCopyArray(ptr, inSource.Length, ioBuffer);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Copies a string into the given buffer.
+        /// This will replace the buffer's contents.
+        /// </summary>
+        static public unsafe void Copy(string inSource, StringBuilder ioBuffer)
+        {
+            Assert.NotNull(ioBuffer);
+
+            ioBuffer.Length = 0;
+            if (!string.IsNullOrEmpty(inSource))
+            {
+                ioBuffer.Reserve(inSource.Length);
+                ioBuffer.Append(inSource);
             }
         }
 
         /// <summary>
         /// Copies a StringBuilder into the given buffer.
         /// </summary>
-        static public unsafe void CopyTo(this StringBuilder inBuilder, char* inBuffer, int inLength)
+        static public unsafe void Copy(StringBuilder inSource, char* ioBuffer, int inLength)
         {
-            Assert.NotNull(inBuffer);
+            Assert.NotNull(ioBuffer);
 
-            if (inBuilder != null && inBuilder.Length > 0)
+            if (inSource != null && inSource.Length > 0)
             {
+                if (inSource.Length > inLength)
+                    throw new ArgumentOutOfRangeException("inLength");
+
 #if SUPPORTS_SPAN
-                Span<char> data = new Span<char>(inBuffer, inLength);
-                inBuilder.CopyTo(0, data, inBuilder.Length);
+                Span<char> data = new Span<char>(ioBuffer, inLength);
+                inSource.CopyTo(0, data, inSource.Length);
 #else
-                for (int i = 0; i < inBuilder.Length; i++)
+                for (int i = 0; i < inSource.Length; i++)
                 {
-                    inBuffer[i] = inBuilder[i];
+                    ioBuffer[i] = inSource[i];
+                }
+#endif // SUPPORTS_SPAN
+            }
+        }
+
+        /// <summary>
+        /// Copies a StringBuilder into the given buffer.
+        /// This will replace the buffer's contents.
+        /// </summary>
+        static public unsafe void Copy(StringBuilder inSource, StringBuilder ioBuffer)
+        {
+            Assert.NotNull(ioBuffer);
+            Assert.False(inSource == ioBuffer, "Cannot copy into itself");
+
+            ioBuffer.Length = 0;
+            if (inSource != null && inSource.Length > 0)
+            {
+                ioBuffer.Reserve(inSource.Length);
+#if SUPPORTS_SPAN
+                ioBuffer.Append(inSource);
+#else
+                for(int i = 0; i < inSource.Length; i++)
+                {
+                    ioBuffer.Append(inSource[i]);
                 }
 #endif // SUPPORTS_SPAN
             }

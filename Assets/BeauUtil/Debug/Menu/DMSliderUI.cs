@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,7 +24,7 @@ namespace BeauUtil.Debugger
         [SerializeField] private TMP_Text m_Label = null;
         [SerializeField] private TMP_Text m_Value = null;
         [SerializeField] private Slider m_Slider = null;
-        
+
         #endregion // Inspector
 
         [NonSerialized] public DMInteractableUI Interactable;
@@ -44,7 +45,8 @@ namespace BeauUtil.Debugger
 
         public void Initialize(int inElementIndex, DMElementInfo inInfo, Action<DMSliderUI, float> inOnUpdated, int inIndent, int inInteractableIndex, DMMenuUI inMenuUI)
         {
-            if (!Interactable) {
+            if (!Interactable)
+            {
                 Awake();
             }
 
@@ -121,19 +123,42 @@ namespace BeauUtil.Debugger
                 return false;
 
             m_LastValue = inRawValue;
-            
+
             float percentage = DMSliderRange.GetPercentage(inInfo.Range, inRawValue);
             float val = percentage * m_Slider.maxValue;
             if (m_Slider.wholeNumbers)
             {
                 val = (float) Math.Round(val);
             }
-            
+
             m_Slider.SetValueWithoutNotify(val);
 
-            string display = inInfo.Label?.Invoke(inRawValue);
-            inRawValue.ToString();
-            m_Value.SetText(display);
+            StringBuilder sb = DMInfo.SharedTextBuilder;
+
+            sb.Clear();
+
+            if (inInfo.Label != null)
+            {
+                sb.Append(inInfo.Label(inRawValue));
+            }
+            else if (inInfo.LabelSB != null)
+            {
+                inInfo.LabelSB(sb, inRawValue);
+            }
+            else
+            {
+                if (inInfo.Range.Increment == 1)
+                {
+                    sb.AppendNoAlloc((int) inRawValue);
+                }
+                else
+                {
+                    sb.AppendNoAlloc(inRawValue, 2);
+                }
+            }
+
+            m_Value.SetText(sb);
+            sb.Clear();
 
             return true;
         }

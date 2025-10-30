@@ -6,8 +6,10 @@ public class DebugExample : MonoBehaviour
 {
     public DMMenuUI menuUI;
     public Transform slide;
+    public Camera cam;
 
     private bool m_AdvancedLogging;
+    [SerializeField, Range(8, 16)] private int m_MyInt = 8;
 
     private void Awake()
     {
@@ -26,12 +28,15 @@ public class DebugExample : MonoBehaviour
                 .AddButton("Advanced Log 1", () => print("advanced log!!1!"), () => m_AdvancedLogging, 1)
                 .AddButton("Advanced Log 2", () => print("advanced log 2!!1!"), () => m_AdvancedLogging, 1)
             .AddDivider()
+            .AddPageBreak()
             .AddSlider("Slide X", () => slide.position.x, (f) => slide.position = new Vector3(f, slide.position.y, slide.position.z), -10, 10, 0, "{0:0.0}", () => m_AdvancedLogging)
             .AddDivider()
             .AddSubmenu(subMenu)
             .AddDivider()
-            .AddText("Frame Count", () => Time.frameCount.ToString())
-            .AddText("Scene GUID", () => guid);
+            .AddText("Frame Count", (sb) => sb.AppendNoAlloc(Time.frameCount))
+            .AddText("Scene GUID", () => guid)
+            .AddSelector("Some Selector", () => m_MyInt, (i) => m_MyInt = i, new int[] { 8, 10, 9 }, new string[] { "Zero", "One", "Two" })
+            .AddSelector("Camera Clear Flags", () => (int) cam.clearFlags, (i) => cam.clearFlags = (CameraClearFlags) i, new int[] { (int) CameraClearFlags.Skybox, (int) CameraClearFlags.SolidColor, (int) CameraClearFlags.Depth, (int) CameraClearFlags.Nothing }, new string[] { "Skybox", "Solid Color", "Depth", "Nothing" });
 
         DMInfo newMenu = new DMInfo("Gameplay");
         newMenu.AddButton("Useless Button", () => { Debug.Log("useless!"); });

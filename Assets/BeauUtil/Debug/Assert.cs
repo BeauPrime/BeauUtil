@@ -178,6 +178,28 @@ namespace BeauUtil.Debugger
 #endif // DEVELOPMENT
         }
 
+        /// <summary>
+        /// Resets any existing broken flags and ignored 
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void ClearBreak()
+        {
+#if DEVELOPMENT
+            s_Broken = false;
+#endif // DEVELOPMENT
+        }
+
+        /// <summary>
+        /// Clears all ignored asserts.
+        /// </summary>
+        [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        static public void ClearAllIgnores()
+        {
+#if DEVELOPMENT
+            s_IgnoredLocations.Clear();
+#endif // DEVELOPMENT
+        }
+
         #region Fail
 
         /// <summary>
@@ -972,13 +994,18 @@ namespace BeauUtil.Debugger
             }
             else if (result == ErrorResult.Break)
             {
-                s_Broken = true;
 #if UNITY_EDITOR
                 if (EditorApplication.isPlaying)
+                {
                     UnityEngine.Debug.Break();
+                    s_Broken = true;
+                }
                 else if (!fromException)
+                {
                     throw new AssertException(fullMessage);
+                }
 #else
+                s_Broken = true;
                 if (!fromException)
                     throw new AssertException(fullMessage);
 #endif // UNITY_EDITOR

@@ -7,7 +7,16 @@
  * Purpose: Debug menu element data.
  */
 
+#if NET_4_6 || CSHARP_7_OR_LATER
+#define HAS_ENUM_CONSTRAINT
+#endif // NET_4_6 || CSHARP_7_OR_LATER
+
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
+using System.Text;
 using UnityEngine;
 
 namespace BeauUtil.Debugger
@@ -24,6 +33,7 @@ namespace BeauUtil.Debugger
         public DMSubmenuInfo Submenu { get { return (DMSubmenuInfo) Data; } }
         public DMTextInfo Text { get { return (DMTextInfo) Data; } }
         public DMSliderInfo Slider { get { return (DMSliderInfo) Data; } }
+        public DMSelectorInfo Selector { get { return (DMSelectorInfo) Data; } }
 
         public int Indent;
         public DMPredicate Predicate;
@@ -38,6 +48,14 @@ namespace BeauUtil.Debugger
             return new DMElementInfo()
             {
                Type = DMElementType.Divider 
+            };
+        }
+
+        static public DMElementInfo CreatePageBreak()
+        {
+            return new DMElementInfo()
+            {
+                Type = DMElementType.PageBreak
             };
         }
 
@@ -99,7 +117,34 @@ namespace BeauUtil.Debugger
                 Indent = inIndent
             };
         }
-    
+
+        static public DMElementInfo CreateText(string inLabel, DMTextSBDelegate inGetter, int inIndent = 0)
+        {
+            return new DMElementInfo()
+            {
+                Type = DMElementType.Text,
+                Label = inLabel,
+                Data = new DMTextInfo()
+                {
+                    GetterSB = inGetter
+                },
+                Indent = inIndent
+            };
+        }
+
+        static public DMElementInfo CreateText(string inLabel, int inIndent = 0)
+        {
+            return new DMElementInfo()
+            {
+                Type = DMElementType.Text,
+                Label = inLabel,
+                Data = new DMTextInfo()
+                {
+                },
+                Indent = inIndent
+            };
+        }
+
         static public DMElementInfo CreateSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, float inMinValue, float inMaxValue, float inIncrement = 0, DMFloatTextDelegate inValueString = null, DMPredicate inPredicate = null, int inIndent = 0)
         {
             return new DMElementInfo()
@@ -111,6 +156,29 @@ namespace BeauUtil.Debugger
                     Getter = inGetter,
                     Setter = inSetter,
                     Label = inValueString,
+                    Range = new DMSliderRange()
+                    {
+                        MinValue = inMinValue,
+                        MaxValue = inMaxValue,
+                        Increment = inIncrement
+                    }
+                },
+                Indent = inIndent,
+                Predicate = inPredicate
+            };
+        }
+
+        static public DMElementInfo CreateSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, float inMinValue, float inMaxValue, float inIncrement, DMFloatTextSBDelegate inValueString, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            return new DMElementInfo()
+            {
+                Type = DMElementType.Slider,
+                Label = inLabel,
+                Data = new DMSliderInfo()
+                {
+                    Getter = inGetter,
+                    Setter = inSetter,
+                    LabelSB = inValueString,
                     Range = new DMSliderRange()
                     {
                         MinValue = inMinValue,
@@ -145,18 +213,64 @@ namespace BeauUtil.Debugger
                 Predicate = inPredicate
             };
         }
-    
+
+        static public DMElementInfo CreateSelector(string inLabel, DMIntDelegate inGetter, DMSetIntDelegate inSetter, string[] inLabels, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Assert.True(inLabels != null && inLabels.Length > 0);
+            return new DMElementInfo()
+            {
+                Type = DMElementType.Selector,
+                Label = inLabel,
+                Data = new DMSelectorInfo()
+                {
+                    Getter = inGetter,
+                    Setter = inSetter,
+                    Labels = inLabels
+                },
+                Indent = inIndent,
+                Predicate = inPredicate
+            };
+        }
+
+        static public DMElementInfo CreateSelector(string inLabel, DMIntDelegate inGetter, DMSetIntDelegate inSetter, int[] inValues, string[] inLabels, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Assert.True(inLabels != null && inLabels.Length > 0);
+            Assert.True(inValues != null && inValues.Length == inLabels.Length);
+
+            return new DMElementInfo()
+            {
+                Type = DMElementType.Selector,
+                Label = inLabel,
+                Data = new DMSelectorInfo()
+                {
+                    Getter = inGetter,
+                    Setter = inSetter,
+                    Labels = inLabels,
+                    Values = inValues
+                },
+                Indent = inIndent,
+                Predicate = inPredicate
+            };
+        }
+
         #endregion // Factory
     }
 
     public delegate void DMButtonCallback();
     public delegate void DMToggleCallback(bool inbValue);
+
     public delegate string DMTextDelegate();
+    public delegate void DMTextSBDelegate(StringBuilder ioBuilder);
     public delegate bool DMSetTextDelegate(string inValue);
+    
     public delegate bool DMPredicate();
     public delegate float DMFloatDelegate();
     public delegate void DMSetFloatDelegate(float inValue);
     public delegate string DMFloatTextDelegate(float inValue);
+    public delegate void DMFloatTextSBDelegate(StringBuilder ioBuilder, float inValue);
+
+    public delegate int DMIntDelegate();
+    public delegate void DMSetIntDelegate(int inValue);
 
     public struct DMHeaderInfo
     {
@@ -200,6 +314,8 @@ namespace BeauUtil.Debugger
     public class DMTextInfo
     {
         public DMTextDelegate Getter;
+        public DMTextSBDelegate GetterSB;
+        public string Text;
     }
 
     /// <summary>
@@ -210,8 +326,57 @@ namespace BeauUtil.Debugger
         public DMFloatDelegate Getter;
         public DMSetFloatDelegate Setter;
         public DMFloatTextDelegate Label;
+        public DMFloatTextSBDelegate LabelSB;
         public DMSliderRange Range;
+    }
+
+    /// <summary>
+    /// Selector-specific element data.
+    /// </summary>
+    public class DMSelectorInfo
+    {
+        public DMIntDelegate Getter;
+        public DMSetIntDelegate Setter;
+
+        public int[] Values;
         public string[] Labels;
+
+        static internal int GetValue(DMSelectorInfo inSelector, int inIndex)
+        {
+            if (inIndex < 0)
+            {
+                return -1;
+            }
+
+            inIndex = Math.Min(inIndex, inSelector.Labels.Length - 1);
+            if (inSelector.Values != null)
+            {
+                return inSelector.Values[inIndex];
+            }
+
+            return inIndex;
+        }
+
+        static internal int GetIndex(DMSelectorInfo inSelector, int inValue)
+        {
+            if (inSelector.Values != null)
+            {
+                for(int i = 0; i < inSelector.Values.Length; i++)
+                {
+                    if (inSelector.Values[i] == inValue)
+                        return i;
+                }
+
+                return -1;
+            }
+
+            if (inValue < 0)
+            {
+                return -1;
+            }
+
+            return Math.Min(inValue, inSelector.Labels.Length - 1);
+        }
     }
 
     /// <summary>
@@ -301,6 +466,30 @@ namespace BeauUtil.Debugger
         Submenu,
         Text,
         Slider,
-        TextInput
+        TextInput,
+        Selector,
+        PageBreak
+    }
+
+    /// <summary>
+    /// Element heights configuration.
+    /// </summary>
+    [Serializable]
+    public struct DMElementHeights
+    {
+        public int Button;
+        public int Text;
+        public int Slider;
+        public int TextInput;
+        public int Selector;
+
+        static public readonly DMElementHeights Default = new DMElementHeights()
+        {
+            Button = 1,
+            Text = 1,
+            Slider = 2,
+            TextInput = 2,
+            Selector = 2,
+        };
     }
 }

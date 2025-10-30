@@ -106,12 +106,20 @@ MonoBehaviour:
     type: 3}
   m_SliderPrefab: {fileID: 7708431244975882721, guid: ec5fb9f5a7123404885dcbb1e29b3e3f,
     type: 3}
+  m_SelectorPrefab: {fileID: 7708431244975882721, guid: ecbc030379404c5458e987d6996be4e0,
+    type: 3}
   m_ElementRoot: {fileID: 7497580269783364986}
   m_ElementPool: {fileID: 2904227557507461967}
   m_SelectionArrow: {fileID: 7903301750199854448}
   m_AdjustSelectionOnHover: 1
   m_IndentSpacing: 16
   m_MaxElementsPerPage: 16
+  m_HeightConfiguration:
+    Button: 1
+    Text: 1
+    Slider: 2
+    TextInput: 2
+    Selector: 2
 --- !u!1 &3962561325467595960
 GameObject:
   m_ObjectHideFlags: 0

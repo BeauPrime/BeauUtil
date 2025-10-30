@@ -3,8 +3,8 @@
  * Author:  Autumn Beauchesne
  * Date:    8 Apr 2021
  * 
- * File:    DMButtonUI.cs
- * Purpose: Button/toggle/submenu display for the debug menu
+ * File:    DMInteractableUI.cs
+ * Purpose: Common interactable state component for the debug menu
  */
 
 using System;

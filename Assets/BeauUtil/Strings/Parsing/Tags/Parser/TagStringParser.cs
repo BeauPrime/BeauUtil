@@ -663,7 +663,7 @@ namespace BeauUtil.Tags
                 originalRemaining = new UnsafeString(originalCopy, originalRemaining.Length);
             }
 
-            inInitial.CopyTo(ioState.InputBuffer, ioState.InputBufferSize);
+            StringUtils.Copy(inInitial, ioState.InputBuffer, ioState.InputBufferSize);
             originalRemaining.CopyTo(ioState.InputBuffer + inInitial.Length, ioState.InputBufferSize - inInitial.Length);
 
             ioState.Input = new UnsafeString(ioState.InputBuffer, newLength);

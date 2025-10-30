@@ -507,12 +507,14 @@ namespace BeauUtil
             unsafe
             {
                 ioBuilder.Reserve(Length);
-                char* copy = stackalloc char[Length];
+#if SUPPORTS_SPAN
+                ioBuilder.Append(m_Source, m_StartIndex, Length);
+#else
                 for(int i = 0; i < Length; i++)
                 {
-                    copy[i] = m_Source[m_StartIndex + i];
+                    ioBuilder.Append(m_Source[m_StartIndex + i]);
                 }
-                ioBuilder.Append(copy, Length);
+#endif // SUPPORTS_SPAN
             }
         }
 

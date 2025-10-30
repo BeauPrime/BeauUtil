@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -56,6 +57,7 @@ namespace BeauUtil.Debugger
         [SerializeField] private DMButtonUI m_ButtonPrefab = null;
         [SerializeField] private DMTextUI m_TextPrefab = null;
         [SerializeField] private DMSliderUI m_SliderPrefab = null;
+        [SerializeField] private DMSelectorUI m_SelectorPrefab = null;
 
         [Header("Element Transforms")]
         [SerializeField] private RectTransform m_ElementRoot = null;
@@ -68,6 +70,7 @@ namespace BeauUtil.Debugger
         [Header("Settings")]
         [SerializeField] private int m_IndentSpacing = 16;
         [SerializeField] private int m_MaxElementsPerPage = 20;
+        [SerializeField] private DMElementHeights m_HeightConfiguration = DMElementHeights.Default;
 
         #endregion // Inspector
 
@@ -76,12 +79,14 @@ namespace BeauUtil.Debugger
         private RingBuffer<MenuStackItem> m_MenuStack = new RingBuffer<MenuStackItem>(4, RingBufferMode.Expand);
         private MenuStackItem m_CurrentMenu = MenuStackItem.Empty;
         [NonSerialized] private int m_CurrentPageCount = 1;
+        private RingBuffer<OffsetLength32> m_PageDivisions = new RingBuffer<OffsetLength32>(4, RingBufferMode.Expand);
         [NonSerialized] private DMInteractableUI m_CurrentArrowItem;
 
         private RingBuffer<RectTransform> m_InactiveDividers = new RingBuffer<RectTransform>();
         private RingBuffer<DMButtonUI> m_InactiveButtons = new RingBuffer<DMButtonUI>();
         private RingBuffer<DMTextUI> m_InactiveTexts = new RingBuffer<DMTextUI>();
         private RingBuffer<DMSliderUI> m_InactiveSliders = new RingBuffer<DMSliderUI>();
+        private RingBuffer<DMSelectorUI> m_InactiveSelectors = new RingBuffer<DMSelectorUI>();
 
         private RingBuffer<DMInteractableUI> m_InteractableOrder = new RingBuffer<DMInteractableUI>();
 
@@ -89,10 +94,12 @@ namespace BeauUtil.Debugger
         private RingBuffer<DMButtonUI> m_ActiveButtons = new RingBuffer<DMButtonUI>();
         private RingBuffer<DMTextUI> m_ActiveTexts = new RingBuffer<DMTextUI>();
         private RingBuffer<DMSliderUI> m_ActiveSliders = new RingBuffer<DMSliderUI>();
+        private RingBuffer<DMSelectorUI> m_ActiveSelectors = new RingBuffer<DMSelectorUI>();
         [NonSerialized] private int m_SiblingIndexStart;
 
         private Action<DMButtonUI> m_CachedButtonOnClick;
         private Action<DMSliderUI, float> m_CachedSliderOnChange;
+        private Action<DMSelectorUI, int> m_CachedSelectorOnChange;
 
         private PointerEventData m_ClickEvent;
 
@@ -109,6 +116,7 @@ namespace BeauUtil.Debugger
             m_SiblingIndexStart = m_ElementRoot.childCount;
             m_CachedButtonOnClick = m_CachedButtonOnClick ?? OnButtonClicked;
             m_CachedSliderOnChange = m_CachedSliderOnChange ?? OnSliderChanged;
+            m_CachedSelectorOnChange = m_CachedSelectorOnChange ?? OnSelectorChanged;
             m_Header.SetBackCallback(OnBackClicked);
             m_Page.SetPageCallback(OnPageChanged);
             m_Initialized = true;
@@ -134,8 +142,8 @@ namespace BeauUtil.Debugger
                 return;
             }
 
-            int elementsPerPage, maxPages;
-            GetPageSettings(inMenu, out maxPages, out elementsPerPage);
+            int maxPages;
+            GetPageSettings(inMenu, out maxPages);
 
             m_CurrentMenu.PageIndex = Mathf.Clamp(inPageIndex, 0, maxPages - 1);
             m_MenuStack[m_MenuStack.Count - 1] = m_CurrentMenu;
@@ -149,13 +157,16 @@ namespace BeauUtil.Debugger
             int usedTexts = 0;
             int usedDividers = 0;
             int usedSliders = 0;
+            int usedSelectors = 0;
             int siblingIndex = m_SiblingIndexStart;
 
             m_InteractableOrder.Clear();
 
-            int elementOffset = m_CurrentMenu.PageIndex * elementsPerPage;
-            int elementCount = Math.Min(elementsPerPage, inMenu.Elements.Count - elementOffset);
+            OffsetLength32 pageRange = m_PageDivisions[m_CurrentMenu.PageIndex];
+            int elementOffset = pageRange.Offset;
+            int elementCount = pageRange.Length;
             int elementIndex;
+            DMElementType prevElementType = (DMElementType) 255;
             for (int i = 0; i < elementCount; i++)
             {
                 elementIndex = i + elementOffset;
@@ -167,7 +178,7 @@ namespace BeauUtil.Debugger
                 {
                     case DMElementType.Divider:
                     {
-                        if (i > 0 && i < elementCount - 1) // don't show unnecessary dividers
+                        if (i > 0 && i < elementCount - 1 && prevElementType != DMElementType.Divider) // don't show unnecessary dividers
                         {
                             RectTransform divider;
                             if (usedDividers >= m_ActiveDividers.Count)
@@ -240,7 +251,28 @@ namespace BeauUtil.Debugger
                         m_InteractableOrder.PushBack(slider.Interactable);
                         break;
                     }
+
+                    case DMElementType.Selector:
+                    {
+                        DMSelectorUI selector;
+                        if (usedSliders >= m_ActiveSelectors.Count)
+                        {
+                            selector = AllocSelector();
+                        }
+                        else
+                        {
+                            selector = m_ActiveSelectors[usedSelectors];
+                        }
+                        selector.Initialize(elementIndex, info, m_CachedSelectorOnChange, m_IndentSpacing * info.Indent, m_InteractableOrder.Count, this);
+                        selector.transform.SetSiblingIndex(siblingIndex++);
+                        usedSelectors++;
+
+                        m_InteractableOrder.PushBack(selector.Interactable);
+                        break;
+                    }
                 }
+
+                prevElementType = info.Type;
             }
 
             m_Header.UpdateMinimumWidth(minWidth);
@@ -281,6 +313,15 @@ namespace BeauUtil.Debugger
                 slidersToRemove--;
             }
 
+            int selectorsToRemove = m_ActiveSelectors.Count - usedSelectors;
+            while (selectorsToRemove > 0)
+            {
+                DMSelectorUI selector = m_ActiveSelectors.PopBack();
+                selector.transform.SetParent(m_ElementPool, false);
+                m_InactiveSelectors.PushBack(selector);
+                selectorsToRemove--;
+            }
+
             UpdateArrow(Math.Min(m_CurrentMenu.ArrowIndex, m_InteractableOrder.Count - 1), true);
 
             if (maxPages > 1)
@@ -306,6 +347,7 @@ namespace BeauUtil.Debugger
 
             m_CurrentMenu = MenuStackItem.Empty;
             m_MenuStack.Clear();
+            m_PageDivisions.Clear();
 
             foreach (var button in m_ActiveButtons)
             {
@@ -331,10 +373,17 @@ namespace BeauUtil.Debugger
                 m_InactiveSliders.PushBack(slider);
             }
 
+            foreach (var selector in m_ActiveSelectors)
+            {
+                selector.transform.SetParent(m_ElementPool, false);
+                m_InactiveSelectors.PushBack(selector);
+            }
+
             m_ActiveButtons.Clear();
             m_ActiveTexts.Clear();
             m_ActiveDividers.Clear();
             m_ActiveSliders.Clear();
+            m_ActiveSelectors.Clear();
             m_InteractableOrder.Clear();
 
             UpdateArrow(-1, true);
@@ -402,17 +451,93 @@ namespace BeauUtil.Debugger
             return slider;
         }
 
-        private void GetPageSettings(DMInfo inMenu, out int outMaxPages, out int outElementsPerPage)
+        private DMSelectorUI AllocSelector()
         {
-            if (m_MaxElementsPerPage <= 0 || inMenu.Elements.Count <= 0)
+            DMSelectorUI selector;
+            if (!m_InactiveSelectors.TryPopBack(out selector))
             {
-                outMaxPages = 1;
-                outElementsPerPage = inMenu.Elements.Count;
+                selector = Instantiate(m_SelectorPrefab, m_ElementRoot);
             }
             else
             {
-                outMaxPages = (int) Math.Ceiling((float) inMenu.Elements.Count / m_MaxElementsPerPage);
-                outElementsPerPage = m_MaxElementsPerPage;
+                selector.transform.SetParent(m_ElementRoot, false);
+            }
+            m_ActiveSelectors.PushBack(selector);
+            return selector;
+        }
+
+        private void GetPageSettings(DMInfo inMenu, out int outMaxPages)
+        {
+            m_PageDivisions.Clear();
+
+            if (m_MaxElementsPerPage <= 0 || inMenu.Elements.Count <= 0)
+            {
+                outMaxPages = 1;
+                m_PageDivisions.PushBack(new OffsetLength32(0, inMenu.Elements.Count));
+            }
+            else
+            {
+                int pageStartIndex = 0;
+                int pageLength = 0;
+                int pageHeight = 0;
+
+                for (int i = 0; i < inMenu.Elements.Count; i++)
+                {
+                    DMElementType elementType = inMenu.Elements[i].Type;
+                    if (elementType == DMElementType.PageBreak)
+                    {
+                        if (pageLength > 0)
+                        {
+                            m_PageDivisions.PushBack(new OffsetLength32(pageStartIndex, pageLength));
+                            pageStartIndex = i + 1;
+                            pageLength = 0;
+                            pageHeight = 0;
+                        }
+                    }
+                    else
+                    {
+                        int elementHeight = GetHeightForElementType(m_HeightConfiguration, elementType);
+                        Assert.True(m_MaxElementsPerPage >= elementHeight);
+                        if (pageHeight + elementHeight > m_MaxElementsPerPage)
+                        {
+                            m_PageDivisions.PushBack(new OffsetLength32(pageStartIndex, pageLength));
+                            pageStartIndex = i;
+                            pageLength = 0;
+                            pageHeight = 0;
+                        }
+
+                        pageHeight += elementHeight;
+                        pageLength++;
+                    }
+                }
+
+                if (pageLength > 0)
+                {
+                    m_PageDivisions.PushBack(new OffsetLength32(pageStartIndex, pageLength));
+                }
+
+                outMaxPages = m_PageDivisions.Count;
+            }
+        }
+
+        static private int GetHeightForElementType(in DMElementHeights inHeights, DMElementType inType)
+        {
+            switch (inType)
+            {
+                case DMElementType.Button:
+                case DMElementType.Toggle:
+                case DMElementType.Submenu:
+                    return inHeights.Button;
+                case DMElementType.Text:
+                    return inHeights.Text;
+                case DMElementType.Slider:
+                    return inHeights.Slider;
+                case DMElementType.Selector:
+                    return inHeights.Selector;
+                case DMElementType.TextInput:
+                    return inHeights.TextInput;
+                default:
+                    return 0;
             }
         }
 
@@ -698,6 +823,13 @@ namespace BeauUtil.Debugger
                             sliderUI.AdjustValueInTicks(inCommand == NavigationCommand.IncreaseSlider ? 1 : -1);
                             return true;
                         }
+
+                        DMSelectorUI selectorUI = m_CurrentArrowItem.GetComponent<DMSelectorUI>();
+                        if (selectorUI != null)
+                        {
+                            selectorUI.AdjustValueInTicks(inCommand == NavigationCommand.IncreaseSlider ? 1 : -1);
+                            return true;
+                        }
                     }
                     return false;
                 }
@@ -724,6 +856,8 @@ namespace BeauUtil.Debugger
         /// </summary>
         public void UpdateElements()
         {
+            StringBuilder sb = DMInfo.SharedTextBuilder;
+
             foreach (var button in m_ActiveButtons)
             {
                 DMElementInfo info = m_CurrentMenu.Menu.Elements[button.ElementIndex];
@@ -742,17 +876,33 @@ namespace BeauUtil.Debugger
             foreach (var text in m_ActiveTexts)
             {
                 DMTextInfo textInfo = m_CurrentMenu.Menu.Elements[text.ElementIndex].Text;
+
                 if (textInfo.Getter != null)
                 {
                     text.UpdateValue(textInfo.Getter());
                 }
+                else if (textInfo.GetterSB != null)
+                {
+                    sb.Clear();
+                    textInfo.GetterSB(sb);
+                    text.UpdateValue(sb);
+                }
             }
+
+            sb.Clear();
 
             foreach (var slider in m_ActiveSliders)
             {
                 DMElementInfo info = m_CurrentMenu.Menu.Elements[slider.ElementIndex];
                 slider.Interactable.UpdateInteractive(DMInfo.EvaluateOptionalPredicate(info.Predicate));
                 slider.UpdateValue(info.Slider.Getter(), info.Slider);
+            }
+
+            foreach (var selector in m_ActiveSelectors)
+            {
+                DMElementInfo info = m_CurrentMenu.Menu.Elements[selector.ElementIndex];
+                selector.Interactable.UpdateInteractive(DMInfo.EvaluateOptionalPredicate(info.Predicate));
+                selector.UpdateValue(info.Selector.Getter(), info.Selector);
             }
         }
 
@@ -803,6 +953,24 @@ namespace BeauUtil.Debugger
             info.Slider.Setter(realValue);
 
             if (inSlider.UpdateValue(realValue, info.Slider))
+            {
+                UpdateElements();
+            }
+        }
+
+        private void OnSelectorChanged(DMSelectorUI inSelector, int inIndex)
+        {
+            UpdateArrow(inSelector.Interactable.InteractableIndex, false);
+
+            int index = inSelector.ElementIndex;
+            DMElementInfo info = m_CurrentMenu.Menu.Elements[index];
+
+            DMSelectorInfo selectorInfo = info.Selector;
+
+            int realValue = DMSelectorInfo.GetValue(selectorInfo, inIndex);
+            info.Selector.Setter(realValue);
+
+            if (inSelector.UpdateValue(realValue, selectorInfo))
             {
                 UpdateElements();
             }

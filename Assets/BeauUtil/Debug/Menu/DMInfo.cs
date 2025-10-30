@@ -7,7 +7,16 @@
  * Purpose: Debug menu info.
  */
 
+#if NET_4_6 || CSHARP_7_OR_LATER
+#define HAS_ENUM_CONSTRAINT
+#endif // NET_4_6 || CSHARP_7_OR_LATER
+
+#if CSHARP_7_3_OR_NEWER
+#define UNMANAGED_CONSTRAINT
+#endif // CSHARP_7_3_OR_NEWER
+
 using System;
+using System.Text;
 
 namespace BeauUtil.Debugger
 {
@@ -50,9 +59,21 @@ namespace BeauUtil.Debugger
         /// </summary>
         public DMInfo AddDivider()
         {
-            if (Elements.Count == 0 || Elements.PeekBack().Type != DMElementType.Divider)
+            if (Elements.Count > 0 && Elements.PeekBack().Type != DMElementType.Divider)
             {
                 Elements.PushBack(DMElementInfo.CreateDivider());
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a page break element to the menu.
+        /// </summary>
+        public DMInfo AddPageBreak()
+        {
+            if (Elements.Count > 0 && Elements.PeekBack().Type != DMElementType.PageBreak)
+            {
+                Elements.PushBack(DMElementInfo.CreatePageBreak());
             }
             return this;
         }
@@ -103,9 +124,36 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
+        /// Adds a text element to the menu.
+        /// </summary>
+        public DMInfo AddText(string inLabel, DMTextSBDelegate inGetter, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateText(inLabel, inGetter, inIndent));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a text element to the menu.
+        /// </summary>
+        public DMInfo AddText(string inLabel, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateText(inLabel, inIndent));
+            return this;
+        }
+
+        /// <summary>
         /// Adds a slider element to the menu.
         /// </summary>
         public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, float inMinValue, float inMaxValue, float inIncrement = 0, DMFloatTextDelegate inValueString = null, DMPredicate inPredicate = null, int inIndent = 0)
+        {
+            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueString, inPredicate, inIndent));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a slider element to the menu.
+        /// </summary>
+        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, float inMinValue, float inMaxValue, float inIncrement, DMFloatTextSBDelegate inValueString, DMPredicate inPredicate = null, int inIndent = 0)
         {
             Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueString, inPredicate, inIndent));
             return this;
@@ -121,20 +169,20 @@ namespace BeauUtil.Debugger
         }
 
         /// <summary>
-        /// Adds a slider element to the menu.
+        /// Adds a selector element to the menu.
         /// </summary>
-        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, int inMinValue, int inMaxValue, int inIncrement = 1, DMFloatTextDelegate inValueString = null, DMPredicate inPredicate = null, int inIndent = 0)
+        public DMInfo AddSelector(string inLabel, DMIntDelegate inGetter, DMSetIntDelegate inSetter, string[] inLabels, DMPredicate inPredicate = null, int inIndent = 0)
         {
-            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueString, inPredicate, inIndent));
+            Elements.PushBack(DMElementInfo.CreateSelector(inLabel, inGetter, inSetter, inLabels, inPredicate, inIndent));
             return this;
         }
 
         /// <summary>
-        /// Adds a slider element to the menu.
+        /// Adds a selector element to the menu.
         /// </summary>
-        public DMInfo AddSlider(string inLabel, DMFloatDelegate inGetter, DMSetFloatDelegate inSetter, int inMinValue, int inMaxValue, int inIncrement, string inValueFormat, DMPredicate inPredicate = null, int inIndent = 0)
+        public DMInfo AddSelector(string inLabel, DMIntDelegate inGetter, DMSetIntDelegate inSetter, int[] inValues, string[] inLabels, DMPredicate inPredicate = null, int inIndent = 0)
         {
-            Elements.PushBack(DMElementInfo.CreateSlider(inLabel, inGetter, inSetter, inMinValue, inMaxValue, inIncrement, inValueFormat, inPredicate, inIndent));
+            Elements.PushBack(DMElementInfo.CreateSelector(inLabel, inGetter, inSetter, inValues, inLabels, inPredicate, inIndent));
             return this;
         }
 
@@ -162,6 +210,58 @@ namespace BeauUtil.Debugger
         {
             inMenu.Elements.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Label, b.Label));
         }
+
+        #region Strings
+
+        /// <summary>
+        /// Shared string builder.
+        /// </summary>
+        static public readonly StringBuilder SharedTextBuilder = new StringBuilder(128, 128);
+
+        /// <summary>
+        /// Returns the nicified name for the given field/type name.
+        /// </summary>
+        static public unsafe string InspectorName(string inName)
+        {
+            char* buff = stackalloc char[inName.Length * 2];
+            bool wasUpper = true, isUpper;
+            int charsWritten = 0;
+
+            int i = 0;
+            if (inName.Length > 1)
+            {
+                char first = inName[0];
+                if (first == '_')
+                {
+                    i = 1;
+                }
+                else if (first == 'm' || first == 's' || first == 'k')
+                {
+                    char second = inName[1];
+                    if (second == '_' || char.IsUpper(second))
+                    {
+                        i = 2;
+                    }
+                }
+            }
+
+            for (; i < inName.Length; i++)
+            {
+                char c = inName[i];
+                isUpper = char.IsUpper(c);
+                if (isUpper && !wasUpper && charsWritten > 0)
+                {
+                    buff[charsWritten++] = ' ';
+                }
+                buff[charsWritten++] = c;
+
+                wasUpper = isUpper;
+            }
+
+            return new string(buff, 0, charsWritten);
+        }
+
+        #endregion // Strings
 
         #region Submenu Utilities
 
