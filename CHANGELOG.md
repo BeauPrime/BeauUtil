@@ -1,3 +1,18 @@
+## Version 0.11.2
+**29 Oct 2025**
+
+Fixes for `Assert` functionality in editor outside of play mode
+Added `DMSelectorInfo` menu element for indexed, labeled debug menu selectors
+
+### Breaking Changes
+* `string.CopyTo` extension method changed to non-extension method `StringUtils.Copy`
+
+## Improvements
+* Added `DMSelectorInfo` debug menu element, an indexed, labeled selector
+
+## Fixes
+* Assertions that fail in edit mode will no longer cause future failed assertions to be ignored
+
 ## Version 0.11.1
 **13 Sept 2025**
 
