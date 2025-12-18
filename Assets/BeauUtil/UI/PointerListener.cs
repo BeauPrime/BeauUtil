@@ -43,7 +43,7 @@ namespace BeauUtil.UI
                 Source = inSource;
                 EventSystemData = inEventData;
                 PointerMask = inPointerMask;
-                ButtonMask = (MouseButtons) (1 << (int) inEventData.button);
+                ButtonMask = inEventData != null ? (MouseButtons) (1 << (int) inEventData.button) : ExtractMouseButtons(inPointerMask);
             }
 
             static unsafe EventData()
@@ -135,6 +135,25 @@ namespace BeauUtil.UI
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static private uint CalculateMask(int inPointerId) { return 1U << ((inPointerId + 32) & 31); }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static private MouseButtons ExtractMouseButtons(uint inPointerMask)
+        {
+            MouseButtons buttons = 0;
+            if ((inPointerMask & CalculateMask(PointerInputModule.kMouseLeftId)) != 0)
+            {
+                buttons |= MouseButtons.Left;
+            }
+            if ((inPointerMask & CalculateMask(PointerInputModule.kMouseRightId)) != 0)
+            {
+                buttons |= MouseButtons.Right;
+            }
+            if ((inPointerMask & CalculateMask(PointerInputModule.kMouseMiddleId)) != 0)
+            {
+                buttons |= MouseButtons.Middle;
+            }
+            return buttons;
+        }
 
         #region Handlers
 

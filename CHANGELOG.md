@@ -1,5 +1,5 @@
-## Version 0.11.4
-**17 Dec 2025**
+## Version 0.11.5
+**18 Dec 2025**
 
 Fix for `StringHash32` and `StringHash64` false positive hash collisions when using StringBuilder
 
