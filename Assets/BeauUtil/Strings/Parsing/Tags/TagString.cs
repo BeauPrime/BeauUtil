@@ -29,6 +29,9 @@ namespace BeauUtil.Tags
         private ListSlice<TagNodeData> m_NodeList;
         private StringArena m_TagArena;
 
+        private string m_CachedRichText;
+        private string m_CachedStrippedText;
+
         public TagString() : this(DefaultCapacity)
         {
         }
@@ -48,8 +51,8 @@ namespace BeauUtil.Tags
         /// </summary>
         public string RichTextString
         {
-            get { return m_RichText.ToString(); }
-            set { m_RichText.Length = 0; m_RichText.Append(value); }
+            get { return m_CachedRichText ?? (m_CachedRichText = m_RichText.ToString()); }
+            set { m_RichText.Length = 0; m_RichText.Append(value); m_CachedRichText = value ?? string.Empty; }
         }
 
         /// <summary>
@@ -67,8 +70,8 @@ namespace BeauUtil.Tags
         /// </summary>
         public string VisibleTextString
         {
-            get { return m_StrippedText.ToString(); }
-            set { m_StrippedText.Length = 0; m_StrippedText.Append(value); }
+            get { return m_CachedStrippedText ?? (m_CachedStrippedText = m_StrippedText.ToString()); }
+            set { m_StrippedText.Length = 0; m_StrippedText.Append(value); m_CachedStrippedText = value ?? string.Empty; }
         }
 
         /// <summary>
@@ -169,6 +172,7 @@ namespace BeauUtil.Tags
         {
             m_RichText.Length = 0;
             m_StrippedText.Length = 0;
+            m_CachedRichText = m_CachedStrippedText = null;
             m_TagArena.Reset();
 
             if (m_Nodes != null)

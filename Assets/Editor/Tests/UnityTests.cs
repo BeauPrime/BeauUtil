@@ -23,6 +23,11 @@ namespace BeauUtil.UnitTests
         {
             new SceneReference(0);
             new SceneReference("Assets/Examples/BlockTest/BlockTest.unity");
+            SceneReference.FromName("BlockTest");
+            Assert.Throws<ArgumentException>(() =>
+            {
+                SceneReference.FromName("NonExistentScene");
+            });
         }
     }
 }

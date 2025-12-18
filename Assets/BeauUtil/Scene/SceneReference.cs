@@ -14,6 +14,7 @@ using UnityEngine.SceneManagement;
 
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.SceneManagement;
 #endif // UNITY_EDITOR
 
 namespace BeauUtil
@@ -83,29 +84,65 @@ namespace BeauUtil
             m_CachedName = inScene.Name;
         }
 
+        private SceneReference(string inName, string inPath)
+        {
+            m_ScenePath = inPath;
+#if UNITY_EDITOR
+            m_GUID = AssetDatabase.AssetPathToGUID(m_ScenePath);
+#else
+            m_GUID = null;
+#endif // UNITY_EDITOR
+            m_CachedName = inName;
+        }
+
         public string Name
         {
             get { return m_CachedName ?? (m_CachedName = System.IO.Path.GetFileNameWithoutExtension(m_ScenePath)); }
         }
 
-        public string Path
+        public readonly string Path
         {
             get { return m_ScenePath; }
         }
 
-        public bool IsValid
+        public readonly bool IsValid
         {
             get { return !string.IsNullOrEmpty(m_ScenePath); }
         }
 
-        public Scene Resolve()
+        public readonly Scene Resolve()
+        {
+            return SceneManager.GetSceneByPath(Path);
+        }
+
+        static public SceneReference FromName(string inName)
         {
 #if UNITY_EDITOR
-            if (!UnityEditor.EditorApplication.isPlaying)
-                return UnityEditor.SceneManagement.EditorSceneManager.GetSceneByPath(Path);
-            else
-#endif
-                return SceneManager.GetSceneByPath(Path);
+            var editorBuildScenes = EditorBuildSettings.scenes;
+            int buildSceneCount = editorBuildScenes.Length;
+#else
+            int buildSceneCount = SceneManager.sceneCountInBuildSettings;
+#endif // UNITY_EDITOR
+            for (int i = 0; i < buildSceneCount; ++i)
+            {
+#if UNITY_EDITOR
+                var buildScene = editorBuildScenes[i];
+                if (buildScene == null || !buildScene.enabled)
+                {
+                    continue;
+                }
+                string path = buildScene.path;
+#else
+                string path = SceneUtility.GetScenePathByBuildIndex(i);
+#endif // UNITY_EDITOR
+                string name = System.IO.Path.GetFileNameWithoutExtension(path);
+                if (string.Equals(name, inName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new SceneReference(name, path);
+                }
+            }
+
+            throw new ArgumentException(string.Format("No scene with name '{0}'", inName), "inName");
         }
 
         #region Operators
@@ -124,10 +161,6 @@ namespace BeauUtil
 
 #if UNITY_EDITOR
 
-        public void OnAfterDeserialize()
-        {
-        }
-
         public void OnBeforeSerialize()
         {
             if (!string.IsNullOrEmpty(m_GUID)) {
@@ -136,6 +169,10 @@ namespace BeauUtil
                     m_ScenePath = path;
                 }
             }
+        }
+
+        public void OnAfterDeserialize()
+        {
         }
 
         [CustomPropertyDrawer(typeof(SceneReference)), CanEditMultipleObjects]

@@ -1,3 +1,18 @@
+## Version 0.11.4
+**17 Dec 2025**
+
+Fix for `StringHash32` and `StringHash64` false positive hash collisions when using StringBuilder
+
+### Breaking Changes
+* Added `PointerListener.AcceptedMouseButtons` to filter `Down`, `Up`, and `Click` events by mouse button.
+  * By default `PointerListeners` will only accept Left Mouse button
+
+### Fixes
+* Creating a `StringHash32` or `StringHash64` with a StringBuilder will no longer result in false positive hash collisions
+
+### Improvements
+* Added `SceneReference.FromName` to create a `SceneReference` from the scene name rather than the full path
+
 ## Version 0.11.3
 **29 Oct 2025**
 
@@ -7,10 +22,10 @@ Added `DMSelectorInfo` menu element for indexed, labeled debug menu selectors
 ### Breaking Changes
 * `string.CopyTo` extension method changed to non-extension method `StringUtils.Copy`
 
-## Improvements
+### Improvements
 * Added `DMSelectorInfo` debug menu element, an indexed, labeled selector
 
-## Fixes
+### Fixes
 * Assertions that fail in edit mode will no longer cause future failed assertions to be ignored
 
 ## Version 0.11.1
