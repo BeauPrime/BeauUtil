@@ -620,7 +620,7 @@ namespace BeauUtil
                 string existing;
                 if (s_ReverseLookup32.TryGetValue(hash, out existing))
                 {
-                    if (!current.Equals(existing))
+                    if (!current.Equals(existing, false))
                     {
                         if (s_OnCollision != null)
                             s_OnCollision(existing, current.ToString(), 32, hash);
@@ -830,7 +830,7 @@ namespace BeauUtil
                 string existing;
                 if (s_ReverseLookup64.TryGetValue(hash, out existing))
                 {
-                    if (!current.Equals(existing))
+                    if (!current.Equals(existing, false))
                     {
                         if (s_OnCollision != null)
                             s_OnCollision(existing, current.ToString(), 64, hash);

@@ -36,12 +36,14 @@ namespace BeauUtil.UI
             public readonly PointerListener Source;
             public readonly PointerEventData EventSystemData;
             public readonly uint PointerMask;
+            public readonly MouseButtons ButtonMask;
 
             public EventData(PointerListener inSource, PointerEventData inEventData, uint inPointerMask)
             {
                 Source = inSource;
                 EventSystemData = inEventData;
                 PointerMask = inPointerMask;
+                ButtonMask = (MouseButtons) (1 << (int) inEventData.button);
             }
 
             static unsafe EventData()
@@ -65,7 +67,18 @@ namespace BeauUtil.UI
         public sealed class PointerEvent : TinyUnityEvent<EventData> { }
 #endif // BEAUUTIL_USE_LEGACY_UNITYEVENTS
 
-#endregion // Types
+        /// <summary>
+        /// Mouse button mask.
+        /// </summary>
+        [Flags]
+        public enum MouseButtons
+        {
+            Left = 0x1,
+            Right = 0x2,
+            Middle = 0x4,
+        }
+
+        #endregion // Types
 
 #if BEAUUTIL_USE_LEGACY_UNITYEVENTS
         [SerializeField] private PointerEvent m_OnPointerEnter = new PointerEvent();
@@ -84,6 +97,8 @@ namespace BeauUtil.UI
         [Header("Configuration")]
         [Tooltip("If set, OnPointerClick events will always fire on a click, even if an attached Selectable is not considered Interactable")]
         [SerializeField] private bool m_AlwaysFireClickEvents;
+        [Tooltip("Sets which mouse buttons are accepted for pointer down, up, and click events")]
+        public MouseButtons AcceptedMouseButtons = MouseButtons.Left;
 
         [NonSerialized] private Selectable m_Selectable;
         [NonSerialized] private bool? m_SelectableWasInteractive;
@@ -98,10 +113,14 @@ namespace BeauUtil.UI
         public PointerEvent onPointerUp { get { return m_OnPointerUp; } }
         public PointerEvent onClick { get { return m_OnClick; } }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPointerEntered() { return m_EnteredMask != 0 ; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPointerEntered(int inPointerId) { return (m_EnteredMask & CalculateMask(inPointerId)) != 0;}
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPointerDown() { return m_DownMask != 0; }
-        public bool IsPointerDown(int inPointerId) { return (m_DownMask & CalculateMask(inPointerId)) != 0;}
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsPointerDown(int inPointerId) { return (m_DownMask & CalculateMask(inPointerId)) != 0; }
 
         /// <summary>
         /// Returns if this object is considered Interactive.
@@ -176,6 +195,10 @@ namespace BeauUtil.UI
             if ((m_DownMask & mask) != 0)
                 return;
 
+            int buttonMask = 1 << (int) eventData.button;
+            if ((buttonMask & (int) AcceptedMouseButtons) == 0)
+                return;
+            
             m_DownMask |= mask;
             this.CacheComponent(ref m_Selectable);
             m_OnPointerDown.Invoke(new EventData(this, eventData, mask));
@@ -194,6 +217,10 @@ namespace BeauUtil.UI
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
+            int buttonMask = 1 << (int) eventData.button;
+            if ((buttonMask & (int) AcceptedMouseButtons) == 0)
+                return;
+
             bool execute = BypassClickFilter || m_AlwaysFireClickEvents;
             if (!execute)
             {
