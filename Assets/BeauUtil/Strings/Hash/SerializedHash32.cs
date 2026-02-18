@@ -21,6 +21,7 @@ using System.Diagnostics;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -79,7 +80,12 @@ namespace BeauUtil
 
         public string ToDebugString()
         {
-            return Hash().ToDebugString();
+            return StringHashing.ReverseLookup32(m_HashValue);
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            inBuilder.Append(StringHashing.ReverseLookup32(m_HashValue));
         }
 
         public override string ToString()

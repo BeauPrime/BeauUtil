@@ -36,10 +36,12 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using BeauUtil.Variants;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
 {
+    [Il2CppEagerStaticClassConstruction]
     public struct MethodInvocationHelper
     {
         public const int MaxArguments = 8;

@@ -17,12 +17,14 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Utility methods for dealing with dictionaries.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class MapUtils
     {
 #if USE_REFLECTED_METHODS

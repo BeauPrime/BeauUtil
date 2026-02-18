@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using BeauUtil.Tags;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil.Blocks
@@ -18,6 +19,7 @@ namespace BeauUtil.Blocks
     /// <summary>
     /// Attribute marking a meta tag for block data.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public sealed class BlockMetaCache
     {
         #region Static

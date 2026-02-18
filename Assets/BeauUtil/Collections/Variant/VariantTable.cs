@@ -11,29 +11,58 @@
 #define EXPANDED_REFS
 #endif // CSHARP_7_3_OR_NEWER
 
+#if UNITY_2021_2_OR_NEWER && !BEAUUTIL_DISABLE_FUNCTION_POINTERS
+#define SUPPORTS_FUNCTION_POINTERS
+#endif // UNITY_2021_2_OR_NEWER
+
+#if (UNITY_EDITOR && !IGNORE_UNITY_EDITOR) || DEVELOPMENT_BUILD || DEVELOPMENT
+#define HAS_DEBUGGER
+#endif // UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
+using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 
 namespace BeauUtil.Variants
 {
     /// <summary>
     /// Collection of named variant values.
     /// </summary>
-    public class VariantTable : IVariantTable
+    [DebuggerDisplay("Count={Count}")]
+#if HAS_DEBUGGER
+    [DebuggerTypeProxy(typeof(VariantTable.DebugView))]
+#endif // HAS_DEBUGGER
+    public sealed class VariantTable : IDisposable, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedObject
         #endif // USING_BEAUDATA
     {
+        private const int BinarySearchThreshold = 8;
+
+        private NamedVariant[] m_Values;
+        private int m_ValueCount;
+        private bool m_Sorted = true;
         private StringHash32 m_Name;
-        private RingBuffer<NamedVariant> m_Values;
-        private IVariantTable m_Base;
-        private bool m_Optimized = true;
+        private VariantTable m_Base;
 
         public VariantTable()
         {
-            m_Values = new RingBuffer<NamedVariant>();
+            m_Values = Array.Empty<NamedVariant>();
+        }
+
+        public VariantTable(int inCapacity)
+        {
+            if (inCapacity < 0)
+            {
+                throw new ArgumentOutOfRangeException("inCapacity");
+            }
+            m_Values = new NamedVariant[inCapacity];
         }
 
         public VariantTable(StringHash32 inName)
@@ -42,8 +71,20 @@ namespace BeauUtil.Variants
             m_Name = inName;
         }
 
+        public VariantTable(StringHash32 inName, int inCapacity)
+            : this(inCapacity)
+        {
+            m_Name = inName;
+        }
+
         public VariantTable(StringHash32 inName, VariantTable inBase)
             : this(inName)
+        {
+            m_Base = inBase;
+        }
+
+        public VariantTable(StringHash32 inName, int inCapacity, VariantTable inBase)
+            : this(inName, inCapacity)
         {
             m_Base = inBase;
         }
@@ -62,7 +103,8 @@ namespace BeauUtil.Variants
         /// </summary>
         public int Count
         {
-            get { return m_Values.Count; }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get { return m_ValueCount; }
         }
 
         /// <summary>
@@ -70,8 +112,10 @@ namespace BeauUtil.Variants
         /// </summary>
         public int Capacity
         {
-            get { return m_Values.Capacity; }
-            set { m_Values.SetCapacity(value); }
+            [Il2CppSetOption(Option.NullChecks, false)]
+            get { return m_Values.Length; }
+            [Il2CppSetOption(Option.NullChecks, false)]
+            set { Array.Resize(ref m_Values, value); }
         }
 
         /// <summary>
@@ -84,12 +128,15 @@ namespace BeauUtil.Variants
         /// </summary>
         public NamedVariant this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Il2CppSetOption(Option.NullChecks, false)]
             get { return m_Values[index]; }
         }
 
         /// <summary>
         /// Sets the value for the given id.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(StringHash32 inId, Variant inValue)
         {
             SetAt(IndexOf(inId), inId, inValue);
@@ -99,6 +146,7 @@ namespace BeauUtil.Variants
         /// Retrieves the value on this table.
         /// Will not look into base tables.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Variant Get(StringHash32 inId)
         {
             return GetAt(IndexOf(inId));
@@ -109,13 +157,16 @@ namespace BeauUtil.Variants
         /// </summary>
         public Variant this[StringHash32 inId]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Get(inId); }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { Set(inId, value); }
         }
 
         /// <summary>
         /// Returns if a value with the given id exists on this table.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(StringHash32 inId)
         {
             return IndexOf(inId) >= 0;
@@ -131,7 +182,7 @@ namespace BeauUtil.Variants
             {
                 m_Values.FastRemoveAt(idx);
                 OnUpdated?.Invoke(new NamedVariant(inId, Variant.Null));
-                m_Optimized = false;
+                m_Sorted = false;
                 return true;
             }
 
@@ -141,15 +192,17 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Clears all values from this table.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
-            m_Values.Clear();
-            m_Optimized = true;
+            m_ValueCount = 0;
+            m_Sorted = true;
         }
 
         /// <summary>
         /// Clears values and base.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             Clear();
@@ -159,21 +212,34 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Overwrites another table with this table's values.
         /// </summary>
-        public void CopyTo(IVariantTable inTarget)
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        public void CopyTo(VariantTable inTarget)
         {
-            VariantTable validTarget = inTarget as VariantTable;
-            if (validTarget == null)
-                throw new ArgumentException("Invalid copy target", "inTarget");
+            Assert.NotNull(inTarget);
+            Assert.True(inTarget != this);
+            Array.Resize(ref inTarget.m_Values, m_Values.Length);
+            inTarget.m_ValueCount = m_ValueCount;
 
-            m_Values.CopyTo(validTarget.m_Values);
-            validTarget.m_Optimized = m_Optimized;
+            unsafe
+            {
+                fixed (NamedVariant* src = m_Values)
+                {
+                    fixed (NamedVariant* dst = inTarget.m_Values)
+                    {
+                        Unsafe.FastCopyArray(src, m_ValueCount, dst);
+                    }
+                }
+            }
+
+            inTarget.m_Sorted = m_Sorted;
         }
 
         /// <summary>
         /// The base VariantTable.
         /// Values that do not exist in this VariantTable will be looked up in the base.
         /// </summary>
-        public IVariantTable Base
+        public VariantTable Base
         {
             get { return m_Base; }
             set
@@ -194,16 +260,24 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Optimizes lookups.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Optimize()
         {
-            if (m_Optimized)
+            if (m_Sorted)
                 return;
 
-            if (m_Values.Count > 3)
+            if (m_ValueCount > BinarySearchThreshold)
             {
-                m_Values.Sort(EntryComparer.Instance);
+                unsafe
+                {
+                    fixed(NamedVariant* named = m_Values)
+                    {
+                        Unsafe.Quicksort(named, m_ValueCount, CompareEntriesPtr);
+                    }
+                }
             }
-            m_Optimized = true;
+            m_Sorted = true;
         }
 
         /// <summary>
@@ -274,12 +348,14 @@ namespace BeauUtil.Variants
             }
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         private int IndexOf(StringHash32 inId)
         {
-            if (m_Optimized && m_Values.Count > 3)
-                return m_Values.BinarySearch(inId, SearchPredicate);
-            
-            for(int i = 0; i < m_Values.Count; ++i)
+            if (m_Sorted && m_ValueCount > BinarySearchThreshold)
+                return IndexOfBinarySearch(inId);
+
+            for (int i = 0; i < m_ValueCount; i++)
             {
                 if (m_Values[i].Id == inId)
                     return i;
@@ -288,11 +364,38 @@ namespace BeauUtil.Variants
             return -1;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        private int IndexOfBinarySearch(StringHash32 inSearchId)
+        {
+            int low = 0;
+            int high = m_ValueCount - 1;
+
+            while (low <= high)
+            {
+                int med = low + ((high - low) >> 1);
+                StringHash32 entryId = m_Values[med].Id;
+                if (entryId == inSearchId)
+                    return med;
+                if (inSearchId.HashValue > entryId.HashValue)
+                    low = med + 1;
+                else
+                    high = med - 1;
+            }
+
+            return ~low;
+        }
+
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Variant GetAt(int inIdx)
         {
             return inIdx >= 0 ? m_Values[inIdx].Value : Variant.Null;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         private void SetAt(int inIdx, StringHash32 inId, Variant inValue)
         {
             if (inIdx >= 0)
@@ -309,16 +412,21 @@ namespace BeauUtil.Variants
                 if (!val.Value.StrictEquals(inValue))
                 {
                     val.Value = inValue;
-                    OnUpdated?.Invoke(val);
                     m_Values[inIdx] = val;
+                    OnUpdated?.Invoke(val);
                 }
                 #endif // EXPANDED_VALUES
                 return;
             }
 
+            if (m_ValueCount + 1 > m_Values.Length)
+            {
+                Array.Resize(ref m_Values, Math.Max(4, Mathf.NextPowerOfTwo(m_ValueCount + 1)));
+            }
+
             NamedVariant newValue = new NamedVariant(inId, inValue);
-            m_Values.PushBack(newValue);
-            m_Optimized = false;
+            m_Values[m_ValueCount++] = newValue;
+            m_Sorted = false;
 
             OnUpdated?.Invoke(newValue);
         }
@@ -328,34 +436,23 @@ namespace BeauUtil.Variants
         public string ToDebugString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("Variant Table '").Append(m_Name.ToDebugString()).Append("', ").Append(Count).Append(" entries");
-            for(int i = 0; i < m_Values.Count; ++i)
-            {
-                sb.Append("\n  ").Append(m_Values[i].ToDebugString());
-            }
+            ToDebugString(sb);
             return sb.ToString();
         }
 
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            inBuilder.Append("Variant Table '");
+            m_Name.ToDebugString(inBuilder);
+            inBuilder.Append("', ").AppendNoAlloc(Count).Append(" entries");
+            for (int i = 0; i < m_ValueCount; ++i)
+            {
+                inBuilder.Append("\n  ");
+                m_Values[i].ToDebugString(inBuilder);
+            }
+        }
+
         #endregion // Output
-        
-        #region IEnumerable
-
-        public RingBuffer<NamedVariant>.Enumerator GetEnumerator()
-        {
-            return m_Values.GetEnumerator();
-        }
-
-        IEnumerator<NamedVariant> IEnumerable<NamedVariant>.GetEnumerator()
-        {
-            return m_Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return m_Values.GetEnumerator();
-        }
-
-        #endregion // IEnumerable
 
         #region IDisposable
 
@@ -368,29 +465,22 @@ namespace BeauUtil.Variants
 
         #region Binary Search
 
-        private sealed class EntryComparer : IComparer<NamedVariant>
+#if SUPPORTS_FUNCTION_POINTERS
+        static private unsafe readonly delegate*<NamedVariant, NamedVariant, int> CompareEntriesPtr = &CompareEntries;
+#else
+        static private readonly Comparison<NamedVariant> CompareEntriesPtr = CompareEntries;
+#endif // SUPPORTS_FUNCTION_POINTERS
+
+        static private int CompareEntries(NamedVariant a, NamedVariant b)
         {
-            static internal readonly EntryComparer Instance = new EntryComparer();
-
-            public int Compare(NamedVariant x, NamedVariant y)
-            {
-                return x.Id.CompareTo(y.Id);
-            }
+            return a.Id.HashValue < b.Id.HashValue ? -1 : a.Id.HashValue > b.Id.HashValue ? 1 : 0;
         }
-
-        static private readonly ComparePredicate<NamedVariant, StringHash32> SearchPredicate = (nv, sh) => {
-            if (sh.HashValue < nv.Id.HashValue)
-                return 1;
-            else if (sh.HashValue > nv.Id.HashValue)
-                return -1;
-            return 0;
-        };
 
         #endregion // Binary Search
 
         #region ISerializedObject
 
-        #if USING_BEAUDATA
+#if USING_BEAUDATA
 
         public void Serialize(BeauData.Serializer ioSerializer)
         {
@@ -399,22 +489,54 @@ namespace BeauUtil.Variants
             NamedVariant[] variantArray = null;
             if (ioSerializer.IsWriting)
             {
-                variantArray = m_Values.ToArray();
+                if (m_ValueCount < m_Values.Length)
+                {
+                    variantArray = new NamedVariant[m_ValueCount];
+                    Array.Copy(m_Values, variantArray, m_ValueCount);
+                }
+                else
+                {
+                    variantArray = m_Values;
+                }
             }
 
             ioSerializer.ObjectArray("values", ref variantArray);
 
             if (ioSerializer.IsReading)
             {
-                m_Values.Clear();
-                for(int i = 0; i < variantArray.Length; i++)
-                    m_Values.PushBack(variantArray[i]);
-                m_Optimized = false;
+                m_Values = variantArray;
+                m_ValueCount = variantArray.Length;
+                m_Sorted = false;
             }
         }
 
-        #endif // USING_BEAUDATA
+#endif // USING_BEAUDATA
 
         #endregion // ISerializedObject
+
+#if HAS_DEBUGGER
+
+        private class DebugView
+        {
+            private readonly VariantTable m_Data;
+
+            public DebugView(VariantTable inData)
+            {
+                m_Data = inData;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public NamedVariant[] Items
+            {
+                get
+                {
+                    NamedVariant[] values = new NamedVariant[m_Data.m_ValueCount];
+                    Array.Copy(m_Data.m_Values, values, m_Data.m_ValueCount);
+                    return values;
+                }
+            }
+        }
+
+#endif // HAS_DEBUGGER
     }
 }

@@ -28,6 +28,7 @@ namespace BeauUtil
     /// <summary>
     /// Contains Unity-specific utility functions.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class UnityHelper
     {
         #region Null Helper

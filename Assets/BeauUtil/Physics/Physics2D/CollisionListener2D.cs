@@ -71,6 +71,16 @@ namespace BeauUtil
             m_TaggedCollisionCancel.Invoke(m_Id, inCollider);
         }
 
+        protected override void OnDestroy()
+        {
+            m_OnCollisionEnter.RemoveAllListeners();
+            m_TaggedCollisionEnter.RemoveAllListeners();
+            m_OnCollisionExit.RemoveAllListeners();
+            m_TaggedCollisionExit.RemoveAllListeners();
+            m_OnCollisionCancel.RemoveAllListeners();
+            m_TaggedCollisionCancel.RemoveAllListeners();
+        }
+
         protected override void SetupCollider(Collider2D inCollider)
         {
             inCollider.isTrigger = false;

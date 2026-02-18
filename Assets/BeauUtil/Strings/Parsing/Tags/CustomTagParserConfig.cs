@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using BeauUtil.Variants;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil.Tags
 {
@@ -107,6 +108,7 @@ namespace BeauUtil.Tags
                     if (m_ReplaceSourceContextClosingCallback != null)
                     {
                         outReplace = m_ReplaceSourceContextClosingCallback(inSource, inContext);
+                        return true;
                     }
                 }
 
@@ -351,6 +353,7 @@ namespace BeauUtil.Tags
             m_CharReplace[inCharacter] = inReplace;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         public bool TryReplace(TagData inData, StringSlice inSource, object inContext, out string outReplace)
         {
             if (!m_Locked)
@@ -369,6 +372,7 @@ namespace BeauUtil.Tags
             return false;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         public bool TryReplace(char inCharacter, object inContext, out string outReplace)
         {
             if (m_CharReplace.TryGetValue(inCharacter, out outReplace))

@@ -12,6 +12,8 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil.Variants
@@ -22,6 +24,7 @@ namespace BeauUtil.Variants
     /// </summary>
     [DebuggerDisplay("{ToDebugString()}")]
     [StructLayout(LayoutKind.Explicit)]
+    [Il2CppEagerStaticClassConstruction]
     public struct Variant : IEquatable<Variant>, IComparable<Variant>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedObject
@@ -31,6 +34,7 @@ namespace BeauUtil.Variants
         
         [FieldOffset(4)] private bool m_BoolValue;
         [FieldOffset(4)] private int m_IntValue;
+        [FieldOffset(4)] private int m_InstanceIdValue;
         [FieldOffset(4)] private uint m_UIntValue;
         [FieldOffset(4)] private float m_FloatValue;
         [FieldOffset(4)] private StringHash32 m_StringHashValue;
@@ -92,7 +96,7 @@ namespace BeauUtil.Variants
             else
             {
                 m_Type = VariantType.InstanceId;
-                m_IntValue = UnityHelper.Id(inValue);
+                m_InstanceIdValue = UnityHelper.Id(inValue);
             }
         }
 
@@ -104,34 +108,10 @@ namespace BeauUtil.Variants
 
         public bool IsNull() { return m_Type == VariantType.Null; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AsBool()
         {
-            switch(m_Type)
-            {
-                case VariantType.Null:
-                    return false;
-
-                case VariantType.Bool:
-                    return m_BoolValue;
-
-                case VariantType.Int:
-                    return m_IntValue > 0;
-
-                case VariantType.UInt:
-                    return m_UIntValue > 0;
-
-                case VariantType.Float:
-                    return m_FloatValue > 0;
-
-                case VariantType.StringHash:
-                    return !m_StringHashValue.IsEmpty;
-
-                case VariantType.InstanceId:
-                    return m_IntValue != 0;
-
-                default:
-                    throw new InvalidOperationException("Variant type " + m_Type.ToString() + " not recognized");
-            }
+            return m_UIntValue != 0;
         }
 
         public int AsInt()
@@ -221,7 +201,7 @@ namespace BeauUtil.Variants
 
 
                 case VariantType.InstanceId:
-                    return UnityHelper.Find(m_IntValue);
+                    return UnityHelper.Find(m_InstanceIdValue);
 
                 default:
                     throw new InvalidOperationException("Variant type " + m_Type.ToString() + " cannot be treated as a Unity object");
@@ -329,8 +309,8 @@ namespace BeauUtil.Variants
                 case VariantType.InstanceId:
                     {
                         if (other.m_Type == VariantType.Null)
-                            return m_IntValue == 0;
-                        return other.m_Type == VariantType.InstanceId && m_IntValue == other.m_IntValue;
+                            return m_InstanceIdValue == 0;
+                        return other.m_Type == VariantType.InstanceId && m_InstanceIdValue == other.m_InstanceIdValue;
                     }
                 
                 default:
@@ -420,11 +400,11 @@ namespace BeauUtil.Variants
                     {
                         if (other.m_Type == VariantType.InstanceId)
                         {
-                            return m_IntValue.CompareTo(other.m_IntValue);
+                            return m_InstanceIdValue.CompareTo(other.m_InstanceIdValue);
                         }
                         else if (other.m_Type == VariantType.Null)
                         {
-                            return m_IntValue.CompareTo(0);
+                            return m_InstanceIdValue.CompareTo(0);
                         }
                         break;
                     }
@@ -470,7 +450,7 @@ namespace BeauUtil.Variants
                 case VariantType.StringHash:
                     return m_StringHashValue.ToString();
                 case VariantType.InstanceId:
-                    return string.Concat("instance-", m_IntValue.ToString());
+                    return string.Concat("instance-", m_InstanceIdValue.ToString());
                 
                 default:
                     throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());
@@ -495,9 +475,52 @@ namespace BeauUtil.Variants
                     return string.Format("\"{0}\"", m_StringHashValue.ToDebugString());
                 case VariantType.InstanceId:
                     {
-                        var inst = UnityHelper.Find(m_IntValue);
+                        var inst = UnityHelper.Find(m_InstanceIdValue);
                         return inst ? inst.name : string.Concat("dead-instance-", m_IntValue.ToString());
                     }
+
+                default:
+                    throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());
+            }
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            switch (m_Type)
+            {
+                case VariantType.Null:
+                    inBuilder.Append("null");
+                    break;
+                case VariantType.Bool:
+                    inBuilder.Append(m_BoolValue ? "true" : "false");
+                    break;
+                case VariantType.Int:
+                    inBuilder.AppendNoAlloc(m_IntValue);
+                    break;
+                case VariantType.UInt:
+                    inBuilder.Append(m_UIntValue);
+                    break;
+                case VariantType.Float:
+                    inBuilder.AppendNoAlloc(m_FloatValue, 4);
+                    break;
+                case VariantType.StringHash:
+                    inBuilder.Append('"');
+                    m_StringHashValue.ToDebugString(inBuilder);
+                    inBuilder.Append('"');
+                    break;
+                case VariantType.InstanceId:
+                {
+                    var inst = UnityHelper.Find(m_InstanceIdValue);
+                    if (inst)
+                    {
+                        inBuilder.Append(inst.name);
+                    }
+                    else
+                    {
+                        inBuilder.Append("dead-instance-").AppendNoAlloc(m_InstanceIdValue);
+                    }
+                    break;
+                }
 
                 default:
                     throw new InvalidOperationException("Unrecognized variant type " + m_Type.ToString());

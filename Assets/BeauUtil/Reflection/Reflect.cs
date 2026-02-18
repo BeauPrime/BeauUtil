@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -20,6 +21,7 @@ namespace BeauUtil
     /// <summary>
     /// Reflection utils.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class Reflect
     {
         /// <summary>

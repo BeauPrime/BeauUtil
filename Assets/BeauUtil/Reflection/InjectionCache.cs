@@ -28,8 +28,8 @@ namespace BeauUtil
 
         #endregion // Types
 
-        static private readonly MemberTypes MemberTypeMask = MemberTypes.Property | MemberTypes.Field;
-        static private readonly BindingFlags BindingFlagMask = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        private const MemberTypes MemberTypeMask = MemberTypes.Property | MemberTypes.Field;
+        private const BindingFlags BindingFlagMask = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
         private readonly Dictionary<Type, CacheEntry> m_Entries = new Dictionary<Type, CacheEntry>();
 

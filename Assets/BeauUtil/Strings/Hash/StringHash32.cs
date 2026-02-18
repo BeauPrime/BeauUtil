@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -25,6 +26,7 @@ namespace BeauUtil
     [StructLayout(LayoutKind.Sequential)]
     [Serializable]
     [DefaultEqualityComparer(typeof(StringHash32.Comparer)), DefaultSorter(typeof(StringHash32.Comparer))]
+    [Il2CppEagerStaticClassConstruction]
     public struct StringHash32 : IEquatable<StringHash32>, IComparable<StringHash32>, IDebugString
         #if USING_BEAUDATA
         , BeauData.ISerializedProxy<uint>
@@ -263,6 +265,11 @@ namespace BeauUtil
         public string ToDebugString()
         {
             return StringHashing.ReverseLookup32(m_HashValue);
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            inBuilder.Append(StringHashing.ReverseLookup32(m_HashValue));
         }
 
         #endregion // Overrides

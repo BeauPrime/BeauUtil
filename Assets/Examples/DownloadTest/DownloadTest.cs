@@ -50,6 +50,9 @@ public unsafe class DownloadTest : MonoBehaviour
         Enums.Not(CollisionFlags.Below);
         Enums.Xor(CollisionFlags.CollidedBelow, CollisionFlags.CollidedAbove);
 
+        Enums.ToInt(CollisionFlags.Below);
+        Enums.ToEnum<CollisionFlags>(4);
+
         ref int t = ref Unsafe.NullRef<int>();
         int j = 0;
         ref int refJ = ref j;

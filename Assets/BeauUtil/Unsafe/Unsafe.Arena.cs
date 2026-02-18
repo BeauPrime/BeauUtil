@@ -37,6 +37,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
+using System.Text;
 
 namespace BeauUtil
 {
@@ -148,6 +150,29 @@ namespace BeauUtil
 #endif // HAS_DEBUGGER
             }
 
+            public void ToDebugString(StringBuilder inBuilder)
+            {
+#if HAS_DEBUGGER
+                if (ValidateArena(this))
+                {
+                    inBuilder.Append("[MemArena '");
+                    HeaderStart->Name.ToDebugString(inBuilder);
+                    inBuilder.Append("' size=")
+                        .AppendNoAlloc(HeaderStart->Size)
+                        .Append(" remaining=")
+                        .AppendNoAlloc(HeaderStart->SizeRemaining)
+                        .Append(" flags=")
+                        .Append(HeaderStart->Flags);
+                }
+                else
+                {
+                    inBuilder.Append("null");
+                }
+#else
+                inBuilder.Append("[MemArena]");
+#endif // HAS_DEBUGGER
+            }
+
             #region Overrides
 
             public override bool Equals(object obj)
@@ -185,6 +210,7 @@ namespace BeauUtil
         /// <summary>
         /// Linear allocator header block.
         /// </summary>
+        [Il2CppEagerStaticClassConstruction]
         internal struct ArenaHeader
         {
             internal const uint ExpectedMagic = 0xBEAA110C;

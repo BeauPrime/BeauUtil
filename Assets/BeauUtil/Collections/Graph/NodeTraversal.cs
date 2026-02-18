@@ -8,12 +8,14 @@
  */
 
 using System;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil.Graph
 {
     /// <summary>
     /// Node traversal.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public struct NodeTraversal : IEquatable<NodeTraversal>
     {
         /// <summary>

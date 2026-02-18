@@ -18,6 +18,7 @@ using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
+    [Il2CppEagerStaticClassConstruction]
     internal struct MatchRuleSetEntry
     {
         public int Specificity;

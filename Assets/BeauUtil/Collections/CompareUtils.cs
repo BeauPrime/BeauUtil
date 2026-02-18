@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEditor;
 using UnityEngine.Scripting;
 using static BeauUtil.StringHash64;
@@ -20,6 +21,7 @@ namespace BeauUtil
     /// <summary>
     /// Comparison utilities.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class CompareUtils
     {
         static private readonly Type s_UnityObjectType = typeof(UnityEngine.Object);

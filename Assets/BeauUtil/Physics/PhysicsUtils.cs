@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -22,6 +23,7 @@ namespace BeauUtil
     /// <summary>
     /// Physics utilities and extension methods.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public partial class PhysicsUtils
     {
         #region Cached Buffers

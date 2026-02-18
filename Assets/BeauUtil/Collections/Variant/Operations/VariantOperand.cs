@@ -10,6 +10,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using BeauUtil.Debugger;
 
 namespace BeauUtil.Variants
@@ -41,7 +42,7 @@ namespace BeauUtil.Variants
 
         public readonly Mode Type;
         private readonly DataUnion m_Data;
-        private readonly string m_MethodCallArgs;
+        private readonly StringSlice m_MethodCallArgs;
 
         private VariantOperand(Mode inType)
         {
@@ -66,7 +67,7 @@ namespace BeauUtil.Variants
             : this(Mode.Method)
         {
             m_Data.MethodCallId = inMethodCall.Id;
-            m_MethodCallArgs = inMethodCall.Args.ToString();
+            m_MethodCallArgs = inMethodCall.Args;
         }
 
         public Variant Value { get { return m_Data.Value; } }
@@ -76,13 +77,13 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Attempts to resolve the value.
         /// </summary>
-        public bool TryResolve(IVariantResolver inResolver, object inContext, out Variant outValue, IMethodCache inInvoker = null)
+        public bool TryResolve(IVariantTableResolver inResolver, object inContext, out Variant outValue, IMethodCache inInvoker = null)
         {
             switch(Type)
             {
                 case Mode.TableKey:
                     {
-                        return inResolver.TryResolve(inContext, TableKey, out outValue);
+                        return inResolver.TryResolve(TableKey, out outValue);
                     }
 
                 case Mode.Variant:
@@ -203,6 +204,27 @@ namespace BeauUtil.Variants
 
                 case Mode.Method:
                     return MethodCall.ToDebugString();
+
+                default:
+                    throw new InvalidOperationException("Unknown variant operand type " + Type.ToString());
+            }
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            switch (Type)
+            {
+                case Mode.Variant:
+                    Value.ToDebugString(inBuilder);
+                    return;
+
+                case Mode.TableKey:
+                    TableKey.ToDebugString(inBuilder);
+                    return;
+
+                case Mode.Method:
+                    MethodCall.ToDebugString(inBuilder);
+                    return;
 
                 default:
                     throw new InvalidOperationException("Unknown variant operand type " + Type.ToString());

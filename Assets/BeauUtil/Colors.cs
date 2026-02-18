@@ -7,6 +7,7 @@
  * Purpose: Color utility methods.
  */
 
+using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
@@ -239,6 +240,7 @@ namespace BeauUtil
         /// <summary>
         /// Changes the alpha of the given color and returns it.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public Color WithAlpha(this Color inColor, float inAlpha)
         {
             inColor.a = inAlpha;
@@ -248,6 +250,7 @@ namespace BeauUtil
         /// <summary>
         /// Changes the alpha of the given color and returns it.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public Color32 WithAlpha(this Color32 inColor, byte inAlpha)
         {
             inColor.a = inAlpha;

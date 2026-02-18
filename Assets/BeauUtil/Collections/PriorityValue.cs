@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace BeauUtil
 {
@@ -20,6 +21,7 @@ namespace BeauUtil
     /// Value with an associated priority
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Value={Value} Priority={Priority}")]
     public struct PriorityValue<T> : IComparable<PriorityValue<T>>, IEquatable<PriorityValue<T>>
     {
         public T Value;

@@ -45,7 +45,7 @@ namespace BeauUtil
         /// <summary>
         /// Tracked cache stats.
         /// </summary>
-        CacheStats<TKey> Stats { get; }
+        CacheStats Stats { get; }
 
         /// <summary>
         /// Number of elements currently in the cache.
@@ -194,7 +194,7 @@ namespace BeauUtil
     /// <summary>
     /// Cache hit/miss stat tracking.
     /// </summary>
-    public struct CacheStats<TKey> where TKey : struct
+    public struct CacheStats
     {
         internal struct RW
         {

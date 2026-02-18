@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 using Random = System.Random;
@@ -20,6 +21,7 @@ namespace BeauUtil
     /// random values beyond Unity's static
     /// Random class.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class RNG
     {
         static RNG()

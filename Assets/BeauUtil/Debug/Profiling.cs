@@ -14,6 +14,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine.Profiling;
 
 namespace BeauUtil.Debugger
@@ -21,6 +22,7 @@ namespace BeauUtil.Debugger
     /// <summary>
     /// Profiling blocks for time and memory.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class Profiling
     {
         #region Time

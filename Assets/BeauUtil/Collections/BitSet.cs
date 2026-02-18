@@ -14,6 +14,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using BeauUtil.Debugger;
 using UnityEngine;
@@ -42,6 +43,7 @@ namespace BeauUtil
     /// 32-bit mask.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Count={Count}")]
     public struct BitSet32 : IBitSet, IEquatable<BitSet32>, IEnumerable<int>
 #if USING_BEAUDATA
         , BeauData.ISerializedProxy<uint>
@@ -55,12 +57,12 @@ namespace BeauUtil
             m_Bits = inData;
         }
 
-        public int Capacity { get { return 32; } }
+        public readonly int Capacity { get { return 32; } }
 
         /// <summary>
         /// Number of set bits.
         /// </summary>
-        public int Count
+        public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Bits.Count(m_Bits); }
@@ -69,7 +71,7 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
             get { return m_Bits == 0; }
         }
@@ -80,7 +82,7 @@ namespace BeauUtil
         public bool this[int inIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return IsSet(inIndex); }
+            readonly get { return IsSet(inIndex); }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { Set(inIndex, value); }
         }
@@ -89,7 +91,7 @@ namespace BeauUtil
         /// Returns if the bit at the given index is set.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(int inIndex)
+        public readonly bool IsSet(int inIndex)
         {
             Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
             return Bits.Contains(m_Bits, inIndex);
@@ -138,7 +140,7 @@ namespace BeauUtil
         /// Unpacks the bit data.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Unpack(out uint outBits)
+        public readonly void Unpack(out uint outBits)
         {
             outBits = m_Bits;
         }
@@ -269,6 +271,7 @@ namespace BeauUtil
     /// 64-bit mask.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Count={Count}")]
     public struct BitSet64 : IBitSet, IEquatable<BitSet64>, IEnumerable<int>
 #if USING_BEAUDATA
         , BeauData.ISerializedProxy<ulong>
@@ -282,12 +285,12 @@ namespace BeauUtil
             m_Bits = inData;
         }
 
-        public int Capacity { get { return 64; } }
+        public readonly int Capacity { get { return 64; } }
 
         /// <summary>
         /// Number of set bits.
         /// </summary>
-        public int Count
+        public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Bits.Count(m_Bits); }
@@ -296,7 +299,7 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
             get { return m_Bits == 0; }
         }
@@ -307,7 +310,7 @@ namespace BeauUtil
         public bool this[int inIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return IsSet(inIndex); }
+            readonly get { return IsSet(inIndex); }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { Set(inIndex, value); }
         }
@@ -316,7 +319,7 @@ namespace BeauUtil
         /// Returns if the bit at the given index is set.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(int inIndex)
+        public readonly bool IsSet(int inIndex)
         {
             Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
             return Bits.Contains(m_Bits, inIndex);
@@ -365,7 +368,7 @@ namespace BeauUtil
         /// Unpacks the bit data.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Unpack(out ulong outBits)
+        public readonly void Unpack(out ulong outBits)
         {
             outBits = m_Bits;
         }
@@ -496,6 +499,7 @@ namespace BeauUtil
     /// 256-bit mask.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Count={Count}")]
     public struct BitSet128 : IBitSet, IEquatable<BitSet128>
     {
         [SerializeField] private unsafe ulong m_Bits0;
@@ -508,12 +512,12 @@ namespace BeauUtil
             m_Bits1 = inData1;
         }
 
-        public int Capacity { get { return 128; } }
+        public readonly int Capacity { get { return 128; } }
 
         /// <summary>
         /// Number of set bits.
         /// </summary>
-        public int Count
+        public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return Bits.Count(m_Bits0) + Bits.Count(m_Bits1); }
@@ -522,7 +526,7 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
             get { return m_Bits0 == 0 && m_Bits1 == 0; }
         }
@@ -533,7 +537,7 @@ namespace BeauUtil
         public bool this[int inIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return IsSet(inIndex); }
+            readonly get { return IsSet(inIndex); }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { Set(inIndex, value); }
         }
@@ -542,7 +546,7 @@ namespace BeauUtil
         /// Returns if the bit at the given index is set.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(int inIndex)
+        public readonly bool IsSet(int inIndex)
         {
             Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
             unsafe
@@ -615,7 +619,7 @@ namespace BeauUtil
         /// Unpacks the bit data.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Unpack(out ulong outBits0, out ulong outBits1)
+        public readonly void Unpack(out ulong outBits0, out ulong outBits1)
         {
             outBits0 = m_Bits0;
             outBits1 = m_Bits1;
@@ -711,6 +715,7 @@ namespace BeauUtil
     /// 256-bit mask.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Count={Count}")]
     public struct BitSet256 : IBitSet, IEquatable<BitSet256>
     {
         [SerializeField] private unsafe ulong m_Bits0;
@@ -727,12 +732,12 @@ namespace BeauUtil
             m_Bits3 = inData3;
         }
 
-        public int Capacity { get { return 256; } }
+        public readonly int Capacity { get { return 256; } }
 
         /// <summary>
         /// Number of set bits.
         /// </summary>
-        public int Count
+        public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -745,7 +750,7 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
             get { return m_Bits0 == 0 && m_Bits1 == 0 && m_Bits2 == 0 && m_Bits3 == 0; }
         }
@@ -756,7 +761,7 @@ namespace BeauUtil
         public bool this[int inIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return IsSet(inIndex); }
+            readonly get { return IsSet(inIndex); }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { Set(inIndex, value); }
         }
@@ -765,7 +770,7 @@ namespace BeauUtil
         /// Returns if the bit at the given index is set.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(int inIndex)
+        public readonly bool IsSet(int inIndex)
         {
             Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
             unsafe
@@ -920,6 +925,7 @@ namespace BeauUtil
     /// 512-bit mask.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Count={Count}")]
     public struct BitSet512 : IBitSet, IEquatable<BitSet512>
     {
         [SerializeField] private unsafe BitSet256 m_Bits0;
@@ -932,12 +938,12 @@ namespace BeauUtil
             m_Bits1 = inData1;
         }
 
-        public int Capacity { get { return 512; } }
+        public readonly int Capacity { get { return 512; } }
 
         /// <summary>
         /// Number of set bits.
         /// </summary>
-        public int Count
+        public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -949,7 +955,7 @@ namespace BeauUtil
         /// <summary>
         /// If the set is empty.
         /// </summary>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
             get { return m_Bits0.IsEmpty && m_Bits1.IsEmpty; }
         }
@@ -960,7 +966,7 @@ namespace BeauUtil
         public bool this[int inIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return IsSet(inIndex); }
+            readonly get { return IsSet(inIndex); }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set { Set(inIndex, value); }
         }
@@ -969,7 +975,7 @@ namespace BeauUtil
         /// Returns if the bit at the given index is set.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(int inIndex)
+        public readonly bool IsSet(int inIndex)
         {
             Assert.True(inIndex >= 0 && inIndex < Capacity, "Bit index {0} is outside range 0-{1}", inIndex, Capacity - 1);
             unsafe
@@ -1120,6 +1126,7 @@ namespace BeauUtil
     /// NOTE: this is a class, not a struct, as its size cannot be determined at compile-time.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Count={Count}")]
     public class BitSetN : IBitSet, ISerializationCallbackReceiver
     {
         [SerializeField] private uint[] m_Bits;
@@ -1283,7 +1290,8 @@ namespace BeauUtil
     /// <summary>
     /// Bit mask, using unsafe memory.
     /// </summary>
-    public unsafe struct UnsafeBitSet : IBitSet
+    [DebuggerDisplay("Count={Count}")]
+    public unsafe readonly struct UnsafeBitSet : IBitSet
     {
         private readonly uint* m_Bits;
         private readonly int m_ChunkCount;
@@ -1449,7 +1457,7 @@ namespace BeauUtil
         /// </summary>
         static public int Size(int inCapacity)
         {
-            return ((inCapacity + 31) & 31) >> 5;
+            return ((inCapacity + 31) & ~31) >> 5;
         }
     }
 }

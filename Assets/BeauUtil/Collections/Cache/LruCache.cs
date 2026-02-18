@@ -36,7 +36,7 @@ namespace BeauUtil
         private readonly int m_Capacity;
 
 #if DEVELOPMENT
-        private CacheStats<TKey> m_Stats;
+        private CacheStats m_Stats;
 #endif // DEVELOPMENT
 
         /// <summary>
@@ -57,14 +57,14 @@ namespace BeauUtil
         /// <summary>
         /// Cache statistics.
         /// </summary>
-        public CacheStats<TKey> Stats
+        public CacheStats Stats
         {
             get
             {
 #if DEVELOPMENT
                 return m_Stats;
 #else
-                return default(CacheStats<TKey>);
+                return default(CacheStats);
 #endif // DEVELOPMENT
             }
         }

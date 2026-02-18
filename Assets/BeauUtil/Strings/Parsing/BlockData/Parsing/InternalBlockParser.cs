@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Text;
 using BeauUtil.Streaming;
 using BeauUtil.Tags;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil.Blocks
@@ -346,11 +347,13 @@ namespace BeauUtil.Blocks
 
         #region Checks
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private bool ShouldCheckMeta(ParseBuffer inBuffer)
         {
             return inBuffer.CurrentState != BlockState.InData;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private bool ShouldCheckPackageMeta(ParseBuffer inBuffer)
         {
             switch(inBuffer.CurrentState)

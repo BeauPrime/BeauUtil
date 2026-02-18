@@ -1,9 +1,11 @@
 using System.Reflection;
 using System;
 using System.Collections;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
+    [Il2CppEagerStaticClassConstruction]
     static internal class InternalHashUtils
     {
         #region Hash Helpers

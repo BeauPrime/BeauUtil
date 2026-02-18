@@ -13,6 +13,8 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -526,6 +528,7 @@ namespace BeauUtil
         /// <summary>
         /// Generates the minimum AABB for the given series of points.
         /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public Bounds MinAABB(Vector3[] inPoints)
         {
             if (inPoints.Length == 0)
@@ -551,6 +554,7 @@ namespace BeauUtil
         /// <summary>
         /// Generates the minimum AABB for the given series of points.
         /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public Bounds MinAABB(Vector2[] inPoints)
         {
             if (inPoints.Length == 0)
@@ -574,6 +578,7 @@ namespace BeauUtil
         /// <summary>
         /// Generates the minimum Rect for the given series of points.
         /// </summary>
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static public Rect MinRect(Vector2[] inPoints)
         {
             if (inPoints.Length == 0)

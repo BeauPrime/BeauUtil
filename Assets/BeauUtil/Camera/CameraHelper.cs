@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using BeauUtil.Debugger;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
@@ -31,6 +32,7 @@ namespace BeauUtil
     /// <summary>
     /// Camera utility methods.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class CameraHelper
     {
         #region Planes
@@ -512,15 +514,17 @@ namespace BeauUtil
 
         #region State Hash
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        [StructLayout(LayoutKind.Explicit, Pack = 4)]
         private struct CameraHashState
         {
-            public Matrix4x4 MatrixA;
-            public Rect Rect;
-            public Vector2 ScreenSize;
-            public float OrthoSize;
-            public float FOV;
-            public Matrix4x4 MatrixB;
+            [FieldOffset(0)] private ulong _ForAlignment;
+
+            [FieldOffset(0)] public Matrix4x4 MatrixA;
+            [FieldOffset(64)] public Rect Rect;
+            [FieldOffset(80)] public Vector2 ScreenSize;
+            [FieldOffset(88)] public float OrthoSize;
+            [FieldOffset(92)] public float FOV;
+            [FieldOffset(96)] public Matrix4x4 MatrixB;
         }
 
         /// <summary>

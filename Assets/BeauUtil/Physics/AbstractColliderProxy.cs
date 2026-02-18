@@ -20,7 +20,7 @@ namespace BeauUtil
     {
         private const string TrackTooltipString = "If checked, colliders that get disabled or destroyed will still dispatch their appropriate On_Exit messages" +
             "\nUncheck if you want the default behavior.";
-        static protected readonly string UntaggedTag = "Untagged";
+        protected const string UntaggedTag = "Untagged";
 
         /// <summary>
         /// Object occupying this collider proxy.
@@ -101,6 +101,8 @@ namespace BeauUtil
 
             DiscardAllOccupants();
         }
+
+        protected abstract void OnDestroy();
 
         #endregion // Unity Events
 

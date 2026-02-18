@@ -13,6 +13,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -127,6 +128,7 @@ namespace BeauUtil.UI
         /// In the presence of a Selectable component, this corresponds to its selectable state.
         /// If not, this will return true.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         public bool IsInteractable()
         {
             this.CacheComponent(ref m_Selectable);

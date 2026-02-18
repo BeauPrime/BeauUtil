@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Text;
 
 namespace BeauUtil
 {
@@ -17,5 +18,6 @@ namespace BeauUtil
     public interface IDebugString
     {
         string ToDebugString();
+        void ToDebugString(StringBuilder inBuilder);
     }
 }

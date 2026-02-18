@@ -19,6 +19,7 @@ using UnityEngine.UI;
 using System.Text;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 #if ENABLE_TEXTMESHPRO
 using TMPro;
@@ -29,6 +30,7 @@ namespace BeauUtil
     /// <summary>
     /// Canvas object helpers.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class CanvasHelper
     {
         /// <summary>

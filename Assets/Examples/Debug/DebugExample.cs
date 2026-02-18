@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class DebugExample : MonoBehaviour
 {
-    public DMMenuUI menuUI;
-    public Transform slide;
-    public Camera cam;
+    [SceneReferenceOnly] public DMMenuUI menuUI;
+    [SceneReferenceOnly] public Transform slide;
+    [SceneReferenceOnly] public Camera cam;
 
     private bool m_AdvancedLogging;
     [SerializeField, Range(8, 16)] private int m_MyInt = 8;

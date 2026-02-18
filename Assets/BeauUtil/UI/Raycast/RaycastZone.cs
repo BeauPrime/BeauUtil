@@ -22,8 +22,16 @@ namespace BeauUtil.UI
     /// Used to create invisible click zones.
     /// </summary>
     [AddComponentMenu("BeauUtil/UI/Raycast Zone")]
+    [RequireComponent(typeof(CanvasRenderer))]
     public class RaycastZone : Graphic
     {
+        protected RaycastZone()
+        {
+            useLegacyMeshGeneration = false;
+            m_SkipLayoutUpdate = true;
+            m_SkipMaterialUpdate = true;
+        }
+
 #if DEVELOPMENT
 
         protected override void OnEnable()
@@ -49,6 +57,8 @@ namespace BeauUtil.UI
             s_RaycastZones.Remove(this);
         }
 
+        public override void SetAllDirty() { if (!s_DebugRender) return; base.SetVerticesDirty(); }
+        public override void SetLayoutDirty() { return; }
         public override void SetMaterialDirty() { return; }
         public override void SetVerticesDirty() { if (!s_DebugRender) return; base.SetVerticesDirty(); }
 
@@ -111,6 +121,8 @@ namespace BeauUtil.UI
 
 #else
 
+        public override void SetAllDirty() { return; }
+        public override void SetLayoutDirty() { return; }
         public override void SetMaterialDirty() { return; }
         public override void SetVerticesDirty() { return; }
 

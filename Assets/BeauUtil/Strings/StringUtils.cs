@@ -28,6 +28,7 @@ namespace BeauUtil
     /// <summary>
     /// String utility methods.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class StringUtils 
     {
         /// <summary>
@@ -1165,6 +1166,21 @@ namespace BeauUtil
             return ioBuilder;
         }
 
+        /// <summary>
+        /// Appends an UnsafeString to the given StringBuilder.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public StringBuilder AppendUnsafe(this StringBuilder ioBuilder, UnsafeString inString)
+        {
+#if DEVELOPMENT
+            if (ioBuilder == null)
+                throw new ArgumentNullException("ioBuilder");
+#endif // DEVELOPMENT
+
+            inString.AppendTo(ioBuilder);
+            return ioBuilder;
+        }
+
         #region NoAlloc Append
 
         /// <summary>
@@ -1348,6 +1364,7 @@ namespace BeauUtil
             return Numbers.AppendNumber(ioBuilder, inValue, inPadLeft, inPrecision);
         }
 
+        [Il2CppEagerStaticClassConstruction]
         static internal class Numbers
         {
             private const int NoAllocNumberBufferSize = 32;
@@ -2184,6 +2201,7 @@ namespace BeauUtil
         /// <summary>
         /// Rich text utils.
         /// </summary>
+        [Il2CppEagerStaticClassConstruction]
         static public class RichText
         {
             static private readonly string[] s_VisibleRichTags = new string[]

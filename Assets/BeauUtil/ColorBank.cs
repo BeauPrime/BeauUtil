@@ -2,6 +2,7 @@
 // see MONOGAME-LICENSE.txt for licensing info
 
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -9,6 +10,7 @@ namespace BeauUtil
     /// <summary>
     /// Bank of predefined colors.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class ColorBank
     {
         #region Initialization

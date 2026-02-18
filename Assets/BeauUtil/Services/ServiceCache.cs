@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -20,6 +21,7 @@ namespace BeauUtil.Services
     /// Cache of services.
     /// Will attempt to resolve dependencies when initializing jobs.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public sealed class ServiceCache : IServiceProvider
     {
         #region Consts

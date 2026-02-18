@@ -28,6 +28,7 @@ using BeauUtil.Debugger;
 using BeauUtil.IO;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -40,6 +41,7 @@ namespace BeauUtil.Streaming
     /// Allows reading characters and bytes from a variety of sources in a unified manner.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [Il2CppEagerStaticClassConstruction]
     public struct CharStream : IDisposable
     {
         internal object Source;
@@ -377,6 +379,7 @@ namespace BeauUtil.Streaming
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadChars(int inBlockSize, char[] outBuffer, int inOutBufferOffset)
         {
+            Assert.True(outBuffer != null, "Null buffer");
             unsafe
             {
                 fixed(char* charBufferPtr = outBuffer)
@@ -390,6 +393,8 @@ namespace BeauUtil.Streaming
         /// Reads characters into the given character buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public unsafe int ReadChars(int inBlockSize, char* outBuffer, int inOutBufferOffset, int inOutBufferLength)
         {
             int bufferType = (int) Type;
@@ -551,8 +556,10 @@ namespace BeauUtil.Streaming
         /// Reads bytes into the given array.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
         public int ReadBytes(int inBlockSize, byte[] outBuffer, int inOutBufferOffset)
         {
+            Assert.True(outBuffer != null, "Null buffer");
             unsafe
             {
                 fixed(byte* charBufferPtr = outBuffer)
@@ -566,6 +573,8 @@ namespace BeauUtil.Streaming
         /// Reads bytes into the given byte buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public unsafe int ReadBytes(int inBlockSize, byte* outBuffer, int inOutBufferOffset, int inOutBufferLength)
         {
             int bufferType = (int) Type;

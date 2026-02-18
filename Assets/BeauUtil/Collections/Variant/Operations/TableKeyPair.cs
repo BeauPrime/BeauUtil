@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace BeauUtil.Variants
 {
@@ -22,8 +23,8 @@ namespace BeauUtil.Variants
     [DefaultEqualityComparer(typeof(TableKeyPair.Comparer))]
     public struct TableKeyPair : IEquatable<TableKeyPair>, IDebugString
     {
-        static public readonly string TableOperator = ":";
-        static private readonly string StringFormat = "{0}" + TableOperator + "{1}";
+        public const string TableOperator = ":";
+        private const string StringFormat = "{0}" + TableOperator + "{1}";
 
         public StringHash32 TableId;
         public StringHash32 VariableId;
@@ -53,6 +54,23 @@ namespace BeauUtil.Variants
             }
 
             return string.Format(StringFormat, TableId.ToDebugString(), VariableId.ToDebugString());
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            if (VariableId.IsEmpty)
+            {
+                inBuilder.Append("[null]");
+                return;
+            }
+
+            if (!TableId.IsEmpty)
+            {
+                TableId.ToDebugString(inBuilder);
+            }
+
+            inBuilder.Append(TableOperator);
+            VariableId.ToDebugString(inBuilder);
         }
 
         #region Parse

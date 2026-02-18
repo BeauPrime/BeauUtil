@@ -25,6 +25,7 @@ namespace BeauUtil
     /// <summary>
     /// Contains transform-specific utility functions.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class TransformHelper
     {
         #region Screen Position
@@ -325,17 +326,19 @@ namespace BeauUtil
 
         #region State Hash
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        [StructLayout(LayoutKind.Explicit, Pack = 4)]
         private struct TransformHashState
         {
-            public Matrix4x4 Matrix;
+            [FieldOffset(0)] private ulong _Alignment;
+            [FieldOffset(0)] public Matrix4x4 Matrix;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        [StructLayout(LayoutKind.Explicit, Pack = 4)]
         private struct RectTransformHashState
         {
-            public Matrix4x4 Matrix;
-            public Rect Rect;
+            [FieldOffset(0)] private ulong _Alignment;
+            [FieldOffset(0)] public Matrix4x4 Matrix;
+            [FieldOffset(64)] public Rect Rect;
         }
 
         /// <summary>

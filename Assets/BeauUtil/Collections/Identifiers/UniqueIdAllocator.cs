@@ -19,7 +19,8 @@ namespace BeauUtil
     public sealed class UniqueIdAllocator16
     {
         private byte[] m_Versions;
-        private readonly RingBuffer<ushort> m_FreeList;
+        private ushort[] m_FreeList;
+        private int m_FreeCount;
         private int m_Capacity = 0;
         private int m_MaxFree = 0;
         private readonly bool m_Flexible;
@@ -34,11 +35,12 @@ namespace BeauUtil
 
             m_Flexible = inbFlexible;
             m_Versions = new byte[m_Capacity];
-            m_FreeList = new RingBuffer<ushort>(m_Capacity, inbFlexible ? RingBufferMode.Expand : RingBufferMode.Fixed);
+            m_FreeList = new ushort[m_Capacity];
 
             m_MaxFree = 1;
             m_Versions[0] = 1;
-            m_FreeList.PushBack(0);
+            m_FreeList[0] = 0;
+            m_FreeCount = 1;
         }
 
         #region Alloc/Free
@@ -51,7 +53,7 @@ namespace BeauUtil
         public UniqueId16 Alloc()
         {
             Reserve(1);
-            ushort index = m_FreeList.PopFront();
+            ushort index = m_FreeList[--m_FreeCount];
             ushort version = m_Versions[index];
             return new UniqueId16(index, version);
         }
@@ -67,7 +69,7 @@ namespace BeauUtil
             int version = inId.Version;
             if (index < m_Capacity && m_Versions[index] == version)
             {
-                m_FreeList.PushBack((ushort) index);
+                m_FreeList[m_FreeCount++] = (ushort) index;
                 version = version == UniqueId16.VersionMask ? 1 : version + 1;
                 m_Versions[index] = (byte) version;
                 return true;
@@ -83,7 +85,7 @@ namespace BeauUtil
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Reserve(int inCount)
         {
-            if (m_FreeList.Count >= inCount)
+            if (m_FreeCount >= inCount)
                 return;
 
             if (m_MaxFree + inCount <= m_Capacity)
@@ -91,7 +93,7 @@ namespace BeauUtil
                 while (inCount-- > 0)
                 {
                     m_Versions[m_MaxFree] = 1;
-                    m_FreeList.PushBack((ushort) m_MaxFree++);
+                    m_FreeList[m_FreeCount++] = (ushort) m_MaxFree++;
                 }
                 return;
             }
@@ -108,13 +110,13 @@ namespace BeauUtil
 
             int newLength = Math.Min(m_Capacity * 2, UniqueId16.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
-            m_FreeList.SetCapacity(newLength);
+            Array.Resize(ref m_FreeList, newLength);
             m_Capacity = newLength;
 
             while (inCount-- > 0)
             {
                 m_Versions[m_MaxFree] = 1;
-                m_FreeList.PushBack((ushort) m_MaxFree++);
+                m_FreeList[m_FreeCount++] = (ushort) m_MaxFree++;
             }
         }
 
@@ -128,8 +130,8 @@ namespace BeauUtil
             for (int i = 0; i < m_Capacity; i++)
                 m_Versions[i] = 1;
             m_MaxFree = 1;
-            m_FreeList.Clear();
-            m_FreeList.PushBack(0);
+            m_FreeList[0] = 0;
+            m_FreeCount = 1;
         }
 
         #endregion // Alloc/Free
@@ -149,7 +151,15 @@ namespace BeauUtil
         /// </summary>
         public int InUse
         {
-            get { return m_MaxFree - m_FreeList.Count; }
+            get { return m_MaxFree - m_FreeCount; }
+        }
+
+        /// <summary>
+        /// Returns if no more identifiers can be allocated.
+        /// </summary>
+        public bool IsFull
+        {
+            get { return m_FreeCount == 0 && (!m_Flexible || m_Capacity == UniqueId16.MaxIndex); }
         }
 
         /// <summary>
@@ -173,7 +183,8 @@ namespace BeauUtil
     public sealed class UniqueIdAllocator32
     {
         private byte[] m_Versions;
-        private readonly RingBuffer<uint> m_FreeList;
+        private uint[] m_FreeList;
+        private int m_FreeCount;
         private int m_Capacity = 0;
         private int m_MaxFree;
         private readonly bool m_Flexible;
@@ -184,15 +195,16 @@ namespace BeauUtil
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Initial capacity must be at least 1");
             m_Capacity = Unsafe.AlignUp16(inInitialCapacity);
             if (m_Capacity > UniqueId32.MaxIndex)
-                throw new ArgumentOutOfRangeException("inInitialCapacity", "Capacity, rounded up, exceeds maximum UniqueId16 index");
+                throw new ArgumentOutOfRangeException("inInitialCapacity", "Capacity, rounded up, exceeds maximum UniqueId32 index");
 
             m_Flexible = inbFlexible;
             m_Versions = new byte[m_Capacity];
-            m_FreeList = new RingBuffer<uint>(m_Capacity, inbFlexible ? RingBufferMode.Expand : RingBufferMode.Fixed);
+            m_FreeList = new uint[m_Capacity];
 
             m_Versions[0] = 1;
             m_MaxFree = 1;
-            m_FreeList.PushBack(0);
+            m_FreeList[0] = 0;
+            m_FreeCount = 1;
         }
 
         #region Alloc/Free
@@ -205,7 +217,7 @@ namespace BeauUtil
         public UniqueId32 Alloc()
         {
             Reserve(1);
-            uint index = m_FreeList.PopFront();
+            uint index = m_FreeList[--m_FreeCount];
             ushort version = m_Versions[index];
             return new UniqueId32(index, version);
         }
@@ -221,7 +233,7 @@ namespace BeauUtil
             int version = inId.Version;
             if (index < m_Capacity && m_Versions[index] == version)
             {
-                m_FreeList.PushBack((uint) index);
+                m_FreeList[m_FreeCount++] = (uint) index;
                 version = version == UniqueId32.VersionMask ? 1 : version + 1;
                 m_Versions[index] = (byte) version;
                 return true;
@@ -237,7 +249,7 @@ namespace BeauUtil
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void Reserve(int inCount)
         {
-            if (m_FreeList.Count >= inCount)
+            if (m_FreeCount >= inCount)
                 return;
 
             if (m_MaxFree + inCount <= m_Capacity)
@@ -245,7 +257,7 @@ namespace BeauUtil
                 while (inCount-- > 0)
                 {
                     m_Versions[m_MaxFree] = 1;
-                    m_FreeList.PushBack((uint) m_MaxFree++);
+                    m_FreeList[m_FreeCount++] = (uint) m_MaxFree++;
                 }
                 return;
             }
@@ -262,13 +274,13 @@ namespace BeauUtil
 
             int newLength = Math.Min(m_Capacity * 2, UniqueId32.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
-            m_FreeList.SetCapacity(newLength);
+            Array.Resize(ref m_FreeList, newLength);
             m_Capacity = newLength;
 
             while (inCount-- > 0)
             {
                 m_Versions[m_MaxFree] = 1;
-                m_FreeList.PushBack((uint) m_MaxFree++);
+                m_FreeList[m_FreeCount++] = (uint) m_MaxFree++;
             }
         }
 
@@ -282,8 +294,8 @@ namespace BeauUtil
             for (int i = 0; i < m_Capacity; i++)
                 m_Versions[i] = 1;
             m_MaxFree = 1;
-            m_FreeList.Clear();
-            m_FreeList.PushBack(0);
+            m_FreeList[0] = 0;
+            m_FreeCount = 1;
         }
 
         #endregion // Alloc/Free
@@ -303,7 +315,15 @@ namespace BeauUtil
         /// </summary>
         public int InUse
         {
-            get { return m_MaxFree - m_FreeList.Count; }
+            get { return m_MaxFree - m_FreeCount; }
+        }
+
+        /// <summary>
+        /// Returns if no more identifiers can be allocated.
+        /// </summary>
+        public bool IsFull
+        {
+            get { return m_FreeCount == 0 && (!m_Flexible || m_Capacity == UniqueId32.MaxIndex); }
         }
 
         /// <summary>

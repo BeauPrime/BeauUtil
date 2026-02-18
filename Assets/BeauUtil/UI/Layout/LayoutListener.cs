@@ -47,6 +47,12 @@ namespace BeauUtil.UI
             LayoutRebuilder.MarkLayoutForRebuild((RectTransform) transform);
         }
 
+        private void OnDestroy()
+        {
+            OnPreLayout.Clear();
+            OnPostLayout.Clear();
+        }
+
         #endregion // Unity Events
 
         #region ILayout interfaces

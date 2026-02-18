@@ -12,6 +12,7 @@
 #endif // UNITY_2021_2_OR_NEWER
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
@@ -116,6 +117,7 @@ namespace BeauUtil
         }
 
         [Il2CppSetOption(Option.NullChecks, false)]
+        [DebuggerStepThrough]
         public void Invoke(TInput0 inArg0, TInput1 inArg1, TInput2 inArg2, TInput3 inArg3)
         {
             switch (m_Mode)
@@ -161,6 +163,7 @@ namespace BeauUtil
         }
 
         [Il2CppSetOption(Option.NullChecks, false)]
+        [DebuggerStepThrough]
         public void Invoke(ref TInput0 inArg0, ref TInput1 inArg1, ref TInput2 inArg2, ref TInput3 inArg3)
         {
             switch (m_Mode)

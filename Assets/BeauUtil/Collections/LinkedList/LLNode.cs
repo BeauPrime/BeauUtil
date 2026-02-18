@@ -9,12 +9,14 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
     /// <summary>
     /// Indexes for a doubly-linked list.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public struct LLNode : IEquatable<LLNode>
     {
         /// <summary>
@@ -227,6 +229,7 @@ namespace BeauUtil
     /// <summary>
     /// Linked index list data.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public struct LLIndexList
     {
         /// <summary>

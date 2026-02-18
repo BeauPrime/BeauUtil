@@ -11,6 +11,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using BeauUtil.Variants;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -18,6 +19,7 @@ namespace BeauUtil
     /// <summary>
     /// String parsing methods.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class StringParser
     {
         private const char Dot = '.';

@@ -20,6 +20,7 @@ namespace BeauUtil
     /// <summary>
     /// Argument casting utilities.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class CastableArgument
     {
         static CastableArgument()

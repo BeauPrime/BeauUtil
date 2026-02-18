@@ -9,6 +9,7 @@
 
 using System;
 using BeauUtil.Variants;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil {
     /// <summary>
@@ -25,6 +26,7 @@ namespace BeauUtil {
     /// Default string conversion interface.
     /// Wrapper for StringParser
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public class DefaultStringConverter : IStringConverter
     {
         static public readonly DefaultStringConverter Instance = new DefaultStringConverter();

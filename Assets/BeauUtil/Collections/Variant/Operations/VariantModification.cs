@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Text;
 using BeauUtil.Debugger;
 
 namespace BeauUtil.Variants
@@ -24,12 +25,12 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Executes this modification.
         /// </summary>
-        public bool Execute(IVariantResolver inResolver, object inContext = null, IMethodCache inInvoker = null)
+        public bool Execute(IVariantTableResolver inResolver, object inContext = null, IMethodCache inInvoker = null)
         {
             Variant operandValue;
             if (Operand.TryResolve(inResolver, inContext, out operandValue, inInvoker))
             {
-                return inResolver.TryModify(inContext, VariableKey, Operator, operandValue);
+                return inResolver.TryModify(VariableKey, Operator, operandValue);
             }
             
             return false;
@@ -40,23 +41,56 @@ namespace BeauUtil.Variants
             switch(Operator)
             {
                 case VariantModifyOperator.Set:
-                    return Log.Format("{0} = {1}", VariableKey, Operand);
+                    return string.Format("{0} = {1}", VariableKey.ToDebugString(), Operand.ToDebugString());
 
                 case VariantModifyOperator.Add:
-                    return Log.Format("{0} + {1}", VariableKey, Operand);
+                    return string.Format("{0} + {1}", VariableKey.ToDebugString(), Operand.ToDebugString());
 
                 case VariantModifyOperator.Subtract:
-                    return Log.Format("{0} - {1}", VariableKey, Operand);
+                    return string.Format("{0} - {1}", VariableKey.ToDebugString(), Operand.ToDebugString());
 
                 case VariantModifyOperator.Multiply:
-                    return Log.Format("{0} * {1}", VariableKey, Operand);
+                    return string.Format("{0} * {1}", VariableKey.ToDebugString(), Operand.ToDebugString());
 
                 case VariantModifyOperator.Divide:
-                    return Log.Format("{0} / {1}", VariableKey, Operand);
+                    return string.Format("{0} / {1}", VariableKey.ToDebugString(), Operand.ToDebugString());
                 
                 default:
                     throw new InvalidOperationException("Unknown operator " + Operator.ToString());
             }
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            VariableKey.ToDebugString(inBuilder);
+            inBuilder.Append(' ');
+            switch (Operator)
+            {
+                case VariantModifyOperator.Set:
+                    inBuilder.Append('=');
+                    break;
+
+                case VariantModifyOperator.Add:
+                    inBuilder.Append('+');
+                    break;
+
+                case VariantModifyOperator.Subtract:
+                    inBuilder.Append('-');
+                    break;
+
+                case VariantModifyOperator.Multiply:
+                    inBuilder.Append('*');
+                    break;
+
+                case VariantModifyOperator.Divide:
+                    inBuilder.Append('/');
+                    break;
+
+                default:
+                    throw new InvalidOperationException("Unknown operator " + Operator.ToString());
+            }
+            inBuilder.Append(' ');
+            Operand.ToDebugString(inBuilder);
         }
 
         /// <summary>

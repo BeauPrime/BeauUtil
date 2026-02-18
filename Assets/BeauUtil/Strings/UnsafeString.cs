@@ -30,6 +30,7 @@ namespace BeauUtil
     /// <summary>
     /// An unsafe string.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public readonly unsafe struct UnsafeString : IEnumerable<char>, IReadOnlyList<char>, IEquatable<UnsafeString>, IEquatable<StringSlice>, IEquatable<string>, IConvertible
     {
         private readonly char* m_Source;

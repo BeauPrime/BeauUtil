@@ -62,6 +62,14 @@ namespace BeauUtil
             m_TaggedTriggerExit.Invoke(m_Id, inCollider);
         }
 
+        protected override void OnDestroy()
+        {
+            m_OnTriggerEnter.RemoveAllListeners();
+            m_TaggedTriggerEnter.RemoveAllListeners();
+            m_OnTriggerExit.RemoveAllListeners();
+            m_TaggedTriggerExit.RemoveAllListeners();
+        }
+
         protected override void SetupCollider(Collider inCollider)
         {
             inCollider.isTrigger = true;

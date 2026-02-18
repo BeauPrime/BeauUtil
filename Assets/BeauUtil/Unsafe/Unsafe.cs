@@ -38,6 +38,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
 
 #if USING_BURST
 using Unity.Burst;
@@ -57,6 +58,7 @@ namespace BeauUtil
     /// <summary>
     /// Contains unsafe utility functions.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public unsafe partial class Unsafe
     {
         /// <summary>

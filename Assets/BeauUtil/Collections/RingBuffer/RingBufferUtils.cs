@@ -29,7 +29,7 @@ namespace BeauUtil
         /// <summary>
         /// Attempts to pop the next available value from the front of the buffer.
         /// </summary>
-        static public bool TryPopFront<T>(this IRingBuffer<T> ioBuffer, out T outValue)
+        static public bool TryPopFront<T>(this RingBuffer<T> ioBuffer, out T outValue)
         {
             if (ioBuffer.Count <= 0)
             {
@@ -44,7 +44,7 @@ namespace BeauUtil
         /// <summary>
         /// Attempts to pop the next available value from the back of the buffer.
         /// </summary>
-        static public bool TryPopBack<T>(this IRingBuffer<T> ioBuffer, out T outValue)
+        static public bool TryPopBack<T>(this RingBuffer<T> ioBuffer, out T outValue)
         {
             if (ioBuffer.Count <= 0)
             {
@@ -63,7 +63,7 @@ namespace BeauUtil
         /// <summary>
         /// Attempts to peek the next available value from the front of the buffer.
         /// </summary>
-        static public bool TryPeekFront<T>(this IRingBuffer<T> inBuffer, out T outValue)
+        static public bool TryPeekFront<T>(this RingBuffer<T> inBuffer, out T outValue)
         {
             if (inBuffer.Count <= 0)
             {
@@ -78,7 +78,7 @@ namespace BeauUtil
         /// <summary>
         /// Attempts to peek the next available value from the back of the buffer.
         /// </summary>
-        static public bool TryPeekBack<T>(this IRingBuffer<T> inBuffer, out T outValue)
+        static public bool TryPeekBack<T>(this RingBuffer<T> inBuffer, out T outValue)
         {
             if (inBuffer.Count <= 0)
             {
@@ -97,7 +97,7 @@ namespace BeauUtil
         /// <summary>
         /// Sorts the given buffer with the default comparer.
         /// </summary>
-        static public void Sort<T>(this IRingBuffer<T> inBuffer)
+        static public void Sort<T>(this RingBuffer<T> inBuffer)
         {
             inBuffer.Sort(CompareUtils.DefaultSort<T>());
         }
@@ -194,7 +194,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies the given buffer into a destination array.
         /// </summary>
-        static public void CopyTo<T>(this IRingBuffer<T> inBuffer, T[] ioDest)
+        static public void CopyTo<T>(this RingBuffer<T> inBuffer, T[] ioDest)
         {
             inBuffer.CopyTo(0, ioDest, 0, inBuffer.Count);
         }
@@ -202,7 +202,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies the given buffer into a destination array.
         /// </summary>
-        static public void CopyTo<T>(this IRingBuffer<T> inBuffer, int inIndex, T[] ioDest)
+        static public void CopyTo<T>(this RingBuffer<T> inBuffer, int inIndex, T[] ioDest)
         {
             inBuffer.CopyTo(inIndex, ioDest, 0, inBuffer.Count - inIndex);
         }
@@ -210,7 +210,7 @@ namespace BeauUtil
         /// <summary>
         /// Copies the given buffer into a new array.
         /// </summary>
-        static public T[] ToArray<T>(this IRingBuffer<T> inBuffer)
+        static public T[] ToArray<T>(this RingBuffer<T> inBuffer)
         {
             T[] array = new T[inBuffer.Count];
             CopyTo(inBuffer, array);

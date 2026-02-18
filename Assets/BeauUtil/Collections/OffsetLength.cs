@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace BeauUtil
@@ -16,6 +17,7 @@ namespace BeauUtil
     /// Represents a range in an array, with a 32-bit offset and length.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Offset={Offset} Length={Length}")]
     public struct OffsetLength32 : IEquatable<OffsetLength32>, IComparable<OffsetLength32>
     {
         public int Offset;
@@ -134,6 +136,7 @@ namespace BeauUtil
     /// Represents a range in an array, with an unsigned 32-bit offset and length.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Offset={Offset} Length={Length}")]
     public struct OffsetLengthU32 : IEquatable<OffsetLengthU32>, IComparable<OffsetLengthU32>
     {
         public uint Offset;
@@ -252,6 +255,7 @@ namespace BeauUtil
     /// Represents a range in an array, with a 16-bit offset and length.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Offset={Offset} Length={Length}")]
     public struct OffsetLength16 : IEquatable<OffsetLength16>, IComparable<OffsetLength16>
     {
         public short Offset;
@@ -370,6 +374,7 @@ namespace BeauUtil
     /// Represents a range in an array, with an unsigned 16-bit offset and length.
     /// </summary>
     [Serializable]
+    [DebuggerDisplay("Offset={Offset} Length={Length}")]
     public struct OffsetLengthU16 : IEquatable<OffsetLengthU16>, IComparable<OffsetLengthU16>
     {
         public ushort Offset;

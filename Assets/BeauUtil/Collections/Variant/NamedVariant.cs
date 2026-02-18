@@ -11,6 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace BeauUtil.Variants
 {
@@ -43,6 +44,13 @@ namespace BeauUtil.Variants
         public string ToDebugString()
         {
             return string.Format("{0}: {1}", Id.ToDebugString(), Value.ToDebugString());
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            Id.ToDebugString(inBuilder);
+            inBuilder.Append(": ");
+            Value.ToDebugString(inBuilder);
         }
 
         #endregion // Overrides

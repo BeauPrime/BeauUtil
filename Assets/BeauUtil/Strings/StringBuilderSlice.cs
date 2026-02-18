@@ -25,6 +25,7 @@ namespace BeauUtil
     /// <summary>
     /// A section of a StringBuilder.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public readonly struct StringBuilderSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringBuilderSlice>, IEquatable<string>
     {
         private readonly StringBuilder m_Source;

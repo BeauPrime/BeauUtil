@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using BeauUtil.Variants;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -38,7 +39,7 @@ namespace BeauUtil.UnitTests
             Assert.True(Bits.Count(someMask) == 3);
         }
 
-        private enum TestEnum : byte
+        private enum TestEnum : ushort
         {
             A0 = 0,
             A1,
@@ -89,6 +90,12 @@ namespace BeauUtil.UnitTests
             Assert.AreEqual(TestFlagEnum.F0, contents[0]);
             Assert.AreEqual(TestFlagEnum.F1, contents[1]);
             Assert.AreEqual(TestFlagEnum.F4, contents[2]);
+
+            TestEnum[] enumsInArray = new TestEnum[] { TestEnum.A0, TestEnum.A1, TestEnum.A0, TestEnum.A2, TestEnum.A6 };
+            for(i = 0; i < enumsInArray.Length; i++)
+            {
+                Assert.AreEqual(enumsInArray[i], Enums.ToEnum<TestEnum>(Enums.ToULong(enumsInArray[i])));
+            }
         }
 
         [Test]
@@ -871,6 +878,15 @@ namespace BeauUtil.UnitTests
 
             HashSet<StringHash32> newSet = new HashSet<StringHash32>();
             newSet.EnsureCapacity(256);
+        }
+
+        [Test]
+        static public void CanUseVariantTable() {
+            VariantTable tableA = new VariantTable();
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                VariantTable tableB = new VariantTable(-16);
+            });
         }
     }
 }

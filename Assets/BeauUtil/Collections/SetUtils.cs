@@ -18,6 +18,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -25,6 +26,7 @@ namespace BeauUtil
     /// <summary>
     /// Utility methods for dealing with hashsets.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class SetUtils
     {
 #if USE_REFLECTED_METHODS

@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil
@@ -26,6 +27,7 @@ namespace BeauUtil
     /// Basic 3d transform properties.
     /// </summary>
     [Serializable]
+    [Il2CppEagerStaticClassConstruction]
     public struct TRS
     {
         public Vector3 Position;

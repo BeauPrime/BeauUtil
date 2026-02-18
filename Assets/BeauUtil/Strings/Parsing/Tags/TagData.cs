@@ -14,12 +14,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil.Tags
 {
     /// <summary>
     /// Tag information.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public struct TagData
     {
         public StringSlice Id;

@@ -9,6 +9,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
 using BeauUtil.Variants;
 
 namespace BeauUtil
@@ -38,6 +39,14 @@ namespace BeauUtil
         public string ToDebugString()
         {
             return string.Format("{0}({1})", Id.ToDebugString(), Args);
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            Id.ToDebugString(inBuilder);
+            inBuilder.Append('(');
+            inBuilder.AppendSlice(Args);
+            inBuilder.Append(')');
         }
 
         #endregion // Interfaces

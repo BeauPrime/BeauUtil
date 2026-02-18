@@ -32,10 +32,9 @@ namespace BeauUtil
 #if HAS_DEBUGGER
     [DebuggerTypeProxy(typeof(RingBuffer<>.DebugView))]
 #endif // HAS_DEBUGGER
-    public sealed class RingBuffer<T> : IRingBuffer<T>, IList<T>
+    [Il2CppEagerStaticClassConstruction]
+    public sealed class RingBuffer<T> : IReadOnlyList<T>, ICollection, IList<T>
     {
-        static private readonly T[] s_EmptyArray = new T[0];
-
         private T[] m_Data;
         private int m_Capacity;
         private RingBufferMode m_BufferMode;
@@ -63,7 +62,7 @@ namespace BeauUtil
                 throw new ArgumentOutOfRangeException("inCapacity");
             
             m_Capacity = inCapacity;
-            m_Data = m_Capacity == 0 ? s_EmptyArray : new T[m_Capacity];
+            m_Data = m_Capacity == 0 ? Array.Empty<T>() : new T[m_Capacity];
             m_BufferMode = inMode;
 
             m_Head = 0;
@@ -208,7 +207,7 @@ namespace BeauUtil
 
             if (inCapacity == 0)
             {
-                m_Data = s_EmptyArray;
+                m_Data = Array.Empty<T>();
                 m_Capacity = 0;
                 m_Head = m_Tail = 0;
                 return;
@@ -879,6 +878,7 @@ namespace BeauUtil
         /// <summary>
         /// Linearizes the buffer to ensure elements are contiguous in memory.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Linearize()
         {
             Linearize(true);
@@ -1007,6 +1007,7 @@ namespace BeauUtil
         /// Performs a binary search for the given element in a sorted buffer.
         /// </summary>
         [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if EXPANDED_REFS
         public int BinarySearch(in T inValue, SearchFlags inFlags = 0)
 #else

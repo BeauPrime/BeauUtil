@@ -25,6 +25,7 @@ namespace BeauUtil
     /// <summary>
     /// A section of a string.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public readonly struct StringSlice : IEnumerable<char>, IReadOnlyList<char>, IEquatable<StringSlice>, IEquatable<string>, IConvertible, IComparable<StringSlice>
     {
         private readonly string m_Source;
@@ -1668,6 +1669,7 @@ namespace BeauUtil
     /// <summary>
     /// String slicing options.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public readonly struct StringSliceOptions
     {
         public readonly StringSplitOptions Split;

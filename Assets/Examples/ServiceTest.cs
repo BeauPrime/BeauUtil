@@ -15,8 +15,7 @@ public class ServiceTest : MonoBehaviour
         yield return null;
 
         Log.Msg("" + UnityHelper.Id(this));
-        throw new NullReferenceException();
-        Assert.Fail("blah");
+        //Assert.Fail("blah");
 
         ServiceCache services = new ServiceCache();
         services.Process();

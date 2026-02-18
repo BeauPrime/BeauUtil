@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
@@ -17,6 +18,7 @@ namespace BeauUtil
     /// Unique 16-bit identifier.
     /// </summary>
     [DefaultEqualityComparer(typeof(UniqueId16.Comparer)), DefaultSorter(typeof(UniqueId16.Comparer))]
+    [Il2CppEagerStaticClassConstruction]
     public readonly struct UniqueId16 : IEquatable<UniqueId16>, IComparable<UniqueId16>
     {
         private const int IndexBits = 10;
@@ -174,6 +176,7 @@ namespace BeauUtil
     /// Unique 32-bit identifier.
     /// </summary>
     [DefaultEqualityComparer(typeof(UniqueId32.Comparer)), DefaultSorter(typeof(UniqueId32.Comparer))]
+    [Il2CppEagerStaticClassConstruction]
     public readonly struct UniqueId32 : IEquatable<UniqueId32>, IComparable<UniqueId32>
     {
         private const int IndexBits = 24;
@@ -331,6 +334,7 @@ namespace BeauUtil
     /// Unique 64-bit identifier.
     /// </summary>
     [DefaultEqualityComparer(typeof(UniqueId64.Comparer)), DefaultSorter(typeof(UniqueId64.Comparer))]
+    [Il2CppEagerStaticClassConstruction]
     public readonly struct UniqueId64 : IEquatable<UniqueId64>, IComparable<UniqueId64>
     {
         private const int IndexBits = 54;

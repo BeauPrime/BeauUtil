@@ -20,13 +20,15 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using BeauUtil.Streaming;
 using BeauUtil.Tags;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil.Blocks
 {
+    [Il2CppEagerStaticClassConstruction]
     public class BlockParser
     {
-        static public readonly string NullFilename = "<anonymous>";
+        public const string NullFilename = "<anonymous>";
 
         protected BlockParser() {
             throw new NotImplementedException();
@@ -156,7 +158,7 @@ namespace BeauUtil.Blocks
         /// <summary>
         /// Parses the given file contents into blocks.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage Parse<TBlock, TPackage>(CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -168,7 +170,7 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks
         /// and merges into the given package.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -180,7 +182,7 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks asynchronously.
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage ParseAsync<TBlock, TPackage>(CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -192,7 +194,7 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks asynchronously.
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage ParseAsync<TBlock, TPackage>(CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -205,7 +207,7 @@ namespace BeauUtil.Blocks
         /// and merges into the given package.
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, CustomTextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -216,7 +218,7 @@ namespace BeauUtil.Blocks
         /// <summary>
         /// Parses the given file contents into blocks.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage Parse<TBlock, TPackage>(TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -228,7 +230,7 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks
         /// and merges into the given package.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -240,7 +242,7 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks asynchronously.
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage ParseAsync<TBlock, TPackage>(TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -252,7 +254,7 @@ namespace BeauUtil.Blocks
         /// Parses the given file contents into blocks asynchronously.
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage ParseAsync<TBlock, TPackage>(TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -265,7 +267,7 @@ namespace BeauUtil.Blocks
         /// and merges into the given package.
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, TextAsset inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -277,7 +279,7 @@ namespace BeauUtil.Blocks
         /// Parses the given stream contents into blocks.
         /// The stream will be disposed once parsing is complete.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage Parse<TBlock, TPackage>(Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -290,7 +292,7 @@ namespace BeauUtil.Blocks
         /// and merges into the given package.
         /// The stream will be disposed once parsing is complete.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Parse<TBlock, TPackage>(ref TPackage ioPackage, Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -303,7 +305,7 @@ namespace BeauUtil.Blocks
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// The stream will be disposed once parsing is complete.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage ParseAsync<TBlock, TPackage>(Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -316,7 +318,7 @@ namespace BeauUtil.Blocks
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// The stream will be disposed once parsing is complete.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TPackage ParseAsync<TBlock, TPackage>(Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache, out IEnumerator outLoader)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -330,7 +332,7 @@ namespace BeauUtil.Blocks
         /// Each MoveNext() call on the returned IEnumerator will parse one block of data.
         /// The stream will be disposed once parsing is complete.
         /// </summary>
-        [MethodImpl(256)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IEnumerator ParseAsync<TBlock, TPackage>(ref TPackage ioPackage, Stream inAsset, IBlockParsingRules inRules, IBlockGenerator<TBlock, TPackage> inGenerator, BlockMetaCache inCache = null)
             where TBlock : class, IDataBlock
             where TPackage : class, IDataBlockPackage<TBlock>
@@ -345,6 +347,7 @@ namespace BeauUtil.Blocks
         /// <summary>
         /// Clears cached data.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         static public void ClearCache()
         {
             BlockMetaCache.Default.ClearCache();
@@ -432,6 +435,8 @@ namespace BeauUtil.Blocks
         }
 
         // Adds a prefix priority to the buffer
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static private unsafe void AddPrefixPriority(PrioritizedPrefix* ioBuffer, string inString, PrefixType inPrefix, ref int ioLength)
         {
             if (!string.IsNullOrEmpty(inString))
@@ -461,6 +466,7 @@ namespace BeauUtil.Blocks
 
         static private readonly Stack<StringBuilder> s_StringBuilderPool = new Stack<StringBuilder>(4);
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static protected StringBuilder RentStringBuilder()
         {
             if (s_StringBuilderPool.Count > 0)
@@ -473,6 +479,7 @@ namespace BeauUtil.Blocks
             return new StringBuilder(256);
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static protected void ReturnStringBuilder(ref StringBuilder ioBuilder)
         {
             if (ioBuilder == null)
@@ -488,6 +495,8 @@ namespace BeauUtil.Blocks
             ioBuilder = null;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static protected unsafe bool MatchLookBack(StringBuilder inBuilder, char* inBuffer, char* inBufferEnd, string inMatch, out int outBuilderOverlap, out int outBufferOverlap)
         {
             int matchLength = inMatch.Length;

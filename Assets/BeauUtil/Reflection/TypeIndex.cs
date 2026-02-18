@@ -97,11 +97,19 @@ namespace BeauUtil
         /// <summary>
         /// Allocates or retrieves the existing index for the given type.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static private int AllocateIndex(Type inType)
         {
             if (s_Allocated >= Capacity)
             {
                 Assert.Fail("Exceeded maximum number of type indices {0} for type '{1}'", Capacity, typeof(TRootType).FullName);
+                return NullIndex;
+            }
+
+            if (inType == null)
+            {
+                Assert.Fail("Type is null");
                 return NullIndex;
             }
 
@@ -135,6 +143,7 @@ namespace BeauUtil
         /// <summary>
         /// Allocates the base type chain for the given type.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private int AllocateClassHierarchy(Type inType)
         {
             int parentIndex = NullIndex;

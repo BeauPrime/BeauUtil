@@ -28,6 +28,7 @@ using UnityEngine;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Unity.IL2CPP.CompilerServices;
 
 #if DEVELOPMENT
 using System.Text.RegularExpressions;
@@ -46,6 +47,7 @@ namespace BeauUtil.Debugger
     /// <summary>
     /// Conditionally-compiled assertions.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class Assert
     {
         #region Types
@@ -63,7 +65,7 @@ namespace BeauUtil.Debugger
             Automatic,
         }
 
-        private class AssertException : Exception
+        public sealed class AssertException : Exception
         {
             public AssertException(string inMessage)
                 : base(AssertExceptionPrefix + inMessage)
@@ -122,6 +124,7 @@ namespace BeauUtil.Debugger
 
 #if DEVELOPMENT
 
+        [DebuggerHidden]
         static private void Application_logMessageReceived(string condition, string stackTrace, UnityEngine.LogType type)
         {
 #if UNITY_EDITOR
@@ -206,6 +209,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [DoesNotReturn]
+        [DebuggerHidden]
         static public void Fail()
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", null);
@@ -215,6 +219,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [DoesNotReturn]
+        [DebuggerHidden]
         static public void Fail(string inMessage)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", inMessage);
@@ -224,6 +229,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [DoesNotReturn]
+        [DebuggerHidden]
         static public void Fail<P0>(string inFormat, P0 inParam0)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0));
@@ -233,6 +239,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [DoesNotReturn]
+        [DebuggerHidden]
         static public void Fail<P0, P1>(string inFormat, P0 inParam0, P1 inParam1)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1));
@@ -242,6 +249,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [DoesNotReturn]
+        [DebuggerHidden]
         static public void Fail<P0, P1, P2>(string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
            OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParam0, inParam1, inParam2));
@@ -251,6 +259,7 @@ namespace BeauUtil.Debugger
         /// Immediately fails.
         /// </summary>
         [DoesNotReturn]
+        [DebuggerHidden]
         static public void Fail(string inFormat, params object[] inParams)
         {
             OnFail(GetLocationFromStack(1), "Assert Fail", Log.Format(inFormat, inParams));
@@ -264,6 +273,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void True([DoesNotReturnIf(false)] bool inbValue)
         {
             if (!inbValue)
@@ -276,6 +287,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void True([DoesNotReturnIf(false)] bool inbValue, string inMessage)
         {
             if (!inbValue)
@@ -288,6 +301,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void True<P0>([DoesNotReturnIf(false)] bool inbValue, string inFormat, P0 inParam0)
         {
             if (!inbValue)
@@ -300,6 +315,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void True<P0, P1>([DoesNotReturnIf(false)] bool inbValue, string inFormat, P0 inParam0, P1 inParam1)
         {
             if (!inbValue)
@@ -312,6 +329,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void True<P0, P1, P2>([DoesNotReturnIf(false)] bool inbValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
             if (!inbValue)
@@ -324,6 +343,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is true.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void True([DoesNotReturnIf(false)] bool inbValue, string inFormat, params object[] inParams)
         {
             if (!inbValue)
@@ -340,6 +361,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void False([DoesNotReturnIf(true)] bool inbValue)
         {
             if (inbValue)
@@ -352,6 +375,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void False([DoesNotReturnIf(true)] bool inbValue, string inMessage)
         {
             if (inbValue)
@@ -364,6 +389,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void False<P0>([DoesNotReturnIf(true)] bool inbValue, string inFormat, P0 inParam0)
         {
             if (inbValue)
@@ -376,6 +403,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void False<P0, P1>([DoesNotReturnIf(true)] bool inbValue, string inFormat, P0 inParam0, P1 inParam1)
         {
             if (inbValue)
@@ -388,6 +417,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void False<P0, P1, P2>([DoesNotReturnIf(true)] bool inbValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
             if (inbValue)
@@ -400,6 +431,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a condition is false.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void False([DoesNotReturnIf(true)] bool inbValue, string inFormat, params object[] inParams)
         {
             if (inbValue)
@@ -416,6 +449,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNull<T>(T inValue) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -428,6 +463,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNull<T>(T inValue, string inMessage) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -440,6 +477,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNull<T, P0>(T inValue, string inFormat, P0 inParam0) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -452,6 +491,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNull<T, P0, P1>(T inValue, string inFormat, P0 inParam0, P1 inParam1) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -464,6 +505,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNull<T, P0, P1, P2>(T inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -476,6 +519,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNull<T>(T inValue, string inFormat, params object[] inParams) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -494,6 +539,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<T>(T* inPointer) where T : unmanaged
         {
             if (inPointer == null)
@@ -506,6 +553,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<T>(T* inPointer, string inMessage) where T : unmanaged
         {
             if (inPointer == null)
@@ -518,6 +567,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<T, P0>(T* inPointer, string inFormat, P0 inParam0) where T : unmanaged
         {
             if (inPointer == null)
@@ -530,6 +581,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<T, P0, P1>(T* inPointer, string inFormat, P0 inParam0, P1 inParam1) where T : unmanaged
         {
             if (inPointer == null)
@@ -542,6 +595,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<T, P0, P1, P2>(T* inPointer, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2) where T : unmanaged
         {
             if (inPointer == null)
@@ -554,6 +609,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<T>(T* inPointer, string inFormat, params object[] inParams) where T : unmanaged
         {
             if (inPointer == null)
@@ -570,6 +627,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull(void* inPointer)
         {
             if (inPointer == null)
@@ -582,6 +641,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull(void* inPointer, string inMessage)
         {
             if (inPointer == null)
@@ -594,6 +655,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<P0>(void* inPointer, string inFormat, P0 inParam0)
         {
             if (inPointer == null)
@@ -606,6 +669,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<P0, P1>(void* inPointer, string inFormat, P0 inParam0, P1 inParam1)
         {
             if (inPointer == null)
@@ -618,6 +683,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull<P0, P1, P2>(void* inPointer, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
             if (inPointer == null)
@@ -630,6 +697,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a pointer is not null.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public unsafe void NotNull(void* inPointer, string inFormat, params object[] inParams)
         {
             if (inPointer == null)
@@ -648,6 +717,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null or destroyed.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNullOrDestroyed<T>(T inValue) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -664,6 +735,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null or destroyed.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNullOrDestroyed<T>(T inValue, string inMessage) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -680,6 +753,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null or destroyed.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNullOrDestroyed<T, P0>(T inValue, string inFormat, P0 inParam0) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -696,6 +771,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null or destroyed.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNullOrDestroyed<T, P0, P1>(T inValue, string inFormat, P0 inParam0, P1 inParam1) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -712,6 +789,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null or destroyed.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNullOrDestroyed<T, P0, P1, P2>(T inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -728,6 +807,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a value is not null or destroyed.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void NotNullOrDestroyed<T>(T inValue, string inFormat, params object[] inParams) where T : class
         {
             if (ReferenceEquals(inValue, null))
@@ -769,6 +850,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite(float inValue)
         {
 #if ISFINITE
@@ -785,6 +868,7 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
         static public void Finite(float inValue, string inMessage)
         {
 #if ISFINITE
@@ -801,6 +885,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite<P0>(float inValue, string inFormat, P0 inParam0)
         {
 #if ISFINITE
@@ -817,6 +903,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite<P0, P1>(float inValue, string inFormat, P0 inParam0, P1 inParam1)
         {
 #if ISFINITE
@@ -833,6 +921,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite<P0, P1, P2>(float inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
 #if ISFINITE
@@ -849,6 +939,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite(float inValue, string inFormat, params object[] inParams)
         {
 #if ISFINITE
@@ -865,6 +957,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite(double inValue)
         {
 #if ISFINITE
@@ -881,6 +975,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite(double inValue, string inMessage)
         {
 #if ISFINITE
@@ -897,6 +993,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite<P0>(double inValue, string inFormat, P0 inParam0)
         {
 #if ISFINITE
@@ -913,6 +1011,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite<P0, P1>(double inValue, string inFormat, P0 inParam0, P1 inParam1)
         {
 #if ISFINITE
@@ -929,6 +1029,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite<P0, P1, P2>(double inValue, string inFormat, P0 inParam0, P1 inParam1, P2 inParam2)
         {
 #if ISFINITE
@@ -945,6 +1047,8 @@ namespace BeauUtil.Debugger
         /// Asserts that a floating point value is finite.
         /// </summary>
         [Conditional("DEVELOPMENT"), Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void Finite(double inValue, string inFormat, params object[] inParams)
         {
 #if ISFINITE

@@ -17,12 +17,14 @@
 
 using System;
 using System.Text;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil.Debugger
 {
     /// <summary>
     /// Debug menu configuration.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public class DMInfo
     {
         public DMHeaderInfo Header;

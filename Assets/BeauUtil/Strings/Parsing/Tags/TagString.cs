@@ -13,6 +13,8 @@
 
 using System;
 using System.Text;
+using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil.Tags
 {
@@ -26,7 +28,6 @@ namespace BeauUtil.Tags
         private TagNodeData[] m_Nodes = null;
         private int m_NodeCount = 0;
         private int m_EventCount = 0;
-        private ListSlice<TagNodeData> m_NodeList;
         private StringArena m_TagArena;
 
         private string m_CachedRichText;
@@ -84,9 +85,9 @@ namespace BeauUtil.Tags
         }
 
         /// <summary>
-        /// List of nodes generated from the processed string.
+        /// Number of generated nodes.
         /// </summary>
-        public ListSlice<TagNodeData> Nodes { get { return m_NodeList; } }
+        public int NodeCount { get { return m_NodeCount; } }
 
         /// <summary>
         /// Number of generated event nodes.
@@ -98,6 +99,18 @@ namespace BeauUtil.Tags
         /// </summary>
         public StringArena TagAllocator { get { return m_TagArena; } }
 
+        /// <summary>
+        /// Returns the node at the given index.
+        /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        public TagNodeData GetNode(int inIndex)
+        {
+            Assert.NotNull(m_Nodes);
+            Assert.True(inIndex >= 0 && inIndex < m_NodeCount, "Out of range");
+            return m_Nodes[inIndex];
+        }
+
         #endregion // Output Data
 
         #region Operations
@@ -105,6 +118,8 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds a node to the node list.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #if EXPANDED_REFS
         public void AddNode(in TagNodeData inNode)
 #else
@@ -121,7 +136,6 @@ namespace BeauUtil.Tags
             }
 
             m_Nodes[m_NodeCount++] = inNode;
-            m_NodeList = new ListSlice<TagNodeData>(m_Nodes, 0, m_NodeCount);
 
             if (inNode.Type == TagNodeType.Event)
                 ++m_EventCount;
@@ -130,6 +144,8 @@ namespace BeauUtil.Tags
         /// <summary>
         /// Adds text characters.
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         public void AddText(ushort inVisibleCharacterOffset, ushort inVisibleCharacterCount, ushort inRichCharacterOffset, ushort inRichCharacterCount)
         {
             if (inVisibleCharacterCount == 0 && inRichCharacterCount == 0)
@@ -180,7 +196,6 @@ namespace BeauUtil.Tags
                 Array.Clear(m_Nodes, 0, m_NodeCount);
                 m_NodeCount = 0;
                 m_EventCount = 0;
-                m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
 
@@ -189,14 +204,16 @@ namespace BeauUtil.Tags
         /// </summary>
         public bool TryFindEvent(StringHash32 inEventId, out TagEventData outEventData)
         {
-            var nodes = Nodes;
-            for(int i = 0; i < nodes.Length; i++)
+            if (m_EventCount > 0)
             {
-                TagNodeData node = nodes[i];
-                if (node.Type == TagNodeType.Event && node.Event.Type == inEventId)
+                for (int i = 0; i < m_NodeCount; i++)
                 {
-                    outEventData = node.Event;
-                    return true;
+                    TagNodeData node = m_Nodes[i];
+                    if (node.Type == TagNodeType.Event && node.Event.Type == inEventId)
+                    {
+                        outEventData = node.Event;
+                        return true;
+                    }
                 }
             }
 
@@ -213,7 +230,6 @@ namespace BeauUtil.Tags
                 m_Nodes = null;
                 m_NodeCount = 0;
                 m_EventCount = 0;
-                m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
 
@@ -236,7 +252,6 @@ namespace BeauUtil.Tags
                 m_Nodes = null;
                 m_NodeCount = 0;
                 m_EventCount = 0;
-                m_NodeList = default(ListSlice<TagNodeData>);
             }
         }
     
@@ -277,8 +292,6 @@ namespace BeauUtil.Tags
 
                 m_NodeCount = inClone.m_NodeCount;
                 Array.Copy(inClone.m_Nodes, m_Nodes, m_NodeCount);
-
-                m_NodeList = new ListSlice<TagNodeData>(m_Nodes, 0, m_NodeCount);
             }
         }
 

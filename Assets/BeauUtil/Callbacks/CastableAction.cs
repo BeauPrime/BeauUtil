@@ -12,6 +12,7 @@
 #endif // UNITY_2021_2_OR_NEWER
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
@@ -145,6 +146,7 @@ namespace BeauUtil
         }
 
         [Il2CppSetOption(Option.NullChecks, false)]
+        [DebuggerStepThrough]
         public void Invoke(TInput0 inArg)
         {
             switch (m_Mode)
@@ -197,6 +199,7 @@ namespace BeauUtil
         }
 
         [Il2CppSetOption(Option.NullChecks, false)]
+        [DebuggerStepThrough]
         public void Invoke(ref TInput0 inArg)
         {
             switch (m_Mode)
@@ -569,6 +572,7 @@ namespace BeauUtil
 #endif // ENABLE_IL2CPP
 
         [Il2CppSetOption(Option.NullChecks, false)]
+        [DebuggerStepThrough]
         static private void CastedInvoke(Delegate inDelegate, TInput inInput)
         {
             ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));
@@ -590,6 +594,7 @@ namespace BeauUtil
         static private CastedAction<TInput> s_Callback;
 
         [Il2CppSetOption(Option.NullChecks, false)]
+        [DebuggerStepThrough]
         static private void CastedInvoke(Delegate inDelegate, TInput inInput)
         {
             ((Action<TOutput>) inDelegate).Invoke(CastableArgument.Cast<TInput, TOutput>(inInput));

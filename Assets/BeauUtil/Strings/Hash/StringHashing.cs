@@ -18,9 +18,11 @@ using System.Text;
 using System.Reflection;
 using UnityEngine.Scripting;
 using System.IO;
+using Unity.IL2CPP.CompilerServices;
 
 namespace BeauUtil
 {
+    [Il2CppEagerStaticClassConstruction]
     static public class StringHashing
     {
         static StringHashing()

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace BeauUtil.IO
 {
@@ -207,6 +208,15 @@ namespace BeauUtil.IO
         public string ToDebugString()
         {
             return string.Format("{0} {1} (tag {2})", Operation, ObjectId.ToDebugString(), ObjectTag.ToDebugString());
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            inBuilder.Append(Operation).Append(' ');
+            ObjectId.ToDebugString(inBuilder);
+            inBuilder.Append(" (tag ");
+            ObjectTag.ToDebugString(inBuilder);
+            inBuilder.Append(')');
         }
     }
 }

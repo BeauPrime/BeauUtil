@@ -19,6 +19,7 @@ namespace BeauUtil
     /// but ToStringLookup() shares the same string between all
     /// instances of a given integer value (within a certain range).
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     static public class LookupTables
     {
         static private string[] s_IntegerTable;

@@ -8,6 +8,7 @@
  */
 
 using System;
+using System.Text;
 using BeauUtil.Debugger;
 
 namespace BeauUtil.Variants
@@ -24,7 +25,7 @@ namespace BeauUtil.Variants
         /// <summary>
         /// Evaluates this comparison.
         /// </summary>
-        public bool Evaluate(IVariantResolver inResolver, object inContext = null, IMethodCache inInvoker = null)
+        public bool Evaluate(IVariantTableResolver inResolver, object inContext = null, IMethodCache inInvoker = null)
         {
             Variant leftValue, rightValue;
             bool bRetrievedLeft = Left.TryResolve(inResolver, inContext, out leftValue, inInvoker);
@@ -64,29 +65,73 @@ namespace BeauUtil.Variants
             switch(Operator)
             {
                 case VariantCompareOperator.LessThan:
-                    return Log.Format("{0} < {1}", Left, Right);
+                    return string.Format("{0} < {1}", Left.ToDebugString(), Right.ToDebugString());
                 case VariantCompareOperator.LessThanOrEqualTo:
-                    return Log.Format("{0} <= {1}", Left, Right);
+                    return string.Format("{0} <= {1}", Left.ToDebugString(), Right.ToDebugString());
                 case VariantCompareOperator.EqualTo:
-                    return Log.Format("{0} == {1}", Left, Right);
+                    return string.Format("{0} == {1}", Left.ToDebugString(), Right.ToDebugString());
                 case VariantCompareOperator.NotEqualTo:
-                    return Log.Format("{0} != {1}", Left, Right);
+                    return string.Format("{0} != {1}", Left.ToDebugString(), Right.ToDebugString());
                 case VariantCompareOperator.GreaterThanOrEqualTo:
-                    return Log.Format("{0} >= {1}", Left, Right);
+                    return string.Format("{0} >= {1}", Left.ToDebugString(), Right.ToDebugString());
                 case VariantCompareOperator.GreaterThan:
-                    return Log.Format("{0} > {1}", Left, Right);
+                    return string.Format("{0} > {1}", Left.ToDebugString(), Right.ToDebugString());
                 case VariantCompareOperator.Exists:
-                    return Log.Format("{0} exists", Left);
+                    return string.Format("{0} exists", Left.ToDebugString());
                 case VariantCompareOperator.DoesNotExist:
-                    return Log.Format("{0} does not exist", Left);
+                    return string.Format("{0} does not exist", Left.ToDebugString());
                 case VariantCompareOperator.True:
-                    return Log.Format("{0} is true", Left);
+                    return string.Format("{0} is true", Left.ToDebugString());
                 case VariantCompareOperator.False:
-                    return Log.Format("{0} is false", Left);
+                    return string.Format("{0} is false", Left.ToDebugString());
                 
                 default:
                     throw new InvalidOperationException("Unknown operator " + Operator.ToString());
             }
+        }
+
+        public void ToDebugString(StringBuilder inBuilder)
+        {
+            Left.ToDebugString(inBuilder);
+            inBuilder.Append(' ');
+            switch (Operator)
+            {
+                case VariantCompareOperator.LessThan:
+                    inBuilder.Append('<');
+                    break;
+                case VariantCompareOperator.LessThanOrEqualTo:
+                    inBuilder.Append("<=");
+                    break;
+                case VariantCompareOperator.EqualTo:
+                    inBuilder.Append("==");
+                    break;
+                case VariantCompareOperator.NotEqualTo:
+                    inBuilder.Append("!=");
+                    break;
+                case VariantCompareOperator.GreaterThanOrEqualTo:
+                    inBuilder.Append(">=");
+                    break;
+                case VariantCompareOperator.GreaterThan:
+                    inBuilder.Append('>');
+                    break;
+                case VariantCompareOperator.Exists:
+                    inBuilder.Append("exists");
+                    return;
+                case VariantCompareOperator.DoesNotExist:
+                    inBuilder.Append("does not exist");
+                    return;
+                case VariantCompareOperator.True:
+                    inBuilder.Append("is true");
+                    return;
+                case VariantCompareOperator.False:
+                    inBuilder.Append("is false");
+                    return;
+
+                default:
+                    throw new InvalidOperationException("Unknown operator " + Operator.ToString());
+            }
+            inBuilder.Append(' ');
+            Right.ToDebugString(inBuilder);
         }
     
         /// <summary>

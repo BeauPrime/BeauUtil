@@ -13,8 +13,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using BeauUtil.Debugger;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace BeauUtil.Tags
@@ -22,6 +24,7 @@ namespace BeauUtil.Tags
     /// <summary>
     /// Parser to turn a string into a TagString.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     public partial struct TagStringParser
     {
         static public readonly string VisibleRichTagChar = char.ToString((char) 1);
@@ -265,9 +268,11 @@ namespace BeauUtil.Tags
         static private bool ShouldParse(TagStringParser inParser)
 #endif // EXPANDED_REFS
         {
+            Assert.NotNull(inParser.m_Delimiters, "Cannot parse with null delimiters");
             return inParser.m_BufferSize >= MinCapacity && (inParser.m_Delimiters.RichText || inParser.m_EventProcessor != null || inParser.m_ReplaceProcessor != null);
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void BypassProcessing(TagString outTarget, StringSlice inInput)
         {
             inInput.AppendTo(outTarget.RichText);
@@ -275,6 +280,7 @@ namespace BeauUtil.Tags
             outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void BypassProcessing(TagString outTarget, StringBuilder inInput)
         {
             outTarget.RichText.Append(inInput);
@@ -282,6 +288,7 @@ namespace BeauUtil.Tags
             outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void BypassProcessing(TagString outTarget, UnsafeString inInput)
         {
             inInput.AppendTo(outTarget.RichText);
@@ -289,6 +296,7 @@ namespace BeauUtil.Tags
             outTarget.AddNode(TagNodeData.TextNode(0, (ushort) inInput.Length, 0, (ushort) inInput.Length));
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
 #if EXPANDED_REFS
         static private unsafe void InitParseState(in TagStringParser inParser, ref ParseState outState, char* inBuffer)
 #else
@@ -303,6 +311,7 @@ namespace BeauUtil.Tags
             outState.EventProcessor = inParser.m_EventProcessor;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private unsafe void PrepareParseState(ref ParseState outState, TagString inTarget, int inInputLength, object inContext)
         {
             outState.Input = new UnsafeString(outState.InputBuffer, inInputLength);
@@ -323,6 +332,7 @@ namespace BeauUtil.Tags
 
         #region Processing
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private unsafe bool ProcessInput(ref ParseState ioState)
         {
             bool bModified = false;
@@ -526,6 +536,7 @@ namespace BeauUtil.Tags
             // Debug.LogFormat("[TagStringParser] Skipped {0} characters", length);
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void CopyNonRichText(ref ParseState ioState, int inIdx)
         {
             int copyLength = ioState.CopyLengthExclusive(inIdx);
@@ -551,6 +562,7 @@ namespace BeauUtil.Tags
             // Debug.LogFormat("[TagStringParser] Copied non-rich text '{0}'", copySlice);
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void CopyOnlyNonRichText(ref ParseState ioState, string inString)
         {
             int copyLength = inString.Length;
@@ -569,6 +581,7 @@ namespace BeauUtil.Tags
             }
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void CopyRichTag(ref ParseState ioState, int inIdx)
         {
             int copyLength = ioState.CopyLengthExclusive(inIdx);
@@ -583,6 +596,7 @@ namespace BeauUtil.Tags
             // Debug.LogFormat("[TagStringParser] Copied rich tag '{0}'", copySlice);
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private void AddNonRichText(ref ParseState ioState, string inString)
         {
             if (string.IsNullOrEmpty(inString))
@@ -603,6 +617,8 @@ namespace BeauUtil.Tags
             // Debug.LogFormat("[TagStringParser] Added non-rich text '{0}'", inString);
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         static private bool RecognizeRichText(UnsafeString inTag, DelimiterRules inDelimiters)
         {
             // recognize hex colors
@@ -647,6 +663,7 @@ namespace BeauUtil.Tags
             return false;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private unsafe void RestartString(ref ParseState ioState, string inInitial, int inIndex)
         {
             inInitial = inInitial ?? string.Empty;
@@ -670,6 +687,7 @@ namespace BeauUtil.Tags
             ioState.CopyStart = 0;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
         static private bool ContainsPotentialTags(string inString, DelimiterRules inDelimiters, bool inbIdenticalDelims)
         {
             if (inDelimiters.RichText)
@@ -711,6 +729,7 @@ namespace BeauUtil.Tags
             public int RichStart;
             public int TagStart;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int CopyLengthExclusive(int inEnd)
             {
                 return inEnd - CopyStart;
