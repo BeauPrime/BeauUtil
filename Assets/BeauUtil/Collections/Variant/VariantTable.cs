@@ -34,6 +34,7 @@ namespace BeauUtil.Variants
     /// <summary>
     /// Collection of named variant values.
     /// </summary>
+    [Il2CppEagerStaticClassConstruction]
     [DebuggerDisplay("Count={Count}")]
 #if HAS_DEBUGGER
     [DebuggerTypeProxy(typeof(VariantTable.DebugView))]
@@ -421,7 +422,7 @@ namespace BeauUtil.Variants
 
             if (m_ValueCount + 1 > m_Values.Length)
             {
-                Array.Resize(ref m_Values, Math.Max(4, Mathf.NextPowerOfTwo(m_ValueCount + 1)));
+                Array.Resize(ref m_Values, BufferExpansionPolicy.CalculateNextGeometric(m_ValueCount, 0.5f, 32, 4));
             }
 
             NamedVariant newValue = new NamedVariant(inId, inValue);

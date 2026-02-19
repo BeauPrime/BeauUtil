@@ -887,6 +887,19 @@ namespace BeauUtil.UnitTests
             {
                 VariantTable tableB = new VariantTable(-16);
             });
+
+            int count = 1 << 10;
+            while(count-- > 0)
+            {
+                if (RNG.Instance.Chance(0.5f))
+                {
+                    tableA.Set("var" + tableA.Count, RNG.Instance.NextFloat(0, 16));
+                }
+                else
+                {
+                    tableA.Set("var" + (tableA.Count + 1), RNG.Instance.NextFloat(-16, 0));
+                }
+            }
         }
     }
 }

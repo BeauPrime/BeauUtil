@@ -50,21 +50,21 @@ namespace BeauUtil
                 case BufferExpansionType.Fixed:
                     return inCapacity;
                 case BufferExpansionType.Exponential:
-                    return AlignAndClamp(Math.Max(1, (long) inCapacity << 1), int.MaxValue);
+                    return AlignAndClamp(Math.Max(1, (long) inCapacity << 1), int.MaxValue, Alignment);
                 case BufferExpansionType.Chunked:
-                    return AlignAndClamp((long) inCapacity + (long) ChunkSize, int.MaxValue);
+                    return AlignAndClamp((long) inCapacity + (long) ChunkSize, int.MaxValue, Alignment);
                 case BufferExpansionType.Geometric:
-                    return AlignAndClamp((long) inCapacity + Math.Min(((long) (inCapacity + 1) * GrowthFraction / FractionQuantization), ChunkSize), int.MaxValue);
+                    return AlignAndClamp((long) inCapacity + Math.Max(1, Math.Min(((long) (inCapacity + 1) * GrowthFraction / FractionQuantization), ChunkSize)), int.MaxValue, Alignment);
                 default:
                     throw new InvalidOperationException("Unknown expansion type");
             }
         }
 
-        private int AlignAndClamp(long inUnclamped, int inMaxCapacity)
+        static private int AlignAndClamp(long inUnclamped, int inMaxCapacity, uint inAlignment)
         {
-            if (Alignment > 1)
+            if (inAlignment > 1)
             {
-                return (int) Math.Min(((inUnclamped + (Alignment - 1)) & ~(Alignment - 1)), inMaxCapacity);
+                return (int) Math.Min(((inUnclamped + (inAlignment - 1)) & ~(inAlignment - 1)), inMaxCapacity);
             }
             return (int) Math.Min(inUnclamped, inMaxCapacity);
         }
@@ -148,6 +148,19 @@ namespace BeauUtil
         static public readonly BufferExpansionPolicy DefaultGeometric = Geometric(0.2f, 32);
 
         #endregion // Presets
+
+        #region Math
+
+        /// <summary>
+        /// Calculates the geometric expansion of the given capacity.
+        /// </summary>
+        static public int CalculateNextGeometric(int inCapacity, float inGrowthFraction, int inGrowthCap, uint inAlignment = 0)
+        {
+            Assert.True(inAlignment < 2 || (inAlignment & (inAlignment - 1)) == 0, "Invalid alignment");
+            return AlignAndClamp((long) inCapacity + Math.Max(1, Math.Min(((long) (inCapacity + 1) * (long) Math.Max(0, Math.Min((inGrowthFraction * FractionQuantization), FractionQuantization)) / FractionQuantization), inGrowthCap)), int.MaxValue, inAlignment);
+        }
+
+        #endregion // Math
     }
 
     public enum BufferExpansionType : byte
