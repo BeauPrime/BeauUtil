@@ -23,9 +23,14 @@ namespace BeauUtil
         private int m_FreeCount;
         private int m_Capacity = 0;
         private int m_MaxFree = 0;
-        private readonly bool m_Flexible;
+        private readonly BufferExpansionPolicy m_ExpansionPolicy;
 
         public UniqueIdAllocator16(int inInitialCapacity, bool inbFlexible = true)
+            : this(inInitialCapacity, inbFlexible ? BufferExpansionPolicy.ExponentialAligned(4) : BufferExpansionPolicy.Fixed)
+        {
+        }
+
+        public UniqueIdAllocator16(int inInitialCapacity, BufferExpansionPolicy inExpansionPolicy)
         {
             if (inInitialCapacity < 1)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Initial capacity must be at least 1");
@@ -33,7 +38,7 @@ namespace BeauUtil
             if (m_Capacity > UniqueId16.MaxIndex)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Capacity, rounded up, exceeds maximum UniqueId16 index");
 
-            m_Flexible = inbFlexible;
+            m_ExpansionPolicy = inExpansionPolicy;
             m_Versions = new byte[m_Capacity];
             m_FreeList = new ushort[m_Capacity];
 
@@ -98,17 +103,11 @@ namespace BeauUtil
                 return;
             }
 
-            if (!m_Flexible)
+            if (!m_ExpansionPolicy.TryExpand(m_Capacity + inCount, UniqueId16.MaxIndex, out int newLength))
             {
-                throw new InvalidOperationException(string.Format("Inflexible UniqueIdAllocator16 - unable to expand to accomodate more than {0} entries", m_Capacity));
+                throw new InvalidOperationException(string.Format("Unable to expand UniqueIdAllocator16 to accomodate more than {0} entries with policy {1}", m_Capacity, m_ExpansionPolicy.Type));
             }
 
-            if (m_Capacity + inCount > UniqueId16.MaxIndex)
-            {
-                throw new InvalidOperationException(string.Format("UniqueIdAllocator16 can only have a maximum of {0} identifiers at once", UniqueId16.MaxIndex));
-            }
-
-            int newLength = Math.Min(m_Capacity * 2, UniqueId16.MaxIndex);
             Array.Resize(ref m_Versions, newLength);
             Array.Resize(ref m_FreeList, newLength);
             m_Capacity = newLength;
@@ -159,7 +158,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsFull
         {
-            get { return m_FreeCount == 0 && (!m_Flexible || m_Capacity == UniqueId16.MaxIndex); }
+            get { return m_FreeCount == 0 && (m_ExpansionPolicy.Type == BufferExpansionType.Fixed || m_Capacity == UniqueId16.MaxIndex); }
         }
 
         /// <summary>

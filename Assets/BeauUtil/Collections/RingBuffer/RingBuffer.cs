@@ -37,30 +37,45 @@ namespace BeauUtil
     {
         private T[] m_Data;
         private int m_Capacity;
+        private int m_Head;
+        private int m_Count;
+        private int m_Tail;
         private RingBufferMode m_BufferMode;
         private IEqualityComparer<T> m_Comparer;
+        private BufferExpansionPolicy m_ExpansionPolicy;
 
-        private int m_Head;
-        private int m_Tail;
-        private int m_Count;
 
         public RingBuffer()
-            : this(0, RingBufferMode.Expand)
+            : this(0, RingBufferMode.Expand, CompareUtils.DefaultEquals<T>(), GetDefaultExpansionPolicy(RingBufferMode.Expand))
         { }
 
         public RingBuffer(int inCapacity)
-            : this(inCapacity, RingBufferMode.Fixed)
+            : this(inCapacity, RingBufferMode.Fixed, CompareUtils.DefaultEquals<T>(), GetDefaultExpansionPolicy(RingBufferMode.Fixed))
         { }
 
         public RingBuffer(int inCapacity, RingBufferMode inMode)
-            : this(inCapacity, inMode, CompareUtils.DefaultEquals<T>())
+            : this(inCapacity, inMode, CompareUtils.DefaultEquals<T>(), GetDefaultExpansionPolicy(inMode))
         { }
 
         public RingBuffer(int inCapacity, RingBufferMode inMode, IEqualityComparer<T> inComparer)
+            : this(inCapacity, inMode, CompareUtils.DefaultEquals<T>(), GetDefaultExpansionPolicy(inMode))
+        { }
+
+        public RingBuffer(int inCapacity, RingBufferMode inMode, IEqualityComparer<T> inComparer, BufferExpansionPolicy inExpansionPolicy)
         {
             if (inCapacity < 0)
                 throw new ArgumentOutOfRangeException("inCapacity");
-            
+            if (inMode == RingBufferMode.Expand)
+            {
+                if (inExpansionPolicy.Type == BufferExpansionType.Fixed)
+                    throw new ArgumentException("Expansion policy does not expand");
+            }
+            else
+            {
+                if (inExpansionPolicy.Type != BufferExpansionType.Fixed)
+                    throw new ArgumentException("Expansion policy is not fixed");
+            }
+
             m_Capacity = inCapacity;
             m_Data = m_Capacity == 0 ? Array.Empty<T>() : new T[m_Capacity];
             m_BufferMode = inMode;
@@ -70,6 +85,7 @@ namespace BeauUtil
             m_Count = 0;
 
             m_Comparer = inComparer;
+            m_ExpansionPolicy = inExpansionPolicy;
         }
 
         #region Properties
@@ -233,12 +249,25 @@ namespace BeauUtil
             m_Tail = m_Count % m_Capacity;
         }
 
-        static private int GetDesiredCapacity(int inCurrentCapacity)
+        static private int GetDesiredCapacity(int inCurrentCapacity, in BufferExpansionPolicy inPolicy)
         {
-            int newCapacity = Mathf.NextPowerOfTwo(inCurrentCapacity);
-            if (newCapacity > 0 && newCapacity < 4)
-                newCapacity = 4;
+            if (!inPolicy.TryExpand(inCurrentCapacity, out int newCapacity))
+            {
+                throw new InvalidOperationException("Cannot expand RingBuffer any further");
+            }
             return newCapacity;
+        }
+
+        static private BufferExpansionPolicy GetDefaultExpansionPolicy(RingBufferMode inBufferMode)
+        {
+            if (inBufferMode != RingBufferMode.Expand)
+            {
+                return BufferExpansionPolicy.Fixed;
+            }
+            else
+            {
+                return BufferExpansionPolicy.ExponentialAligned(4);
+            }
         }
 
         #endregion // Clear and Capacity
@@ -346,7 +375,7 @@ namespace BeauUtil
                         --m_Count;
                         break;
                     case RingBufferMode.Expand:
-                        SetCapacity(GetDesiredCapacity(m_Capacity + 1));
+                        SetCapacity(GetDesiredCapacity(m_Capacity, m_ExpansionPolicy));
                         break;
                     default:
                         throw new InvalidOperationException("Unknown RingBufferMode");
@@ -382,7 +411,7 @@ namespace BeauUtil
                         --m_Count;
                         break;
                     case RingBufferMode.Expand:
-                        SetCapacity(GetDesiredCapacity(m_Capacity + 1));
+                        SetCapacity(GetDesiredCapacity(m_Capacity, m_ExpansionPolicy));
                         break;
 
                     default:
