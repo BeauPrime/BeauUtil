@@ -1,5 +1,31 @@
-## Version 0.11.6
-**18 Dec 2025**
+## Version 0.12.0
+**19 Feb 2026**
+
+Fix for `Enums` methods in IL2CPP builds for unity versions released after the resolution of UUM-91859
+Introduced `BufferExpansionPolicy` to customize memory allocation behaviors for various buffers
+
+### Breaking Changes
+* Collapsed `IVariantTable` and `IRingBuffer` into their respective implementations
+  * Interfaces were too prescriptive and particular to be worth the extra effort
+* `CustomVariantResolver` renamed to `VariantTableResolver`
+  * Dynamic key remapping and variable retrieval removed from functionality
+* `StringArena` is no longer enumerable
+* `TagString.Nodes` has been replaced by `TagString.NodeCount` and `TagString.GetNode()`
+* `IDebugString` now requires implementing the method `ToDebugString(StringBuilder)`
+
+### Features
+* Implemented `BufferExpansionPolicy`, to better customize memory allocation behaviors
+* Implemented  `SceneReferenceOnly` attribute, which constrains serialized object fields to reject non-scene objects
+
+### Fixes
+* `Enums` methods no longer break during IL2CPP generation
+* Broken `UnsafeBitSet.Size` is now correct
+
+### Improvements
+* Various IL2CPP eager static initialization optimizations
+* `Transform`, `RectTransform`, and `Camera` state hashes are correctly guarded against misalignment
+* Reduced memory usage for `VariantTable` and `UniqueIdAllocator`
+* More structures implement `DebuggerDisplay` attribute
 
 ## Version 0.11.5
 **18 Dec 2025**
