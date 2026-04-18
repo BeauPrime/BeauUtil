@@ -123,6 +123,18 @@ namespace BeauUtil
             return (T) inValue;
         }
 
+#if USING_TINYIL
+        /// <summary>
+        /// Converts a reference into a different reference.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ret")]
+        static public ref U FastCast<T, U>(ref T val)
+        {
+            throw new NotImplementedException();
+        }
+#endif // USING_TINYIL
+
 #if UNMANAGED_CONSTRAINT
 
         /// <summary>
@@ -170,24 +182,12 @@ namespace BeauUtil
 
         #region Alignment
 
+        [StructLayout(LayoutKind.Sequential)]
         private struct AlignHelper<T>
             where T : unmanaged
         {
-            private byte b;
-            internal T i;
-
-            static internal readonly uint Alignment;
-
-            static AlignHelper()
-            {
-                Alignment = ExtractAlignment(default(AlignHelper<T>));
-                // UnityEngine.Debug.LogFormat("alignment of '{0}' is {1}", typeof(T).FullName, Alignment);
-            }
-
-            static private uint ExtractAlignment(AlignHelper<T> inHelper)
-            {
-                return (uint) ((PointerIntegral) (&inHelper.i) - (PointerIntegral) (&inHelper.b));
-            }
+            private byte _Padding;
+            internal T _Value;
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace BeauUtil
         static public uint AlignOf<T>()
             where T : unmanaged
         {
-            return AlignHelper<T>.Alignment;
+            return (uint) &(((AlignHelper<T>*)null)->_Value);
         }
 
         #region 4

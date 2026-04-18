@@ -158,7 +158,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsFull
         {
-            get { return m_FreeCount == 0 && (m_ExpansionPolicy.Type == BufferExpansionType.Fixed || m_Capacity == UniqueId16.MaxIndex); }
+            get { return m_FreeCount == 0 && m_MaxFree == m_Capacity && (m_ExpansionPolicy.Type == BufferExpansionType.Fixed || m_Capacity == UniqueId16.MaxIndex); }
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace BeauUtil
         private readonly BufferExpansionPolicy m_ExpansionPolicy;
 
         public UniqueIdAllocator32(int inInitialCapacity, bool inbFlexible = true)
-            : this(inInitialCapacity, inbFlexible ? BufferExpansionPolicy.ExponentialAligned(16) : BufferExpansionPolicy.Fixed)
+            : this(inInitialCapacity, inbFlexible ? BufferExpansionPolicy.ExponentialAligned(32) : BufferExpansionPolicy.Fixed)
         {
         }
 
@@ -197,7 +197,7 @@ namespace BeauUtil
         {
             if (inInitialCapacity < 1)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Initial capacity must be at least 1");
-            m_Capacity = Unsafe.AlignUp16(inInitialCapacity);
+            m_Capacity = Unsafe.AlignUp32(inInitialCapacity);
             if (m_Capacity > UniqueId32.MaxIndex)
                 throw new ArgumentOutOfRangeException("inInitialCapacity", "Capacity, rounded up, exceeds maximum UniqueId32 index");
 
@@ -321,7 +321,7 @@ namespace BeauUtil
         /// </summary>
         public bool IsFull
         {
-            get { return m_FreeCount == 0 && (m_ExpansionPolicy.Type == BufferExpansionType.Fixed || m_Capacity == UniqueId32.MaxIndex); }
+            get { return m_FreeCount == 0 && m_MaxFree == m_Capacity && (m_ExpansionPolicy.Type == BufferExpansionType.Fixed || m_Capacity == UniqueId32.MaxIndex); }
         }
 
         /// <summary>

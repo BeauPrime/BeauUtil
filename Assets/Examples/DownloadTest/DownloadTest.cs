@@ -6,6 +6,7 @@ using System.IO;
 using System.Collections;
 using BeauUtil.Debugger;
 using BeauUtil.IO;
+using System;
 
 public unsafe class DownloadTest : MonoBehaviour
 {
@@ -52,6 +53,8 @@ public unsafe class DownloadTest : MonoBehaviour
 
         Enums.ToInt(CollisionFlags.Below);
         Enums.ToEnum<CollisionFlags>(4);
+
+        Debug.Log("Page Size: " + Environment.SystemPageSize);
 
         ref int t = ref Unsafe.NullRef<int>();
         int j = 0;

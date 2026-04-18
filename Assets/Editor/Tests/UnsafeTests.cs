@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEditor;
 using System.Reflection;
+using BeauUtil.Variants;
+using Profiling = BeauUtil.Debugger.Profiling;
 
 namespace BeauUtil.UnitTests
 {
@@ -504,6 +506,34 @@ namespace BeauUtil.UnitTests
 
             Assert.AreEqual(12, *xPtr);
             Assert.AreEqual(12, x);
+        }
+
+        [Test]
+        static public void AlignOfIsCorrect()
+        {
+            Debug.LogFormat("Page size = {0}", Environment.SystemPageSize);
+            Assert.AreEqual(8, Unsafe.AlignOf<ulong>());
+            Assert.AreEqual(8, Unsafe.AlignOf<double>());
+            Assert.AreEqual(8, Unsafe.AlignOf<decimal>());
+            Assert.AreEqual(16, Unsafe.SizeOf<decimal>());
+            Assert.AreEqual(4, Unsafe.AlignOf<uint>());
+            Assert.AreEqual(2, Unsafe.AlignOf<ushort>());
+            Assert.AreEqual(4, Unsafe.AlignOf<Vector3>());
+            Assert.AreEqual(IntPtr.Size, Unsafe.AlignOf<IntPtr>());
+            Assert.AreEqual(Unsafe.PointerSize, Unsafe.AlignOf<IntPtr>());
+            Assert.AreEqual(4, Unsafe.AlignOf<CameraRenderScale.ScaleMode>());
+            Assert.AreEqual(1, Unsafe.AlignOf<BufferExpansionType>());
+            Assert.AreEqual(1, Unsafe.AlignOf<VariantType>());
+            Assert.AreEqual(2, Unsafe.AlignOf<Unsafe.AllocatorFlags>());
+
+            int count = 100000;
+            using (Profiling.AvgTime("getting alignments", count, BeauUtil.Debugger.ProfileTimeUnits.Ticks))
+            {
+                while(count-- > 0)
+                {
+                    Unsafe.AlignOf<ulong>();
+                }
+            }
         }
     }
 }
