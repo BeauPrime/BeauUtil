@@ -1,3 +1,18 @@
+## Version 0.12.1
+**8 May 2026**
+
+Fix for `UniqueIdAllocator.IsFull` false positives
+Fix for `DynamicMeshFilter` mesh not being set correctly after an Undo/Redo operation
+
+### Fixes
+* Fixed `UniqueIdAllocator.IsFull`
+* `DynamicMeshFilter` now ensures its associated `MeshFilter` has the correct Mesh assigned after an Undo/Redo operation
+
+### Improvements
+* Added `Unsafe.FastCast` variant for casting references
+* Added `Unsafe.FastCast` variant for completely unchecked casting
+* Optimized `Unsafe.AlignOf`
+
 ## Version 0.12.0
 **19 Feb 2026**
 
