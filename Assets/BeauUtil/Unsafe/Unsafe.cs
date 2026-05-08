@@ -125,6 +125,16 @@ namespace BeauUtil
 
 #if USING_TINYIL
         /// <summary>
+        /// Converts a value into a different value.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [IntrinsicIL("ldarg.0; ret")]
+        static public U FastCast<T, U>(T val)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Converts a reference into a different reference.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -535,5 +535,12 @@ namespace BeauUtil.UnitTests
                 }
             }
         }
+
+        [Test]
+        static public void CanUncheckedCast()
+        {
+            Assert.AreEqual(-1, Unsafe.FastCast<ulong, long>(ulong.MaxValue));
+            Assert.AreEqual(2, Unsafe.FastCast<BufferExpansionType, byte>(BufferExpansionType.Geometric));
+        }
     }
 }

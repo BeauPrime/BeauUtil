@@ -31,6 +31,8 @@ namespace BeauUtil
                     return;
                 }
             }
+
+            UnityEditor.Undo.undoRedoPerformed += OnUndoRedoPerformed;
 #endif // UNITY_EDITOR
 
             m_MeshFilter = GetComponent<MeshFilter>();
@@ -39,11 +41,22 @@ namespace BeauUtil
 
         private void OnDestroy()
         {
+#if UNITY_EDITOR
+            UnityEditor.Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+#endif // UNITY_EDITOR
+
             m_Destroyed = true;
             m_MeshFilter = null;
             m_MeshUploadTarget = default;
             UnityHelper.SafeDestroy(ref m_DynamicMesh);
         }
+
+#if UNITY_EDITOR
+        private void OnUndoRedoPerformed()
+        {
+            m_MeshFilter.sharedMesh = GetMeshTarget().Mesh;
+        }
+#endif // UNITY_EDITOR
 
         private ref MeshDataTarget GetMeshTarget()
         {
